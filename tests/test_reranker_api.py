@@ -1,5 +1,6 @@
 import importlib.util
 import pathlib
+import requests
 import sys
 import unittest
 from unittest.mock import patch
@@ -34,9 +35,21 @@ class FakeResponse:
         }
 
 
+class FakeRateLimitedResponse:
+    status_code = 403
+    text = '"RPM limit exceeded. Please complete identity verification to lift the restriction."'
+
+    def raise_for_status(self):
+        raise requests.HTTPError("403 Client Error")
+
+    def json(self):
+        return {}
+
+
 class FakeSession:
-    def __init__(self):
+    def __init__(self, responses=None):
         self.calls = []
+        self.responses = list(responses or [])
 
     def post(self, url, headers, json, timeout):
         self.calls.append(
@@ -47,6 +60,8 @@ class FakeSession:
                 "timeout": timeout,
             }
         )
+        if self.responses:
+            return self.responses.pop(0)
         return FakeResponse()
 
 
@@ -119,6 +134,27 @@ class RerankerApiTest(unittest.TestCase):
         self.assertNotIn("instruction", call["json"])
         self.assertEqual(call["json"]["max_chunks_per_doc"], 1)
         self.assertEqual(call["json"]["overlap_tokens"], 80)
+
+    def test_siliconflow_reranker_retries_rpm_limit(self):
+        session = FakeSession([FakeRateLimitedResponse(), FakeResponse()])
+        reranker = self.api_mod.SiliconFlowReranker(
+            api_key="test-key",
+            base_url="https://example.test/v1/rerank",
+            max_retries=1,
+            retry_delay_seconds=0,
+            session=session,
+        )
+
+        result = reranker.rerank(
+            query="graph neural networks",
+            documents=["doc a", "doc b"],
+            top_n=2,
+            model="Qwen/Qwen3-Reranker-0.6B",
+        )
+
+        self.assertEqual(result["results"][0]["index"], 1)
+        self.assertEqual(len(session.calls), 2)
+        self.assertEqual(reranker.stats("Qwen/Qwen3-Reranker-0.6B")["api_calls"], 2)
 
     def test_siliconflow_reranker_requires_key(self):
         with patch.dict("os.environ", {}, clear=True):

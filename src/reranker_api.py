@@ -71,6 +71,26 @@ def _extract_tokens(payload: Dict[str, Any]) -> Dict[str, int]:
   }
 
 
+def _env_float(name: str, default: float) -> float:
+  value = str(os.getenv(name) or "").strip()
+  if not value:
+    return default
+  try:
+    return float(value)
+  except ValueError:
+    return default
+
+
+def _env_int(name: str, default: int) -> int:
+  value = str(os.getenv(name) or "").strip()
+  if not value:
+    return default
+  try:
+    return int(value)
+  except ValueError:
+    return default
+
+
 class SiliconFlowReranker:
   """Small adapter matching src/3.rank_papers.py's reranker interface."""
 
@@ -84,6 +104,9 @@ class SiliconFlowReranker:
     return_documents: bool = False,
     max_chunks_per_doc: Optional[int] = None,
     overlap_tokens: Optional[int] = None,
+    min_interval_seconds: Optional[float] = None,
+    max_retries: Optional[int] = None,
+    retry_delay_seconds: Optional[float] = None,
     session: Optional[requests.Session] = None,
   ) -> None:
     self.api_key = (
@@ -106,12 +129,37 @@ class SiliconFlowReranker:
     self.return_documents = bool(return_documents)
     self.max_chunks_per_doc = max_chunks_per_doc
     self.overlap_tokens = overlap_tokens
+    self.min_interval_seconds = max(
+      float(
+        min_interval_seconds
+        if min_interval_seconds is not None
+        else _env_float("SILICONFLOW_RERANK_MIN_INTERVAL_SECONDS", 0.0)
+      ),
+      0.0,
+    )
+    self.max_retries = max(
+      int(
+        max_retries
+        if max_retries is not None
+        else _env_int("SILICONFLOW_RERANK_MAX_RETRIES", 2)
+      ),
+      0,
+    )
+    self.retry_delay_seconds = max(
+      float(
+        retry_delay_seconds
+        if retry_delay_seconds is not None
+        else _env_float("SILICONFLOW_RERANK_RETRY_DELAY_SECONDS", 65.0)
+      ),
+      0.0,
+    )
     self.session = session or requests.Session()
     self.call_count = 0
     self.total_latency_seconds = 0.0
     self.latencies_seconds: List[float] = []
     self.input_tokens = 0
     self.output_tokens = 0
+    self._last_request_at = 0.0
 
   def rerank(
     self,
@@ -149,29 +197,39 @@ class SiliconFlowReranker:
     ):
       payload["overlap_tokens"] = min(max(int(self.overlap_tokens), 0), 80)
 
-    started = time.perf_counter()
-    response = self.session.post(
-      self.base_url,
-      headers={
-        "Authorization": f"Bearer {self.api_key}",
-        "Content-Type": "application/json",
-      },
-      json=payload,
-      timeout=self.timeout,
-    )
-    elapsed = time.perf_counter() - started
-    self.call_count += 1
-    self.total_latency_seconds += elapsed
-    self.latencies_seconds.append(elapsed)
+    response = None
+    for attempt in range(self.max_retries + 1):
+      self._wait_for_rate_limit()
+      started = time.perf_counter()
+      response = self.session.post(
+        self.base_url,
+        headers={
+          "Authorization": f"Bearer {self.api_key}",
+          "Content-Type": "application/json",
+        },
+        json=payload,
+        timeout=self.timeout,
+      )
+      self._last_request_at = time.perf_counter()
+      elapsed = self._last_request_at - started
+      self.call_count += 1
+      self.total_latency_seconds += elapsed
+      self.latencies_seconds.append(elapsed)
 
-    try:
-      response.raise_for_status()
-    except requests.HTTPError as exc:
-      text = getattr(response, "text", "") or ""
-      raise requests.HTTPError(
-        f"SiliconFlow rerank API failed: status={response.status_code} body={text[:500]}"
-      ) from exc
+      try:
+        response.raise_for_status()
+        break
+      except requests.HTTPError as exc:
+        text = getattr(response, "text", "") or ""
+        if attempt < self.max_retries and self._is_rate_limit_error(response, text):
+          time.sleep(self.retry_delay_seconds)
+          continue
+        raise requests.HTTPError(
+          f"SiliconFlow rerank API failed: status={response.status_code} body={text[:500]}"
+        ) from exc
 
+    if response is None:
+      raise RuntimeError("SiliconFlow rerank API did not return a response")
     data = response.json()
     if not isinstance(data, dict):
       raise RuntimeError("SiliconFlow rerank API response is not a JSON object")
@@ -190,6 +248,20 @@ class SiliconFlowReranker:
   @staticmethod
   def _supports_chunk_options(model: str) -> bool:
     return str(model or "").strip() in SILICONFLOW_CHUNK_OPTION_MODELS
+
+  def _wait_for_rate_limit(self) -> None:
+    if self.min_interval_seconds <= 0 or self._last_request_at <= 0:
+      return
+    elapsed = time.perf_counter() - self._last_request_at
+    delay = self.min_interval_seconds - elapsed
+    if delay > 0:
+      time.sleep(delay)
+
+  @staticmethod
+  def _is_rate_limit_error(response: requests.Response, text: str) -> bool:
+    status_code = int(getattr(response, "status_code", 0) or 0)
+    body = str(text or "").lower()
+    return status_code == 429 or "rpm limit" in body or "rate limit" in body
 
   def stats(self, model: str = "") -> Dict[str, Any]:
     price = SILICONFLOW_QWEN3_PRICE_PER_M_TOKEN.get(str(model or ""))
