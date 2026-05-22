@@ -60,8 +60,9 @@ window.SubscriptionsSmartQuery = (function () {
     '8) Do not output extra fields like must_have / optional / exclude / rewrite_for_embedding.',
     '9) Return pure JSON only, no explanations.',
     '10) intent_queries should be concise, timeless, and must not include years or year-like tokens.',
-    '11) Tag suggestion should be concise, preferably under 6 characters.',
+    '11) Tag suggestion should be concise and descriptive. No fixed length limit.',
     '12) Tag suggestion must NOT include any year. Do not append or embed years (including digits like 2026/2025/2024 etc.) in tag.',
+    '13) Tag suggestion must use hyphen-separated words when multiple words are needed, for example "reinforcement-learning". Do not use spaces or underscores in tag.',
   ].join('\n');
 
   const normalizeText = (v) => String(v || '').trim();
@@ -195,11 +196,11 @@ window.SubscriptionsSmartQuery = (function () {
       .replace(/[\s_-]*(?:19|20)\d{2}(?:年)[\s_-]*/g, '')
       .replace(/[\s_-]*(?:19|20)\d{2}[\s_-]*/g, '');
     tag = tag
-      .replace(/\+/g, ' ')
-      .replace(/\s+/g, ' ')
-      .replace(/[_-]+/g, ' ')
-      .replace(/[\s_-]+$/g, '')
-      .replace(/^[\s_-]+/g, '')
+      .replace(/\+/g, '-')
+      .replace(/[\s_]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/-+$/g, '')
+      .replace(/^-+/g, '')
       .trim();
     return tag || base;
   };
@@ -2508,6 +2509,7 @@ window.SubscriptionsSmartQuery = (function () {
       containsCjk,
       isEnglishRetrievalText,
       normalizeGenerated,
+      sanitizeAutoTag,
     },
   };
 })();

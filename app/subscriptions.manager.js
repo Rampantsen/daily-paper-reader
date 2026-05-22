@@ -73,7 +73,8 @@ window.SubscriptionsManager = (function () {
     '7) intent_queries: output 1-4 actionable intent queries. The query field MUST be English only; query_cn should be Chinese.',
     '8) Do not output extra fields like must_have / optional / exclude / rewrite_for_embedding / must_have.',
     '9) Return pure JSON only, no explanations.',
-    '10) Tag suggestion should be concise, preferably under 6 characters.',
+    '10) Tag suggestion should be concise and descriptive. No fixed length limit.',
+    '11) Tag suggestion must use hyphen-separated words when multiple words are needed, for example "reinforcement-learning". Do not use spaces or underscores in tag.',
   ].join('\n');
 
   const QUICK_RUN_CONFERENCES = [
