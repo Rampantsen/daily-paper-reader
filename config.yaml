@@ -25,3 +25,60 @@ subscriptions:
     stage: A
     diff_threshold_pct: 15
   keyword_recall_mode: or
+  intent_profiles:
+    - tag: D-gen-recon
+      description: 3D场景生成、重建、物体生成、分割与特征匹配相关文章
+      enabled: true
+      paper_sources:
+        - arxiv
+      keywords:
+        - keyword: 3D scene reconstruction
+          keyword_cn: 三维场景重建
+          query: 3D scene reconstruction from multi-view images
+        - keyword: 3D scene generation
+          keyword_cn: 三维场景生成
+          query: generating 3D scenes from image collections
+        - keyword: 3D object generation
+          keyword_cn: 三维物体生成
+          query: generating 3D objects from images or text
+        - keyword: 3D semantic segmentation
+          keyword_cn: 三维语义分割
+          query: semantic segmentation of 3D scenes
+        - keyword: 3D feature matching
+          keyword_cn: 三维特征匹配
+          query: matching 3D features across multiple views
+        - keyword: multi-view stereo
+          keyword_cn: 多视角立体视觉
+          query: multi-view stereo 3D reconstruction
+      intent_queries:
+        - query: 3D scene generation and reconstruction using unlabeled internet photos
+          query_cn: 使用未标记互联网照片进行三维场景生成与重建
+          enabled: true
+          source: manual
+          note: ''
+        - query: unsupervised 3D object generation and semantic segmentation from multi view images
+          query_cn: 从多视角图像无监督地进行三维物体生成与语义分割
+          enabled: true
+          source: manual
+          note: ''
+        - query: feature matching and 3D scene understanding from large scale image collections
+          query_cn: 从大规模图像集合进行特征匹配与三维场景理解
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-05-31T13:47:16.134Z'
+source_backends:
+  arxiv:
+    papers_table: arxiv_papers
+    use_vector_rpc: true
+    vector_rpc: match_arxiv_papers
+    vector_rpc_exact: match_arxiv_papers_exact
+    use_bm25_rpc: true
+    bm25_rpc: match_arxiv_papers_bm25
+    sync_table: arxiv_sync_status
+    sync_success_value: success
+    schema: public
+    kind: supabase
+    enabled: true
+    url: https://lyucdwgefyfbmaiopjbk.supabase.co
+    anon_key: sb_publishable_lX-oi64Uxyd7SIVv3_w2Uw_MTOojeKq
