@@ -1,0 +1,789 @@
+Title: 3DReflecNet: A Large-Scale Dataset for 3D Reconstruction of Reflective, Transparent, and Low-Texture Objects
+
+URL Source: https://arxiv.org/pdf/2605.10204v1
+
+Published Time: Tue, 12 May 2026 03:03:46 GMT
+
+Number of Pages: 30
+
+Markdown Content:
+# 3DReflecNet: A Large-Scale Dataset for 3D Reconstruction of Reflective, Transparent, and Low-Texture Objects 
+
+## Zhicheng Liang 1 Haoyi Yu 1 Boyan Li 1 Dayou Zhang 2 Zijian Cao 1 Tianyi Gong 1 Junhua Liu 3
+
+## Shuguang Cui 1 Fangxin Wang 1*
+
+> 1
+
+## The Chinese University of Hong Kong, Shenzhen 
+
+> 2
+
+## Capital Normal University 3University of Southern California 
+
+{zhichengliang1, haoyiyu, boyanli, zijiancao, tianyigong }@link.cuhk.edu.cn zhangdayou@cnu.edu.cn, junhua.liu.0@usc.edu, {shuguangcui, wangfangxin }@cuhk.edu.cn Low -Texture Transparent Reflective 
+
+Figure 1. 3DReflecNet : A large-scale multi-view, object-centric dataset featuring reflective, transparent, and low-texture objects. Providing high-quality annotations for 3D reconstruction. 
+
+## Abstract 
+
+Accurate 3D reconstruction of objects with reflective, transparent, or low-texture surfaces still remains notoriously challenging. Such materials often violate key assumptions in multi-view reconstruction pipelines, such as photomet-ric consistency and the availability on distinct geometric texture cues. Existing datasets primarily focus on diffuse, textured objects, and therefore provide limited insight into performance under real-world material complexities. We introduce 3DReflecNet , a large-scale hybrid dataset exceeding 22 TB that is specifically designed to benchmark and advance 3D vision methods for these challenging mate-rials. 3DReflecNet combines two types of data: over 120,000 
+
+> *Corresponding Author.
+
+synthetic instances generated via physically-based render-ing of more than 12,000 shapes, and over 1,000 real-world objects captured using consumer devices. Together, these data consist of more than 7 million multi-view frames. The dataset spans diverse materials, complex lighting conditions, and a wide range of geometric forms—including shapes generated from both real and LLM-synthesized 2D images using diffusion-based pipelines. To support robust evaluation, we design benchmarks for five core tasks: image matching, structure-from-motion, novel view synthesis, reflection re-moval, and relighting. Extensive experiments demonstrate that state-of-the-art methods struggle to maintain accuracy across these settings, highlighting the need for more resilient 3D vision models. 
+
+1
+
+> arXiv:2605.10204v1 [cs.CV] 11 May 2026
+
+# Artifact 
+
+# Rotate Figure 2. Inaccurate camera pose estimation leads to reconstruction artifacts. 
+
+## 1. Introduction 
+
+Multi-view 3D reconstruction is a central problem in computer vision, fundamental to applications spanning robotics, AR/VR, autonomous driving, and digital content creation. Recent advances such as Neural Radiance Fields (NeRF) [ 56 ] and its variants [ 23 , 58 , 76 ], along with more recent advancements in 3D Gaussian Splatting and related ap-proaches [ 25 , 33 , 41 , 55 , 84 , 106 , 110 ] have significantly im-proved reconstruction quality and rendering efficiency, par-ticularly for textured, Lambertian surfaces. However, these methods struggle when confronted with complex optical phe-nomena—notably specular reflection, transparency, and low texture. Such conditions induce appearance inconsistency across views, undermining the assumptions behind Structure-from-Motion (SfM) [13, 14, 29, 37] and Multi-View Stereo (MVS) pipelines [26, 54, 63, 92]. The root cause lies in the foundational assumptions of existing multi-view reconstruction methods. Most state-of-the-art algorithms rely on (i) photometric consistency and (ii) distinctive appearance features across views. Both as-sumptions break down under view-dependent effects, light transmission, or low-texture surfaces. In such cases, both SfM and MVS pipelines fail to robustly recover accurate camera poses or dense geometry. Figure 2 illustrates a typi-cal failure mode, where even slight pose errors on reflective or transparent surfaces introduce geometry inconsistencies and rendering artifacts across viewpoints. Despite the growing interest in robust 3D reconstruc-tion, current benchmarks often overlook these challenging materials. Datasets such as DTU [ 36 ], CO3D [ 68 ], and MVImgNet [ 97 ] largely focus on textured, diffuse objects under relatively stable lighting and capture conditions. Open-Material [ 10 ] makes important progress by introducing syn-thetic multiview images rendered with physically measured refraction indices. However, it remains confined to purely synthetic data, lacks real-world noise and motion, and primar-ily supports novel view synthesis and geometry evaluation under controlled assumptions. In this paper, we present 3DReflecNet , a large-scale hy-brid dataset specifically designed for the reconstruction of reflective, transparent, and low-texture objects. 3DReflecNet combines 12,000+ physically-based rendered synthetic in-stances with more than 1,000 real-world scans captured using commodity devices. It features extensive material diversity (e.g., polished metal, glass, ceramics), view-dependent spec-ular simulation (via camera-glass setups), and rare geometric forms, including diffusion-generated 3D assets from both real-world and LLM-synthesized 2D references. Beyond its material complexity, 3DReflecNet supports a wide range of challenging tasks unaddressed by exist-ing datasets: (i) photometrically inconsistent image match-ing, (ii) structure-from-motion for non-Lambertian and low-texture surfaces, (iii) novel view synthesis under complex material conditions, (iv) reflection and highlight removal, and (v) object relighting. By bridging synthetic and real domains and incorporating rich photometric and geomet-ric variation, 3DReflecNet provides a new foundation to evaluate 3D vision models under realistic and challenging conditions. In summary, our contributions are threefold: • We present 3DReflecNet , a large-scale hybrid dataset fo-cused on reflective, transparent, and low-texture objects. It contains more than 120,000 synthetic instances and 1,000 real-world captures, totaling more than 7 million frames. The dataset spans diverse geometry, materials, and lighting across nine high-level categories. • We introduce a unified asset-creation pipeline that com-bines physically based rendering (with a camera-through-glass setup for view-dependent optics) and diffusion-driven 2D-to-3D generation, producing rich geometry and appearance diversity beyond existing libraries. • We establish benchmarks for five tasks, including image matching, SfM, novel view synthesis, reflection removal, and relighting, together with standardized evaluations and baselines. Our large-scale analysis reveals systematic fail-ure modes in state-of-the-art methods, highlighting the need for more physically aware 3D vision models. 
+
+## 2. Related Works 
+
+In this section, we review prior work on 3D reconstruction and related datasets to highlight current gaps. More work on related tasks, such as specular highlight removal, reflection removal, and relighting, is discussed in Suppl. L. 
+
+2.1. Multi-view 3D Reconstruction 
+
+Image matching is fundamental to multi-view 3D recon-struction pipelines. Classical descriptors [ 2 , 62 , 70 ] remain attractive for their efficiency, whereas learning-based mod-els [ 17 , 20 , 85 ] improve robustness under geometric vari-ation. More recently, detector-free approaches [ 8 , 21 , 77 ]leverage Transformer architectures to estimate dense corre-spondences. However, most methods are evaluated on tex-tured, diffuse surfaces, overlooking the cases we target. Structure-from-Motion (SfM) estimates camera poses and 2<0, 0.9, 1.0, 1> <0, 0.6, 1.9, 0> <0, 0.6, 1.9, 1> <1, 0.3, 1.0, 0> <1, 0, 1.9, 0>
+
+> Masked  Rendering  Rendering  Ground Truth
+
+Figure 3. Effect of material properties on physically-based render-ing and reconstruction. Each column shows a different material configuration ⟨Metallic, Roughness, IOR, Transmission ⟩. Rows (top to bottom): sample input view, final reconstructed view, and masked reconstructed view for comparison with ground truth. 
+
+sparse scene geometry via feature matching and bundle ad-justment [ 4 ]. Modern SfM methods span incremental [ 75 ]and global strategies [ 5 , 95 ], with robust extensions handling noise and outliers [ 28 , 65 , 96 ]. Multi-View Stereo (MVS) builds dense geometry from calibrated images using both classical [ 26 , 72 ] and learning-based methods [ 63 , 92 , 104 ]. They rely on accurate pose estimates, making them sensitive to errors in complex materials. Significant progress in novel view synthesis (NVS) has followed the introduction of NeRF [ 56 ] and its many vari-ants [ 23 , 58 , 76 ]. Recent advances in 3D Gaussian Splatting and related approaches [ 25 , 33 , 41 , 55 , 84 , 106 , 110 ] have achieve state-of-the-art results. However, these methods im-plicitly rely on color and appearance consistency, making them less effective for reflective or transparent surfaces. 
+
+2.2. 3D Datasets and Material Complexity 
+
+Several datasets have explored material-aware 3D recon-struction, but each addresses only a subset of the underlying challenges. MV Reflectance [ 64 ] and NeRO [ 51 ] focus on reflective surfaces but offer limited object diversity. Open-Material [ 15 ] introduces 1001 synthetic objects rendered under measured optical properties, but lacks real-world data and only supports a narrow range of tasks. DTU [ 1], Tanks and Temples [ 42 ], and BlendedMVS [ 100 ] focus on multi-view reconstruction with known geometry but primarily feature diffuse materials. Large-scale repositories such as ShapeNet-Intrinsics [ 73 ], ABO [ 11 ], RTMV [ 82 ], and Obja-verse [ 16 ] expand shape and appearance variation, though they often lack physically plausible material simulation. In contrast, 3DReflecNet combines high-fidelity synthetic ren-dering with real-world captures, providing both optical real-ism and broad task coverage across five evaluation tracks. Metallic 
+
+> (0 or 1)
+> Roughness
+> (0.0 - 0.9)
+> IOR
+> (1.0 - 1.9)
+> Transmission
+> (0 or 1)
+> PSNR
+> (dB)
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Normalized Value
+> 18.3
+> 21.9
+> 25.4
+> 28.9
+> 32.4
+> 36.0
+
+Figure 4. Material parameter sweep across 48 configurations. Each line represents a single trial, colored by reconstruction quality (PSNR). The plot demonstrates how material properties systemati-cally affect reconstruction performance. 
+
+## 3. Observations and Motivation 
+
+In this section, we identify the root causes of reconstruc-tion failures for non-Lambertian materials and demonstrate the urgent need for a high-quality dataset of challenging materials for 3D perception tasks. 
+
+3.1. Impact of Material Properties on PBR and Re-construction Quality 
+
+To investigate how material properties affect physically-based rendering and reconstruction quality, we conducted an extensive experiment analyzing 3D reconstruction algorithm (3DGS [ 41 ]) performance across diverse material parameters. We selected a model and systematically varied its material by spanning four critical parameters: metallic (0 or 1), rough-ness (0–0.9), IOR (1.0–1.9), and transmission (0 or 1). For each of the 48 material configurations, we trained 3DGS using 50 multi-view images with masked backgrounds and evaluated PSNR on 10 held-out test views. Figure 3 illustrates five representative cases showing how different materials interact with light under identical lighting conditions (top row). The reconstructed views (middle row) reveal increasing geometric artifacts—particularly floaters— as light transmission and reflectance violate photometric con-sistency assumptions. The masked views (bottom row) en-able cleaner comparison with ground truth. Figure 4 presents the complete parameter sweep across all 48 configurations. The results reveal three distinct failure modes. First, reflec-tive materials with smooth surfaces (roughness=0.0) expe-rience catastrophic failure: metallic materials achieve only 19 dB PSNR versus 35 dB for high-roughness non-metallic surfaces—a 45% degradation. Second, low-roughness sur-faces starve correspondence-based methods of texture cues, with PSNR improving by 5 dB as roughness increases from 0.0 to 0.9 in non-metallic materials. Third, transparent ma-terials represent the most critical failure mode, causing a consistent 5.82 dB PSNR drop (19.3% quality loss) across all configurations. Notably, higher refractive indices progres-sively worsen performance: transparent materials exhibit PSNR values ranging from 19.9 dB (IOR=1.0) to 27.9 dB 3Rich Assets           
+
+> Library
+> Any 2D
+> Image
+> Diffuse -based
+> Normal Estimation
+> 3D geometry
+> generation
+> Asset Generation Multi -view renderings Various Materials Various Lightings
+> Real -world
+> Scanning
+> Asset
+> Multi -view capture Data processing
+> Segmentation
+> Pose Optimization
+> Deblurring
+> Finetuning
+> Benchmark
+> Downstream •Depths
+> •Mask
+> •Normals
+> •Poses
+> •3D Object Figure 5. The Dataset Construction and Evaluation Pipeline.
+
+(IOR=1.9), confirming that stronger refraction increasingly violates epipolar geometry. For more detailed results and analysis, please refer to Suppls. I, J. 
+
+3.2. Root Cause: Algorithmic Assumptions vs. Physical Reality 
+
+These failures stem from a fundamental mismatch between algorithmic assumptions and physical light transport. SOTA MVS methods—both classical and learning-based—rely on 
+
+photometric consistency : the assumption of view-invariant, Lambertian-like surfaces. This assumption breaks down catastrophically for non-Lambertian materials. Reflective materials violate photometric consistency through view-dependent appearance governed by their BRDF, causing algorithms to misinterpret specular high-lights as geometric features. Low-texture surfaces lack the high-frequency features needed for robust correspondence matching, resulting in ambiguous reconstructions. Transpar-ent materials represent the most severe case, breaking both photometric consistency and the geometric assumption of linear light propagation: refraction invalidates the epipolar constraints underpinning multi-view triangulation, causing complete reconstruction breakdown. 
+
+These are not edge cases but systematic failures arising from oversimplified computational models of complex physi-cal phenomena. Our observation underscores the necessity for reconstruction techniques inherently aware of material-light interactions—and the critical need for datasets that expose these challenges. 
+
+## 4. Dataset Construction and Statistics 
+
+We begin by comparing 3DReflecNet to existing related datasets and presenting its detailed statistics. We then de-scribe the framework used to construct 3DReflecNet (Fig-ure 5). 3DReflecNet comprises two complementary subsets: a synthetic collection and a real-world scan set. The synthetic data are rendered as photorealistic RGB images in Blender, drawing on two asset sources: a large-scale existing library and 3D generated models derived from 2D image references. The real-world subset consists of objects with challenging materials captured under diverse lighting conditions using commodity scanning devices, thereby reflecting common acquisition scenarios. 
+
+4.1. Statistics Overview 
+
+We present a photorealistic, object-centric dataset designed to enhance 3D reconstruction quality across a diverse range of materials, shapes, and lighting conditions. This dataset supports various tasks, including image match-ing [ 21 , 78 , 93 ], camera pose estimation [ 18 , 89 , 99 ], novel-view synthesis [ 41 , 60 ], and a series of other perception tasks (see Appendix for details). 3DReflecNet distinguishes itself from existing datasets by offering a large-scale synthetic-real hybrid collection, specifically curated to address chal-lenging materials and lighting scenarios. Table 1 provides a detailed comparison between 3DReflecNet and existing datasets, while Table 2 outlines the comprehensive statistics characterizing 3DReflecNet. Figure 6 provides a comprehensive overview of our syn-thetic dataset statistics. The dataset is divided into nine high-level categories as shown in Figure 6a. While Everyday Items 
+
+is the largest category, the dataset maintains a balanced dis-tribution across other diverse classes. Figure 6b visualizes our textual descriptions as a word cloud, where terms like 
+
+reflective , lighting , and glossy confirm our core focus on complex materials and illumination. These detailed labels are not only crucial for analysis but are also designed to support generation-related tasks, such as text-to-3D asset creation, as detailed further in Suppl. K. 
+
+4.2. Synthetic Data Generation Pipeline 
+
+The synthetic component of 3DReflecNet comprises objects drawn from a wide variety of categories, including house-hold items, vehicles, statues, electronics, and other everyday artifacts. It also includes objects with symmetric geometry or low-texture appearances, such as accessories and minerals, 4Table 1. Comparison between other related datasets. The symbol “#” denotes the total count, “PBR” refers to physically-based rendering, and “w/ Real” refers to containing real dataset.                                                                                                                   
+
+> Dataset Type Transparent Reflection Low-Texture Relighting #Instances PBR w/ Real MV Reflectance [64] Objects ✗✓✗✗<20 ✓✗
+> NeRO [51] Objects ✗✓✓✓8✓✓
+> ShapeNet-Intrinsics [73] Objects ✗✗✓✓30K ✗✗
+> DTU [1] Objects ✗Few ✗✗100+ -✓
+> Tanks and Temples [42] Objects/Scenes ✗✗✗✗21 -✓
+> BlendedMVS [100] Objects/Scenes ✗✗✗✗113 ✓✗
+> ABO [11] Objects ✗✗✗✗8K ✓✓
+> RTMV [82] Objects/Scenes ✗Few Few ✗∼2000 ✓✗
+> Objaverse [16] Objects ✗✗✓✗800K+ ✗✗
+> OpenMaterials [15] Objects ✗✓✓✓1001 ✓✗
+> 3DReflecNet (Ours) Objects ✓✓✓✓120K+ ✓✓
+> (a) (b)
+> Figure 6. Overview of synthetic dataset statistics. (a) Distribution of 9 high-level categories. (b) A word cloud visualizing common terms in our LLM-generated textual descriptions Table 2. Summary statistics of the 3DReflecNet dataset.
+> #Shapes #Materials #Lighting #Instances #Views #Frames Synthetic 12K+ 22 2700+ 120K+ 60 7M+ Real 300+ >50 51000+ 100+ 120K+
+
+to better reflect practical industrial scenarios. 
+
+Shapes, Materials and Lighting. We carefully collected over 10K high-quality shapes from scanned object reposito-ries and 3D asset databases covering art, industry, and nature domains. Additionally, we generated more than 2K shapes representing everyday items to ensure diversity. For more details, please refer to § 4.3. In terms of materials, we incorporate 22 types that are both commonly encountered and challenging for accurate 3D reconstruction. These are categorized into five groups: Dif-fuse (e.g., concrete, matte surfaces), Transparent (e.g., glass, clear acrylic), Metallic (e.g., steel, chrome), Glossy-Textured 
+
+(e.g., polished wood with grain patterns), and Glossy-Low-Texture (e.g., ceramic glazes). For realistic lighting simulation, we utilize 2700+ HDRI environment maps. These lighting conditions span a wide range of real-world scenarios—indoor and outdoor settings, various times of day, and weather conditions, as well as other nuanced variations—ensuring comprehensive coverage of diverse lighting environments. Figure 7 showcases a sub-set of the objects, materials, and environment maps used in our dataset. Further, we simulate local illumination by plac-ing 1–2 finite-distance point lights on the upper hemisphere (Suppl. B). To maximize diversity, each object is selected to pair with different materials and lighting conditions, result-ing in over 120K synthetic object instances. 
+
+Specular Reflection. To simulate common specular reflec-tion scenarios, we position a glass sheet between the object and the camera following [ 88 , 90 , 111 ]. Unlike previous works [ 44 , 87 , 88 , 90 , 111 ] that capture only a single an-gle under limited lighting conditions, we provide data from 60 different angles under hundreds of lighting conditions to comprehensively simulate reflection effects. In these settings, the glass reflects the surrounding environment, introducing complex optical effects that create significant challenges for 3D perception tasks. The top row of Figure 8 shows multi-view reflections. Detailed explanations of the light behavior are provided in Suppl. J.2. 
+
+Rendering and Output. For each instance, we provide extensive ground truth annotations generated using aphysically-based rendering (PBR) engine in Blender. These include 60 multi-view images per instance, high-resolution RGB images rendered at 1000 × 1000 resolution, 3D geom-etry in both point cloud and mesh formats, object segmen-tation masks, dense depth maps, and surface normal maps. This rich set of annotations supports the detailed evaluation of reconstruction quality from multiple perspectives. 
+
+4.3. Synthesis Data Generation with 2D Reference 
+
+To enrich shape diversity beyond a predefined library, we developed an efficient pipeline to automatically generate 3D assets from 2D images. We use real-world and LLM-generated 2D images as references to synthesize 3D mod-els via diffusion-based methods [ 101 , 102 ]. This process involves estimating normals and depth, reconstructing a mesh, and refining it to a canonical pose. These models are then rendered in Blender with diverse PBR materials and 5Figure 7. Overview of objects with various materials and lighting conditions in the dataset w/ Reflections w/o Reflections 
+
+> Figure 8. Multi-view Specular Reflection Input Image 3D  Model
+> Figure 9. 3D Object Generation Given 2D Reference.
+
+HDR lighting (§ 4.2), providing a lightweight way to scale 3DReflecNet and enhance its realism. Figure 9 shows 3D models (bottom row) generated from 2D reference images (top row). The 2D references include three columns of GPT-4o generated images and one column of a real-world capture. Further qualitative results are available in Suppls. C, M. 
+
+4.4. Real-World Capture 
+
+We capture real-world data using an iPhone 16 Pro, record-ing 1080×1920 video at 30 FPS with default camera settings to simulate typical capture conditions. A primary challenge in this setting is that standard camera pose estimation algo-rithms fail when objects have challenging materials (e.g., reflective or low-texture) that lack stable, view-invariant fea-tures. To circumvent this, our capture protocol is designed to separate the pose estimation task from the object itself. We place the target object on a highly detailed base, which serves as a stable tracking marker. This entire assembly Multi -views of objects Capture Camera Poses 
+
+> Figure 10. Qualitative examples of capturing reflective objects using rotating platforms.
+
+is then placed on a rotating platform (Figure 5) to ensure a smooth, stable 360-degree capture path. Our processing pipeline then involves first estimating robust camera poses from the video by tracking the detailed base of the object using RealityScan [ 22 ]. With the camera poses secured, we then employ SAM 2 [ 67 ] to segment and remove both the base and the background. This two-stage process yields accu-rate poses for the challenging objects, and Figure 10 presents qualitative results from our scans. 
+
+## 5. Experiments 
+
+5.1. Benchmark 
+
+To facilitate standardized evaluation and support research in 3D reconstruction and novel view synthesis, we establish a benchmark based on our proposed 3DReflecNet dataset. The benchmark spans both synthetic and real-world object-centric scenes. For evaluation, 80% of the data is allocated for training, 10% for validation, and remaining 10% for testing. Our benchmark supports multiple tasks, including (i) image matching, (ii) structure-from-motion, (iii) novel view synthesis, (iv) reflection and highlight removal, and (v) object relighting. 
+
+5.2. Image Matching 
+
+We evaluate image matching performance using three met-rics: AUC@5 ◦, AUC@10 ◦, and AUC@20 ◦. These metrics measure the area under the curve of pose accuracy using 6VGGT FlowMap Fast3 R RoMa  
+
+> SIFT
+> +Kornia
+> KeyNet
+> +Kornia
+> Dedode
+> +Kornia
+> Aliked
+> +Lightglue Colmap
+> ACE0
+> Ground Truth
+
+Figure 11. Camera Pose Estimation Table 3. Benchmark Image Matching Performance on the 3DReflecNet dataset. Italic numbers represent the results on the MegaDepth dataset [46]                         
+
+> Method AUC@5° ↑AUC@10° ↑AUC@20° ↑
+> SuperPoint [17] + NN 11.2 ( 31.7 )20.8 ( 46.8 )27.7 ( 60.1 )SuperPoint [17] + SuperGlue [71] 15.2 ( 49.7 )31.0 ( 67.1 )39.9 ( 80.6 )SuperPoint [17] + LightGlue [49] 15.8 ( 49.9 )31.3 ( 67.0 )40.1 ( 80.1 )LoFTR [78] 19.8 ( 52.8 )35.6 ( 69.2 )39.2 ( 81.2 )AspanFormer [8] 20.3 ( 55.3 )36.9 ( 71.5 )41.1 ( 83.1 )ELoftr [93] 21.3 ( 56.4 )36.2 ( 72.2 )41.9 ( 83.5 )ROMA [21] 32.1 ( 62.6 )47.5 ( 76.7 )59.1 ( 86.3 )
+
+thresholds τ = 5 ◦, 10 ◦, and 20 ◦, based on the minimum of rotation and translation angular errors. We evaluate the methods—covering sparse, semi-dense, and dense image matching strategies—on a selected subset of 1,000 Roman statue instances. The combined results on 3DReflecNet and MegaDepth [46] are presented in Table 3. Matching objects with reflective, transparent, or low-texture surfaces across different views remains a significant challenge. The results demonstrate that existing methods often struggle to establish accurate correspondences in such cases due to inconsistent appearance, lack of distinctive tex-ture, and view-dependent distortions, and leading to low pose accuracy, while these methods achieve much better results [ 21 , 93 ] on benchmarks such as MegaDepth [ 46 ]. This performance gap highlights the importance of develop-ing high-quality datasets that include these challenging yet commonly encountered scenarios. 
+
+5.3. Structure from Motion 
+
+SfM aims to reconstruct sparse 3D point clouds while simul-taneously estimating camera parameters from a collection of input images. Accurate camera pose estimation is essential for downstream multi-view 3D reconstruction tasks, as inac-curacies in estimated poses often lead to geometric incon-sistencies and visible artifacts in the reconstructed models, as illustrated in Figure 2. In this benchmark, we evaluate 10 representative methods for estimating camera parameters from object-centric, multi-view images in 3DReflecNet . To ensure the evaluation focuses on the object geometry itself, we remove the background while preserving lighting effects on the object surfaces across various materials. This prevents the background from providing auxiliary features that may 
+
+Table 4. Benchmark NVS Performance on the 3DReflecNet dataset across material categories, measured by PSNR ↑.                        
+
+> Method Diffuse Transparent Metallic Glossy-Textured Glossy-Low-Texture
+> Instant-NGP [57] 36.12 19.20 25.59 34.01 26.52 3DGS [41] 36.99 20.20 27.02 34.10 27.62 Splatfacto [79] 37.32 21.31 28.61 34.21 28.01 2DGS [33] 36.77 17.12 28.46 34.42 27.97
+
+Table 5. Benchmark Surface Reconstruction Performance on the 3DReflecNet dataset across material categories, measured by Chamfer Distance ↓.                        
+
+> Method Diffuse Transparent Metallic Glossy-Textured Glossy-Low-Texture
+> Instant-NGP [57] 0.087 0.185 0.175 0.132 0.149 Neus2 [91] 0.079 0.165 0.158 0.105 0.121 2DGS [33] 0.060 0.142 0.121 0.086 0.098 PGSR [6] 0.062 0.502 0.412 0.162 0.228
+
+bias pose estimation, forcing the methods to rely solely on object-intrinsic features to compute relative poses between image pairs. Figure 11 reveals that most existing methods struggle to recover accurate camera parameters under these conditions. 
+
+5.4. NVS and Surface Reconstruction 
+
+We evaluate six representative methods on novel view syn-thesis and surface reconstruction across five material cate-gories, each containing five objects of varying geometry: 
+
+Diffuse materials exhibit Lambertian reflectance without specular highlights; Transparent materials feature strong light transmission and refraction; Metallic materials display high specularity and colored reflections; Glossy-Textured ma-terials combine specular reflections with surface details; and 
+
+Glossy-Low-Texture presents low-texture specular surfaces. 
+
+Novel View Synthesis. As shown in Table 4, all evaluated methods excel on diffuse materials, achieving PSNR scores above 36 dB. This strong performance is expected, as these methods rely on multi-view photometric consistency, an as-sumption that diffuse surfaces closely satisfy. In contrast, metallic and glossy-low-texture materials with strong spec-ular reflections violate the view-consistency assumption, resulting in degraded performance. The most significant challenges arise with transparent materials, where all meth-ods struggle severely (PSNR ∼17–21 dB), as complex light transmission, refraction, and caustics fundamentally break the color consistency principle that these methods rely upon. Notably, glossy-textured materials achieve relatively high PSNR ( ∼34 dB) due to the presence of diffuse texture pat-terns, yet still exhibit artifacts in specular regions. These performance trends are consistent with the qualitative exam-ples shown in Figure 3. 
+
+Surface Reconstruction. Table 5 presents the surface recon-struction quality across material categories. All methods 7Neus2   
+
+> Glossy
+> Textured Metallic Transparent
+> PGSR 2DGS GT
+> Diffuse Glossy Low -
+> Texture
+> Instant -NGP Figure 12. Representative qualitative results of surface reconstruc-tion across various materials.
+
+perform well on diffuse materials, where geometric fea-tures can be reliably triangulated from multi-view corre-spondences. However, reconstruction quality degrades sig-nificantly for materials with non-Lambertian appearance. Figure 12 demonstrates representative qualitative results. These results reveal fundamental limitations of current NVS and surface reconstruction methods when handling materials with complex light interactions. Methods relying solely on photometric consistency fail to generalize across the diverse material categories in 3DReflecNet, particularly for reflective, transparent, and low-texture surfaces. 
+
+5.5. Evaluations on Reflection Removal and Re-lighting Tasks and Real-World Data 
+
+Due to page constraints, we defer the experimental results for the reflection removal and relighting tasks to Suppls. F, H. The evaluation on our real-world dataset is also presented in Suppls. D, G. SOTA methods for reflection removal, relighting, and real-world tasks perform poorly on 3DReflecNet , with results comparable to other challenging real-world datasets. This validates 3DReflecNet as a physically-realistic benchmark. This consistent failure on both our synthetic and real-world instances confirms that SOTA methods, designed for simple Lambertian surfaces, are not robust to the complex, non-Lambertian challenges our dataset exposes. 
+
+## 6. Discussions 
+
+3D Vision and Generation Extensions. Although this paper emphasizes a subset of 3D vision tasks, 3DReflecNet also supports related problems such as highlight removal, inverse rendering, depth estimation, and surface normal prediction, by providing ground truth labels (Suppl. A). While our primary focus is on perception tasks, 3DReflecNet ’s rich annotations open avenues for future re-search in generative 3D vision, including image-editing [ 45 ,61 , 74 ], text-to-3D [ 47 , 66 , 103 , 105 ], text-to-texture [ 3, 7,69 ], image-to-3D [ 50 , 98 , 102 ] and image-to-texture [ 81 ,107 ] in complex materials and lighting . To enable such ex-tensions, we annotate each instance with detailed textual descriptions and tags derived from Qwen3-VL-30B-A3B-Instruct [ 80 ]. This provides a foundation for integrating 3DReflecNet into downstream generation pipelines. The de-tailed annotation process for generative 3D vision tasks refer to Suppl. K. 
+
+Toward Robust 3D Understanding. Our findings reveal that existing methods struggle with non-Lambertian and low-texture materials, underscoring the need for new ap-proaches that combine geometric reasoning with photomet-ric modeling. By surfacing these limitations systematically, 3DReflecNet lays the groundwork for developing more gen-eralizable, physically-aware 3D vision systems. 
+
+## 7. Conclusion 
+
+We presented 3DReflecNet , a large-scale, hybrid dataset de-signed to advance 3D reconstruction under challenging ma-terial conditions—namely, reflectivity, transparency, and low texture. Unlike existing benchmarks, 3DReflecNet combines over 12,000 physically-based synthetic objects with more than 1,000 real-world scans, offering extensive diversity in materials, shapes, and lighting. We further include novel assets generated via diffusion-based shape synthesis and provide comprehensive multi-view annotations to support tasks ranging from image matching, SFM, and novel view synthesis to reflection removal and relighting. Extensive benchmarking reveals that although state-of-the-art methods perform well on diffuse objects, their per-formance degrades substantially in the presence of complex optical phenomena. This highlights the need for datasets and models that explicitly address such cases. By releasing 3DReflecNet along with baseline implementations and eval-uation tools, we aim to foster research on generalizable and 8robust 3D vision methods under real-world conditions. 
+
+Acknowledgments. The work was supported in part by the Guangdong S&T Programme (Grant No. 2024B0101030002), the Basic Research Project No. HZQB-KCZYZ-2021067 of Hetao Shenzhen-HK S&T Cooperation Zone, the National Key Research and Development Program of China (Grant No. 2024YFB2907000), the National Natural Science Foundation of China (Grant No. 62293482 and Grant No. 62471423), the Shenzhen Science and Technology Program (Grant No. JCYJ20241202124021028 and Grant No. JCYJ20230807114204010), the Guangdong Talents Program (Grant No. 2024TQ08X346), the Shenzhen Outstanding Talents Training Fund 202002, the Guangdong Provincial Key Laboratory of Future Networks of Intelligence (Grant No. 2022B1212010001) and the Shenzhen Key Lab-oratory of Big Data and Artificial Intelligence (Grant No. SYSPG20241211173853027). 
+
+## References 
+
+[1] Henrik Aanæs, Rasmus Ramsbøl Jensen, George Vogiatzis, Engin Tola, and Anders Bjorholm Dahl. Large-scale data for multiple-view stereopsis. International Journal of Computer Vision , 120:153–168, 2016. 3, 5 [2] Herbert Bay, Tinne Tuytelaars, and Luc Van Gool. Surf: Speeded up robust features. In Computer Vision–ECCV 2006: 9th European Conference on Computer Vision, Graz, Austria, May 7-13, 2006. Proceedings, Part I 9 , pages 404– 417. Springer, 2006. 2 [3] Tianshi Cao, Karsten Kreis, Sanja Fidler, Nicholas Sharp, and Kangxue Yin. Texfusion: Synthesizing 3d textures with text-guided image diffusion models. In Proceedings of the IEEE/CVF international conference on computer vision ,pages 4169–4181, 2023. 8 [4] Alessandro Cefalu, Norbert Haala, and Dieter Fritsch. Hi-erarchical structure from motion combining global image orientation and structureless bundle adjustment. The Inter-national Archives of the Photogrammetry, Remote Sensing and Spatial Information Sciences , 42:535–542, 2017. 3 [5] Avishek Chatterjee and Venu Madhav Govindu. Efficient and robust large-scale rotation averaging. In Proceedings of the IEEE international conference on computer vision ,pages 521–528, 2013. 3 [6] Danpeng Chen, Hai Li, Weicai Ye, Yifan Wang, Weijian Xie, Shangjin Zhai, Nan Wang, Haomin Liu, Hujun Bao, and Guofeng Zhang. Pgsr: Planar-based gaussian splatting for efficient and high-fidelity surface reconstruction. IEEE Transactions on Visualization and Computer Graphics , 31 (9):6100–6111, 2025. 7, 18 [7] Dave Zhenyu Chen, Yawar Siddiqui, Hsin-Ying Lee, Sergey Tulyakov, and Matthias Nießner. Text2tex: Text-driven tex-ture synthesis via diffusion models. In Proceedings of the IEEE/CVF international conference on computer vision ,pages 18558–18568, 2023. 8, 22 [8] Hongkai Chen, Zixin Luo, Lei Zhou, Yurun Tian, Ming-min Zhen, Tian Fang, David Mckinnon, Yanghai Tsin, and Long Quan. Aspanformer: Detector-free image matching with adaptive span transformer. In European Conference on Computer Vision , pages 20–36. Springer, 2022. 2, 7 [9] Hongze Chen, Zehong Lin, and Jun Zhang. Gi-gs: Global illumination decomposition on gaussian splatting for inverse rendering. arXiv preprint arXiv:2410.02619 , 2024. 18, 25 [10] Jin et al. Christy. Openmaterial: A comprehensive dataset of complex materials for 3d reconstruction. https:// christy61.github.io/openmaterial.github. io/ , 2023. 2 [11] Jasmine Collins, Shubham Goel, Kenan Deng, Achlesh-war Luthra, Leon Xu, Erhan Gundogdu, Xi Zhang, Tomas F Yago Vicente, Thomas Dideriksen, Himanshu Arora, et al. Abo: Dataset and benchmarks for real-world 3d object un-derstanding. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 21126– 21136, 2022. 3, 5 [12] Robert L. Cook and Kenneth E. Torrance. A reflectance model for computer graphics. ACM Transactions on Graph-ics , 1(1):7–24, 1982. 20 [13] David J Crandall, Andrew Owens, Noah Snavely, and Daniel P Huttenlocher. Sfm with mrfs: Discrete-continuous optimization for large-scale structure from motion. IEEE transactions on pattern analysis and machine intelligence ,35(12):2841–2853, 2012. 2 [14] Hainan Cui, Xiang Gao, Shuhan Shen, and Zhanyi Hu. Hsfm: Hybrid structure-from-motion. In Proceedings of the IEEE conference on computer vision and pattern recog-nition , pages 1212–1221, 2017. 2 [15] Zheng Dang, Jialu Huang, Fei Wang, and Mathieu Salzmann. Openmaterial: A comprehensive dataset of complex materi-als for 3d reconstruction. arXiv preprint arXiv:2406.08894 ,2024. 3, 5 [16] Matt Deitke, Dustin Schwenk, Jordi Salvador, Luca Weihs, Oscar Michel, Eli VanderBilt, Ludwig Schmidt, Kiana Ehsani, Aniruddha Kembhavi, and Ali Farhadi. Objaverse: A universe of annotated 3d objects. In Proceedings of the IEEE/CVF conference on computer vision and pattern recog-nition , pages 13142–13153, 2023. 3, 5 [17] Daniel DeTone, Tomasz Malisiewicz, and Andrew Rabi-novich. Superpoint: Self-supervised interest point detection and description. In Proceedings of the IEEE conference on computer vision and pattern recognition workshops , pages 224–236, 2018. 2, 7, 16 [18] Siyan Dong, Shuzhe Wang, Shaohui Liu, Lulu Cai, Qingnan Fan, Juho Kannala, and Yanchao Yang. Reloc3r: Large-scale training of relative camera pose regression for generaliz-able, fast, and accurate visual localization. arXiv preprint arXiv:2412.08376 , 2024. 4 [19] Zheng Dong, Ke Xu, Yin Yang, Hujun Bao, Weiwei Xu, and Rynson W.H. Lau. Location-aware single image reflection removal. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , pages 5017–5026, 2021. 16, 24 [20] Mihai Dusmanu, Ignacio Rocco, Tomas Pajdla, Marc Polle-feys, Josef Sivic, Akihiko Torii, and Torsten Sattler. D2-net: A trainable cnn for joint description and detection of lo-cal features. In Proceedings of the ieee/cvf conference on 
+
+9computer vision and pattern recognition , pages 8092–8101, 2019. 2 [21] Johan Edstedt, Qiyu Sun, Georg B ¨okman, M ˚arten Wadenb ¨ack, and Michael Felsberg. Roma: Robust dense feature matching. In Proceedings of the IEEE/CVF Confer-ence on Computer Vision and Pattern Recognition , pages 19790–19800, 2024. 2, 4, 7, 16 [22] Epic Games. RealityScan. https : / / www . realityscan.com , 2025. Accessed: 2025-10-06. 6 [23] Sara Fridovich-Keil, Alex Yu, Matthew Tancik, Qinhong Chen, Benjamin Recht, and Angjoo Kanazawa. Plenoxels: Radiance fields without neural networks. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 5501–5510, 2022. 2, 3 [24] Gang Fu, Qing Zhang, Lei Zhu, Chunxia Xiao, and Ping Li. Towards high-quality specular highlight removal by leveraging large-scale synthetic data. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , pages 12857–12865, 2023. 16, 24 [25] Yang Fu, Sifei Liu, Amey Kulkarni, Jan Kautz, Alexei A Efros, and Xiaolong Wang. Colmap-free 3d gaussian splat-ting. In Proceedings of the IEEE/CVF Conference on Com-puter Vision and Pattern Recognition , pages 20796–20805, 2024. 2, 3 [26] Silvano Galliani, Katrin Lasinger, and Konrad Schindler. Massively parallel multiview stereopsis by surface normal diffusion. In Proceedings of the IEEE international confer-ence on computer vision , pages 873–881, 2015. 2, 3 [27] John E. Greivenkamp. Field Guide to Geometrical Optics .SPIE Press, 2004. 20 [28] Paul Hand, Choongbum Lee, and Vladislav Voroninski. Shapefit: Exact location recovery from corrupted pairwise directions. Communications on Pure and Applied Mathe-matics , 71(1):3–50, 2018. 3 [29] Richard Hartley and Andrew Zisserman. Multiple view geometry in computer vision . Cambridge university press, 2003. 2 [30] Eric Heitz. Understanding the masking–shadowing function in microfacet-based brdfs. Journal of Computer Graphics Techniques , 3(2):24–78, 2014. 20 [31] Qiming Hu and Xiaojie Guo. Single image reflection sep-aration via component synergy. In Proceedings of the IEEE/CVF international conference on computer vision ,pages 13138–13147, 2023. 18 [32] Qiming Hu, Hainuo Wang, and Xiaojie Guo. Single image reflection separation via dual-stream interactive transformers. 
+
+Advances in Neural Information Processing Systems , 37: 55228–55248, 2024. 18, 24 [33] Binbin Huang, Zehao Yu, Anpei Chen, Andreas Geiger, and Shenghua Gao. 2d gaussian splatting for geometrically ac-curate radiance fields. In ACM SIGGRAPH 2024 conference papers , pages 1–11, 2024. 2, 3, 7, 18 [34] David S. Immel, Michael F. Cohen, and Donald P. Green-berg. A radiosity method for non-diffuse environments. In 
+
+Proceedings of the 13th Annual Conference on Computer Graphics and Interactive Techniques , page 133–142, New York, NY, USA, 1986. Association for Computing Machin-ery. 20 [35] Henrik W. Jensen, Steve R. Marschner, Marc Levoy, and Pat Hanrahan. A practical model for subsurface light transport. In Proceedings of SIGGRAPH , pages 511–518, 2001. 21 [36] Rasmus Jensen, Anders Dahl, George Vogiatzis, Engin Tola, and Henrik Aanæs. Large scale multi-view stereopsis evalu-ation. In Proceedings of the IEEE conference on computer vision and pattern recognition , pages 406–413, 2014. 2 [37] Nianjuan Jiang, Zhaopeng Cui, and Ping Tan. A global linear method for camera pose registration. In Proceedings of the IEEE international conference on computer vision ,pages 481–488, 2013. 2 [38] Haian Jin, Isabella Liu, Peijia Xu, Xiaoshuai Zhang, Song-fang Han, Sai Bi, Xiaowei Zhou, Zexiang Xu, and Hao Su. Tensoir: Tensorial inverse rendering. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 165–174, 2023. 18 [39] Deane B Judd. Fresnel reflection of diffusely incident light. 1942. 20 [40] James T Kajiya. The rendering equation. In Proceedings of the 13th annual conference on Computer graphics and interactive techniques , pages 143–150, 1986. 20 [41] Bernhard Kerbl, Georgios Kopanas, Thomas Leimk ¨uhler, and George Drettakis. 3d gaussian splatting for real-time radiance field rendering. ACM Trans. Graph. , 42(4):139–1, 2023. 2, 3, 4, 7, 16, 18 [42] Arno Knapitsch, Jaesik Park, Qian-Yi Zhou, and Vladlen Koltun. Tanks and temples: Benchmarking large-scale scene reconstruction. ACM Transactions on Graphics , 36(4), 2017. 3, 5 [43] Paul Kubelka and Franz Munk. Ein beitrag zur optik der farbanstriche. Zeitschrift f ¨ur Technische Physik , 12:593–601, 1931. 21 [44] Chenyang Lei and Qifeng Chen. Robust reflection removal with reflection-free flash-only cues. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 14811–14820, 2021. 5 [45] Shanglin Li, Bohan Zeng, Yutang Feng, Sicheng Gao, Xi-uhui Liu, Jiaming Liu, Lin Li, Xu Tang, Yao Hu, Jianzhuang Liu, et al. Zone: Zero-shot instruction-guided local editing. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 6254–6263, 2024. 8, 23 [46] Zhengqi Li and Noah Snavely. Megadepth: Learning single-view depth prediction from internet photos. In Proceedings of the IEEE conference on computer vision and pattern recognition , pages 2041–2050, 2018. 7 [47] Yixun Liang, Xin Yang, Jiantao Lin, Haodong Li, Xiao-gang Xu, and Yingcong Chen. Luciddreamer: Towards high-fidelity text-to-3d generation via interval score matching. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 6517–6526, 2024. 8 [48] Zhihao Liang, Qi Zhang, Ying Feng, Ying Shan, and Kui Jia. Gs-ir: 3d gaussian splatting for inverse rendering. In 
+
+Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 21644–21653, 2024. 18, 24 [49] Philipp Lindenberger, Paul-Edouard Sarlin, and Marc Polle-feys. Lightglue: Local feature matching at light speed. In 
+
+10 Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 17627–17638, 2023. 7 [50] Minghua Liu, Ruoxi Shi, Linghao Chen, Zhuoyang Zhang, Chao Xu, Xinyue Wei, Hansheng Chen, Chong Zeng, Ji-ayuan Gu, and Hao Su. One-2-3-45++: Fast single image to 3d objects with consistent multi-view generation and 3d dif-fusion. In Proceedings of the IEEE/CVF conference on com-puter vision and pattern recognition , pages 10072–10083, 2024. 8, 22 [51] Yuan Liu, Peng Wang, Cheng Lin, Xiaoxiao Long, Jiepeng Wang, Lingjie Liu, Taku Komura, and Wenping Wang. Nero: Neural geometry and brdf reconstruction of reflective objects from multiview images. ACM Transactions on Graphics (ToG) , 42(4):1–22, 2023. 3, 5, 16 [52] David G Lowe. Distinctive image features from scale-invariant keypoints. International journal of computer vision ,60(2):91–110, 2004. 21 [53] Alexander I Lvovsky. Fresnel equations. Encyclopedia of Optical Engineering , 27:1–6, 2013. 20 [54] Zeyu Ma, Zachary Teed, and Jia Deng. Multiview stereo with cascaded epipolar raft. In European Conference on Computer Vision , pages 734–750. Springer, 2022. 2 [55] Hidenobu Matsuki, Riku Murai, Paul HJ Kelly, and An-drew J Davison. Gaussian splatting slam. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 18039–18048, 2024. 2, 3 [56] Ben Mildenhall, Pratul P Srinivasan, Matthew Tancik, Jonathan T Barron, Ravi Ramamoorthi, and Ren Ng. Nerf: Representing scenes as neural radiance fields for view syn-thesis. Communications of the ACM , 65(1):99–106, 2021. 2, 3, 24 [57] Thomas M ¨uller, Alex Evans, Christoph Schied, and Alexan-der Keller. Instant neural graphics primitives with a multires-olution hash encoding. ACM Trans. Graph. , 41(4):102:1– 102:15, 2022. 7 [58] Thomas M ¨uller, Alex Evans, Christoph Schied, and Alexan-der Keller. Instant neural graphics primitives with a mul-tiresolution hash encoding. ACM transactions on graphics (TOG) , 41(4):1–15, 2022. 2, 3, 17, 18 [59] Jacob Munkberg, Jon Hasselgren, Tianchang Shen, Jun Gao, Wenzheng Chen, Alex Evans, Thomas M ¨uller, and Sanja Fi-dler. Extracting triangular 3d models, materials, and lighting from images. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 8280– 8290, 2022. 18, 24 [60] Thomas M ¨uller, Alex Evans, Christoph Schied, and Alexan-der Keller. Instant neural graphics primitives with a mul-tiresolution hash encoding. ACM Transactions on Graphics ,41(4):1–15, 2022. TLDR: A versatile new input encoding that permits the use of a smaller network without sacrificing quality, thus significantly reducing the number of floating point and memory access operations is introduced, enabling training of high-quality neural graphics primitives in a mat-ter of seconds, and rendering in tens of milliseconds at a resolution of 1920×1080. 4 [61] Hyelin Nam, Gihyun Kwon, Geon Yeong Park, and Jong Chul Ye. Contrastive denoising score for text-guided latent diffusion image editing. In Proceedings of the IEEE/CVF conference on computer vision and pattern recog-nition , pages 9192–9201, 2024. 8, 23 [62] Pauline C Ng and Steven Henikoff. Sift: Predicting amino acid changes that affect protein function. Nucleic acids research , 31(13):3812–3814, 2003. 2 [63] Michael Oechsle, Songyou Peng, and Andreas Geiger. Unisurf: Unifying neural implicit surfaces and radiance fields for multi-view reconstruction. In Proceedings of the IEEE/CVF international conference on computer vision ,pages 5589–5599, 2021. 2, 3, 16 [64] Geoffrey Oxholm and Ko Nishino. Multiview shape and reflectance from natural illumination. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recogni-tion , pages 2155–2162, 2014. 3, 5 [65] Onur Ozyesil and Amit Singer. Robust camera location esti-mation by convex programming. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition ,pages 2674–2683, 2015. 3 [66] Ben Poole, Ajay Jain, Jonathan T Barron, and Ben Milden-hall. Dreamfusion: Text-to-3d using 2d diffusion. arXiv preprint arXiv:2209.14988 , 2022. 8, 22 [67] Nikhila Ravi, Valentin Gabeur, Yuan-Ting Hu, Ronghang Hu, Chaitanya Ryali, Tengyu Ma, Haitham Khedr, Roman R ¨adle, Chloe Rolland, Laura Gustafson, et al. Sam 2: Segment anything in images and videos. arXiv preprint arXiv:2408.00714 , 2024. 6, 16 [68] Jeremy et al. Reizenstein. Common objects in 3d: Large-scale learning and evaluation of real-life 3d category recon-struction. In ICCV , 2021. 2 [69] Elad Richardson, Gal Metzer, Yuval Alaluf, Raja Giryes, and Daniel Cohen-Or. Texture: Text-guided texturing of 3d shapes. In ACM SIGGRAPH 2023 conference proceedings ,pages 1–11, 2023. 8, 22 [70] Ethan Rublee, Vincent Rabaud, Kurt Konolige, and Gary Bradski. Orb: An efficient alternative to sift or surf. In 
+
+2011 International conference on computer vision , pages 2564–2571. Ieee, 2011. 2 [71] Paul-Edouard Sarlin, Daniel DeTone, Tomasz Malisiewicz, and Andrew Rabinovich. Superglue: Learning feature match-ing with graph neural networks. In Proceedings of the IEEE/CVF conference on computer vision and pattern recog-nition , pages 4938–4947, 2020. 7 [72] Johannes L Sch ¨onberger, Enliang Zheng, Jan-Michael Frahm, and Marc Pollefeys. Pixelwise view selection for unstructured multi-view stereo. In Computer Vision–ECCV 2016: 14th European Conference, Amsterdam, The Nether-lands, October 11-14, 2016, Proceedings, Part III 14 , pages 501–518. Springer, 2016. 3 [73] Jian Shi, Yue Dong, Hao Su, and Stella X Yu. Learning non-lambertian object intrinsics across shapenet categories. In Proceedings of the IEEE conference on computer vision and pattern recognition , pages 1685–1694, 2017. 3, 5 [74] Xincheng Shuai, Henghui Ding, Xingjun Ma, Rongcheng Tu, Yu-Gang Jiang, and Dacheng Tao. A survey of multimodal-guided image editing with text-to-image diffusion models. 
+
+arXiv preprint arXiv:2406.14555 , 2024. 8 
+
+11 [75] Noah Snavely, Steven M Seitz, and Richard Szeliski. Photo tourism: exploring photo collections in 3d. In ACM siggraph 2006 papers , pages 835–846. 2006. 3, 16 [76] Cheng Sun, Min Sun, and Hwann-Tzong Chen. Direct voxel grid optimization: Super-fast convergence for radiance fields reconstruction. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 5459– 5469, 2022. 2, 3 [77] Jiaming Sun, Zehong Shen, Yuang Wang, Hujun Bao, and Xiaowei Zhou. Loftr: Detector-free local feature matching with transformers. In Proceedings of the IEEE/CVF con-ference on computer vision and pattern recognition , pages 8922–8931, 2021. 2, 16 [78] Jiaming Sun, Zehong Shen, Yuang Wang, Hujun Bao, and Xiaowei Zhou. Loftr: Detector-free local feature matching with transformers. In Proceedings of the IEEE/CVF con-ference on computer vision and pattern recognition , pages 8922–8931, 2021. 4, 7 [79] Matthew Tancik, Ethan Weber, Evonne Ng, Ruilong Li, Brent Yi, Terrance Wang, Alexander Kristoffersen, Jake Austin, Kamyar Salahi, Abhik Ahuja, et al. Nerfstudio: A modular framework for neural radiance field development. In ACM SIGGRAPH 2023 conference proceedings , pages 1–12, 2023. 7, 18 [80] Qwen Team. Qwen3 technical report, 2025. 8, 22 [81] Tencent Hunyuan3D Team. Hunyuan3d 2.1: From images to high-fidelity 3d assets with production-ready pbr material, 2025. 8, 15 [82] Jonathan Tremblay, Moustafa Meshry, Alex Evans, Jan Kautz, Alexander Keller, Sameh Khamis, Thomas M ¨uller, Charles Loop, Nathan Morrical, Koki Nagano, et al. Rtmv: A ray-traced multi-view synthetic dataset for novel view synthesis. arXiv preprint arXiv:2205.07058 , 2022. 3, 5 [83] TS Trowbridge and Karl P Reitz. Average irregularity rep-resentation of a rough surface for ray reflection. Journal of the optical society of America , 65(5):531–536, 1975. 20 [84] Matias Turkulainen. Ags-mesh: Adaptive gaussian splatting and meshing with geometric priors for indoor room recon-struction using smartphones. In International Conference on 3D Vision , 2025. 2, 3 [85] Michał Tyszkiewicz, Pascal Fua, and Eduard Trulls. Disk: Learning local features with policy gradient. Advances in Neural Information Processing Systems , 33:14254–14265, 2020. 2 [86] Bruce Walter, Steve Marschner, Hongsong Li, and Kenneth Torrance. Microfacet models for refraction through rough surfaces. In Eurographics Symposium on Rendering , pages 195–206, 2007. 20 [87] Renjie Wan, Boxin Shi, Ling-Yu Duan, Ah-Hwee Tan, and Alex C. Kot. Benchmarking single-image reflection removal algorithms. In International Conference on Computer Vision (ICCV) , 2017. 5 [88] Renjie Wan, Boxin Shi, Haoliang Li, Yucheng Hong, Ling-Yu Duan, and Alex C. Kot. Benchmarking single-image reflection removal algorithms. In IEEE Transacations on Pattern Analysis and Machine Intelligence , 2022. 5 [89] Shuzhe Wang, Vincent Leroy, Yohann Cabon, Boris Chidlovskii, and Jerome Revaud. Dust3r: Geometric 3d vision made easy. In Proceedings of the IEEE/CVF Confer-ence on Computer Vision and Pattern Recognition , pages 20697–20709, 2024. 4 [90] Tianfu Wang, Mingyang Xie, Haoming Cai, Sachin Shah, and Christopher A Metzler. Flash-split: 2d reflection re-moval with flash cues and latent diffusion separation. In 
+
+Proceedings of the Computer Vision and Pattern Recognition Conference , pages 5688–5698, 2025. 5, 16 [91] Yiming Wang, Qin Han, Marc Habermann, Kostas Dani-ilidis, Christian Theobalt, and Lingjie Liu. Neus2: Fast learning of neural implicit surfaces for multi-view recon-struction. In Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 3295–3306, 2023. 7, 18 [92] Yuesong Wang, Zhaojie Zeng, Tao Guan, Wei Yang, Zhuo Chen, Wenkai Liu, Luoyuan Xu, and Yawei Luo. Adaptive patch deformation for textureless-resilient multi-view stereo. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 1621–1630, 2023. 2, 3 [93] Yifan Wang, Xingyi He, Sida Peng, Dongli Tan, and Xiaowei Zhou. Efficient loftr: Semi-dense local feature matching with sparse-like speed. In Proceedings of the IEEE/CVF confer-ence on computer vision and pattern recognition , pages 21666–21675, 2024. 4, 7, 15, 17 [94] Kaixuan Wei, Jiaolong Yang, Ying Fu, David Wipf, and Hua Huang. Single image reflection removal exploiting misaligned training data and network enhancements. In 
+
+Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 8178–8187, 2019. 18 [95] Kyle Wilson and Noah Snavely. Network principles for sfm: Disambiguating repeated structures with local context. In Proceedings of the IEEE International Conference on Computer Vision , pages 513–520, 2013. 3 [96] Kyle Wilson and Noah Snavely. Robust global translations with 1dsfm. In European conference on computer vision ,pages 61–75. Springer, 2014. 3 [97] Tianqi Wu, Yujing Li, Xiangyu Zhang, et al. Mvimgnet: A large-scale multi-view image dataset for 3d object recogni-tion. In CVPR , 2023. 2 [98] Jianfeng Xiang, Zelong Lv, Sicheng Xu, Yu Deng, Ruicheng Wang, Bowen Zhang, Dong Chen, Xin Tong, and Jiaolong Yang. Structured 3d latents for scalable and versatile 3d generation. In Proceedings of the Computer Vision and Pattern Recognition Conference , pages 21469–21480, 2025. 8[99] Jianing Yang, Alexander Sax, Kevin J Liang, Mikael Henaff, Hao Tang, Ang Cao, Joyce Chai, Franziska Meier, and Matt Feiszli. Fast3r: Towards 3d reconstruction of 1000+ images in one forward pass. arXiv preprint arXiv:2501.13928 , 2025. 4[100] Yao Yao, Zixin Luo, Shiwei Li, Jingyang Zhang, Yufan Ren, Lei Zhou, Tian Fang, and Long Quan. Blendedmvs: A large-scale dataset for generalized multi-view stereo networks. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 1790–1799, 2020. 3, 5 [101] Chongjie Ye, Lingteng Qiu, Xiaodong Gu, Qi Zuo, Yushuang Wu, Zilong Dong, Liefeng Bo, Yuliang Xiu, and 
+
+12 Xiaoguang Han. Stablenormal: Reducing diffusion variance for stable and sharp normal. ACM Transactions on Graphics (TOG) , 43(6):1–18, 2024. 5, 16 [102] Chongjie Ye, Yushuang Wu, Ziteng Lu, Jiahao Chang, Xi-aoyang Guo, Jiaqing Zhou, Hao Zhao, and Xiaoguang Han. Hi3dgen: High-fidelity 3d geometry generation from images via normal bridging. arXiv preprint arXiv:2503.22236 , 3, 2025. 5, 8, 15, 16, 22 [103] Junliang Ye, Fangfu Liu, Qixiu Li, Zhengyi Wang, Yikai Wang, Xinzhou Wang, Yueqi Duan, and Jun Zhu. Dream-reward: Text-to-3d generation with human preference. In 
+
+European Conference on Computer Vision , pages 259–276. Springer, 2024. 8 [104] Xinyi Ye, Weiyue Zhao, Tianqi Liu, Zihao Huang, Zhiguo Cao, and Xin Li. Constraining depth map geometry for multi-view stereo: A dual-depth approach with saddle-shaped depth cells. In Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 17661–17670, 2023. 3, 16 [105] Xin Yu, Yuan-Chen Guo, Yangguang Li, Ding Liang, Song-Hai Zhang, and Xiaojuan Qi. Text-to-3d with classifier score distillation. arXiv preprint arXiv:2310.19415 , 2023. 8, 22 [106] Zehao Yu, Anpei Chen, Binbin Huang, Torsten Sattler, and Andreas Geiger. Mip-splatting: Alias-free 3d gaussian splat-ting. In Proceedings of the IEEE/CVF Conference on Com-puter Vision and Pattern Recognition (CVPR) , pages 19447– 19456, 2024. 2, 3 [107] Xianfang Zeng, Xin Chen, Zhongqi Qi, Wen Liu, Zibo Zhao, Zhibin Wang, Bin Fu, Yong Liu, and Gang Yu. Paint3d: Paint anything 3d with lighting-less texture diffusion models. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 4252–4262, 2024. 8 [108] Kai Zhang, Fujun Luan, Qianqian Wang, Kavita Bala, and Noah Snavely. Physg: Inverse rendering with spherical gaus-sians for physics-based material editing and relighting. In 
+
+Proceedings of the IEEE/CVF conference on computer vi-sion and pattern recognition , pages 5453–5462, 2021. 24 [109] Xiuming Zhang, Pratul P Srinivasan, Boyang Deng, Paul Debevec, William T Freeman, and Jonathan T Barron. Ner-factor: Neural factorization of shape and reflectance under an unknown illumination. ACM Transactions on Graphics (ToG) , 40(6):1–18, 2021. 24 [110] Junsheng Zhou, Weiqi Zhang, and Yu-Shen Liu. Diffgs: Functional gaussian splatting diffusion. Advances in Neural Information Processing Systems , 37:37535–37560, 2024. 2, 3[111] Yurui Zhu, Xueyang Fu, Peng-Tao Jiang, Hao Zhang, Qibin Sun, Jinwei Chen, Zheng-Jun Zha, and Bo Li. Revisiting sin-gle image reflection removal in the wild. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 25468–25478, 2024. 5, 18, 24 
+
+13 A. Instance Breakdown 15 B. Near-Field Illumination 15 C. Assets Generation using 2D image 15 D. Image Matching 15 E. Detailed Surface Reconstruction Results 15 F. Highlight and Specular Reflection Removal 15 
+
+F.1. Preliminary . . . . . . . . . . . . . . . . . . 15 F.2 . Evaluation of Reflection Removal on 3DReflecNet . . . . . . . . . . . . . . . . 17 
+
+G. Evaluation of NVS and Surface Reconstruction on Real-World Captures 18 H. Relighting 18 I . Detailed Analysis of Material Parameter Impact 18 J. A Physically-Based Analysis of Failure Modes in Multi-View 3D Reconstruction 19 
+
+J.1 . The Physics of Image Formation: A Ground-Truth Model . . . . . . . . . . . . . . . . . 19 J.2 . Light Behavior with Complex Materials . . . 20 J.2.1 . Fresnel Reflectance and Refraction . 20 J.2.2 . Microfacet BRDF for Specular Re-flection . . . . . . . . . . . . . . . 20 J.3 . BTDF for Transmission . . . . . . . . . . . 20 J.4 . Diffuse Scattering and Absorption . . . . . . 21 J.5 . Foundational Assumptions in Multi-View Re-construction . . . . . . . . . . . . . . . . . 21 J.5.1 . The Assumption of Photometric Con-sistency in MVS . . . . . . . . . . 21 J.5.2 . The Assumption of Feature Corre-spondence in SfM . . . . . . . . . 21 J.5.3 . The Assumption of Linear Light Prop-agation in Epipolar Geometry . . . 21 J.6 . Conclusion and Future Directions. . . . . . . 22 
+
+K. Annotations for Generative 3D Vision Tasks 22 
+
+K.1. Annotation Methodology . . . . . . . . . . . 22 K.2. Annotation Format . . . . . . . . . . . . . . 22 K.3. Annotation Examples . . . . . . . . . . . . . 22 K.4. Integration with Generation Pipelines . . . . 22 K.4.1. Text-to-3D Generation . . . . . . . . 22 K.4.2. Text-to-Texture Synthesis . . . . . . 22 K.4.3. Image-to-3D Reconstruction . . . . . 22 K.4.4. Image Editing and Manipulation . . 23 K.5. Annotation Statistics . . . . . . . . . . . . . 24 
+
+L. Related Works 24 
+
+L.1. Specular Highlight & Reflection Removal . . 24 L.2. Relighting . . . . . . . . . . . . . . . . . . 24 
+
+M. More Qualitative Examples 25 
+
+14 w/o  local  illumination  w/ local  illumination Figure 13. Synthetic Enhancement for Indoor Scenes. Top: Local illumination with finite-distance lights. Bottom: Standard infinite-distance HDRI. 
+
+## A. Instance Breakdown 
+
+To support various downstream tasks, we provide different types of ground truth data to serve as supervised labels. For each synthesis instance, we provide: • 50 views RGB PNG images of 1, 000 × 1, 000 resolution • corresponding depth images in exr format • corresponding normals images in exr format for high pre-cision training • corresponding mask images • point cloud file • Camera internal/external parameters • Physically-based rendering file (in format of .blend). For each real-world instance, we provide: • >60 views RGB PNG images of 1920 × 1080 (or 3840 ×
+
+2160 ) resolution • corresponding mask images • point cloud file • Camera internal/external parameters The design of the instance breakdown can serve different downstream tasks as summarized in Table 6. 
+
+## B. Near-Field Illumination 
+
+While standard HDRI environment maps assume illumina-tion from infinity, they could fail to capture the spatial varia-tions of indoor lighting. To enhance realism, we augment the global environment map with near-field lighting, explicitly simulating local effects by positioning one or two finite-distance point lights on the upper hemisphere. (Figure 13). 
+
+## C. Assets Generation using 2D image 
+
+We generated 3D objects from a dataset of over 5K high-quality real-world captures and synthetic images, using either Hunyuan3D-2.1 [ 81 ] or Stable3DGen [ 102 ]. The generation process used 50 inference steps and an octree resolution of 320. The resulting objects have an average size of ∼ 52 Mb and an average of ∼ 25 K vertices. We then performed a manual quality check on the gen-erated assets. While many models, like the electric fan in Figure 14 (left), accurately reproduce the source object’s structure, some fail to represent the intended shape faithfully, such as the shoe example in Figure 14 (right). We filtered out these suboptimal results, retaining a final dataset of over 20K high-quality shapes. Figure 26 shows more examples of these selected shapes and materials. Finally, Figure 27 show-cases the realistic light reflection behavior on a generated steel asset under various lighting conditions. 
+
+## D. Image Matching 
+
+We provide additional details on the image matching task. Current methods often struggle to deliver satisfactory image matching accuracy for reflective, transparent, or low-texture objects under varying viewpoints, due to their complex and view-dependent appearance characteristics. Figure 15 show cases Eloftr [ 93 ] performance under these challenging cases. We also provide quantitative results on our real-world cap-tures. For this, we sampled 100 instances to benchmark the performance of several SOTA image matching methods, with results presented in Table 7. The overall modest scores shown in Table 7, with the top-performing method only achieving 59.5 at AUC@20°, indicate that robustly matching our real-world instances of challenging materials remains a significant and unsolved problem. 
+
+## E. Detailed Surface Reconstruction Results 
+
+We provide a detailed quantitative comparison of surface reconstruction baselines in Table 8. The results are broken down by our five main material categories to show how performance varies with material complexity. All methods, including 2DGS, exhibit a clear perfor-mance degradation as material complexity increases. The best results are achieved on Diffuse materials, followed by a noticeable drop on Glossy surfaces, and a severe drop on Metallic and Transparent materials. The failure of methods like PGSR and Instant-NGP is particularly evident in the Hausdorff distance, which explodes on non-Lambertian ma-terials, indicating a catastrophic failure to reconstruct large parts of the geometry. 
+
+## F. Highlight and Specular Reflection Removal 
+
+F.1. Preliminary 
+
+Highlight removal and specular reflection removal address different types of image artifacts caused by light interactions with surfaces and transparent media. Both problems can be formally described using simplified physical models. Highlight removal focuses on separating the observed image intensity I into its diffuse and specular components: 
+
+I = Id + Is (1) 15 Table 6. Overview of dataset composition and supported downstream applications. 
+
+Design Task Normals Normal Estimation [101, 102]; Surface Reconstruction [41, 63] Depths Depths Estimation [104] Masks Segmentation [67], Detection [17] (non-)Uniform Lighting Inverse rendering [51], Highlight Reflection Removal [19, 24] Multi-view Renderings Image Matching [21, 77], Structure from Motion [75], 3D Reconstruction [41] w/ (w/o) Glass Reflection Specular Reflection Removal [90] Input Image Output Normal Output 3D Model Input Image Output Normal Output 3D Model 
+
+Figure 14. Qualitative Results of 3D Generated Models with Various Materials and Environment Maps. This figure showcases generated models with diverse materials under different lighting. The instance on the left demonstrates a high-quality shape, while the instance on the right shows a failure case that was filtered from our final dataset. Table 7. Evaluation of Image Matching on Real-World Capture                         
+
+> Method AUC@5° ↑AUC@10° ↑AUC@20° ↑
+> SuperPoint+ NN 23.9 33.8 41.2 SuperPoint + SuperGlue 26.2 43.1 51.3 SuperPoint+ LightGlue 25.8 43.5 51.9 LoFTR 27.1 45.9 50.8 AspanFormer 28.3 47.2 51.2 ELoFtr 28.5 47.1 53.7 ROMA 34.3 49.9 59.5
+
+where Id denotes the diffuse component and Is the specular component. The diffuse component originates from subsur-face scattering and re-emission of light, while the specular component arises from direct reflection of incident light. The magnitude and spatial distribution of Is depend on surface properties such as roughness and material type. In contrast, specular reflection removal addresses images captured through transparent media, such as glass. In such cases, the observed image I is a mixture of a transmission layer It and a reflection layer Ir :
+
+I = It + Ir (2) Here, It corresponds to the scene visible through the trans-parent surface, often degraded by refraction and absorption, while Ir results from light reflected off the surface of the medium. These components are often modeled as: 
+
+It = αI T (3) 
+
+Ir = β(IR ∗ k) (4) 16 Figure 15. Qualitative results on Efficient Loftr [93] on reflective, transparent Materials. Table 8. Detailed quantitative comparison of surface reconstruction methods on the 3DReflecNet dataset, broken down by material category. ‘NGP’ refers to Instant-NGP [58]                                                                                                             
+
+> Diffuse Transparent Metallic Glossy-Textured Glossy-Low-Texture Metric 2DGS NGP Neus2 PGSR 2DGS NGP Neus2 PGSR 2DGS NGP Neus2 PGSR 2DGS NGP Neus2 PGSR 2DGS NGP Neus2 PGSR Hausdorff ↓0.303 1.119 0.872 0.483 2.347 3.214 2.982 6.842 1.862 2.873 2.641 5.923 1.053 1.924 1.632 4.102 1.248 2.105 1.824 4.876 PSNR ↑35.32 32.96 33.55 34.06 22.76 20.04 21.65 17.95 26.41 23.58 24.22 19.84 31.05 28.10 29.32 24.32 29.87 26.84 27.91 22.10 SSIM ↑0.960 0.941 0.949 0.954 0.811 0.762 0.789 0.742 0.867 0.821 0.834 0.772 0.928 0.885 0.902 0.821 0.912 0.863 0.884 0.795 LPIPS ↓0.070 0.098 0.087 0.088 0.190 0.253 0.218 0.347 0.188 0.242 0.212 0.328 0.121 0.179 0.148 0.256 0.138 0.192 0.167 0.284
+
+where IT and IR denote the original transmission and reflec-tion images, respectively; α and β are weighting coefficients; and k is a degradation kernel accounting for blurring or dis-tortion introduced by the reflective surface. While both tasks involve decomposing a mixed image into multiple layers, they differ in their physical assumptions and application contexts. Highlight removal targets localized reflections on opaque surfaces, whereas specular reflection removal addresses global reflections through transparent materials. Removing specular highlights and reflections en-hances image - matching accuracy and, in turn, improves the final 3D reconstruction. 
+
+F.2. Evaluation of Reflection Removal on 3DReflecNet 
+
+We evaluated four state-of-the-art reflection removal base-lines on the 3DReflecNet dataset. For this experiment, we uniformly sampled 1,000 images, applying each method and reporting the average PSNR and SSIM against the ground truth transmission layer. The quantitative results are pre-sented in Table 9. The results in Table 9 show a clear performance trend, with DSIT achieving the best results (24.07 PSNR / 0.795 SSIM), followed by RRW and DSRNet. These modest scores are 17 Table 9. Quantitative comparison of reflection removal baselines on 1,000 images from the 3DReflecNet dataset. Higher is better for both metrics.             
+
+> Metrics ERRNet [94] DSRNet [31] RRW [111] DSIT [32] PSNR ( ↑)19.49 22.92 23.11 24.07 SSIM ( ↑)0.701 0.782 0.791 0.795
+
+comparable to those reported on other challenging real-world datasets. This consistency validates that our experimental setup is effective and that 3DReflecNet serves as a challeng-ing and physically-realistic benchmark. 
+
+## G. Evaluation of NVS and Surface Reconstruc-tion on Real-World Captures 
+
+To validate the challenges of our dataset, we benchmarked SOTA methods on our real-world captures. The following tables present the performance for Novel View Synthesis (NVS) and Surface Reconstruction tasks.  
+
+> Table 10. Novel View Synthesis performance on the real-world dataset. Metrics: PSNR ↑(LPIPS ↓)
+
+Method Real-world Dataset 
+
+Instant-NGP [58] 28.12 (0.025) 3DGS [41] 30.99 (0.020) Splatfacto [79] 32.07 (0.020) 2DGS [33] 33.16 (0.021) 
+
+NVS Analysis. The NVS results on our real-world data in Table 10 show a clear performance hierarchy, with 2DGS (33.16 PSNR) performing best, followed by Splatfacto (32.07 PSNR). The NeRF-based Instant-NGP (28.12 PSNR) lags significantly behind the Gaussian Splatting methods. These scores, which are lower than those for the synthetic Diffuse category, confirm that our real-world captures, with their complex materials and lighting, pose a significant chal-lenge. 
+
+> Table 11. Surface Reconstruction performance on the real-world dataset. Metric: Chamfer Distance ( ↓). Lower is better.
+
+Method Real-World Dataset 
+
+Instant-NGP [58] 0.139 Neus2 [91] 0.132 2DGS [33] 0.105 PGSR [6] 0.207 
+
+Surface Reconstruction Analysis. The surface reconstruc-tion results in Table 11 highlight the significant challenge our real-world dataset poses for all tested methods. The results demonstrates the similar phenomenon to those on the synthetic dataset, indicating that the SOTA methods, de-signed for simple Lambertian surfaces, are not robust to the complex, non-Lambertian challenges our dataset exposes. 
+
+## H. Relighting 
+
+We evaluated four SOTA relighting methods on the 3DReflecNet dataset. These methods are designed to de-compose materials into their intrinsic properties (albedo, roughness, etc.) to allow for rendering under novel light-ing conditions. We report the average PSNR and SSIM for novel-light rendering against the ground-truth images.             
+
+> Table 12. Quantitative comparison of SOTA relighting baselines on the 3DReflecNet dataset.
+> Metrics GS-IR [48] GI-GS [9] NVDiffrec [59] TensoIR [38] PSNR 19.32 20.02 16.98 23.39 SSIM 0.812 0.826 0.795 0.874
+
+The results in Table 12 show that TensoIR achieves the best performance among the baselines, with a PSNR of 23.39. The other Gaussian-based methods, GI-GS and GS-IR, per-form moderately, while NVDiffrec struggles significantly. However, the modest scores of all methods, with the top per-former failing to exceed 24 dB PSNR, confirm the findings from our main paper: the complex, non-Lambertian materi-als in 3DReflecNet pose a significant challenge for current SOTA relighting techniques. We thus believe our large-scale dataset of physically-based assets will be a valuable resource for driving future research in this area. 
+
+## I. Detailed Analysis of Material Parameter Im-pact 
+
+To provide a comprehensive visual reference for the param-eter sweep analyzed in the main text, Figure 22 presents the rendered appearance of all 48 unique material configu-rations tested in our experiments. The 48 combinations are structured into three distinct physical categories. Each cate-gory contains 16 variations derived from a 4x4 grid spanning Roughness (0.0, 0.3, 0.6, 0.9) and IOR (1.0, 1.3, 1.6, 1.9): • Opaque Non-Metals (Dielectrics): (Metallic=0, Transmis-sion=0). 16 combinations. • Opaque Metals (Conductors): (Metallic=1, Transmis-sion=0). 16 combinations. • Transparent Non-Metals (Dielectrics): (Metallic=0, Trans-mission=1). 16 combinations. The physically implausible combination of (Metallic=1, Transmission=1) was excluded, resulting in the 48 total test cases. This figure allows for a direct visual correlation be-tween a material’s appearance and its corresponding recon-struction quality shown in the main paper’s analysis. 18 0.0 0.3 0.6 0.9                                           
+
+> Roughness (r)
+> 1.0 1.3 1.6 1.9
+> IOR (i)
+> 26.74 29.23 33.23 34.14
+> 24.83 28.39 33.39 34.34
+> 23.81 27.83 33.49 34.44
+> 23.16 27.47 33.65 34.68
+> 0.0 0.3 0.6 0.9
+> Roughness (r)
+> 1.0 1.3 1.6 1.9
+> IOR (i)
+> 0.90 0.94 0.97 0.97
+> 0.89 0.94 0.97 0.97
+> 0.88 0.94 0.97 0.98
+> 0.87 0.93 0.97 0.98
+> 0.0 0.3 0.6 0.9
+> Roughness (r)
+> 1.0 1.3 1.6 1.9
+> IOR (i)
+> 0.08 0.06 0.04 0.04
+> 0.08 0.06 0.04 0.04
+> 0.09 0.06 0.04 0.04
+> 0.10 0.07 0.04 0.04
+> 24
+> 26
+> 28
+> 30
+> 32
+> 34
+> PSNR
+> 0.88
+> 0.90
+> 0.92
+> 0.94
+> 0.96
+> SSIM
+> 0.04
+> 0.05
+> 0.06
+> 0.07
+> 0.08
+> 0.09
+> LPIPS
+
+Figure 16. Detailed Impact of Roughness and IOR on Reconstruc-tion Quality for Opaque, Non-Metallic Materials. 
+
+The heatmaps in Figure 16 provide a granular analysis of the 16 parameter combinations for opaque, non-metallic materials (Metallic=0, Transmission=0). The three heatmaps plot reconstruction quality metrics against Roughness (x-axis) and Index of Refraction (y-axis). This analysis reveals two key insights: 
+
+Roughness is the Dominant Factor for Opaque, Non-Metallic Materials. A strong, consistent trend is visible across all three metrics: reconstruction quality fails catas-trophically at low roughness and improves dramatically as roughness increases. At Roughness=0.0, PSNR values are poor, clustering in the 23-27 dB range. As roughness in-creases to 0.9, the PSNR values improve significantly to the 34-35 dB range. This confirms the hypothesis from the main text: smooth, low-texture surfaces starve the 3DGS algorithm of the high-frequency features needed for multi-view correspondence. As roughness increases, the material’s microsurface scatters light more diffusely, which effectively acts as a high-frequency texture that the algorithm can suc-cessfully use for matching, drastically reducing failure. 
+
+IOR has a Minimal Effect in Opaque, Non-Metallic Cases. In contrast to the strong influence of roughness, the IOR has a very weak, almost negligible, impact on recon-struction quality. For a non-metallic, opaque material, the IOR’s primary physical effect is controlling the intensity of specular reflections (the Fresnel effect). Across all metrics, the vertical columns in the heatmaps are nearly uniform in color. For example, at a Roughness of 0.3, the PSNR only varies from 27.47 to 29.23 (a < 2 dB difference) as IOR spans its entire 1.0-1.9 range. At high Roughness=0.9, the IOR has virtually no impact, with PSNR remaining static be-tween 34.14 and 34.68. This is because the high roughness diffuses all reflections, rendering the IOR-driven Fresnel effect imperceptible. This detailed breakdown confirms that the reconstruction failures in this subset are driven almost entirely by the lack of geometric features on smooth surfaces, not by the view-dependent reflectivity introduced by IOR. This stands in stark contrast to the transparent and metallic cases, where reflectivity and refraction are the primary causes of failure. 
+
+Analysis of Binary Parameter Effects (Metal & Transpar-ent). While the heatmaps analyze the non-metallic, opaque subset, Figure 17 analyzes the aggregated impact of the Non-metal (0) Metal (1)      
+
+> Metal Parameter
+> 17.5
+> 20.0
+> 22.5
+> 25.0
+> 27.5
+> 30.0
+> 32.5
+> 35.0
+> PSNR
+> Effect of Metal on PSNR
+> Non-metal (0) Metal (1)
+> Metal Parameter
+> 0.800
+> 0.825
+> 0.850
+> 0.875
+> 0.900
+> 0.925
+> 0.950
+> 0.975
+> SSIM
+> Effect of Metal on SSIM
+> Non-metal (0) Metal (1)
+> Metal Parameter
+> 0.04
+> 0.06
+> 0.08
+> 0.10
+> 0.12
+> LPIPS
+> Effect of Metal on LPIPS
+> Opaque (0) Transparent (1)
+> Transparent Parameter
+> 17.5
+> 20.0
+> 22.5
+> 25.0
+> 27.5
+> 30.0
+> 32.5
+> 35.0
+> PSNR
+> Effect of Transparent on PSNR
+> Opaque (0) Transparent (1)
+> Transparent Parameter
+> 0.800
+> 0.825
+> 0.850
+> 0.875
+> 0.900
+> 0.925
+> 0.950
+> 0.975
+> SSIM
+> Effect of Transparent on SSIM
+> Opaque (0) Transparent (1)
+> Transparent Parameter
+> 0.04
+> 0.06
+> 0.08
+> 0.10
+> 0.12
+> LPIPS
+> Effect of Transparent on LPIPS
+
+Figure 17. Comparative analysis of reconstruction quality for metal-lic vs. non-metallic and transparent vs. opaque materials. The box plots show the distribution of PSNR, SSIM, and LPIPS results when aggregating all other material variations. 
+
+binary ‘Metal’ and ‘Transparent’ parameters across all 48 configurations. 
+
+Metallic materials cause significant pixel-wise failure. 
+
+Setting ‘Metal=1’ has a severe negative impact on recon-struction quality, causing a dramatic drop in median PSNR (from 33 dB to 25 dB) and SSIM (from 0.96 to 0.91).In-terestingly, this degradation is not reflected in the perceptual LPIPS metric, where the median error for metallic objects ( 0.062) is slightly better than for non-metallic ones ( 0.064). 
+
+Transparent materials consistently degrade all metrics. 
+
+Transparency (‘Transparent=1’) is a more consistent failure case, degrading performance across all metrics. It causes a clear drop in median PSNR (from 30 dB to 28 dB) and SSIM (from 0.95 to 0.92). This negative effect is most pro-nounced in the perceptual LPIPS metric, where the median error for transparent objects ( 0.08) is significantly worse than for opaque objects ( 0.05). 
+
+## J . A Physically-Based Analysis of Failure Modes in Multi-View 3D Reconstruction 
+
+J.1. The Physics of Image Formation: A Ground-Truth Model 
+
+To comprehend why certain algorithms fail, one must first establish a ground-truth model of the physical process they attempt to approximate. In computer graphics and physics, the interaction of light with surfaces is meticulously de-scribed by the principles of radiometry and physically based rendering. This section establishes a comprehensive and mathematically rigorous model of image formation, which will serve as the physical reality against which the simplified models used in computer vision are compared and critiqued. 19 Formulate Light in Equilibrium. The cornerstone of physically based rendering is the Rendering Equation, an integral equation independently introduced by Immel et al.,[ 34 ] and Kajiya et al.,[ 40 ] in 1986. It provides a com-plete and elegant description of the equilibrium state of light transport in a scene, defining the amount of light leaving any given point on a surface in any given direction. The equation is a statement of energy conservation, asserting that the total light leaving a point is the sum of the light it emits and the light it reflects from all other sources in the environment. Its canonical form is expressed as: 
+
+Lo(x, ω o) = Le(x, ω o)+ 
+
+Z
+
+> Ω
+
+fr (x, ω i, ω o)Li(x, ω i)( n·ωi)dω i
+
+(5) Each component of this equation has a precise physical meaning: • Lo(x, ω o): The outgoing radiance from a point x on a surface in a specific direction ωo. Radiance is the radio-metric quantity of light energy per unit solid angle per unit projected area, and it is what a camera sensor ultimately measures to form an image. • Le(x, ω o): The emitted radiance from point x in direction 
+
+ωo. This term is non-zero only for surfaces that are light sources themselves. For most objects in a scene, this term is zero. • R
+
+> Ω
+
+: An integral over the unit hemisphere Ω oriented around the surface normal n at point x. This signifies that to cal-culate the total reflected light, one must account for all possible incoming light directions from the entire hemi-sphere above the surface. • fr (x, ω i, ω o): The Bidirectional Reflectance Distribution Function (BRDF). This function is the heart of material appearance, defining the ratio of reflected radiance in the outgoing direction ωo to the incident irradiance from an incoming direction ωi.It mathematically describes the in-trinsic reflective properties of the material at point x.• Li(x, ω i): The incident radiance arriving at point x from direction ωi. This term is what makes the Rendering Equa-tion a global and recursive construct. The light arriving at point x is simply the outgoing light, Lo, from some other point in the scene that is visible from x along the direction 
+
+−ωi. This recursive definition means that the appearance of a single point is dependent on the appearance of every other point in the scene, modeling phenomena like indirect illumination and color bleeding. • (n · ωi): Lambert’s Cosine Law. This is a geometric term representing the dot product between the surface normal n
+
+and the incoming light direction ωi. It accounts for the fact that a surface receives less light flux per unit area from sources at grazing angles, as the incident energy is spread over a larger area. The recursive and integral nature of the Rendering Equa-tion reveals a fundamental truth about image formation: it is a global phenomenon. The color of a single pixel is not a purely local property but is the result of a complex interplay of light bouncing throughout the entire scene, converging at that point before traveling to the camera. This global light transport system, which includes inter-reflections between surfaces, is a physical reality that most local, patch-based computer vision algorithms fundamentally fail to model. 
+
+J.2. Light Behavior with Complex Materials 
+
+A material’s electronic response, internal composition, and surface microgeometry dictate the fate of impinging light—whether it is reflected, refracted, transmitted, or ab-sorbed. In rendering and inverse-vision, these processes are commonly expressed via bidirectional scattering functions and Fresnel’s laws [39, 53]. 
+
+J.2.1. Fresnel Reflectance and Refraction 
+
+At the interface between media with refractive indices n1
+
+and n2, the proportions of reflected and refracted light are governed by Fresnel’s equations [ 39 ]. For unpolarized light, the reflectance Fr as a function of incident angle θi is 
+
+Fr (θi) = 12
+
+h  n1 cos θi−n2 cos θt    
+
+> n1cos θi+n2cos θt
+
+2 +   n2 cos θi−n1 cos θt    
+
+> n2cos θi+n1cos θt
+
+2i
+
+(6) with θt given by Snell’s law n1 sin θi = n2 sin θt [27 ]. The transmitted fraction T then satisfies energy conservation 
+
+Fr + T + A = 1 , where A is absorption. 
+
+J.2.2. Microfacet BRDF for Specular Reflection 
+
+Metals and glossy dielectrics exhibit specular reflection that varies with surface roughness. The microfacet BRDF [ 12 ] is 
+
+fr (ωi, ω o) = D(h) G(ωi, ω o) Fr (ωi · h)4 cos θi cos θo
+
+(7) where ωi, ω o are the incident and exitant directions, h is the half-vector, D the normal distribution function, G the geo-metric shadowing–masking term, and Fr the Fresnel term. We adopt the Trowbridge–Reitz (GGX) [83] distribution 
+
+D(h) = α2
+
+π(α2 − 1) cos 2 θh + 1 2 (8) and the Smith–Walter G function [ 30 , 86 ]. Figure 18 illus-trates the process. 
+
+J.3. BTDF for Transmission 
+
+Transparent dielectrics require a bidirectional transmission distribution function (BTDF) to model refracted light. A common form combines Fresnel-weighted refraction with microfacet masking [86]: 
+
+ft(ωi, ω o) = (1 − Fr ) D(h) G(ωi, ω o) ( n2/n 1)2
+
+4 cos θi cos θo
+
+(9) 20 Table 13. Mapping of Material Properties to Violated Algorithmic Assumptions. 
+
+Material Type Primary Phenomenon Violated Assumption(s) Consequence 
+
+Low-Texture Lack of high-frequency albedo variation. Feature Correspondence, Photometric Uniqueness SfM fails to find matches. MVS cost volume is ambigu-ous, leading to noisy/flat ge-ometry. Reflective View-dependent specular re-flection (BRDF). Photometric Consistency SfM matching can be unre-liable. MVS produces noisy, inaccurate, or incomplete ge-ometry. Transparent Refraction of light (Snell’s Law), internal reflections. Photometric Consistency, Linear Light Propagation (Epipolar Geometry) Complete failure. Photomet-ric matching is impossible. Triangulation is geometri-cally invalid. Glass 
+
+Transmission 
+
+Reflection 
+
+> Figure 18. Specular Reflection
+
+J.4. Diffuse Scattering and Absorption 
+
+Pigmented or rough materials scatter light diffusely. Lam-bert’s law approximates uniform scattering: 
+
+fd = ρπ (10) where ρ is albedo. Subsurface scattering in plastics and paints can be modeled via the Kubelka–Munk theory [ 43 ] or dipole diffusion [35]. 
+
+J.5. Foundational Assumptions in Multi-View Re-construction 
+
+Standard reconstruction pipelines, composed of Structure-from-Motion (SfM) and Multi-View Stereo (MVS), are built upon core assumptions that simplify the complex physics of light into a tractable problem. 
+
+J.5.1. The Assumption of Photometric Consistency in MVS 
+
+The central assumption of MVS is that a true 3D point on a surface will exhibit a similar color across multiple camera views. MVS algorithms construct a cost volume by compar-ing image patches between views at hypothesized depths, seeking the depth that minimizes the matching cost (e.g., Sum of Squared Differences). This assumption of view-invariant appearance is, in essence, an implicit assumption of Lambertian reflectance. Any deviation from this ideal diffuse behavior represents a potential violation of this core assumption. 
+
+J.5.2. The Assumption of Feature Correspondence in SfM 
+
+SfM pipelines operate by detecting and matching sparse, salient feature points (e.g., using SIFT [ 52 ]) across multiple views to solve for camera poses. This relies on the assump-tion that the local appearance of a feature is sufficiently stable across viewpoints to allow for reliable matching. This assumption breaks down under the drastic, non-linear ap-pearance changes caused by strong specular reflections. 
+
+J.5.3. The Assumption of Linear Light Propagation in Epipolar Geometry 
+
+The entire geometric framework of multi-view reconstruc-tion is predicated on a simple and fundamental assumption: light travels in a straight line from a 3D point to the camera center.Any phenomenon that causes the light path to bend, such as refraction, will invalidate the principles of epipolar geometry and the triangulation methods used to compute 3D structure. 21 J.6. Conclusion and Future Directions. 
+
+The failures of conventional multi-view 3D reconstruction pipelines on reflective, low-texture, and transparent materials are not isolated algorithmic bugs. They are the direct and predictable consequences of a fundamental conflict between the simplified physical models embedded in these algorithms and the complex reality of light transport. The entire SfM-MVS pipeline is built on a set of assumptions that hold only for a small subset of real-world scenes: those that are well-textured, opaque, and largely diffuse. The core argument can be summarized by mapping material properties to the specific assumptions they violate in Table 13. 
+
+## K. Annotations for Generative 3D Vision Tasks 
+
+We extend 3DReflecNet beyond perception tasks by provid-ing detailed textual annotations for each instance, enabling future research in generative 3D vision. This section de-scribes our annotation methodology, format, and provides comprehensive examples to facilitate integration with down-stream generation pipelines. 
+
+K.1. Annotation Methodology 
+
+Our annotation pipeline leverages the Qwen3-VL-30B-A3B-Instruct [ 80 ] vision model to generate structured descriptions for each instance in 3DReflecNet . The annotation process captures four key aspects: 1. Detailed Material Descriptions: Comprehensive descrip-tions of surface properties, including reflectance charac-teristics, roughness, transparency, and material composi-tion. 2. Lighting Condition Tags: Explicit annotations of lighting setup, including light types, directions, intensities, and environmental illumination. 3. Semantic Instance Descriptions: Object-level descriptions that capture both geometric and appearance properties relevant for 3D generation. 
+
+K.2. Annotation Format 
+
+Each instance in 3DReflecNet is annotated with structured text following a hierarchical schema. The format includes separate fields for material properties, lighting descriptions, and a natural language generation description which can be used as prompts for downstream tasks. 
+
+K.3. Annotation Examples 
+
+We provide a concrete example of our annotation pipeline in Figure 19, Figure 20 and Figure 21. Figure 19 and Figure 20 show the images and complete prompt used to instruct the VLLM, along with a sample 
+
+meta.json file. This input file provides database information, such as material name , and the ground-truth categories. 
+
+> Figure 19. Input images used for annotation (low/middle/high cam-era angles).
+
+Figure 21 shows the corresponding tags.json file gener-ated by our pipeline. As demonstrated, the process strictly adheres to the prompt’s rules: it correctly copies the category 
+
+field from the input and populates the material properties ,
+
+environment , and description fields based on the model’s visual analysis. 
+
+K.4. Integration with Generation Pipelines 
+
+Our rich annotations enable seamless integration with vari-ous generative 3D vision pipelines. We discuss specific use cases for different generation tasks. 
+
+K.4.1. Text-to-3D Generation 
+
+The natural language generation prompts can be directly used as conditioning text for diffusion-based 3D generation models [66, 105]. The material and lighting tags enable: • Material-aware NeRF optimization: Tags guide material parameter initialization and constraints during neural radi-ance field training • PBR parameter prediction: Separate channels for rough-ness, metallic, and normal maps • Multi-view consistent rendering: Lighting descriptions ensure photometric consistency across views 
+
+K.4.2. Text-to-Texture Synthesis 
+
+Material property annotations guide texture generation pipelines [7, 69]: • Roughness and metallic maps: Surface property map syn-thesis • Normal map inference: Surface detail generation from descriptions • Environment-aware baking: Lighting-consistent texture synthesis 
+
+K.4.3. Image-to-3D Reconstruction 
+
+Lighting descriptions enable advanced reconstruction tech-niques [50, 102]: • Relighting capability: Material inference for novel lighting conditions • Lighting-invariant reconstruction: Robust 3D shape recov-ery under varying illumination 22 Asset Image Annotation Prompt 
+
+Prompt: 
+
+You are a rigorous visual annotator. Please output a concise, structured result containing only JSON based on three images of the same instance (low/flat/high angles). • The model is placed on a marble surface. • The camera height ratio for the three angles are 0.3 / 1.0 / 1.5 (relative to the model height). • category.main/sub must be strictly copied from meta.json; no reclassification is allowed. • Only judge ”material appearance attributes” and ”environment”; do not output database fields (hasGlass, transparent, isGenerated, material name). • All values must be selected from the provided enums or value ranges. Note: Output Fields (Only These!) • instance id: string (from meta.json or parameters) • category: { main: string, sub: string } (strictly copied from meta.json; reclassification is prohibited) • material properties: 
+
+– glossiness: “matte”—“semi-gloss”—“glossy”—“mirror” 
+
+– roughness: number (0.0-1.0) 
+
+– reflectivity: “none”—“weak”—“medium”—“strong” 
+
+– texture scale: ”fine”—“medium”—“coarse” 
+
+– anisotropy: “none”—“weak”—“strong” 
+
+– metallic hint: “non-metal”—“mixed”—“metallic” • environment: 
+
+– indoor outdoor: “indoor”—“outdoor”—“unknown” 
+
+– light type: “natural”—“artificial”—“mixed”—“unknown” 
+
+– light intensity: “weak”—“medium”—“strong”—“unknown” 
+
+– key light direction: “left”—“right”—“front”—“back”—“top”—“ambient”—“unknown” 
+
+– shadow hardness: “soft”—“medium”—“hard”—“unknown” • description: string (briefly describe the appearance of the instance in English) Note: Category Fields to Be Strictly Copied! • category.main = “ {cat main }”• category.sub = “ {cat sub }”The following is meta.json (for reference only; do not use its database fields for judgment): 
+
+{"instance_id": "7db354ab-34a0-4634-b4e3-cf100a4736c9", "main_category": "culture", "sub_category": "sculpture", "model_name": "Roman_Statue.blend_Zenobia in Chains statue", "material_name": "cleanSnow", "env_name": "quarry_cloudy_4k.exr", "hasGlass": false, "isGenerated": false, "transparent": false }
+
+> Figure 20. The prompt for generating description for an asset
+
+K.4.4. Image Editing and Manipulation 
+
+Rich annotations support material-aware image editing [ 45 ,61]: • Material-consistent inpainting: Preserving material prop-erties during completion • Lighting-aware object insertion: Matching illumination of inserted objects • Physical plausibility checking: Validating edits against material-lighting interactions 23 Generated Annotation Output (tags.json) 
+
+This is the resulting tags.json file generated by the annotation pipeline, corresponding to the input from Figure 20. 
+
+{"instance_id": "7db354ab-34a0-4634-b4e3-cf100a4736c9", "category": {"main": "culture", "sub": "sculpture" }, "material_properties": {"glossiness": "matte", "roughness": 0.3, "reflectivity": "weak", "texture_scale": "fine", "anisotropy": "none", "metallic_hint": "non-metal" }, "environment": {"indoor_outdoor": "outdoor", "light_type": "natural", "light_intensity": "medium", "key_light_direction": "top", "shadow_hardness": "soft" }, "description": "A classical marble sculpture of a robed female figure, standing on a white marble platform. The statue has a matte, light gray finish with fine surface details. It is positioned outdoors in a quarry-like environment with a body of water and rocky hills in the background. The lighting is soft and diffused, suggesting an overcast sky." }  
+
+> Figure 21. The structured tags.json output from our annotation pipeline. This includes the strictly copied category, the VLLM-inferred material and environment properties, and the natural language description.
+
+K.5. Annotation Statistics 
+
+Table 14 provides comprehensive statistics of our annota-tion dataset, demonstrating the scale and diversity of our annotations for generative tasks. 
+
+## L. Related Works 
+
+L.1. Specular Highlight & Reflection Removal 
+
+Specular Highlight Removal (SHR) and Single Image Reflec-tion Removal (SIRR) aim to separate interfering light from true scene content. SIRR is a severely ill-posed problem, and modern deep learning approaches are often bottlenecked by an ”insufficiency of densely-labeled training data”. Recent work like RRW [ 111 ] confronts this by creating large-scale, aligned real-world datasets. Architecturally, the field has evolved from location-aware models [ 19 ] to dual-stream net-works, such as the interactive transformers in DSIT [ 32 ]. The related field of SHR also relies on deep learning, highlight-ing the importance of ”leveraging large-scale synthetic data” for generalization [24]. 
+
+L.2. Relighting 
+
+Modern 3D reconstruction with Neural Radiance Fields [ 56 ]excels at view synthesis but entangles geometry, materi-als, and lighting, which hinders relighting. This ”baked-in” problem spurred research into disentangling these proper-ties. Early works like NeRFactor [ 109 ], and PhySG [ 108 ]factorized the implicit field but remained computationally ex-pensive and often limited to low-frequency lighting. To over-come this, two explicit strategies emerged. First, Munkberg et al., [59 ] jointly optimized an explicit triangular mesh, materials, and all-frequency lighting using a differentiable rasterizer and DMTet. Second, the paradigm shifted to 3D Gaussian Splatting, GS-IR [ 48 ] adapted inverse rendering to 24 Metric Value 
+
+Total annotated instances 126768 Average description length 268.74 words Unique material 22 Unique lighting conditions 2700+ 
+
+Material Complexity Distribution: 
+
+Diffuse 18.2% Transparent 9.1% Metallic 22.7% Glossy-Textured 13.6% Glossy-Low-Texture 36.4% 
+
+Lighting Condition Distribution: 
+
+Indoor - Furnished 8.58% Indoor - Empty 16.22% Outdoor - Natural 28.24% Outdoor - Urban 21.22% Studio 25.74%  
+
+> Table 14. Statistics of generation-task annotations in 3DReflecNet .The dataset covers diverse material types and lighting conditions suitable for various generative 3D vision tasks.
+
+this efficient representation to decompose physical proper-ties. The most recent works, such as GI-GS [ 9], now address the limitations of initial 3DGS methods by explicitly model-ing global illumination, often using screen-space path tracing to separate direct and indirect lighting. 
+
+## M. More Qualitative Examples 
+
+We provide additional qualitative examples in this section. Figure 24 showcases various shapes, while Figure 25 details objects with different materials. For our 3D-generated in-stances, Figure 26 shows diverse shapes and materials, and Figure 27 displays a steel asset under various lighting con-ditions. Finally, Figure 23 presents more real-world capture instances. 25 <0, 0.3, 1.0, 0> <0, 0.3, 1.0, 1> <0, 0.3, 1.3, 0> <0, 0.3, 1.3, 1> <0, 0.3, 1.6, 0> <0, 0.3, 1.6, 1> 
+
+<0, 0.3, 1.9, 0> <0, 0.3, 1.9, 1> <0, 0.6, 1.0, 0> <0, 0.6, 1.0, 1> <0, 0.6, 1.3, 0> <0, 0.6, 1.3, 1> 
+
+<0, 0.6, 1.6, 0> <0, 0.6, 1.6, 1> <0, 0.6, 1.9, 0> <0, 0.6, 1.9, 1> <0, 0.9, 1.0, 0> <0, 0.9, 1.0, 1> 
+
+<0, 0.9, 1.3, 0> <0, 0.9, 1.3, 1> <0, 0.9, 1.6, 0> <0, 0.9, 1.6, 1> <0, 0.9, 1.9, 0> <0, 0.9, 1.9, 1> 
+
+<0, 0.0, 1.0, 0> <0, 0.0, 1.0, 1> <0, 0.0, 1.3, 0> <0, 0.0, 1.3, 1> <0, 0.0, 1.6, 0> <0, 0.0, 1.6, 1> 
+
+<0, 0.0, 1.9, 0> <0, 0.0, 1.9, 1> <1, 0.3, 1.0, 0> <1, 0.3, 1.3, 0> <1, 0.3, 1.6, 0> <1, 0.3, 1.9, 0> 
+
+<1, 0.6, 1.0, 0> <1, 0.6, 1.3, 0> <1, 0.6, 1.6, 0> <1, 0.6, 1.9, 0> <1, 0.9, 1.0, 0> <1, 0.9, 1.3, 0> 
+
+<1, 0.9, 1.6, 0> <1, 0.9, 1.9, 0> <1, 0.0, 1.0, 0> <1, 0.0, 1.3, 0> <1, 0.0, 1.6, 0> <1, 0.0, 1.9, 0> Figure 22. Materials of various parameters show different physical phenomenon. The parameters is in format of < m, r, i, t > 
+
+26 Figure 23. More real-world capture instances, including semi-transparent, reflective, and low-texture objects. 
+
+Figure 24. The synthetic objects of various shapes 
+
+27 Figure 25. The object with the same shape but made of different materials under identical lighting condition 
+
+28 Figure 26. Various shapes of generated 3D assets made of different materials 
+
+29 Figure 27. Generated 3D assets made of Steel material under various lighting condition 
+
+30
