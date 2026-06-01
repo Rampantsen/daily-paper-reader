@@ -1,0 +1,278 @@
+Title: Seeing Fast and Slow: Bimodal 3D Scene Graphs for Open-set Tasks
+
+URL Source: https://arxiv.org/pdf/2605.31067v1
+
+Published Time: Mon, 01 Jun 2026 00:57:06 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+# Seeing Fast and Slow: Bimodal 3D Scene Graphs for Open-set Tasks 
+
+Marcel Bartholomeus Prasetyo*, Shrutika Vishal Thengane*, A Manicka Praveen, Yi Loo, Malika Meghjani 
+
+Abstract — Open-set task execution can significantly benefit from seamlessly switching between coarse and fine scene rep-resentations depending on the context and the evolving informa-tion as the robot explores the environment. For example, it is of-ten sufficient to start with a coarse scene representation initially and only employ a finer, more granular scene representation when the robot encounters regions which are likely to contain the task relevant objects. Hence, in this work, we propose BiMoSG, a bimodal 3D scene graph generation approach for open-set tasks. BiMoSG employs a ”fast” mode by default to efficiently generate a coarse 3D scene graph and can switch to a ”slow” mode for generating a finer open vocabulary 3D scene graph of task relevant objects. We demonstrate that our proposed 3D scene graph generation approach is significantly faster than the open-source state-of-the-art approaches. This allows us to integrate the scene graph generation process with task execution for real-time deployment. 
+
+I. I NTRODUCTION 
+
+In open-set task execution, robots have to perform their assigned tasks while navigating in complex environments with novel open-set objects. Hence, a robust visual represen-tation of the world is paramount for such tasks. Furthermore in scenarios such as search and rescue, robots may require to navigate novel environments without any prior informa-tion. Therefore any visual representation of the environment would need to be constructed and updated in real time by the robot. Recently, open vocabulary 3D scene graphs [5], [11], [14], [20] have emerged as an effective class of methods to represent 3D scenes for robot navigation and related tasks. These methods utilize large visual foundation models such as SAM [10], CLIP [17] and LLaVa [13] to achieve both robust instance segmentation as well as open-set classification of objects. However, generating 3D scene graph in real-time on mobile robots remains challenging due to the substantial computational demands of visual foundation models paired with the limited computational resources on the edge. Additionally, the high energy cost of these models may also prevent robots from operating for an extended time-span, which is often required for open-set task execution. We posit that for open-set task execution, it is not necessary for the robot to generate high-granularity, open-vocabulary 3D scene graphs for a majority of duration of the task. For example, as shown in Fig. 1, consider a robot that is tasked to taking care of recently bought groceries. As            
+
+> * These authors contributed equally. The authors are with Singapore University of Technology and Design (SUTD), Singapore.
+
+{shrutika thengane, marcel prasetyo, manicka praveen@sutd.edu.sg, malika meghjani }@sutd.edu.sg ,
+
+loo yi@mymail.sutd.edu.sg 
+
+the robot navigates through the room, it only requires coarse semantic information of objects to determine the general functionality (e.g., small tables and TV cabinets are not appropriate for storing or organizing the groceries). Only when the robot encounters an object with high likelihood of relevance to the task of interest (e.g., countertop for storage), does it require switching to a finer scene representation to precisely execute the desired task. This is also partly inspired by how humans also possess a fast, coarse System 1 thinking, and a slow, deliberate System 2 thinking [9] but applied to a robot’s perception system. Guided by this insight, we propose BiMoSG, a fast 3D scene graph generation approach. As the name implies, BiMoSG has two distinct modes for 3D scene graph gener-ation. By default, BiMoSG employs a ”fast” or ”System-1-like” mode for generating coarse visual representation of the environment. This mode uses a closed vocabulary setup to produce a coarse approximation of the environment objects, enough to reason about general function of objects and spaces. To that end we propose a novel prismatic represen-tation of 3D objects which provides a coarse representation. Our proposed object representation constructs an abstraction of 3D point clouds into prism representations, which greatly reduces computation cost. Furthermore, we also propose a novel vicinity based approach to establish the hierarchical relationship between 3D objects in the scene graph that is built upon our prismatic representation. Crucially, the default ”fast” mode does not require the use of large visual foundation models to construct scene graphs, drastically reducing the computation and energy cost of generating the scene graph. BiMoSG can also in-termittently switch to a second ”slow” or ”System-2-like” mode to generate an open-vocabulary scene graph, which can then be used to locate and retrieve objects with visual reasoning. Combined together, the two modes complement each other by leveraging the default fast mode for time-efficient object mapping and the slow mode for rich semantic openset tasks. In our experiments, we show that the ”fast” mode BiMoSG is at least 3x faster in generating a 3D scene graph as compared to the state-of-the-art open vocabulary 3D scene graph approach [5]. Specifically, the real-time ali-dev implementation, taking up an average of 0.4 second per frame compared to 0.1 second per frame for our proposed approach on a RTX 4090 computer. To summarize, our main contributions in the paper are as follows: (a) We propose BiMoSG, a novel and fast 3D scene graph generation approach for open-set task execution. Specifically, we developed a novel volumetric representation  
+
+> arXiv:2605.31067v1 [cs.RO] 29 May 2026 Fig. 1. Bimodal 3D scene graph generated for the open-set task query of taking care of recently bought groceries. The default ”fast” mode is looking for the closed-set objects such as refrigerator, icebox, counter-top and table whereas, the ”slow” mode further investigates the use of the relevant objects identified. The three relevant objects are annotated with their respective reasoning.
+
+of 3D objects which helps in generating fast 3D scene graph representations. (b) We also propose a novel vicinity based approach for generating object relations between the 3D objects in the scene graph. (c) We empirically show that the default ”fast” (closed set) mode of BiMoSG is 3xfaster than the state-of-the-art open vocabulary 3D scene generation graph approaches. (d) We validate that our pro-posed framework can be robustly deployed in unknown environments without advance mapping for real-time scene graph generation. (e) We show that the bimodal design of BiMoSG results in a significantly shorter task execution time as compared to previous approaches while achieving a similar success rate. II. R ELATED WORK 
+
+A. 3D Scene Segmentation 
+
+A recent line of 3D scene visual understanding work attempts to use large visual foundation models (LVLM) to construct 3D scene representation [4], [8], [16]. This class of methods typically ground 2D representations from the LVLMs to the 3D environment. The key benefit of using LVLMs is the ability to produce open-vocabulary represen-tations of 3D scenes. However the relience of LVLMs make them impractical to be run in real-time on mobile robots. 
+
+B. 3D Scene Graphs 
+
+Another recent class of 3D scene graph approaches em-ploys a combination of classical robotics techniques, deep learning and foundation models. It is on this class of scene graph approaches we focus, with particular emphasis on open-set semantics. 
+
+1) Geometrical Representation : Concept Graphs, HOV-SG, and BBQ make use of point clouds, clustered per object and sometimes voxelized. Hydra [6] and Kimera [18] make use of 3D mesh representations. We aim to introduce a pris-matic volumetric geometry representation for our approach. 
+
+2) Segmentation : Most open-set scene graph approaches make use of SAM or a faster alternative such as FastSAM [22], MobileSAM [21]. We use Mask2Former [2] for closed-set, and FastSAM for open-set segmentation. 
+
+3) Open-set Semantics : HOV-SG [20] and BBQ [12] make use of VLM models whereas, ConceptGraphs [5], Clio [14] and ASHiTA [1] make use of CLIP. In all previous works, CLIP is the the dominant paradigm for open-set semantics, albeit without generating explicit labels. We make use of CLIP as well, and also VLM ([SmolVLM2] [15]) 
+
+4) Graph Hierarchy : It is desirable for 3D scene graphs to encode a form of hierarchy, whether semantic or especially spatial. HOV-SG encodes graph hierarchy based on rooms whereas, Hydra introduced hierarchy layers of object, place, room, building. We introduce local decentralized hierarchy using ”vicinities” and room-level proximal hierarchy. Clio and ASHITA introduce a task-based hierarchy both in computation order, task and granularity of scene graph. We incorporate coarse and fine, closed-set and open-set granularity levels. 
+
+5) Multi-view Scene Graph (MSG) : MSG introduces multi-view scene graph topology constructed from intercon-nected object and place nodes. The idea of interconnected places and objects however were already present in Hydra, Kimera and Khronos. We introduce the idea of visibility edges as the presence of two or more objects being present in the same image and encode into a matrix that is temporally consistent. III. M ETHODOLOGY 
+
+We introduce BiMoSG, a novel framework that efficiently explores the environment and constructs a semantic 3D scene graph. It employs a dual mode object segmentation by Fig. 2. Overview of proposed approach. Our system uses the closed segmentation using Mask2Former by default to generate a coarse scene graph. If the LLM Planners detects objects that matches one of the triggered object labels, it can trigger the ”slow” open set object identification module using VLM to perform open set segmentation. The identified open set objects are then appended to the existing scene graph. 
+
+combining the open set and closed set segmentation models. In the open set segmentation, it uses the VLM model to generate the caption (labels) for the newly generated scene objects whose caption is not defined in a closed set, and generate a mask for the new objects using a language-based segmentation model. For the closed set segmentation, we are using a mask2former [2], in particular one trained on the ADE20K-150 SceneParse dataset having 150 distinct ”things” and ”stuff” classes. 
+
+A. Closed Set Segmentation 
+
+For the closed-set segmentation method, we use Mask2Former [2], an architecture that unifies panoptic, in-stance, and semantic segmentation within a single model. Its design leverages a transformer-based mask prediction mechanism, enabling consistent performance across mul-tiple segmentation tasks. In our proposed framework, we specifically employ the panoptic segmentation capability of Mask2Former, as it provides both instance-level and semantic-level information. 
+
+B. Prismatic 3D object Representation 
+
+In this section, we utilise RGB-D images, robot trajectory and camera pose to extract spatial information about objects in the scene. Specifically, we first generate object masks using Mask2Former [2], project the points received onto the world frame and then obtain the 3D object representation of each object before placing them in the scene graph.  
+
+> Fig. 3. Prismatic volumetric object representation on replica data(room0).
+
+RGB-D approaches usually take the segmentation masks of each detected object in the image and project a dense point cloud of the object from image to world coordinates. This ensures high visual fidelity object representation in the scene. However, high visual fidelity is not always required for all tasks and also adds to computational complexity. We introduce the volumetric object representation. This volumetric object representation combined with closed-set segmentation form the backbone of the Fast mode of the Bimodal 3D scene graph generation. 
+
+1) Volumetric object representation: Firstly, from each object instance segmentation mask, we take the contour of the mask c, shrink it by a few pixels to mitigate noisy depth at the edges, and then project dense points on the contour line into world frame, obtaining a 3D world-frame contour ring C. We then perform denoising on C, firstly based on a maximum Euclidean distance dmax between consecutive points, remove the point pi if |pi − pi−1| > dmax and 
+
+|pi+1 − pi| > d max to remove errors from depth discon-tinuities. We denoise the contours by distance from median center using L1 median approximation, and smoothen using circular moving average. We then take all horizontal vertices (from the xy plane) and convert to xy polygon P via the convex hull or optionally alpha shape. For the height (z) dimension, we take {zmin , z max } = {max( Cz ), min( Cz )}.From P and {zmin , z max } we construct the polygonal prism 
+
+O with top and bottom faces Ptop , Pbot , Ptop,z = {zmax }
+
+and Pbot,z = {zmin }, and rectangular side faces Fm, m ∈{1, 2, ..., M } where M is number of unique vertices of P . In practice, we keep only P , {zmin , z max } for fast computation, and only triangulate to create a prismatic mesh during visualization. Fig. 3 shows prismatic volume representation. We then choose the prismatic volumetric representation of each object, a paradigm chosen based on the shapes of indoor furniture. Since modern furniture is designed to be packable inside cuboid or prismatic shaped containers, we find this representation to be suitable as a coarse representation. There are several computational advantages that volumet-ric object representation holds over point cloud representa-tion. In ConceptGraphs, a point cloud based approach, the same object from a different view may not match well in terms of geometrical similarity in point-wise comparison especially when input images are sparse with different view-points. On the other hand, using the volumetric represen-tation from mask contour significantly improves volumetric overlap between two views of the same object (granted more than one planar face of object is seen in each view) thus facilitating object merging and deduplication in sparse input image situations e.g. fast moving robot. The same volumetric representation can be constructed from the point cloud representation; but this direct volumetric approach enjoys a computational complexity advantage : (a) first having to project only the contour ring from the image to the world frame thus achieving. O(n + m) for n × m image mask size compared to O(nm ) for point cloud; denoising on this 3D contour ring is conversely O(n + m), compared to individual 3D point-cloud denoising O(n3) for voxelized point cloud with cubic bounding box with side length n;(b) merging and deduplication of 3D objects using vol-umes, particularly simplified polygonal prism representation is O(n+m) for n, m number of 2D vertices in respective x-y polygons during pairwise polygon intersection (after filtering for distance) assuming convex polygons. Notably, this sparsity would lead to fast convergence even for tasks requiring spatial awareness, as usually only a few views of the same object are required. The limitations of this volumetric approach especially in real-world is depth noise and mismatch between segmentation mask and depth image since only a sparse number of points are used. Mit-igating this requires good denoising, particularly achievable on noisy depth image by averaging the dense masked depth values with invalidation conditions on depth ”holes” (disjoint patches of abnormally high depth in the masked depth) and then projecting the center of mass of the mask with this average depth to the world frame, using it as a reference point for the usual distance-based denoising or using it as a center for projection. The depth values of the contour could also be smoothed in the first place. 
+
+2) Merging and Deduplication: Merging and deduplica-tion of objects between input frames is done making use of the polygons and maximum and minimum z-coordinate as noted in the previous subsection. For brevity’s sake, we will not cover all the rules. Merging between objects is done after radial xy-distance checking. If the IOU between two polygons P1 and P2 from existing object O1 and new object O2 overlap beyond a certain threshold ti, and IOU in the height (z-coordinates) is beyond a certain threshold 
+
+tz,i depending on the cases i ∈ { 1, 2, ..., m } where m is the number of cases, either O2 is removed, or one is removed and the other object’s position averaged, or a union is done on P1 and P2 to form a new object O3 whose polygon P3
+
+is the union. In general, we may skip checking if the object class tags are different or unrelated. Cases where there is high xy-IOU but no z-overlap are for example identical vases in the same position on vertically adjacent wall shelves. 
+
+C. Vicinity Based Object Relation 
+
+We present our method for computing vicinity based relations between 3D objects in the scene graph. Let O be a 3D object, defined geometrically in R3 space, and N as the corresponding object node in the scene graph, GS . For 
+
+n total objects, we first construct a n × n symmetric matrix 
+
+VM , the visibility matrix, where the entry VMij signifies the number of times Oi and Oj are seen in the same frame. We then iteratively prune edges on the graph if the visible and effective distance is less than threshold ϵ1. Specifically, the visible and effective distance, dv between two objects i and 
+
+j is defined as: 
+
+dv (i, j ) = min (d(rih + rjh), d (riv + rjv )) (1) where rh and rv represent the horizontal and vertical radius of the 3D object prism respectively, defined as the distance between the centroid and furthest vertices on the prism. We then create a directed acyclic graph (DAG) by ordering objects based on the object’s girth, Gi. Girth is defined as the cubic root of the object’s prismatic volume. However as the largest objects may not necessarily be the centerpiece of vicinity (i.e. a cupboard vs a table). We would like to order objects based on the object’s relative size to neighboring objects. Hence for each node i within the graph we compute: 
+
+SE i = 1
+
+n
+
+X 
+
+> ndip <ϵ 1
+> Gj<G i
+
+Gi − Gj
+
+Gi
+
+(2) Where SE i is the eigenstatus , signifying the ratio of an object’s girth over all n children objects in the DAG neighborhood of n. We then compute the absolute status, 
+
+SA to rank the importance of nodes over the entire graph: 
+
+SA i = SE i + X 
+
+> ndip <ϵ 2
+> Gj<G i
+
+f (dip )SE p (3) We order all nodes N by SA i in descending order and for each Ni that is not already partitioned, we iteratively establish a hierarchical partitioning of SG by traversing down the directed graph and claiming unclaimed members into the 
+
+kth partition, Pk as long as total traversal distance from 
+
+Ni is less than ϵ2. We thus compute a partition P of the entire graph SG over all Pk. We define a Vicinity Vk to be equivalent to the partition block Pk, where the induced subgraph corresponding to Vk has NCk as the central node, that is root node, and signifies its central role in the vicinity. We further construct a weighted quotient visibility graph from the visibility matrix VM , applying the partition P to 
+
+VM . In this quotient visibility graph, the vicinity Vk forms a supernode. This reduced visibility matrix is computed by blockwise max aggregation, or by logical OR if using Boolean values: 
+
+˜w(Vi, V j ) = max 
+
+> p∈Vi, q ∈Vj
+
+w(p, q ).We call this quotient graph the vicinity graph, GV . We can further prune the graph if we constrain inter-vicinity distance 
+
+dVij < ϵ 3. We can do a similar process to create a zone Z
+
+with the membership rule of minimum intra-zone vicinity connectivity above a specific value, where zone approximates a room. The zone graph could be constructed similarly to the vicinity graph. Finally for each subgraph G[V⟩] in-duced by vicinity partition, we generate natural language description for each edge relation within the vicinity based on the proximity and intersectionality of the object prisms. Specifically, we establish five common relations: ON, IN, ABOVE, UNDER or BESIDE. The fully constructed scene graph along with natural language relations are then sent to the LLM Planner. 
+
+D. Planner 
+
+The LLM Planner decomposes high-level natural language tasks into simpler sub-tasks for the robot. It acts as the decision-maker, determining when to switch between closed-set and open-set perception approaches to construct an ap-propriate scene graph, and reasoning about which objects are relevant for task completion. The planner operates in a three-phase loop. Each of these phases are described below. 
+
+Phase 1 – Task Decomposition: Given a user’s task input, the LLM analyzes the task and generates a set of trigger labels and corresponding object IDs from the closed-set segmentation classes. These triggers identify objects likely to be relevant, including functionally related items not explicitly mentioned in the instruction. 
+
+Phase 2 – Scene Monitoring for Open-Set Activation: 
+
+The planner monitors the vicinity graphs for objects or vicinities that might be of interest. When a match is detected, it invokes the InspectAt action on the corresponding object ID and prompts the VLM to refine the object’s class label. This process provides detailed object information for subsequent reasoning. 
+
+Phase 3 – Object Relevance Confirmation: Once the updated scene graph is received from the VLM, the planner uses the LLM to confirm whether the inspected object is truly relevant to the task. By tracking object IDs, the system maintains consistency across perception updates. Objects confirmed as relevant are stored for the execution of down-stream tasks. This approach enables effective task planning, allowing the robot to adapt to previously unseen or ambiguous objects while staying aligned with high-level goals. The LLM plan-ner serves as a cognitive bridge between natural language instructions and perception-driven actions. Optionally, the VLM may also return its description to the LLM so that it may help reasoning with more accurate context. We show an overview of our LLM Planner in Algorithm 1, and use GPT-4o [7] as the LLM for our planner. 
+
+E. Bimodal scene graph 1) Open Set Object Identification and Segmentation: We introduce two ways of doing open set object detection, hybrid mode and switching mode. The first mode, hybrid mode, 
+
+Algorithm 1 LLM Planner for Task Decomposition and Scene Graph Reasoning 
+
+Require: High-level task T , closed-set class set C, scene graph stream SG 
+
+Ensure: Set of confirmed relevant objects Oconfirmed  
+
+> 1:
+
+Oconfirmed ← ∅  
+
+> 2:
+
+Phase 1: Task Decomposition  
+
+> 3:
+
+(L) ← LLM.decompose (T, C ) ▷ trigger labels  
+
+> 4:
+
+while task T not completed do  
+
+> 5:
+
+Receive updated vicinity graphs SG  
+
+> 6:
+
+Phase 2: Scene Monitoring for Open-Set Activa-tion  
+
+> 7:
+
+for each object o ∈ SG do  
+
+> 8:
+
+if o.label ∈ L then  
+
+> 9:
+
+Execute InspectAt (o.id ) ▷ open-set inspection  
+
+> 10:
+
+o′ ← VLM-refined object label  
+
+> 11:
+
+Phase 3: Object Relevance Confirmation  
+
+> 12:
+
+r ← LLM.confirm (o′, T ) 
+
+> 13:
+
+if r = relevant then  
+
+> 14:
+
+Oconfirmed ← Oconfirmed ∪ { o′} 
+
+> 15:
+
+end if  
+
+> 16:
+
+end if  
+
+> 17:
+
+end for  
+
+> 18:
+
+end while  
+
+> 19:
+
+return Oconfirmed 
+
+uses open-set CLIP image embeddings for each closed-set-segmentation mask and stores it in the object, called object embedding, EO , along with a larger crop (20% of image width) around the object called scene embedding, ES . EO is used during volume merging of similar classes. In the direct open set retrieval, a task-text embedding, ET is compared with each added new object and its scene embedding by cosine similarity. If no object-task similarity exceeds the similarity threshold, then the object-scene-task similarity is used, that is, ”near” the detected closed set object. This augments the open-set capability of closed-set objects. Secondly, the switching mode performs LLM reasoning using the textual vicinity graph generated from closed-set object vicinities, then if LLM requests open-set investiga-tion on a vicinity, the request is sent to SmolVLM2 [15] VLM server for accurate open-set descriptive caption, before passing the description of the object(s) back or forwarded to LangSAM model [3], a text-promptable segmentation model. With Lang-SAM, the open-set-class segmented masks are projected back into the scene graph. In both cases, we get the speed and expressiveness benefits of closed-set scene graph. The hybrid method benefits from fast but implicit CLIP-powered open set semantics, while the switching mode is slower but benefits from the expressive-ness of VLM semantics (natural language). 
+
+Integration with Planner : When the planner receives a command to switch the mode from closed set to open set, the pipeline transitions into the ”switching” version of open-set object identification process, thus enabling textual-interface interaction between LLM and VLM. IV. E XPERIMENTS AND RESULTS 
+
+A. Scene Graph Geometrical Representation 1) Scene Graph Volumetric Accuracy: Our scene graph volumetric representation is in a prismatic volumetric rep-resentation, which makes geometrical benchmarking more challenging. However, we perform volumetric rough match-ing based on Replica Dataset [19] semantic ground truth, using the oriented bounding boxes (OBB) from our vol-umes and OBB from Replica ground truth. Table I shows various metrics for our approach. The relatively lower pre-cision is due to small artifacting or wrong classes due to Mask2Former segmentation, which we disregard from this present evaluation. The Mean GT Coverage calculates the volumetric percentage coverage of relevant ground truth OBB that had semantic matches with ours. Geometric IoU is for matching objects using volumetric intersection, while Linear mIoU is based on cubic root of volumes. We demon-strate acceptable geometrical accuracy 4 and possibility for further tuning. 
+
+2) Computational Efficiency: To evaluate the computa-tional efficiency of our framework, we compare the run time of the volumetric scene graph representation approach with that of the baseline using the Replica [19] dataset. We com-pare with two prominent scene graph generation methods, ConceptGraphs and BBQ. In our case and baseline case, we time only parts relevant to geometrical scene graph repre-sentation (point cloud, mesh or volumes) including merging across time frames, removing open-set embedding, image segmentation and other downstream tasks. This comparison, summarized in Table II, highlights the substantial reduction in processing time achieved by our approach. Specifically, our approach demonstrates an improvement of nearly three times faster than ConceptGraphs. We used a RTX 4090 capable computer for all baseline methods. On average, our approach ran for 0.1 second per frame, ConceptGraphs 0.4
+
+second per frame and BBQ 0.2 second per frame.                                                                                        
+
+> TABLE I GEOMETRICAL PROJECTION ACCURACY METRICS ACROSS SEVERAL
+> REPLICA ENVIRONMENTS FOR BIMOSG, WITH SUBSAMPLING 10. Environment Precision Recall Mean GT Coverage Geometric IoU Linear mIoU Room 0 0.417 0.645 0.563 0.297 0.623 Room 1 0.406 0.757 0.450 0.268 0.616 Room 2 0.434 0.767 0.525 0.234 0.589 Office 0 0.230 0.680 0.658 0.308 0.627 Office 1 0.232 0.762 0.613 0.295 0.628 Office 2 0.372 0.690 0.573 0.266 0.606 Office 3 0.412 0.673 0.572 0.247 0.587 Office 4 0.299 0.667 0.619 0.319 0.636 Average 0.350 0.705 0.571 0.279 0.614
+> Fig. 4. Geometrical projection accuracy visualization for Replica dataset. Green - match bounding box and class; Orange - match bounding box; Red : False positive; Blue : False negative TABLE II SCENE GRAPH GENERATION TIME COMPARISON WITH BASELINES ON THE REPLICA [19] D ATASET . S PECIFICALLY WE COMPARE THE DEFAULT
+> ”FAST ”MODE OF BIMOSG WITH THE OPEN -SET GENERATION PROCESS OF OTHER BASELINES .
+> Replica Dataset ConceptGraphs (sec) BBQ (sec) Our Method (sec) Room0 133.0460 56.5553 33.59 Room1 88.7586 45.9022 21.28 Room2 68.1647 53.0010 27.34 office0 48.9914 35.6428 13.68 office1 34.9416 29.7156 14.77 office2 81.4436 43.0160 20.64 office3 89.7984 52.3345 26.56 office4 88.6095 48.1167 17.20
+> Avg per frame 0.4003 0.2277 0.1094
+
+B. Openset Object Retrieval 
+
+We simulate and run experiments in several environ-ments to evaluate BiMoSG and Clio performing tasks on the Habitat Matterport3D dataset. The results are summa-rized in Table III. We selected three scenes of varying sizes: small (00801-HaxA7YrQdEC) with 9 rooms, medium (00802-wcojb4TFT35) with 15 rooms, and large (00809-Qpor2mEya8F) with 21 rooms. The scenes primarily cor-respond to hallway, living room, kitchen, bed room, bath room and garage areas. We run various open-set and closed-set class tasks and report the time taken to achieve success. From Table III, we observe that for open-set tasks, our method consistently achieves faster completion times com-pared to Clio. This difference is particularly pronounced because while running Clio, we tried to map the path of the environment before completing a task, which increases its execution time and the number of false positives (FP 
+
+>10). For closed-set tasks, our approach also demonstrates superior efficiency. In the large scene, detecting objects such as monitors, beds, and dining tables is completed much faster compared to Clio. 
+
+C. Openset Task using Bimodal Scene Graph 1) Experimental Setup: We evaluated BiMoSG on two categories of tasks, corresponding to different levels of abstraction. These include: (a) Object Retrieval: The agent is asked to locate a specific object instance in the environ-ment. Examples: “Find a book,” “Find a bicycle.” and (b) TABLE III PERFORMANCE COMPARISON ACROSS SMALL , M EDIUM , AND LARGE HABITAT ENVIRONMENT SETTINGS FOR OPEN AND CLOSED SET .Environment Small Medium Large Task Class FP(clio) Clio-Time(m) Our-Time(m) Class FP(clio) Clio-Time Our-Time Class FP(clio) Clio-Time Our-Time Open Keyboard >10 01:45.39 2.13 Ceiling Fan >10 02:33.32 49sec broom >10 01:17.58 40sec Open Ceiling Fan >10 01:11.45 50sec Printer 0 01:01.81 30sec bathtub >10 02:02.37 1:28 Open bathtub >10 01:49.41 1:40 Shoes >10 04:10 1:24 chess painting >10 02:30.21 1:09 Open kitchen exhaust >10 01:10.19 52sec Coffee machine >10 02:13.68 1:12 beach hat >10 01:40.83 40sec Open Toilet Paper >10 44.68sec 58sec Christmas tree >10 03:01.61 2:21 unicorn head >10 02:11.15 50sec Close Ottoman >10 01:13.18 25sec Painting >10 01:48.08 1:25 monitor >10 01:49.39 55sec Close mirror >10 01:18.88 1:18 bathtub >10 02:25.46 1:42 mirror >10 01:22.71 40sec Close sofa >10 56.64sec 50sec sofa 7 41.66sec 40sec Washing machine 2 03:12.06 1:17 Close bed >10 01:17.28 1:15 bed >10 02:50.79 1:49 Dinning table 3 01:18.29 1:05 Close refrigerator >10 01:04.35 30sec refrigerator >10 02:56.08 54sec bed >10 03:14.44 1:25  
+
+> Fig. 5. Sample scene graph visualization at 80% convergence for Trash Can identification task
+
+High-level: The agent is asked to interpret a functional or contextual request, which requires reasoning about object affordances or placement rather than simply retrieving a named item. Examples: “I just bought ice cream, where should I put it?”, “I want to rest, what can I use?” 
+
+2) Evaluation Metrics: To evaluate the performance of BiMoSG combined with the LLM planner, we consider the following metrics: (a) Time to Completion: Total time taken to execute a high-level task, measuring efficiency of planning and perception and (b) Convergence Percentage: 
+
+Percentage of objects identified in scene graph at success time compared to all objects in the ground truth scene. These metrics allow us to quantify the system’s effectiveness and efficiency without direct comparisons to other approaches, focusing on absolute performance of our bimodal planning approach.             
+
+> TABLE IV TABLE OF MODE -SWITCHING SIMULATION EXPERIMENTS
+> Task Type Task Execution Time (s) Convergence (%) BiMoSG (ours) BiMoSG (ours) Object Retrieval Trash Can 57 80 Kitchen Island 23 90 High-level Ice Cream 19 90 Vegetables Grocery 45 85
+
+3) Simulation Results: The Vegetables Grocery task in-volved the instruction: ”I just bought vegetables and milk, what should I do?” The items identified for this task included the refrigerator, countertop, and table, with the first item successfully identified being the counter top. Fig. 5 shows a sample scene graph for the Trash Can task, which achieved a convergence of 80%. 
+
+D. Real-World Experiments 
+
+We deploy BiMoSG on a Clearpath Jackal robot in mu-seum mockup environment. The robot is tasked to identify an suspicious objects (”I am in a museum, help me find suspicious objects.”). We show the visualization our real world experiment in Figure 6 along with the resultant scene graph from BiMoSG. The robot first uses the default ”fast” mode to keep track of closed set objects (”bag”, ”plaything”, ”toy”) in the environment. Once a potential target object is detected. The robot triggers the ”slow” mode VLM to verify the object (”backpack”). Once the object is identified, the augmented scene graph is sent to the LLM planner to execute the next task i.e. navigate to object. As a result, we show that BiMoSG is adaptable to real world sensors and can successfully execute the given task. 
+
+E. Discussion 1) Effectiveness of LLM-based confirmation: One of the key aspects of our approach is the LLM-based confirmation step, applied whenever the closed set detector identifies a candidate object. Instead of acting immediately, the system queries the LLM with both the task description and the detected object, allowing it to assess whether the object is truly relevant to the user’s intent. This is especially important when the detector triggers on visually similar but contextu-ally irrelevant objects, as the LLM provides an additional layer of semantic reasoning that ensures the chosen object aligns with the task. 
+
+2) Efficiency of bimodal scene graph approach: The bimodal scene graph approach adds a hierarchical reasoning the way human beings do, starting from the general location of where an item may be and then focusing in that partic-ular area of interest, before moving on to other candidate locations. From our experiments it has been shown that our proposed approach is able to provide a flexible and real-time scene graph generation for use with high-level planners such as LLM as shown, more efficiently than the state of the art. Fig. 6. Visualization of our real world experiment on Clearpath Jackal Robot. The red circle denotes the target object (”backpack”). 
+
+3) Limitations and potential improvements: Among the limitations of this approach is that if the object being searched is not in the closed-set list of classes and the object being searched are not placed in where they are expected to be, our approach would take a long time as it needs to investigate every corner. V. C ONCLUSION 
+
+In this work, we presented BiMoSG a novel scene graph generation approach that utilized a bimodal framework that allows for seamless switching between a closed vocabulary ”fast mode” and an open-vocabulary ”slow-mode”. We show in simulation experiments that BiMoSG results in a shorter completion time for object retrieval task as compared to purely open-vocabulary methods. BiMoSG is thus competi-tive as a real-time scene graph generator for robot perception, navigation and reasoning tasks. REFERENCES [1] Y. Chang, L. Fermoselle, D. Ta, B. Bucher, L. Carlone, and J. Wang, “Ashita: Automatic scene-grounded hierarchical task analysis,” in Pro-ceedings of the Computer Vision and Pattern Recognition Conference ,2025, pp. 29 458–29 468. [2] B. Cheng, I. Misra, A. G. Schwing, A. Kirillov, and R. Girdhar, “Masked-attention mask transformer for universal image segmentation,” 2022. [Online]. Available: https://arxiv.org/abs/ 2112.01527 [3] L. contributors, “Langsam: Language-segment anything model,” https: //github.com/luca-medeiros/lang-segment-anything, 2023, accessed: 2025-09-16. [4] N. Gorlo, L. Schmid, and L. Carlone, “Describe anything anywhere at any moment,” 2025. [Online]. Available: https: //arxiv.org/abs/2512.00565 [5] Q. Gu, A. Kuwajerwala, S. Morin, K. M. Jatavallabhula, B. Sen, A. Agarwal, C. Rivera, W. Paul, K. Ellis, R. Chellappa et al. ,“Conceptgraphs: Open-vocabulary 3d scene graphs for perception and planning,” in 2024 IEEE International Conference on Robotics and Automation (ICRA) . IEEE, 2024, pp. 5021–5028. [6] N. Hughes, Y. Chang, and L. Carlone, “Hydra: A real-time spatial perception system for 3d scene graph construction and optimization,” in Robotics: Science and Systems , 2022. [7] A. Hurst, A. Lerer, A. P. Goucher, A. Perelman, A. Ramesh, A. Clark, A. Ostrow, A. Welihinda, A. Hayes, A. Radford et al. , “Gpt-4o system card,” arXiv preprint arXiv:2410.21276 , 2024. [8] K. M. Jatavallabhula, A. Kuwajerwala, Q. Gu, M. Omama, T. Chen, A. Maalouf, S. Li, G. Iyer, S. Saryazdi, N. Keetha et al. ,“Conceptfusion: Open-set multimodal 3d mapping,” arXiv preprint arXiv:2302.07241 , 2023. [9] D. Kahneman, Thinking, fast and slow . New York: Farrar, Straus and Giroux, 2011. [Online]. Available: https://www.amazon.de/Thinking-Fast-Slow-Daniel-Kahneman/ dp/0374275637/ref=wl it dp o pdT1 nS nC?ie=UTF8&colid= 151193SNGKJT9&coliid=I3OCESLZCVDFL7 [10] A. Kirillov, E. Mintun, N. Ravi, H. Mao, C. Rolland, L. Gustafson, T. Xiao, S. Whitehead, A. C. Berg, W.-Y. Lo et al. , “Segment anything,” in Proceedings of the IEEE/CVF international conference on computer vision , 2023, pp. 4015–4026. [11] S. Koch, N. Vaskevicius, M. Colosi, P. Hermosilla, and T. Ropinski, “Open3dsg: Open-vocabulary 3d scene graphs from point clouds with queryable objects and open-set relationships,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,2024, pp. 14 183–14 193. [12] S. Linok, T. Zemskova, S. Ladanova, R. Titkov, D. Yudin, M. Monastyrny, and A. Valenkov, “Beyond bare queries: Open-vocabulary object grounding with 3d scene graph,” in 2025 IEEE International Conference on Robotics and Automation (ICRA) . IEEE, 2025, pp. 13 582–13 589. [13] H. Liu, C. Li, Q. Wu, and Y. J. Lee, “Visual instruction tuning,” in 
+
+NeurIPS , 2023. [14] D. Maggio, Y. Chang, N. Hughes, M. Trang, D. Griffith, C. Dougherty, E. Cristofalo, L. Schmid, and L. Carlone, “Clio: Real-time task-driven open-set 3d scene graphs,” IEEE Robotics and Automation Letters ,2024. [15] A. Marafioti, O. Zohar, M. Farr´ e, M. Noyan, E. Bakouch, P. Cuenca, C. Zakka, L. B. Allal, A. Lozhkov, N. Tazi, V. Srivastav, J. Lochner, H. Larcher, M. Morlon, L. Tunstall, L. von Werra, and T. Wolf, “Smolvlm: Redefining small and efficient multimodal models,” arXiv preprint arXiv:2504.05299 , 2025. [16] S. Peng, K. Genova, C. Jiang, A. Tagliasacchi, M. Pollefeys, T. Funkhouser et al. , “Openscene: 3d scene understanding with open vocabularies,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 2023, pp. 815–824. [17] A. Radford, J. W. Kim, C. Hallacy, A. Ramesh, G. Goh, S. Agarwal, G. Sastry, A. Askell, P. Mishkin, J. Clark et al. , “Learning transferable visual models from natural language supervision,” in International conference on machine learning . PMLR, 2021, pp. 8748–8763. [18] A. Rosinol, M. Abate, Y. Chang, and L. Carlone, “Kimera: an open-source library for real-time metric-semantic localization and mapping,” in 2020 IEEE International Conference on Robotics and Automation (ICRA) . IEEE, 2020, pp. 1689–1696. [19] J. Straub, T. Whelan, L. Ma, Y. Chen, E. Wijmans, S. Green, J. J. Engel, R. Mur-Artal, C. Ren, S. Verma, A. Clarkson, M. Yan, B. Budge, Y. Yan, X. Pan, J. Yon, Y. Zou, K. Leon, N. Carter, J. Briales, T. Gillingham, E. Mueggler, L. Pesqueira, M. Savva, D. Batra, H. M. Strasdat, R. D. Nardi, M. Goesele, S. Lovegrove, and R. Newcombe, “The replica dataset: A digital replica of indoor spaces,” 2019. [Online]. Available: https://arxiv.org/abs/1906.05797 [20] A. Werby, C. Huang, M. B¨ uchner, A. Valada, and W. Burgard, “Hier-archical Open-Vocabulary 3D Scene Graphs for Language-Grounded Robot Navigation,” in Proceedings of Robotics: Science and Systems ,Delft, Netherlands, July 2024. [21] C. Zhang, D. Han, Y. Qiao, J. U. Kim, S.-H. Bae, S. Lee, and C. S. Hong, “Faster segment anything: Towards lightweight sam for mobile applications,” arXiv preprint arXiv:2306.14289 , 2023. [22] X. Zhao, W. Ding, Y. An, Y. Du, T. Yu, M. Li, M. Tang, and J. Wang, “Fast segment anything,” arXiv preprint arXiv:2306.12156 , 2023.
