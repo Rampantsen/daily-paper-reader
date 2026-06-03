@@ -1,0 +1,249 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-03T22:29:50.916054+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2606.03921v1",
+      "source": "arxiv",
+      "title": "GARDEN: Gravity-Aligned Reconstruction of Disentangled ENvironments from RGB images",
+      "abstract": "Converting multi-view RGB observations into simulation-ready 3D environments remains challenging because current reconstruction pipelines produce monolithic scene representations without explicit physical structure. They are typically defined up to an arbitrary global rotation and entangle rigid foreground objects with background geometry, which hinders stable physical interaction. Existing solutions often recover interactivity by replacing reconstructed objects with retrieved CAD assets, but this introduces a slow retrieval-and-replacement stage and weakens scene-specific geometric fidelity. We propose GARDEN, an RGB-only framework that reformulates reconstruction as physically-grounded scene factorization and outputs a structured hybrid scene representation. The key idea is to use gravity as a universal physical prior: we first align the reconstruction to a unified Gravity-View frame to resolve gauge ambiguity, then recover object-centric rigid meshes with accurate 6-DoF placement, and finally remove duplicate object geometry from the background through conditional 3D point classification. The resulting representation combines explicit rigid bodies with a decoupled background, enabling direct physics simulation while preserving visual realism. Experiments on both simulated and real multi-view scenes show that GARDEN improves object placement reliability, disentanglement quality, and rendering-simulation efficiency compared with retrieval-based baselines.",
+      "authors": [
+        "Jiahao Sun",
+        "Dingkun Wei",
+        "Zehong Shen",
+        "Hongyu Zhou",
+        "Yujun Shen",
+        "Liang Li"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-02T17:13:01+00:00",
+      "link": "https://arxiv.org/pdf/2606.03921v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "converts multi-view RGB into structured 3D environments",
+      "llm_evidence_cn": "将多视角RGB转换为结构化3D环境",
+      "llm_evidence": "将多视角RGB转换为结构化3D环境",
+      "canonical_evidence": "将多视角RGB转换为结构化3D环境",
+      "llm_tldr_en": "GARDEN converts multi-view RGB images into simulation-ready 3D environments by performing gravity-aligned reconstruction and disentangling foreground objects from background geometry.",
+      "llm_tldr_cn": "GARDEN将多视角RGB图像转换为可交互的三维环境，通过重力对齐与场景分解分离前景物体和背景几何，输出结构化混合表示，避免传统重建的旋转任意性与单一网格不可交互问题，无需CAD替换保留几何保真度。",
+      "llm_tldr": "GARDEN将多视角RGB图像转换为可交互的三维环境，通过重力对齐与场景分解分离前景物体和背景几何，输出结构化混合表示，避免传统重建的旋转任意性与单一网格不可交互问题，无需CAD替换保留几何保真度。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2605.30338v1",
+      "source": "arxiv",
+      "title": "REST3D: Reconstructing Physically Stable 3D Scenes from a Single Image",
+      "abstract": "Reconstructing physically stable 3D scenes from a single RGB image enables casual images to be converted into simulation-ready digital assets for applications such as immersive interaction and content creation. However, existing single-image reconstruction methods fall short in capturing the physical structure of a scene. As a result, they often produce geometrically plausible but physically inconsistent results, including object floating and penetration, which lead to unstable behavior in physics simulations. Image-conditioned scene generation methods improve physical plausibility but often rely on strong scene priors, yielding plausible yet inaccurate object arrangements that fail to match the input image. We propose REST3D, a single-image reconstruction framework that can reconstruct physically stable 3D scenes by integrating physical scene understanding with physics-constrained refinement. We first introduce an agentic physical scene understanding technique that constructs a scene-tree representation capturing object physical states and inter-object relationships from a gravity-support perspective, providing a structural prior for reconstruction. Leveraging this structure, we initialize the scene using image-to-3D models, followed by scene-tree-guided alignment and physics-constrained optimization to resolve physical violations while preserving visual consistency with the input image. Experiments show that our method significantly reduces physical errors and improves simulation stability on both synthetic and real-world datasets while maintaining strong reconstruction quality. We further demonstrate the reconstructed scenes in VR-based human-object interaction, showing their potential for immersive applications.",
+      "authors": [
+        "Xiaoxuan Ma",
+        "Jiashun Wang",
+        "Nicolas Ugrinovic",
+        "Yehonathan Litman",
+        "Kris Kitani"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-05-28T17:59:01+00:00",
+      "link": "https://arxiv.org/pdf/2605.30338v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Reconstructing physically stable 3D scenes",
+      "llm_evidence_cn": "重建物理稳定的三维场景",
+      "llm_evidence": "重建物理稳定的三维场景",
+      "canonical_evidence": "重建物理稳定的三维场景",
+      "llm_tldr_en": "Addresses physical inconsistency in single-image 3D scene reconstruction; proposes REST3D that integrates physics constraints into the reconstruction process; achieves simulation-ready 3D scenes; bridges geometric and physical realism.",
+      "llm_tldr_cn": "针对单图像三维场景重建中常见的物体漂浮、穿透等物理不一致问题，提出REST3D框架将物理约束融入重建流程，实验证明能生成可直接用于物理仿真的稳定场景，推动了三维场景生成从几何真实到物理真实的跨越。",
+      "llm_tldr": "针对单图像三维场景重建中常见的物体漂浮、穿透等物理不一致问题，提出REST3D框架将物理约束融入重建流程，实验证明能生成可直接用于物理仿真的稳定场景，推动了三维场景生成从几何真实到物理真实的跨越。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.03994v1",
+      "source": "arxiv",
+      "title": "SimuScene: Simulation-Ready Compositional 3D Scene Reconstruction from a Single Image",
+      "abstract": "Reconstructing interactive, simulation-ready 3D scenes from a single image is a critical bottleneck for robotic manipulation. While recent single-image lifters recover plausible per-object shapes, composing them yields scenes that collapse under physical simulation due to interpenetrating, hovering, or sinking objects. Existing physics-aware methods address this strictly as a post-hoc layout correction, leaving the underlying geometric errors unresolved. To address this, we introduce SimuScene, a compositional 3D reconstruction pipeline that puts physics in the loop of shape and layout estimation. Rather than using physics merely for layout cleanup, we utilize the physics engine as a diagnostic measurement tool during the generative process itself. By diagnostically simulating reconstructed objects under gravity, we convert penetration and support failures into quantitative correction signals that drive gravity-axis stretching and amodal shape resampling. This physics-informed feedback loop mitigates accumulated reconstruction errors and produces a stable, simulation-ready compositional 3D scene. Extensive experiments demonstrate state-of-the-art performance on physical stability and geometric alignment benchmarks. We further highlight SimuScene's utility by deploying reconstructed environments in humanoid control and robot-arm manipulation tasks.",
+      "authors": [
+        "Inhee Lee",
+        "Sangwon Baik",
+        "Sungjoo Kim",
+        "Hyeonwoo Kim",
+        "Hyunsoo Cha",
+        "Hanbyul Joo"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.RO"
+      ],
+      "published": "2026-06-02T17:59:59+00:00",
+      "link": "https://arxiv.org/pdf/2606.03994v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Compositional 3D scene reconstruction with physics loop",
+      "llm_evidence_cn": "基于物理循环的组合三维场景重建",
+      "llm_evidence": "基于物理循环的组合三维场景重建",
+      "canonical_evidence": "基于物理循环的组合三维场景重建",
+      "llm_tldr_en": "Addresses physically unrealistic object compositions in single-image 3D reconstruction; introduces SimuScene that uses a physics engine as a diagnostic tool during the generative process; outputs simulation-ready scenes; advances interactive 3D scene reconstruction.",
+      "llm_tldr_cn": "针对单图像三维重建中物体组合导致的交织、悬浮等物理问题，提出SimuScene将物理引擎嵌入生成过程循环诊断，从形状到布局联合优化，生成可直接用于仿真的稳定三维场景，推动了交互式场景重建的发展。",
+      "llm_tldr": "针对单图像三维重建中物体组合导致的交织、悬浮等物理问题，提出SimuScene将物理引擎嵌入生成过程循环诊断，从形状到布局联合优化，生成可直接用于仿真的稳定三维场景，推动了交互式场景重建的发展。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.03877v1",
+      "source": "arxiv",
+      "title": "MLP Splatting: Object-Centric Neural Fields",
+      "abstract": "3D representations are fundamental to scene rendering, understanding, and interaction. Recent approaches, such as 3D Gaussian Splatting and Neural Radiance Fields, achieve impressive photorealistic novel-view synthesis, but lack the ability to easily decompose scene elements into a few primitives, requiring additional segmentation or grouping for object-level manipulation. We present MLP-Splatting, a method that enables scene decomposition via a few expressive light-field primitives while providing photorealistic novel-view synthesis.   MLP-Splatting models each primitive as an independent compact MLP with localized spatial support that predicts radiance and opacity. In contrast to low-level Gaussian primitives or a single global radiance field, our neural primitives provide greater expressive capacity while remaining spatially localized. Rendering is performed through efficient sparse volumetric compositing over ray-primitive interactions.   Our primitives are supervised using RGB supervision alone, which yields primitives that represent local scene regions often corresponding to objects or object parts, enabling interactive object-level editing without segmentation masks by selecting a handful of primitives. Our method, augmented with optional semantic feature distillation, enables open-vocabulary scene interaction and open-set instant segmentation. Compared to state-of-the-art methods, we achieve substantially lower memory usage (1/15$\\times$) and faster rendering (3$\\times$), as we show in our experiments compared to semantic 3DGS methods. Project Page: https://shinjeongkim.com/mlp-splatting",
+      "authors": [
+        "Shinjeong Kim",
+        "Yuzhou Cheng",
+        "Xin Kong",
+        "Paul H. J. Kelly",
+        "Andrew J. Davison"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-02T16:46:16+00:00",
+      "link": "https://arxiv.org/pdf/2606.03877v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Enables scene decomposition into object-centric primitives, providing implicit semantic segmentation.",
+      "llm_evidence_cn": "通过面向对象的神经基元实现场景分解，提供隐式语义分割。",
+      "llm_evidence": "通过面向对象的神经基元实现场景分解，提供隐式语义分割。",
+      "canonical_evidence": "通过面向对象的神经基元实现场景分解，提供隐式语义分割。",
+      "llm_tldr_en": "This paper proposes MLP-Splatting, which models 3D scenes as a set of object-centric neural light-field primitives, enabling photorealistic novel-view synthesis and easy scene decomposition for object-level manipulation, effectively providing semantic segmentation without additional grouping.",
+      "llm_tldr_cn": "针对3D场景难以直接分解为语义对象的问题，本文提出MLP-Splatting方法，将场景表示为几个紧凑的神经光场基元，每个基元由独立MLP建模，可实现逼真的新视角合成和对象级操作，从而隐式地实现了3D场景的语义分割。",
+      "llm_tldr": "针对3D场景难以直接分解为语义对象的问题，本文提出MLP-Splatting方法，将场景表示为几个紧凑的神经光场基元，每个基元由独立MLP建模，可实现逼真的新视角合成和对象级操作，从而隐式地实现了3D场景的语义分割。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.00450v1",
+      "source": "arxiv",
+      "title": "Optimizing 3D Gaussian Splatting via Point Cloud Upsampling",
+      "abstract": "3D Gaussian Splatting (3DGS) is a technique for creating and rendering 3D scenes, however its performance depends heavily on the quality of initial seed points. To improve 3DGS initialization, this study presents and evaluates several point cloud upsampling approaches: linear interpolation, triangular interpolation, spline-based surface reconstruction, moving least squares surface fitting, and Voronoi-based point generation. Additionally, this research introduces a depth-guided point lifting method that leverages depth maps to maintain geometric consistency with Structure-from-Motion (SfM) reconstructions. Through extensive experiments on the Mip-NeRF360 and Replica datasets, the proposed methods demonstrate improvements in reconstruction quality across diverse scene types. Results indicate that different upsampling strategies excel in different scenarios: surface reconstruction methods perform better with organic, detailed scenes, while simpler interpolation approaches are more suited for scenes dominated by piecewise-smooth geometries. In comparison, the depth-guided approach shows promise for adding geometry-aware points across the entire scene, importantly in texture-less regions. These findings, which provide preliminary practical guidelines for selecting appropriate upsampling methods based on scene characteristics and computational constraints, advances the understanding of how point cloud initialization affects 3DGS quality.",
+      "authors": [
+        "Adrian Ramlal",
+        "Yan Song Hu",
+        "John S. Zelek"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR"
+      ],
+      "published": "2026-05-30T00:42:17+00:00",
+      "link": "https://arxiv.org/pdf/2606.00450v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Improves 3D Gaussian Splatting reconstruction quality by upsampling point cloud initialization, leveraging depth-guided SfM consistency.",
+      "llm_evidence_cn": "通过点云上采样改进三维高斯溅射初始化，利用深度引导的结构恢复一致性提升重建质量。",
+      "llm_evidence": "通过点云上采样改进三维高斯溅射初始化，利用深度引导的结构恢复一致性提升重建质量。",
+      "canonical_evidence": "通过点云上采样改进三维高斯溅射初始化，利用深度引导的结构恢复一致性提升重建质量。",
+      "llm_tldr_en": "This paper presents and evaluates multiple point cloud upsampling techniques to improve 3D Gaussian Splatting initialization, demonstrating better reconstruction quality across datasets.",
+      "llm_tldr_cn": "针对三维高斯溅射对初始种子点质量敏感的局限，本文研究并对比了多种点云上采样方法，包括线性插值、三角插值、样条曲面重建等，并引入深度引导的点提升方法以保持与SfM重建的几何一致性。在Mip-NeRF360和Replica数据集上的实验表明，上采样初始化能有效提升3DGS在不同场景中的重建质量。",
+      "llm_tldr": "针对三维高斯溅射对初始种子点质量敏感的局限，本文研究并对比了多种点云上采样方法，包括线性插值、三角插值、样条曲面重建等，并引入深度引导的点提升方法以保持与SfM重建的几何一致性。在Mip-NeRF360和Replica数据集上的实验表明，上采样初始化能有效提升3DGS在不同场景中的重建质量。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2605.28257v1",
+      "source": "arxiv",
+      "title": "Category-Level 3D Correspondence in Camera Space via Morphable Object Priors",
+      "abstract": "Understanding 3D objects from images is fundamental to robotics and AR/VR applications. While recent work has made progress in category-level pose estimation, current representations fail to capture the fine-grained semantics needed for reasoning about object parts, functions, and interactions. In this work, we study category-level 3D correspondence in camera space -- predicting, from a single image, 3D locations that remain consistent across instances within a category -- and show that it can emerge without explicit correspondence supervision by learning a shared morphable object prior. To enable research in this direction, we introduce HouseCorr3D, the first large-scale benchmark for monocular category-level 3D correspondence with 178k images across 50 household object categories, 280 unique instances, and 3D keypoint annotations directly on CAD models. Crucially, HouseCorr3D provides amodal correspondence labels for occluded regions and explicit symmetry annotations, addressing key limitations of existing datasets. We further propose Morpheus, a method that learns morphable category-level shape priors by disentangling canonical shape, deformation, and object pose. Through this shared canonical grounding, semantically meaningful 3D correspondences in camera space emerge implicitly. These emerging 3D correspondences set a new state of the art on HouseCorr3D, demonstrating that semantic 3D object understanding can arise without direct correspondence supervision. Data and code are publicly available at https://github.com/GenIntel/HouseCorr3D.",
+      "authors": [
+        "Leonhard Sommer",
+        "Artur Jesslen",
+        "Basavaraj Sunagad",
+        "Adam Kortylewski"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-05-27T10:08:32+00:00",
+      "link": "https://arxiv.org/pdf/2605.28257v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "predicts 3D correspondence across instances without supervision",
+      "llm_evidence_cn": "无需监督预测跨实例的3D对应",
+      "llm_evidence": "无需监督预测跨实例的3D对应",
+      "canonical_evidence": "无需监督预测跨实例的3D对应",
+      "llm_tldr_en": "This work studies category-level 3D correspondence from a single image, showing it can emerge without explicit supervision by learning a shared morphable object prior, and introduces a large-scale benchmark.",
+      "llm_tldr_cn": "本文研究从单张图像预测类别内一致的3D对应，发现通过共享形态对象先验可无监督地涌现对应能力，并推出首个大规模基准HouseCorr3D，含17.8万张图像和多种物体类别，推动类别级3D理解研究。",
+      "llm_tldr": "本文研究从单张图像预测类别内一致的3D对应，发现通过共享形态对象先验可无监督地涌现对应能力，并推出首个大规模基准HouseCorr3D，含17.8万张图像和多种物体类别，推动类别级3D理解研究。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

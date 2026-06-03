@@ -6,52 +6,40 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-02
-- 运行时间：2026-06-02 21:48:05 UTC
+- 最新运行日期：2026-06-03
+- 运行时间：2026-06-03 22:38:08 UTC
 - 运行状态：成功
-- 本次总论文数：10
-- 精读区：6
-- 速读区：4
+- 本次总论文数：6
+- 精读区：4
+- 速读区：2
 
 ### 今日简报（AI）
-今日精读两篇高分3D重建与头像生成工作，速览稀疏视角与全景建模进展。
-ActMVS实现主动单目多视角高质量场景重建，SplitAvatar以自回归高斯分裂达成单样本头像生成。
-建议关注主动几何重建与单图头像生成在实时交互与虚拟人方向的应用潜力。
-- 详情：[/202606/02/README](/202606/02/README)
+今日精读两篇满分级3D重建论文，GARDEN 从单张 RGB 图像中解耦重力对齐的环境，REST3D 则实现单图稳定物理场景重建。  
+最值得关注的方向是无需三维标注即可还原真实物理属性，重力感知和物理稳定成为新突破点。  
+建议读者可尝试将这类物理一致的场景表示融入具身仿真或机器人交互任务中。
+- 详情：[/202606/03/README](/202606/03/README)
 
 ### 精读区论文标签
-1. [ActMVS: Active Scene Reconstruction with Monocular Multi-View Stereo](/202606/02/2606.01367v1-actmvs-active-scene-reconstruction-with-monocular-multi-view-stereo)  
+1. [GARDEN: Gravity-Aligned Reconstruction of Disentangled ENvironments from RGB images](/202606/03/2606.03921v1-garden-gravity-aligned-reconstruction-of-disentangled-environments-from-rgb-images)  
    标签：评分：10.0/10、query:d-gen-recon
-   evidence：用于主动场景重建的单目多视角立体视觉
-2. [SplitAvatar: One-shot Head Avatar with Autoregressive Gaussian Splitting](/202606/02/2605.25751v1-splitavatar-one-shot-head-avatar-with-autoregressive-gaussian-splitting)  
+   evidence：将多视角RGB转换为结构化3D环境
+2. [REST3D: Reconstructing Physically Stable 3D Scenes from a Single Image](/202606/03/2605.30338v1-rest3d-reconstructing-physically-stable-3d-scenes-from-a-single-image)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：从单张图像重建可动画化头部头像
-3. [GAP3D: Generative Alignment of VLM Latents to Patch-Level Embeddings for 3D Generation](/202606/02/2605.28995v2-gap3d-generative-alignment-of-vlm-latents-to-patch-level-embeddings-for-3d-generation)  
+   evidence：重建物理稳定的三维场景
+3. [SimuScene: Simulation-Ready Compositional 3D Scene Reconstruction from a Single Image](/202606/03/2606.03994v1-simuscene-simulation-ready-compositional-3d-scene-reconstruction-from-a-single-image)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：使用视觉语言模型作为提示编码器进行三维资产生成
-4. [GeoSAM-3D: Geodesic Prompt Propagation for Open-Vocabulary 3D Scene Segmentation from Monocular Video](/202606/02/2606.00447v1-geosam-3d-geodesic-prompt-propagation-for-open-vocabulary-3d-scene-segmentation-from-monocular-video)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：从单目视频中使用测地线提示传播进行开放词汇3D场景分割
-5. [Thinking in Blender: Staged Executable Inverse Graphics with Vision-Language Models](/202606/02/2606.02580v1-thinking-in-blender-staged-executable-inverse-graphics-with-vision-language-models)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：通过VLM逆图形从单张图像重建可编辑Blender代码的三维场景
-6. [Beyond Static Gaussians: An Empirical Investigation of Architectural Paradigms for Dynamic 3D Scene Reconstruction](/202606/02/2606.00452v1-beyond-static-gaussians-an-empirical-investigation-of-architectural-paradigms-for-dynamic-3d-scene-reconstruction)  
+   evidence：基于物理循环的组合三维场景重建
+4. [MLP Splatting: Object-Centric Neural Fields](/202606/03/2606.03877v1-mlp-splatting-object-centric-neural-fields)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：实证分析多视图动态三维场景重建的架构范式
+   evidence：通过面向对象的神经基元实现场景分解，提供隐式语义分割。
 
 ### 速读区论文标签
-1. [DeblurNVS: Geometric Latent Diffusion for Novel View Synthesis from Sparse Motion-Blurred Images](/202606/02/2606.01315v1-deblurnvs-geometric-latent-diffusion-for-novel-view-synthesis-from-sparse-motion-blurred-images)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：利用多视角几何先验从稀疏运动模糊图像进行新视角合成
-2. [Splatshot: 3D Face Avatar Generation from a Single Unconstrained Photo](/202606/02/2606.01493v1-splatshot-3d-face-avatar-generation-from-a-single-unconstrained-photo)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：使用3DGS和扩散先验从单张无约束照片生成三维面部化身
-3. [SAVMap: Structure-Aided Visual Mapping of Large-Scale 2.5D Manhattan Wireframes from Panoramic Video](/202606/02/2606.01939v1-savmap-structure-aided-visual-mapping-of-large-scale-25d-manhattan-wireframes-from-panoramic-video)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：利用语义分割和特征跟踪从全景视频生成语义线框地图
-4. [SCAPO: Self-Supervised Category-Level Articulated Pose Estimation from a Single 3D Observation](/202606/02/2606.01940v1-scapo-self-supervised-category-level-articulated-pose-estimation-from-a-single-3d-observation)  
+1. [Optimizing 3D Gaussian Splatting via Point Cloud Upsampling](/202606/03/2606.00450v1-optimizing-3d-gaussian-splatting-via-point-cloud-upsampling)  
+   标签：评分：7.0/10、query:d-gen-recon
+   evidence：通过点云上采样改进三维高斯溅射初始化，利用深度引导的结构恢复一致性提升重建质量。
+2. [Category-Level 3D Correspondence in Camera Space via Morphable Object Priors](/202606/03/2605.28257v1-category-level-3d-correspondence-in-camera-space-via-morphable-object-priors)  
    标签：评分：6.0/10、query:d-gen-recon
-   evidence：从单次三维观测进行自监督部件分割与关节估计
+   evidence：无需监督预测跨实例的3D对应
 
 
 <div class="dpr-home-promo-card">
