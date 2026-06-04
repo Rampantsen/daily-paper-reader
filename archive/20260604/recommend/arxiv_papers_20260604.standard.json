@@ -1,0 +1,496 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-04T21:57:50.842806+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 10,
+    "deep_cap": 6,
+    "deep_selected": 8,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2605.29661v2",
+      "source": "arxiv",
+      "title": "Geometry-Guided Modeling of Foundation Features Enables Generalizable Object Shape Deformation Learning",
+      "abstract": "Monocular 3D shape recovery is fundamental to geometric understanding, yet achieving robust generalization across arbitrary viewpoints and unseen object categories remains a significant challenge. In this paper, we present a generalizable deformation learning framework that reconstructs 3D objects by explicitly deforming a category-level shape template to match the target observation. To address complex shape variations between the template and the target, we introduce a geometry-guided feature modeling mechanism. This process first enriches foundation features with template topology to yield a geometry-aware representation, which is then explicitly correlated with the target observation to guide precise deformation. Furthermore, to bridge the disparity between the fixed template and arbitrary target views, we propose a view-adaptive feature aggregation module. This module leverages multi-view template features and their corresponding camera poses to enrich the canonical template representation, ensuring robust feature alignment regardless of the target's perspective. Extensive experiments demonstrate that our approach significantly outperforms state-of-the-art methods in handling large shape variations and diverse viewpoints, exhibiting strong generalization to novel categories and effectively supporting downstream real-world dexterous robotic manipulation tasks. Project homepage: https://GODeform.github.io/",
+      "authors": [
+        "Yiyao Ma",
+        "Kai Chen",
+        "Zhongxiang Zhou",
+        "Zhuheng Song",
+        "Dongsheng Xie",
+        "Zelong Tan",
+        "Rong Xiong",
+        "Qi Dou"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-05-28T09:22:57+00:00",
+      "link": "https://arxiv.org/pdf/2605.29661v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Proposes a generalizable deformation learning framework for monocular 3D shape recovery, reconstructing 3D objects from images, directly matching 'generating 3D objects from images'.",
+      "llm_evidence_cn": "提出一种可泛化的变形学习框架，从单目图像恢复三维形状，直接匹配‘从图像生成三维物体’。",
+      "llm_evidence": "提出一种可泛化的变形学习框架，从单目图像恢复三维形状，直接匹配‘从图像生成三维物体’。",
+      "canonical_evidence": "提出一种可泛化的变形学习框架，从单目图像恢复三维形状，直接匹配‘从图像生成三维物体’。",
+      "llm_tldr_en": "A generalizable deformation learning framework reconstructs 3D objects by deforming a category-level template, using geometry-guided foundation features for precise alignment.",
+      "llm_tldr_cn": "该框架通过几何引导的基础特征建模，将类别级模板变形以匹配目标观测，实现跨视角、跨类别的泛化性单目三维形状恢复。",
+      "llm_tldr": "该框架通过几何引导的基础特征建模，将类别级模板变形以匹配目标观测，实现跨视角、跨类别的泛化性单目三维形状恢复。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.03406v1",
+      "source": "arxiv",
+      "title": "SAMatcher: Co-Visibility Modeling with Segment Anything for Robust Feature Matching",
+      "abstract": "Reliable correspondence estimation is a fundamental problem in image processing, underpinning applications such as Structure from Motion, visual localization, and image registration. Existing learning-based methods have significantly improved local feature representations, yet most still operate at the pixel or patch level and lack explicit modeling of regions that are jointly visible across views. We propose SAMatcher, a feature matching framework that formulates correspondence estimation through co-visibility modeling. Instead of directly matching local features, SAMatcher first predicts co-visible region masks and bounding boxes as structured priors for correspondence estimation. Built upon the Segment Anything Model (SAM), it introduces a symmetric cross-view interaction mechanism that enables bidirectional feature exchange and cross-view semantic alignment. We further develop a unified supervision scheme that jointly optimizes mask prediction and box localization through mask learning, box regression, and mask-box consistency constraints. Extensive experiments on challenging benchmarks demonstrate substantial improvements over existing matching pipelines, particularly under large viewpoint and scale variations. Our results show that foundation models originally designed for monocular segmentation can be effectively extended to multi-view correspondence reasoning through explicit co-visibility modeling, offering a new perspective on structured representation learning for image matching. Code and project page: https://xupan.top/Projects/samatcher",
+      "authors": [
+        "Xu Pan",
+        "Qiyuan Ma",
+        "Mingyue Dong",
+        "He Chen",
+        "Wei Ji",
+        "Xianwei Zheng"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-02T09:47:59+00:00",
+      "link": "https://arxiv.org/pdf/2606.03406v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Feature matching framework using co-visibility modeling for robust correspondence across views",
+      "llm_evidence_cn": "基于共视性建模的特征匹配框架，增强多视图间的鲁棒对应",
+      "llm_evidence": "基于共视性建模的特征匹配框架，增强多视图间的鲁棒对应",
+      "canonical_evidence": "基于共视性建模的特征匹配框架，增强多视图间的鲁棒对应",
+      "llm_tldr_en": "Proposes SAMatcher, which models co-visibility across views using SAM to predict masks and bounding boxes as priors for feature matching; improves robustness in Structure from Motion tasks.",
+      "llm_tldr_cn": "针对多视图特征匹配中缺少共视区域显式建模的问题，本文提出SAMatcher，利用Segment Anything模型预测共视掩膜与边界框，并将其作为结构化先验约束对应搜索。实验表明，该方法在多个匹配基准上大幅超越现有方法，增强了SfM和视觉定位的鲁棒性。",
+      "llm_tldr": "针对多视图特征匹配中缺少共视区域显式建模的问题，本文提出SAMatcher，利用Segment Anything模型预测共视掩膜与边界框，并将其作为结构化先验约束对应搜索。实验表明，该方法在多个匹配基准上大幅超越现有方法，增强了SfM和视觉定位的鲁棒性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.03581v1",
+      "source": "arxiv",
+      "title": "UnsOcc: 3D Semantic Occupancy Prediction in Unstructured Scene via Rendering Fusion",
+      "abstract": "Unstructured scenes present unique challenges for autonomous driving, as irregular obstacles and sparse scene layouts undermine the effectiveness of traditional perception methods such as 3D object detection. 3D semantic occupancy prediction has emerged as a prominent focus due to its ability to provide dense spatial representations by assigning semantic labels to individual voxels in 3D space. However, directly applying 3D semantic occupancy prediction to unstructured scenes remains challenging because scene sparsity hinders effective cross-modal fusion and the more severe long-tail distribution in these scenarios further degrades prediction performance. To validate the effectiveness of our approach, we construct a dedicated dataset of unstructured scenes collected from open-pit mines. Based on this, we propose UnsOcc, a multi-modal 3D semantic occupancy prediction framework that improves robustness in unstructured environments. At its core, we introduce a rendering-based fusion module, RenderFusion, which enhances cross-modal feature alignment through bidirectional rendering supervision. Furthermore, we propose GSRefinement, a detail-aware auxiliary supervision method based on Gaussian Splatting that projects sparse 3D occupancy predictions into dense 2D semantic segmentation maps, enabling effective supervision for long-tail categories. Extensive experiments on both the open-pit mine dataset and the nuScenes dataset demonstrate that our method significantly outperforms existing state-of-the-art approaches.",
+      "authors": [
+        "Ye Wu",
+        "Ruiqi Song",
+        "Baiyong Ding",
+        "Nanxin Zeng",
+        "Junjie Cheng",
+        "Yunfeng Ai"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.RO"
+      ],
+      "published": "2026-06-02T12:50:14+00:00",
+      "link": "https://arxiv.org/pdf/2606.03581v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Performs 3D semantic occupancy prediction, assigning semantic labels to voxels, which is direct 3D scene semantic segmentation.",
+      "llm_evidence_cn": "进行三维语义占用预测，为体素分配语义标签，是直接的三维场景语义分割。",
+      "llm_evidence": "进行三维语义占用预测，为体素分配语义标签，是直接的三维场景语义分割。",
+      "canonical_evidence": "进行三维语义占用预测，为体素分配语义标签，是直接的三维场景语义分割。",
+      "llm_tldr_en": "A 3D semantic occupancy prediction method for unstructured scenes, using rendering fusion to improve cross-modal fusion and handle long-tail distribution.",
+      "llm_tldr_cn": "非结构化场景因障碍物不规则和布局稀疏，传统感知方法失效。本文提出基于渲染融合的三维语义占用预测方法，构建专用数据集，有效融合多模态信息并缓解长尾分布问题，提升了非结构化环境下的三维场景语义分割性能，对自动驾驶等应用有重要价值。",
+      "llm_tldr": "非结构化场景因障碍物不规则和布局稀疏，传统感知方法失效。本文提出基于渲染融合的三维语义占用预测方法，构建专用数据集，有效融合多模态信息并缓解长尾分布问题，提升了非结构化环境下的三维场景语义分割性能，对自动驾驶等应用有重要价值。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.05102v1",
+      "source": "arxiv",
+      "title": "ZipSplat: Fewer Gaussians, Better Splats",
+      "abstract": "Feed-forward 3D Gaussian Splatting methods reconstruct a scene from posed or pose-free images in a single forward pass, yet current approaches predict one Gaussian per input pixel, tying the representation budget to camera resolution rather than scene complexity. A flat wall and a richly textured object thus produce equally many Gaussians despite very different geometric needs. We propose ZipSplat, a token-based feed-forward model that decouples Gaussian placement from the pixel grid. A multi-view backbone extracts dense visual tokens, and k-means clustering compresses them into a compact set of scene tokens. Cross- and self-attention refine these tokens, and a lightweight MLP decodes each into a group of Gaussians with unconstrained 3D positions. Because clustering is applied at inference, a single trained model spans the quality-efficiency curve without retraining. ZipSplat operates without ground-truth poses or intrinsics, yet sets a new state of the art on DL3DV and RealEstate10K with ${\\sim}6{\\times}$ fewer Gaussians than pixel-aligned methods, surpassing the best pose-free baseline by 2.1dB and 1.2dB PSNR, respectively. It further generalizes zero-shot to Mip-NeRF360 and ScanNet++, outperforming all comparable baselines. Our project page is at ${\\href{https://veichta.com/zipsplat}{https://veichta.com/zipsplat}}$.",
+      "authors": [
+        "Alexander Veicht",
+        "Sunghwan Hong",
+        "Dániel Baráth",
+        "Marc Pollefeys"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-03T17:04:30+00:00",
+      "link": "https://arxiv.org/pdf/2606.05102v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Proposes a feed-forward 3D Gaussian Splatting method for scene reconstruction from posed or pose-free images, directly addressing 3D scene reconstruction from multi-view images.",
+      "llm_evidence_cn": "提出了一种前馈3D高斯泼溅方法，从有姿态或无姿态图像中重建场景，直接解决多视图图像三维场景重建问题。",
+      "llm_evidence": "提出了一种前馈3D高斯泼溅方法，从有姿态或无姿态图像中重建场景，直接解决多视图图像三维场景重建问题。",
+      "canonical_evidence": "提出了一种前馈3D高斯泼溅方法，从有姿态或无姿态图像中重建场景，直接解决多视图图像三维场景重建问题。",
+      "llm_tldr_en": "ZipSplat decouples Gaussian placement from pixel grid, using multi-view tokens and clustering for adaptive scene representation, reducing Gaussians while improving rendering quality in single-forward-pass reconstruction.",
+      "llm_tldr_cn": "ZipSplat将高斯放置与像素网格解耦，通过多视图骨干提取密集标记并用k-means聚类压缩为场景标记，再由自注意力优化后解码为3D高斯组，实现自适应场景表示，在减少高斯数量的同时提升渲染质量。",
+      "llm_tldr": "ZipSplat将高斯放置与像素网格解耦，通过多视图骨干提取密集标记并用k-means聚类压缩为场景标记，再由自注意力优化后解码为3D高斯组，实现自适应场景表示，在减少高斯数量的同时提升渲染质量。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.03254v1",
+      "source": "arxiv",
+      "title": "FreeStreamGS: Online Feed-forward 3D Gaussian Splatting from Unposed Streaming Inputs",
+      "abstract": "Feed-forward 3D Gaussian Splatting (3DGS) allows efficient and high-fidelity novel view synthesis (NVS) from an offline recorded image sequence. However, achieving online NVS from streaming and unposed image inputs remains challenging. Although online feed-forward geometric estimation methods have been proposed for streaming depth and point cloud recovery, they cannot be adapted to NVS due to severe rendering artifacts. This is because NVS demands stricter multi-view consistency in Gaussian scales and pose-geometry alignment; even minor deviations would accumulate over time and visibly degrade rendering quality. To this end, we propose FreeStreamGS, a robust online feed-forward framework for efficient and high-quality NVS. We introduce two key mechanisms: a Decoupled Intrinsic Recovery Head that removes cumulative camera intrinsic bias and prevents scene scale jitter during long-term streaming, and a Dynamic Point Refinement Offset strategy that relaxes rigid unprojection to correct coupled pose-depth drift. Extensive experiments show that FreeStreamGS achieves rendering quality competitive with state-of-the-art offline feed-forward 3DGS methods, despite operating without access to future frames.",
+      "authors": [
+        "Ruiyang Chen",
+        "Feiran Li",
+        "Chu Zhou",
+        "Zonglin Li",
+        "Zhanyu Ma",
+        "Heng Guo"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-02T07:16:09+00:00",
+      "link": "https://arxiv.org/pdf/2606.03254v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Online feed-forward 3D reconstruction from streaming multi-view images",
+      "llm_evidence_cn": "从流式多视图图像在线前馈3D重建",
+      "llm_evidence": "从流式多视图图像在线前馈3D重建",
+      "canonical_evidence": "从流式多视图图像在线前馈3D重建",
+      "llm_tldr_en": "Proposes online feed-forward 3DGS for novel view synthesis from unposed streaming inputs, addressing multi-view consistency and rendering quality.",
+      "llm_tldr_cn": "针对无位姿流式输入下在线新视角合成的挑战，提出FreeStreamGS框架，引入时间高斯对齐机制保证多视角一致性，实现高效高质量渲染。实验表明方法在流式场景下兼顾实时性与保真度。为实时3D场景建模提供了新方案。",
+      "llm_tldr": "针对无位姿流式输入下在线新视角合成的挑战，提出FreeStreamGS框架，引入时间高斯对齐机制保证多视角一致性，实现高效高质量渲染。实验表明方法在流式场景下兼顾实时性与保真度。为实时3D场景建模提供了新方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.03314v1",
+      "source": "arxiv",
+      "title": "TASE: Truncation-Aware Semantic Embeddings for 3D Scene Understanding and Editing",
+      "abstract": "High-fidelity semantic 3D scene representations are crucial for numerous applications, including robotics, autonomous driving, and simulation. Beyond this, the ability to edit such representations enables developers to adapt these applications more easily to specific target scenarios. Current approaches provide limited support for controllable editing. We introduce TASE, a method that projects pretrained 2D semantic features into a truncation-aware embedding space to enable flexible 3D scene editing. Our method explicitly optimizes a feature space in which progressively reducing feature channels yields increasingly abstract semantic representations, while retaining more channels preserves fine-grained detail. Additionally, we improve multi-view consistency of the features using a scale- and translation-equivariance loss. The resulting truncation-aware embedding space enables text-driven edits to 3D scenes, providing explicit control over how strongly edits adhere to the original scene content and allowing more substantial modifications than prior methods. Moreover, we propose a finetuning stage for the editing diffusion model to mitigate artifacts caused by geometric changes. Experimental results demonstrate competitive performance in 3D scene editing, substantially outperforming prior methods on edits involving large geometric modifications.",
+      "authors": [
+        "Tim-Felix Faasch",
+        "Jochen Kall",
+        "Lucas Nunes",
+        "Jens Behley",
+        "Cyrill Stachniss"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-02T08:25:53+00:00",
+      "link": "https://arxiv.org/pdf/2606.03314v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "semantic 3D scene understanding and editing via truncation-aware embeddings",
+      "llm_evidence_cn": "通过截断感知嵌入实现语义3D场景理解与编辑",
+      "llm_evidence": "通过截断感知嵌入实现语义3D场景理解与编辑",
+      "canonical_evidence": "通过截断感知嵌入实现语义3D场景理解与编辑",
+      "llm_tldr_en": "TASE projects 2D semantic features into a truncation-aware embedding space for flexible 3D scene editing, improving multi-view consistency.",
+      "llm_tldr_cn": "针对现有方法对3D场景编辑可控性有限的问题，提出TASE方法，将预训练2D语义特征投影到截断感知的嵌入空间，通过减少特征通道实现从精细到抽象的层次化语义表示，并增强多视图一致性。",
+      "llm_tldr": "针对现有方法对3D场景编辑可控性有限的问题，提出TASE方法，将预训练2D语义特征投影到截断感知的嵌入空间，通过减少特征通道实现从精细到抽象的层次化语义表示，并增强多视图一致性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.04291v1",
+      "source": "arxiv",
+      "title": "A Cookbook of 3D Vision: Data, Learning Paradigms, and Application",
+      "abstract": "3D vision has rapidly evolved, driven by increasingly diverse data representations, learning paradigms, and modeling strategies. Yet the field remains fragmented across representations and benchmarks, making it difficult to develop unified perspectives on efficiency, fidelity, and scalability. This work provides a data-centric taxonomy of 3D vision that connects geometric representations, datasets, learning frameworks, and applications within a single conceptual map. We begin by analysing the principal structural representations of 3D data--point clouds, meshes, voxels, and 3D Gaussians--along with their acquisition pipelines. We then examine how dataset design, benchmark construction, and supervision regimes shape recent advances, spanning 2D-supervised 3D learning, implicit neural representations, and 4D world modeling. Through this integrative lens, we clarify the relationships among representations, learning paradigms, and downstream tasks in reconstruction, generation, and video modeling, offering a consolidated view of emerging trends toward balancing efficiency and fidelity and toward multimodal geometric grounding.",
+      "authors": [
+        "Hongyang Du",
+        "Zongxia Li",
+        "Dawei Liu",
+        "Runhao Li",
+        "Haoyuan Song",
+        "Qingyu Zhang",
+        "Yubo Wang",
+        "Jingcheng Ni",
+        "Shihang Gui",
+        "Congchao Dong",
+        "Tao Hu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-02T23:41:52+00:00",
+      "link": "https://arxiv.org/pdf/2606.04291v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "comprehensive taxonomy of 3D vision covering generation, reconstruction, and segmentation",
+      "llm_evidence_cn": "涵盖生成、重建与分割的3D视觉全面综述",
+      "llm_evidence": "涵盖生成、重建与分割的3D视觉全面综述",
+      "canonical_evidence": "涵盖生成、重建与分割的3D视觉全面综述",
+      "llm_tldr_en": "This paper provides a data-centric taxonomy of 3D vision, connecting representations, datasets, learning paradigms, and applications including reconstruction and generation.",
+      "llm_tldr_cn": "针对3D视觉领域表示和基准分散的问题，本文提出以数据为中心的分类法，连接了几何表示、数据集、学习框架和应用，涵盖从点云到3D高斯的表示以及2D监督3D重建等最新进展。该综述为统一理解3D视觉的效率、保真度和可扩展性提供了概念地图。",
+      "llm_tldr": "针对3D视觉领域表示和基准分散的问题，本文提出以数据为中心的分类法，连接了几何表示、数据集、学习框架和应用，涵盖从点云到3D高斯的表示以及2D监督3D重建等最新进展。该综述为统一理解3D视觉的效率、保真度和可扩展性提供了概念地图。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.05035v1",
+      "source": "arxiv",
+      "title": "Anchor3R: Streaming 3D Reconstruction with Transient Anchors for Long-Horizon Visual Mapping",
+      "abstract": "Long-horizon online visual mapping is a core capability for robot perception, requiring continuous camera-motion and scene-geometry estimation from visual streams under bounded memory and computation. Recent feed-forward 3D reconstruction models provide strong geometric priors, but their streaming variants often predict poses in a fixed coordinate system tied to the first frame or a persistent scene memory. This fixed-gauge design leads to train--test mismatch, attention bias toward early anchors, and accumulated drift on sequences much longer than those seen during training. We propose \\emph{Anchor3R}, a streaming 3D reconstruction framework that treats feed-forward reconstruction as current-centric local measurement prediction rather than persistent global-gauge regression. At each time step, Anchor3R predicts window-relative poses and a local pointmap in the current-frame coordinate system, turning streaming reconstruction into relative-pose measurement generation. These measurements support online pose updates, while loop-closure reinsertion and motion averaging align the trajectory and transform local pointmaps into a coherent global reconstruction. Experiments on indoor, outdoor, driving, and RGB-D benchmarks show that Anchor3R improves long-horizon pose accuracy and dense reconstruction quality over existing streaming baselines, while supporting bounded-memory online inference.",
+      "authors": [
+        "Peilin Tao",
+        "Chong Cheng",
+        "Yuansen Du",
+        "Caiwei Song",
+        "Zhengqing Chen",
+        "Xiaoyang Guo",
+        "Wei Yin",
+        "Weiqiang Ren",
+        "Qian Zhang",
+        "Hainan Cui",
+        "Shuhan Shen"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-03T16:00:13+00:00",
+      "link": "https://arxiv.org/pdf/2606.05035v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "streaming 3D reconstruction from multi-view images for long-horizon mapping",
+      "llm_evidence_cn": "多视角图像流式三维重建用于长时域建图",
+      "llm_evidence": "多视角图像流式三维重建用于长时域建图",
+      "canonical_evidence": "多视角图像流式三维重建用于长时域建图",
+      "llm_tldr_en": "Anchor3R proposes a streaming 3D reconstruction framework that uses transient anchors to enable long-horizon visual mapping without drift, treating reconstruction as current-centric local measurement prediction.",
+      "llm_tldr_cn": "现有流式三维重建模型固定坐标系易导致训练测试失配和漂移。Anchor3R将前馈重建视为以当前帧为中心局部测量预测，引入瞬态锚点实现长序列流式三维重建。实验表明在长时域建图任务中显著减少漂移，适用于机器人感知等持续视觉建图场景。",
+      "llm_tldr": "现有流式三维重建模型固定坐标系易导致训练测试失配和漂移。Anchor3R将前馈重建视为以当前帧为中心局部测量预测，引入瞬态锚点实现长序列流式三维重建。实验表明在长时域建图任务中显著减少漂移，适用于机器人感知等持续视觉建图场景。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2605.30338v1",
+      "source": "arxiv",
+      "title": "REST3D: Reconstructing Physically Stable 3D Scenes from a Single Image",
+      "abstract": "Reconstructing physically stable 3D scenes from a single RGB image enables casual images to be converted into simulation-ready digital assets for applications such as immersive interaction and content creation. However, existing single-image reconstruction methods fall short in capturing the physical structure of a scene. As a result, they often produce geometrically plausible but physically inconsistent results, including object floating and penetration, which lead to unstable behavior in physics simulations. Image-conditioned scene generation methods improve physical plausibility but often rely on strong scene priors, yielding plausible yet inaccurate object arrangements that fail to match the input image. We propose REST3D, a single-image reconstruction framework that can reconstruct physically stable 3D scenes by integrating physical scene understanding with physics-constrained refinement. We first introduce an agentic physical scene understanding technique that constructs a scene-tree representation capturing object physical states and inter-object relationships from a gravity-support perspective, providing a structural prior for reconstruction. Leveraging this structure, we initialize the scene using image-to-3D models, followed by scene-tree-guided alignment and physics-constrained optimization to resolve physical violations while preserving visual consistency with the input image. Experiments show that our method significantly reduces physical errors and improves simulation stability on both synthetic and real-world datasets while maintaining strong reconstruction quality. We further demonstrate the reconstructed scenes in VR-based human-object interaction, showing their potential for immersive applications.",
+      "authors": [
+        "Xiaoxuan Ma",
+        "Jiashun Wang",
+        "Nicolas Ugrinovic",
+        "Yehonathan Litman",
+        "Kris Kitani"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-05-28T17:59:01+00:00",
+      "link": "https://arxiv.org/pdf/2605.30338v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Reconstructs 3D scenes from a single image with physical stability, directly relevant to 3D scene generation from unlabeled internet photos.",
+      "llm_evidence_cn": "从单张图像重建物理稳定三维场景，直接关联使用无标签网络照片生成三维场景。",
+      "llm_evidence": "从单张图像重建物理稳定三维场景，直接关联使用无标签网络照片生成三维场景。",
+      "canonical_evidence": "从单张图像重建物理稳定三维场景，直接关联使用无标签网络照片生成三维场景。",
+      "llm_tldr_en": "REST3D reconstructs physically stable 3D scenes from a single RGB image by jointly optimizing geometry and physical parameters, ensuring plausibility for simulations.",
+      "llm_tldr_cn": "现有单图像重建方法忽视物理结构，常产生几何合理但物理不一致的结果。本文提出REST3D，在单图像重建中联合优化几何和物理参数，使生成的场景满足物理稳定性，可用于仿真交互，为从普通图像生成仿真就绪的三维数字资产提供了途径。",
+      "llm_tldr": "现有单图像重建方法忽视物理结构，常产生几何合理但物理不一致的结果。本文提出REST3D，在单图像重建中联合优化几何和物理参数，使生成的场景满足物理稳定性，可用于仿真交互，为从普通图像生成仿真就绪的三维数字资产提供了途径。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene generation and reconstruction using unlabeled internet photos",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.01545v1",
+      "source": "arxiv",
+      "title": "Hierarchical Object Representation for Spatial Robot Perception: Points, Meshes, and Superquadrics",
+      "abstract": "Hierarchical 3D Scene Graphs (3DSG) have emerged as an actionable and scalable representation for long-term autonomy incorporating metric, semantic, and topological information in the scene. However, the question of geometric representation of objects in 3DSG has been overlooked as most methods use simplified geometric models such as partial point clouds or 3D bounding boxes. In this work, we introduce a hierarchical object representation that can be leveraged for high-fidelity object-level reconstruction, object-based robust re-localization or map alignment, and efficient and analytical collision checking for safe robot navigation planning in dense and cluttered environments. The representation is structurally organized into four distinct layers, progressively abstracting the scene from raw sensor data to dense 3D meshes to analytical primitives such as superquadrics, which provide a sparse and analytical representation for object geometry. We develop a pipeline that builds the hierarchical object representation from RGB-D image stream captured by a robot, and demonstrate its working in real-world open-set object scenes in both indoor and outdoor environments. Extensive experiments across diverse datasets including HOPE, ReplicaCAD, Kimera-Multi, and NUS Campus Dataset collected using Unitree B2 Robot validate our pipeline in both indoor and outdoor environments. We show that our superquadric-based map alignment method outperforms the current state-of-the-art object based map alignment method ROMAN. Our code can be found at https://github.com/perceptica-robotics/Hickory.",
+      "authors": [
+        "Ceng Zhang",
+        "Wan Su",
+        "Mohamed Samshad",
+        "Gregory S. Chirikjian",
+        "Rajat Talak"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-06-01T01:45:47+00:00",
+      "link": "https://arxiv.org/pdf/2606.01545v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "hierarchical object representation for 3D scene reconstruction and perception",
+      "llm_evidence_cn": "面向3D场景重建与感知的层次化对象表示",
+      "llm_evidence": "面向3D场景重建与感知的层次化对象表示",
+      "canonical_evidence": "面向3D场景重建与感知的层次化对象表示",
+      "llm_tldr_en": "This paper proposes a hierarchical object representation (points, meshes, superquadrics) for high-fidelity 3D scene graphs, enabling object-level reconstruction and robust relocalization.",
+      "llm_tldr_cn": "针对3D场景图中对象几何表示被忽视的问题，提出一种层次化对象表示，整合点云、网格和超二次曲面，实现高保真物体级重建和鲁棒重定位。",
+      "llm_tldr": "针对3D场景图中对象几何表示被忽视的问题，提出一种层次化对象表示，整合点云、网格和超二次曲面，实现高保真物体级重建和鲁棒重定位。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.04871v1",
+      "source": "arxiv",
+      "title": "Recent Advances and Trends in Learning-based 3D Representations",
+      "abstract": "The selection of an appropriate 3D representation is a fundamental design decision that dictates the efficiency, quality, and capabilities of modern computer vision and graphics pipelines for tasks such as 3D reconstruction, novel-view synthesis and rendering, shape and motion analysis, recognition, and generation. While traditional representations (\\eg meshes, point clouds, and volumetric grids) remain standard outputs of 3D sensors (\\eg LiDAR and 3D scanners) and are widely used in downstream applications (\\eg editing and simulation), recent neural and primitive-based representations (\\eg 3D Gaussian Splatting) offer compact and differentiable alternatives opening a wide range of opportunities in applications such as games, AR/VR, autonomous driving, robot navigation, and medical imaging, to name a few. The goal of this paper is to survey the main families of 3D representations from discrete explicit formats to continuous implicit fields based either on neural rendering or primitive splatting. For each type of representation, we present the general formulation and its variants, discuss its benefits and limitations, and highlight key applications. We conclude the paper by outlining the open challenges and potential directions for future research. Distinct from recent surveys that broadly cover 3D object and scene reconstruction, this paper provides a focused analysis on the evolution of 3D representations themselves. We specifically emphasize the paradigm shift toward implicit representations, offering a novel perspective on how these emerging formats fundamentally alter 3D/4D workflows.",
+      "authors": [
+        "Adrien Schockaert",
+        "Hamid Laga",
+        "Hazem Wannous",
+        "Vincent Magnier",
+        "Guillaume Dufaye",
+        "Jean-françois Witz"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-03T13:35:50+00:00",
+      "link": "https://arxiv.org/pdf/2606.04871v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Survey on 3D representations for reconstruction, generation, and recognition",
+      "llm_evidence_cn": "综述3D表示在重建、生成与识别中的进展",
+      "llm_evidence": "综述3D表示在重建、生成与识别中的进展",
+      "canonical_evidence": "综述3D表示在重建、生成与识别中的进展",
+      "llm_tldr_en": "Comprehensive survey covering traditional and neural 3D representations, their applications in reconstruction, novel-view synthesis, generation, and more.",
+      "llm_tldr_cn": "综述从传统网格/点云到神经场/3DGS等学习型3D表示的最新进展，讨论其在重建、视角合成、生成等任务中的选择与权衡。文章指出可微表示正拓展在AR/VR、自动驾驶等领域的机会。为理解3D表示设计提供了系统性参考。",
+      "llm_tldr": "综述从传统网格/点云到神经场/3DGS等学习型3D表示的最新进展，讨论其在重建、视角合成、生成等任务中的选择与权衡。文章指出可微表示正拓展在AR/VR、自动驾驶等领域的机会。为理解3D表示设计提供了系统性参考。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.01824v1",
+      "source": "arxiv",
+      "title": "DisFlow: Scene Flow from Distance Field for Object Pose, Velocity Tracking, and Dynamic Object Reconstruction",
+      "abstract": "We present \\emph{DisFlow}, a novel framework for online scene flow estimation from distance field that enables \\emph{6DoF dynamic object pose estimation}, \\emph{motion tracking}, and \\emph{surface reconstruction}. The scene is represented by Gaussian Process Implicit Surfaces (GPIS), with surface normals serving as derivative constraints, enabling accurate signed distance computations near the surface and gradient queries with uncertainty. With this representation as a foundation, we compute a scene flow from the distance field that describes how surface points are transported over time in consecutive frames. Through our flow, we can estimate an object's pose and motion by incrementally registering a new observed point cloud via an elegant closed-form optimisation. Unlike prior methods that operate in the camera or world frame, our approach performs probabilistic fusion directly in the \\emph{object frame}, where the object remains geometrically consistent over time. The tight coupling of the DisFlow method in space and time yields dense geometry, surface normals, object pose trajectories, velocities, and uncertainty, all at real-time rates. We evaluate DisFlow on dynamic object sequences and demonstrate that it achieves accurate pose and motion tracking while simultaneously reconstructing high-quality object surfaces. Code publicly available at \\href{https://github.com/LanWu076/disflow_ros2}{https://github.com/LanWu076/disflow\\_ros2}",
+      "authors": [
+        "Lan Wu",
+        "Sheila Sutjipto",
+        "Jennifer Wakulicz",
+        "Teresa Vidal-Calleja"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-06-01T07:41:40+00:00",
+      "link": "https://arxiv.org/pdf/2606.01824v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "estimates 6DoF pose and reconstructs surfaces of dynamic objects from video",
+      "llm_evidence_cn": "从视频估算6DoF姿态并重建动态物体表面",
+      "llm_evidence": "从视频估算6DoF姿态并重建动态物体表面",
+      "canonical_evidence": "从视频估算6DoF姿态并重建动态物体表面",
+      "llm_tldr_en": "DisFlow uses a distance field representation and scene flow estimation to achieve online 6DoF dynamic object pose estimation, motion tracking, and surface reconstruction from consecutive frames.",
+      "llm_tldr_cn": "DisFlow利用高斯过程隐式曲面和距离场场景流，在连续帧间在线估计6DoF动态物体姿态、运动追踪和表面重建。该方法通过距离场描述表面点传输，增量式配准新观测，实现了精确的动态物体重建，为机器人感知提供了有效工具。",
+      "llm_tldr": "DisFlow利用高斯过程隐式曲面和距离场场景流，在连续帧间在线估计6DoF动态物体姿态、运动追踪和表面重建。该方法通过距离场描述表面点传输，增量式配准新观测，实现了精确的动态物体重建，为机器人感知提供了有效工具。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
