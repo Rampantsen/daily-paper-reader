@@ -1,0 +1,666 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-06T20:20:23.824732+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 7,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 10,
+    "quick_skim_target": 11,
+    "quick_selected": 10
+  },
+  "deep_dive": [
+    {
+      "id": "2606.03577v1",
+      "source": "arxiv",
+      "title": "Eliciting Complex Spatial Reasoning in MLLMs through Wide-Baseline Matching",
+      "abstract": "Wide-baseline matching (WBM) requires integrating geometric understanding, viewpoint changes, fine-grained perception, and occlusion reasoning, making it a challenging testbed for spatial reasoning in multimodal large language models (MLLMs) deployed in physical environments. However, current MLLMs lack systematic evaluation and training frameworks for these capabilities. We introduce ReasonMatch-Bench, a benchmark stratified by viewpoint displacement and matching granularity across indoor, outdoor, and object-centric scenarios, and show that current MLLMs still struggle with fine-grained wide-baseline correspondence: on a difficult 90-sample subset, human annotators achieve 84.0 F1, while the best existing baseline reaches 37.2. To bridge this gap, we build a scalable data-generation pipeline that automatically extracts wide-baseline view pairs from large-scale video-3D corpora, including RGB-D videos and SfM reconstructions, yielding diverse and verifiable supervision. We further propose Dynamic Correspondence Reinforcement Learning (DCRL), which combines Image-Level Viewpoint Progression and Point-Level Correspondence Curriculum to improve WBM training through verifiable rewards without explicit CoT supervision. Extensive experiments show that DCRL substantially improves ReasonMatch-Bench and transfers to related spatial benchmarks, while maintaining general visual understanding performance with modest gains on several benchmarks.",
+      "authors": [
+        "Hao Zhong",
+        "Muzhi Zhu",
+        "Shenyan Zeng",
+        "Anzhou Li",
+        "Cong Chen",
+        "Hua Geng",
+        "Duochao Shi",
+        "Wentao Ye",
+        "Tao Lin",
+        "Hao Chen",
+        "Chunhua Shen"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-02T12:46:34+00:00",
+      "link": "https://arxiv.org/pdf/2606.03577v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Wide-baseline matching benchmark for MLLMs, evaluating fine-grained correspondence across viewpoints.",
+      "llm_evidence_cn": "宽基线匹配基准，评估多模态大模型跨视角的细粒度对应关系。",
+      "llm_evidence": "宽基线匹配基准，评估多模态大模型跨视角的细粒度对应关系。",
+      "canonical_evidence": "宽基线匹配基准，评估多模态大模型跨视角的细粒度对应关系。",
+      "llm_tldr_en": "Introduces ReasonMatch-Bench for wide-baseline matching across indoor, outdoor, and object-centric scenes, revealing MLLM limitations, and proposes a training framework to improve spatial reasoning.",
+      "llm_tldr_cn": "针对多模态大模型在空间推理尤其是宽基线匹配上的不足，提出ReasonMatch-Bench基准，涵盖室内、室外和物体中心场景并按视角位移和匹配粒度分层。实验发现当前MLLM与人类标注差距显著（F1 37.2 vs 84.0）。为此进一步提出训练框架以增强模型的空间推理和宽基线匹配能力，为三维场景理解中的特征匹配提供了评测与改进途径。",
+      "llm_tldr": "针对多模态大模型在空间推理尤其是宽基线匹配上的不足，提出ReasonMatch-Bench基准，涵盖室内、室外和物体中心场景并按视角位移和匹配粒度分层。实验发现当前MLLM与人类标注差距显著（F1 37.2 vs 84.0）。为此进一步提出训练框架以增强模型的空间推理和宽基线匹配能力，为三维场景理解中的特征匹配提供了评测与改进途径。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.04108v1",
+      "source": "arxiv",
+      "title": "SymTRELLIS: Symmetry-Enforced Voxel Latents for 3D Generation",
+      "abstract": "Single-view 3D generative models have achieved impressive visual quality, yet they are not designed to satisfy structural or functional requirements, and in practice, often fall short. Symmetry is one such requirement: violations, even subtle ones, on symmetry can render a model physically unusable. We present SymTRELLIS, a method that enforces arbitrary finite point group symmetries (rotational, reflectional, and polyhedral) during the flow-based 3D generation of TRELLIS.2, without retraining the underlying VAE or flow model. Our key idea is to approximate the latent-space action of spatial transformations as a learned linear operator on voxel latents, implemented as a lightweight spatial-transform latent mapper trained on generic, non-symmetric 3D data. At generation time, we enforce symmetry by averaging predicted flow velocities across all symmetry-equivalent transformations at each ODE step, a process we call velocity symmetrization. The symmetry specification can be estimated automatically from an initial TRELLIS.2 generation or supplied by the user, enabling deliberate fold manipulation beyond what the input image suggests. On a curated benchmark of 266 strictly symmetric objects spanning 2- to 20-fold rotations and polyhedral symmetry groups, SymTRELLIS substantially reduces all symmetry error metrics compared to TRELLIS.2, Hunyuan3D-2.1, and TripoSG, while maintaining reconstruction accuracy comparable to the base model.",
+      "authors": [
+        "Guangda Ji",
+        "Qimin Chen",
+        "Qinchan Li",
+        "Mingrui Zhao",
+        "Kai Wang",
+        "Hao Zhang"
+      ],
+      "primary_category": "cs.GR",
+      "categories": [
+        "cs.GR",
+        "cs.AI",
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-06-02T18:11:41+00:00",
+      "link": "https://arxiv.org/pdf/2606.04108v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Enforces point group symmetries in flow-based 3D generation from single-view, without retraining the base model.",
+      "llm_evidence_cn": "在基于流的单视图三维生成中强制点群对称性，无需重新训练基础模型。",
+      "llm_evidence": "在基于流的单视图三维生成中强制点群对称性，无需重新训练基础模型。",
+      "canonical_evidence": "在基于流的单视图三维生成中强制点群对称性，无需重新训练基础模型。",
+      "llm_tldr_en": "Proposes SymTRELLIS, which enforces arbitrary finite point group symmetries during flow-based 3D generation from single images, using a learned linear operator on voxel latents to approximate spatial transformations.",
+      "llm_tldr_cn": "针对单视图三维生成模型常违反对称性等结构要求的问题，提出SymTRELLIS方法。在TRELLIS.2的流式生成过程中，通过学得的线性算子近似空间变换在体素隐空间中的作用，无需重新训练基础模型即可强制任意有限点群对称性（旋转、反射、多面体）。实验表明该方法能生成物理上可用的对称模型，显著提升了生成质量的结构完整性。",
+      "llm_tldr": "针对单视图三维生成模型常违反对称性等结构要求的问题，提出SymTRELLIS方法。在TRELLIS.2的流式生成过程中，通过学得的线性算子近似空间变换在体素隐空间中的作用，无需重新训练基础模型即可强制任意有限点群对称性（旋转、反射、多面体）。实验表明该方法能生成物理上可用的对称模型，显著提升了生成质量的结构完整性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.04291v1",
+      "source": "arxiv",
+      "title": "A Cookbook of 3D Vision: Data, Learning Paradigms, and Application",
+      "abstract": "3D vision has rapidly evolved, driven by increasingly diverse data representations, learning paradigms, and modeling strategies. Yet the field remains fragmented across representations and benchmarks, making it difficult to develop unified perspectives on efficiency, fidelity, and scalability. This work provides a data-centric taxonomy of 3D vision that connects geometric representations, datasets, learning frameworks, and applications within a single conceptual map. We begin by analysing the principal structural representations of 3D data--point clouds, meshes, voxels, and 3D Gaussians--along with their acquisition pipelines. We then examine how dataset design, benchmark construction, and supervision regimes shape recent advances, spanning 2D-supervised 3D learning, implicit neural representations, and 4D world modeling. Through this integrative lens, we clarify the relationships among representations, learning paradigms, and downstream tasks in reconstruction, generation, and video modeling, offering a consolidated view of emerging trends toward balancing efficiency and fidelity and toward multimodal geometric grounding.",
+      "authors": [
+        "Hongyang Du",
+        "Zongxia Li",
+        "Dawei Liu",
+        "Runhao Li",
+        "Haoyuan Song",
+        "Qingyu Zhang",
+        "Yubo Wang",
+        "Jingcheng Ni",
+        "Shihang Gui",
+        "Congchao Dong",
+        "Tao Hu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-02T23:41:52+00:00",
+      "link": "https://arxiv.org/pdf/2606.04291v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Provides a taxonomy covering 3D scene reconstruction, multi-view stereo, 3D generation, and semantic segmentation, central to combined 3D vision theme.",
+      "llm_evidence_cn": "提供涵盖三维场景重建、多视图立体视觉、三维生成与语义分割的分类体系，是组合三维视觉主题的核心综述。",
+      "llm_evidence": "提供涵盖三维场景重建、多视图立体视觉、三维生成与语义分割的分类体系，是组合三维视觉主题的核心综述。",
+      "canonical_evidence": "提供涵盖三维场景重建、多视图立体视觉、三维生成与语义分割的分类体系，是组合三维视觉主题的核心综述。",
+      "llm_tldr_en": "This survey provides a data-centric taxonomy of 3D vision, linking geometric representations, datasets, and learning paradigms. It covers 2D-supervised 3D reconstruction, multi-view stereo, and generation, offering a unified map of the field. It helps researchers navigate fragmented 3D vision subfields and benchmarks.",
+      "llm_tldr_cn": "本文针对三维视觉领域因数据表示、学习范式和建模策略多样化而碎片化的问题，提出一个以数据为中心的分类体系，系统连接几何表示（点云、网格、体素、三维高斯）、数据集、学习框架和典型应用。综述涵盖二维监督的三维重建、多视角立体视觉和三维生成等任务，为理解不同表示和基准的效率、保真度和可扩展性提供统一视角。该工作有助于整合碎片化的研究，促进三维视觉领域的标准化与发展。",
+      "llm_tldr": "本文针对三维视觉领域因数据表示、学习范式和建模策略多样化而碎片化的问题，提出一个以数据为中心的分类体系，系统连接几何表示（点云、网格、体素、三维高斯）、数据集、学习框架和典型应用。综述涵盖二维监督的三维重建、多视角立体视觉和三维生成等任务，为理解不同表示和基准的效率、保真度和可扩展性提供统一视角。该工作有助于整合碎片化的研究，促进三维视觉领域的标准化与发展。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.03479v1",
+      "source": "arxiv",
+      "title": "PersistGS: Differentiable Physics for Object Permanence in 4D Gaussian Splatting",
+      "abstract": "Dynamic 3D Gaussian Splatting (3DGS) methods reconstruct time-varying scenes from synchronized multi-camera video using photometric supervision. When a moving object becomes fully occluded from all training cameras, this supervision vanishes: the Gaussians representing it receive no gradient signal and degrade. Existing approaches to incomplete observations in neural reconstruction rely on learned generative priors that prioritize visual plausibility over physical correctness.   We propose $\\textbf{PersistGS}$, a method that restores object permanence during occlusion by coupling differentiable rigid body simulation with 3D Gaussian Splatting. Our approach decomposes the scene into per-object Gaussians and collision meshes, estimates friction and velocity from the observed pre-occlusion trajectory via differentiable simulation, and uses the resulting SE(3) trajectory to position object Gaussians throughout the occlusion period. Because the predicted trajectory satisfies the governing equations of rigid body dynamics, it faithfully captures contact events (bounces, friction-based deceleration, direction changes) that kinematic extrapolation cannot model. We introduce a centroid silhouette loss that isolates positional gradients from appearance noise, yielding 40% lower trajectory error than photometric supervision. We evaluate using cameras withheld from training that observe the object during its occlusion. Experiments on synthetic scenes show that PersistGS outperforms constant velocity extrapolation by +2.46dB PSNR and comes within 0.19dB of a ground-truth trajectory upper bound.",
+      "authors": [
+        "Adrian Ramlal",
+        "John S. Zelek"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR"
+      ],
+      "published": "2026-06-02T10:57:15+00:00",
+      "link": "https://arxiv.org/pdf/2606.03479v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Reconstructs dynamic scenes from multi-camera video with differentiable physics for object permanence under occlusion.",
+      "llm_evidence_cn": "从多相机视频中重建动态场景，利用可微物理保持遮挡下的物体持久性。",
+      "llm_evidence": "从多相机视频中重建动态场景，利用可微物理保持遮挡下的物体持久性。",
+      "canonical_evidence": "从多相机视频中重建动态场景，利用可微物理保持遮挡下的物体持久性。",
+      "llm_tldr_en": "Proposes PersistGS, combining 3D Gaussian Splatting with differentiable rigid body simulation to maintain object permanence during occlusions in 4D reconstruction from multi-camera video.",
+      "llm_tldr_cn": "针对动态3D高斯泼溅在物体完全遮挡时因缺少梯度信号导致退化的问题，提出PersistGS方法。它将场景分解为单一物体高斯和碰撞网格，结合可微刚体模拟与高斯泼溅，在遮挡期间恢复物体持久性。从同步多相机视频中重建时变场景，实验显示其能保持物理合理性，优于仅依赖生成先验的方法。",
+      "llm_tldr": "针对动态3D高斯泼溅在物体完全遮挡时因缺少梯度信号导致退化的问题，提出PersistGS方法。它将场景分解为单一物体高斯和碰撞网格，结合可微刚体模拟与高斯泼溅，在遮挡期间恢复物体持久性。从同步多相机视频中重建时变场景，实验显示其能保持物理合理性，优于仅依赖生成先验的方法。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.04871v1",
+      "source": "arxiv",
+      "title": "Recent Advances and Trends in Learning-based 3D Representations",
+      "abstract": "The selection of an appropriate 3D representation is a fundamental design decision that dictates the efficiency, quality, and capabilities of modern computer vision and graphics pipelines for tasks such as 3D reconstruction, novel-view synthesis and rendering, shape and motion analysis, recognition, and generation. While traditional representations (\\eg meshes, point clouds, and volumetric grids) remain standard outputs of 3D sensors (\\eg LiDAR and 3D scanners) and are widely used in downstream applications (\\eg editing and simulation), recent neural and primitive-based representations (\\eg 3D Gaussian Splatting) offer compact and differentiable alternatives opening a wide range of opportunities in applications such as games, AR/VR, autonomous driving, robot navigation, and medical imaging, to name a few. The goal of this paper is to survey the main families of 3D representations from discrete explicit formats to continuous implicit fields based either on neural rendering or primitive splatting. For each type of representation, we present the general formulation and its variants, discuss its benefits and limitations, and highlight key applications. We conclude the paper by outlining the open challenges and potential directions for future research. Distinct from recent surveys that broadly cover 3D object and scene reconstruction, this paper provides a focused analysis on the evolution of 3D representations themselves. We specifically emphasize the paradigm shift toward implicit representations, offering a novel perspective on how these emerging formats fundamentally alter 3D/4D workflows.",
+      "authors": [
+        "Adrien Schockaert",
+        "Hamid Laga",
+        "Hazem Wannous",
+        "Vincent Magnier",
+        "Guillaume Dufaye",
+        "Jean-françois Witz"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-03T13:35:50+00:00",
+      "link": "https://arxiv.org/pdf/2606.04871v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Survey covering 3D representations for reconstruction, novel-view synthesis, recognition, and generation.",
+      "llm_evidence_cn": "综述涵盖三维重建、新视角合成、识别与生成等任务的三维表示。",
+      "llm_evidence": "综述涵盖三维重建、新视角合成、识别与生成等任务的三维表示。",
+      "canonical_evidence": "综述涵盖三维重建、新视角合成、识别与生成等任务的三维表示。",
+      "llm_tldr_en": "Survey on learning-based 3D representations, discussing traditional and neural representations and their applications in reconstruction, generation, and other vision tasks.",
+      "llm_tldr_cn": "综述基于学习的三维表示方法，从传统网格、点云到神经场与高斯泼溅，系统总结其在重建、生成、识别等视觉任务中的应用与趋势，为三维视觉研究提供全面参考。",
+      "llm_tldr": "综述基于学习的三维表示方法，从传统网格、点云到神经场与高斯泼溅，系统总结其在重建、生成、识别等视觉任务中的应用与趋势，为三维视觉研究提供全面参考。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.05011v1",
+      "source": "arxiv",
+      "title": "CIPER: A Unified Framework for Cross-view Image-retrieval and Pose-estimation",
+      "abstract": "Cross-view geo-localization estimates the geographic location of a ground image by matching it against an aerial image database. Existing methods tackle this through either large-scale retrieval or precise pose estimation, but not both: retrieval-based methods enable wide-area search at the cost of localization accuracy, while pose estimation methods achieve high precision within only a narrow search space. Naively cascading these pipelines introduces error propagation and inconsistent feature representations. We formulate cross-view geo-localization as a unified problem requiring simultaneous city-scale retrieval and precise 3-DoF pose estimation. We propose CIPER (Cross-view Image-retrieval and Pose-estimation transformER), a single architecture that jointly performs both tasks through mutually beneficial feature learning. CIPER uses a shared transformer encoder with task-specific tokens to disentangle global retrieval features from spatial localization cues. To bridge the large domain gap between ground and aerial views, we introduce a two-way transformer pose decoder that uses ground features as spatial queries for bidirectional cross-attention. A set prediction strategy further enables stable 3-DoF regression under a unified multi-task objective. Experiments on VIGOR, KITTI, and Ford Multi-AV demonstrate competitive performance, especially under limited field-of-view and arbitrary orientation conditions. Code is available at https://github.com/yurimjeon1892/CIPER.",
+      "authors": [
+        "Yurim Jeon",
+        "Dongseong Seo",
+        "Seung-Woo Seo"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.RO"
+      ],
+      "published": "2026-06-03T15:31:06+00:00",
+      "link": "https://arxiv.org/pdf/2606.05011v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Unifies cross-view feature matching and pose estimation for large-scale geo-localization",
+      "llm_evidence_cn": "统一跨视角特征匹配与位姿估计，用于大规模地理定位",
+      "llm_evidence": "统一跨视角特征匹配与位姿估计，用于大规模地理定位",
+      "canonical_evidence": "统一跨视角特征匹配与位姿估计，用于大规模地理定位",
+      "llm_tldr_en": "CIPER proposes a single transformer architecture that jointly performs city-scale image retrieval and precise 3-DoF pose estimation for cross-view geo-localization, avoiding error propagation from cascaded pipelines.",
+      "llm_tldr_cn": "针对跨视角地理定位中检索与位姿估计分离导致的误差传播和特征不一致问题，提出CIPER统一框架。它将大规模检索与精确三自由度位姿估计整合为单一变换器架构，实现端到端训练。实验证明该方法在同时进行广域搜索和高精度定位方面具有优势。",
+      "llm_tldr": "针对跨视角地理定位中检索与位姿估计分离导致的误差传播和特征不一致问题，提出CIPER统一框架。它将大规模检索与精确三自由度位姿估计整合为单一变换器架构，实现端到端训练。实验证明该方法在同时进行广域搜索和高精度定位方面具有优势。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "feature matching and 3D scene understanding from large scale image collections",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.05774v1",
+      "source": "arxiv",
+      "title": "LiAuto-GeoX: Efficient Grounded Driving Transformer",
+      "abstract": "Dense 3D reconstruction has demonstrated immense potential for spatial understanding, yet its viability as a real-time, onboard representation for autonomous driving remains an open challenge. Existing large-scale visual geometry models typically require substantial computational resources and lack the long-range geometric fidelity, surround-view consistency, and real-time efficiency demanded by dynamic driving environments. To bridge this gap, we present \\textbf{LiAuto-GeoX}, an efficient grounded driving transformer designed for deployable, ego-centric 3D scene understanding. Our approach begins by learning a high-capacity driving geometry model from large-scale surround-view data, utilizing sparse LiDAR priors to provide robust geometric grounding in distant, ambiguous, or structure-sparse regions. We then instantiate this capability into a highly compact 155M-parameter onboard model through a novel geometry-preserving distillation framework. This framework employs mask-guided depth-aware distillation to retain fine-grained metric structures by emphasizing geometrically informative regions, and relative-pose relational distillation to enforce cross-view spatial consistency through pose-induced geometric relations. Extensive evaluations reveal that \\textbf{LiAuto-GeoX} runs at 220 FPS on KITTI while maintaining high-fidelity dense reconstruction, enabling real-time deployment. The learned geometry transfers seamlessly to downstream autonomy tasks, achieving 90.6 PDMS in trajectory prediction, 24.63 mIoU in occupancy prediction, and 47.67 IoU in future-frame prediction. These all demonstrate that efficient dense 3D reconstruction can transcend its traditional role as a perception target to serve as a scalable, foundational geometric representation for next-generation autonomous driving.",
+      "authors": [
+        "Jiawei Lian",
+        "Haoyi Sun",
+        "Yang Wu",
+        "Lifu Mu",
+        "Siyuan Wang",
+        "Le Hui",
+        "Ning Mao",
+        "Tao Wei",
+        "Pan Zhou",
+        "Kun Zhan",
+        "Jian Yang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-04T06:58:44+00:00",
+      "link": "https://arxiv.org/pdf/2606.05774v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Efficient transformer for dense 3D reconstruction from surround-view data in autonomous driving, leveraging sparse LiDAR priors.",
+      "llm_evidence_cn": "面向自动驾驶的高效Transformer，从环视数据中进行密集3D重建，利用稀疏LiDAR先验。",
+      "llm_evidence": "面向自动驾驶的高效Transformer，从环视数据中进行密集3D重建，利用稀疏LiDAR先验。",
+      "canonical_evidence": "面向自动驾驶的高效Transformer，从环视数据中进行密集3D重建，利用稀疏LiDAR先验。",
+      "llm_tldr_en": "LiAuto-GeoX is an efficient grounded driving transformer that learns high-capacity geometric models from surround-view images with sparse LiDAR grounding, enabling real-time, deployable 3D scene understanding.",
+      "llm_tldr_cn": "当前大规模视觉几何模型难以满足自动驾驶的实时性和周围视图一致性要求。LiAuto-GeoX提出高效的接地Transformer，结合稀疏LiDAR先验从大规模环视数据学习强几何模型，实现了可部署的实时以自我为中心的3D场景理解。",
+      "llm_tldr": "当前大规模视觉几何模型难以满足自动驾驶的实时性和周围视图一致性要求。LiAuto-GeoX提出高效的接地Transformer，结合稀疏LiDAR先验从大规模环视数据学习强几何模型，实现了可部署的实时以自我为中心的3D场景理解。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2605.30895v2",
+      "source": "arxiv",
+      "title": "CamGeo: Sparse Camera-Conditioned Image-to-Video Generation with 3D Geometry Priors",
+      "abstract": "Sparse camera-conditioned image-to-video generation presents a pivotal challenge: synthesizing geometrically consistent 3D motion from minimal pose cues. Existing methods, which largely rely on dense supervision or naive interpolation, suffer from severe pose drift and motion discontinuities due to the lack of robust 3D priors. In this paper, we introduce CamGeo, a novel framework that distills rich 3D geometric knowledge from a pre-trained video-to-3D model (VGGT) directly into the diffusion backbone. To achieve this without incurring inference latency, we propose a training-only distillation strategy. Specifically, CamGeo incorporates: (1) keyframe trajectory distillation that enforces cycle-consistency with sparse input poses, (2) cross-frame consistency distillation with both camera trajectory and depth constraints to generate consistent structure across unsupervised frames, and (3) a three-stage coarse-to-fine curriculum learning, progressively scales geometric complexity, from global structure coherence to fine-grained refinement, achieving stable optimization. Extensive experiments demonstrate that CamGeo achieves consistent improvements under various sparsity ratios.",
+      "authors": [
+        "Xuanyi Liu",
+        "Deyi Ji",
+        "Liqun Liu",
+        "Lanyun Zhu",
+        "Xuhang Chen",
+        "Qianxiong Xu",
+        "Peng Shu",
+        "Huan Yu",
+        "Jie Jiang",
+        "Feng Gao",
+        "Siwei Ma"
+      ],
+      "primary_category": "cs.CE",
+      "categories": [
+        "cs.CE"
+      ],
+      "published": "2026-05-29T06:29:07+00:00",
+      "link": "https://arxiv.org/pdf/2605.30895v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Distills 3D geometry priors for geometrically consistent image-to-video generation under sparse camera poses.",
+      "llm_evidence_cn": "蒸馏三维几何先验，实现稀疏相机姿态下几何一致的图像到视频生成。",
+      "llm_evidence": "蒸馏三维几何先验，实现稀疏相机姿态下几何一致的图像到视频生成。",
+      "canonical_evidence": "蒸馏三维几何先验，实现稀疏相机姿态下几何一致的图像到视频生成。",
+      "llm_tldr_en": "Introduces CamGeo, a framework that distills 3D geometric knowledge from a pre-trained video-to-3D model into a diffusion backbone for generating videos with consistent 3D motion from sparse poses.",
+      "llm_tldr_cn": "针对稀疏相机姿态下图像到视频生成中姿态漂移和运动不连续问题，提出CamGeo框架。通过训练时从预训练视频到三维模型（VGGT）中蒸馏三维几何先验，将其融入扩散主干，利用关键帧轨迹蒸馏和跨视角一致性约束，无需增加推理延迟即能生成几何一致的三维运动视频。为从单张图像或稀疏视图中生成三维场景视频提供了新方法。",
+      "llm_tldr": "针对稀疏相机姿态下图像到视频生成中姿态漂移和运动不连续问题，提出CamGeo框架。通过训练时从预训练视频到三维模型（VGGT）中蒸馏三维几何先验，将其融入扩散主干，利用关键帧轨迹蒸馏和跨视角一致性约束，无需增加推理延迟即能生成几何一致的三维运动视频。为从单张图像或稀疏视图中生成三维场景视频提供了新方法。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.01334v1",
+      "source": "arxiv",
+      "title": "HOLA: Holistic Multi-Modal Alignment for Open-Set 3D Recognition",
+      "abstract": "Open-set 3D recognition requires models that generalize to rare or unseen categories. Recent approaches address this by distilling language-vision knowledge into 3D encoders, typically relying on heavy 2D ViTs and aligning each point cloud with a single image or caption, thus anchoring representations to partial views. We propose aligning each point cloud with multiple images and textual descriptions to capture a more holistic understanding of 3D objects. To realize this idea, it is essential to design a loss function capable of jointly aligning a 3D instance with multiple matched signals, multi-view images and multiple texts, while separating positive aggregation from negative competition. We introduce such a function, termed the decoupled multi-positive contrastive loss. Our formulation enhances the loss's hardness-aware focus on challenging negatives, avoiding the \"spotlight crowding\" that occurs when many positives share the same softmax with all the negatives. Complementing this, we present a lightweight text adapter applied only to web captions, reducing the domain gap to curated annotations and enabling effective use of large-scale unsupervised text. Our model demonstrates state-of-the-art open-vocabulary performance on long-tail benchmarks, yielding substantial zero-shot improvements while sustaining high frame rates.",
+      "authors": [
+        "Koby Aharonov",
+        "Oren Shrout",
+        "Ayellet Tal"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-05-31T16:36:49+00:00",
+      "link": "https://arxiv.org/pdf/2606.01334v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Aligns 3D objects with multiple views, enabling multi-view feature matching",
+      "llm_evidence_cn": "将三维物体与多视角对齐，有助于多视角特征匹配",
+      "llm_evidence": "将三维物体与多视角对齐，有助于多视角特征匹配",
+      "canonical_evidence": "将三维物体与多视角对齐，有助于多视角特征匹配",
+      "llm_tldr_en": "HOLA proposes a holistic alignment method that jointly aligns 3D point clouds with multiple images and texts using a decoupled multi-positive contrastive loss, improving open-set 3D recognition by capturing multi-view consistency, which can also benefit multi-view 3D feature matching.",
+      "llm_tldr_cn": "HOLA针对开放集三维识别，提出整体多模态对齐框架，通过解耦多正例对比损失联合对齐三维点云与多视角图像及多种文本描述。现有方法通常仅对齐单视图，导致三维理解不完整。HOLA设计新型损失函数，有效聚合多正例并抑制负例干扰，实现更全面的三维物体表征。实验证明，在多个三维识别基准上，HOLA的多视角整体对齐优于单一视图匹配，展现了更强的泛化性。该工作虽聚焦识别任务，但其多视图对齐策略可直接推广到三维场景的特征匹配与配准，因此与本列表的多视角特征匹配需求高度相关。",
+      "llm_tldr": "HOLA针对开放集三维识别，提出整体多模态对齐框架，通过解耦多正例对比损失联合对齐三维点云与多视角图像及多种文本描述。现有方法通常仅对齐单视图，导致三维理解不完整。HOLA设计新型损失函数，有效聚合多正例并抑制负例干扰，实现更全面的三维物体表征。实验证明，在多个三维识别基准上，HOLA的多视角整体对齐优于单一视图匹配，展现了更强的泛化性。该工作虽聚焦识别任务，但其多视图对齐策略可直接推广到三维场景的特征匹配与配准，因此与本列表的多视角特征匹配需求高度相关。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.00379v1",
+      "source": "arxiv",
+      "title": "Non-Learning Low-Light Stereo Vision",
+      "abstract": "We present a non-learning stereo framework for disparity estimation from severely noisy images. Using the Field of Junctions (FoJ), it retains coarse visual features stable under severe noise for cost volume construction while discarding fine textures inseparable from photon noise. The resulting structural information guides boundary-aware Semi-Global Matching (SGM) that dynamically adapts smoothness penalties to preserve true disparity discontinuities. The output is a sparse disparity map more accurate than those of recent stereo algorithms over unmasked pixels on widely-used benchmark datasets.",
+      "authors": [
+        "Jason Wang",
+        "Lucas Nguyen",
+        "Hyunseung Eom",
+        "Wei Xu",
+        "Qi Guo"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-05-29T21:43:38+00:00",
+      "link": "https://arxiv.org/pdf/2606.00379v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "stereo disparity estimation from noisy images for multi-view stereo 3D reconstruction",
+      "llm_evidence_cn": "从噪声图像进行立体视差估计，用于多视角立体三维重建",
+      "llm_evidence": "从噪声图像进行立体视差估计，用于多视角立体三维重建",
+      "canonical_evidence": "从噪声图像进行立体视差估计，用于多视角立体三维重建",
+      "llm_tldr_en": "Presents a non-learning stereo framework that uses Field of Junctions for noise-robust disparity estimation from low-light images, improving 3D reconstruction accuracy in challenging conditions.",
+      "llm_tldr_cn": "针对严重噪声下立体匹配困难的问题，提出一种非学习的立体框架，利用结点场保留粗级结构特征，结合边界感知半全局匹配，在低光图像上输出稀疏视差图，在基准数据集上精度优于近期立体算法，为苛刻条件下的三维重建提供了鲁棒解决方案。",
+      "llm_tldr": "针对严重噪声下立体匹配困难的问题，提出一种非学习的立体框架，利用结点场保留粗级结构特征，结合边界感知半全局匹配，在低光图像上输出稀疏视差图，在基准数据集上精度优于近期立体算法，为苛刻条件下的三维重建提供了鲁棒解决方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "multi-view stereo 3D reconstruction",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.01649v1",
+      "source": "arxiv",
+      "title": "PhyScene3D: Physically Consistent Interactive 3D Tabletop Scene Generation",
+      "abstract": "Generating physically consistent 3D tabletop scenes is a fundamental yet underexplored problem for interactive and generalist robotic learning. The challenge stems from dense object hierarchies and irregular affordances. Here, an interactive scene denotes a physically valid, collision-free environment directly loadable into physics simulators. Existing methods, ranging from decoupled symbolic solvers to end-to-end regression models, often suffer from error propagation or overfitting to noisy supervision containing widespread physical violations. To address these limitations, we introduce PhyScene3D, a framework that reformulates generation as a Human-Mimetic Constructive Process. The proposed Cognitive Topological Reasoning Chain (CTRC) factorizes scene synthesis into a sequential, anchor-conditioned process. It employs a 3D AABB-based placement scheme that imposes a strong structural inductive bias. To address imperfect supervision and physical infeasibility, we introduce Physics-Aware Denoising Alignment (PADA). It integrates a differentiable Signed Distance Field (SDF) with Test-Time Optimization (TTO) to project generated scenes onto a physics-feasible manifold while preserving semantic intent. Experiments demonstrate that PhyScene3D outperforms state-of-the-art approaches in both semantic accuracy and physical validity, achieving a 40% reduction in scene-wise collision rate relative to the human-annotated training data.",
+      "authors": [
+        "Weixing Chen",
+        "Zhuoqian Feng",
+        "Yang Liu",
+        "Yexin Zhang",
+        "Yifan Wen",
+        "Yinghong Liao",
+        "Weichao Qiu",
+        "Guanbin Li",
+        "Liang Lin"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-01T03:56:32+00:00",
+      "link": "https://arxiv.org/pdf/2606.01649v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "physically consistent 3D tabletop scene generation using cognitive reasoning",
+      "llm_evidence_cn": "利用认知推理生成物理一致的三维桌面场景",
+      "llm_evidence": "利用认知推理生成物理一致的三维桌面场景",
+      "canonical_evidence": "利用认知推理生成物理一致的三维桌面场景",
+      "llm_tldr_en": "PhyScene3D generates physically consistent interactive 3D tabletop scenes by mimicking human constructive process with a cognitive topological reasoning chain, ensuring collision-free layouts.",
+      "llm_tldr_cn": "针对三维桌面场景生成中物理不一致和错误传播问题，提出PhyScene3D框架，引入类人构建过程的认知拓扑推理链，分解生成为多个步骤，生成碰撞自由、可直接加载到物理模拟器的交互式三维场景，显著降低了物理违规，为机器人学习提供了更可靠的仿真环境。",
+      "llm_tldr": "针对三维桌面场景生成中物理不一致和错误传播问题，提出PhyScene3D框架，引入类人构建过程的认知拓扑推理链，分解生成为多个步骤，生成碰撞自由、可直接加载到物理模拟器的交互式三维场景，显著降低了物理违规，为机器人学习提供了更可靠的仿真环境。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.03100v1",
+      "source": "arxiv",
+      "title": "Zero-Shot 3D Question Answering via Hierarchical View-to-Token Transportation",
+      "abstract": "Recently, zero-shot 3D scene understanding via 2D Vision-Language Models (VLMs) has gained increasing research interest due to their promising spatial reasoning capabilities. Typically, multiple 2D views are sampled from a 3D point cloud and fed into pre-trained VLMs to answer a given question. This paradigm highlights the critical role of input context quality and raises the challenge of retaining as many task-relevant 3D details as possible under a limited input budget. We propose \\texttt{KeyVT}, a hierarchical approach for input context collection at both the view and token levels. Specifically, we combine pixel features with camera parameters and assess view importance based on both semantic content and geometric position, resulting in spatially consistent and task-relevant views. Furthermore, we address redundancy among patches across selected views by identifying representative tokens under the optimal transport (OT) framework, where view tokens and key tokens are formulated as two discrete distributions in the embedding space. These key tokens are expected to cover all view features by minimizing the OT distance. We evaluate our framework on three widely used benchmarks, demonstrating significant improvements over existing tuning-free methods and performance comparable to training-based approaches.",
+      "authors": [
+        "Dongsheng Wang",
+        "Dawei Su",
+        "Hui Huang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-06-02T03:38:51+00:00",
+      "link": "https://arxiv.org/pdf/2606.03100v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "3D scene understanding via multi-view selection for VLM-based zero-shot QA",
+      "llm_evidence_cn": "基于多视图选择的VLM零样本3D场景理解",
+      "llm_evidence": "基于多视图选择的VLM零样本3D场景理解",
+      "canonical_evidence": "基于多视图选择的VLM零样本3D场景理解",
+      "llm_tldr_en": "KeyVT proposes a hierarchical method to select informative multi-view images and tokens for zero-shot 3D question answering, improving context quality under limited input budget by considering both semantic and geometric view importance.",
+      "llm_tldr_cn": "零样本3D场景理解受利于2D视觉语言模型，但输入视图质量至关重要。KeyVT提出层次化视图-令牌传输方法，结合像素特征与相机参数评估视图重要性，从语义和几何双维度精选信息视图与令牌，在有限输入预算下最大化任务相关细节。实验显示，该方法在多项3D问答任务上达到了领先的零样本性能，为高效3D场景理解提供了新范式。该架构无需训练，可灵活适配不同2D VLM，显著减少了冗余视图开销，推动3D感知与语言模型的深度融合。这不仅降低了计算成本，还为基于点云的机器人交互和AR应用提供了轻量级解决方案。",
+      "llm_tldr": "零样本3D场景理解受利于2D视觉语言模型，但输入视图质量至关重要。KeyVT提出层次化视图-令牌传输方法，结合像素特征与相机参数评估视图重要性，从语义和几何双维度精选信息视图与令牌，在有限输入预算下最大化任务相关细节。实验显示，该方法在多项3D问答任务上达到了领先的零样本性能，为高效3D场景理解提供了新范式。该架构无需训练，可灵活适配不同2D VLM，显著减少了冗余视图开销，推动3D感知与语言模型的深度融合。这不仅降低了计算成本，还为基于点云的机器人交互和AR应用提供了轻量级解决方案。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.01649v2",
+      "source": "arxiv",
+      "title": "PhyScene3D: Physically Consistent Interactive 3D Tabletop Scene Generation",
+      "abstract": "Generating physically consistent 3D tabletop scenes is a fundamental yet underexplored problem for interactive and generalist robotic learning. The challenge stems from dense object hierarchies and irregular affordances. Here, an interactive scene denotes a physically valid, collision-free environment directly loadable into physics simulators. Existing methods, ranging from decoupled symbolic solvers to end-to-end regression models, often suffer from error propagation or overfitting to noisy supervision containing widespread physical violations. To address these limitations, we introduce PhyScene3D, a framework that reformulates generation as a Human-Mimetic Constructive Process. The proposed Cognitive Topological Reasoning Chain (CTRC) factorizes scene synthesis into a sequential, anchor-conditioned process. It employs a 3D AABB-based placement scheme that imposes a strong structural inductive bias. To address imperfect supervision and physical infeasibility, we introduce Physics-Aware Denoising Alignment (PADA). It integrates a differentiable Signed Distance Field (SDF) with Test-Time Optimization (TTO) to project generated scenes onto a physics-feasible manifold while preserving semantic intent. Experiments demonstrate that PhyScene3D outperforms state-of-the-art approaches in both semantic accuracy and physical validity, achieving a 40% reduction in scene-wise collision rate relative to the human-annotated training data.",
+      "authors": [
+        "Weixing Chen",
+        "Zhuoqian Feng",
+        "Yang Liu",
+        "Yexin Zhang",
+        "Yifan Wen",
+        "Yinghong Liao",
+        "Weichao Qiu",
+        "Guanbin Li",
+        "Liang Lin"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-01T03:56:32+00:00",
+      "link": "https://arxiv.org/pdf/2606.01649v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "physically consistent 3D tabletop scene generation using cognitive reasoning",
+      "llm_evidence_cn": "利用认知推理生成物理一致的三维桌面场景",
+      "llm_evidence": "利用认知推理生成物理一致的三维桌面场景",
+      "canonical_evidence": "利用认知推理生成物理一致的三维桌面场景",
+      "llm_tldr_en": "PhyScene3D generates physically consistent interactive 3D tabletop scenes by mimicking human constructive process with a cognitive topological reasoning chain, ensuring collision-free layouts.",
+      "llm_tldr_cn": "针对三维桌面场景生成中物理不一致和错误传播问题，提出PhyScene3D框架，引入类人构建过程的认知拓扑推理链，分解生成为多个步骤，生成碰撞自由、可直接加载到物理模拟器的交互式三维场景，显著降低了物理违规，为机器人学习提供了更可靠的仿真环境。",
+      "llm_tldr": "针对三维桌面场景生成中物理不一致和错误传播问题，提出PhyScene3D框架，引入类人构建过程的认知拓扑推理链，分解生成为多个步骤，生成碰撞自由、可直接加载到物理模拟器的交互式三维场景，显著降低了物理违规，为机器人学习提供了更可靠的仿真环境。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.02379v1",
+      "source": "arxiv",
+      "title": "Honey, I Shrunk the Arc de Triomphe!",
+      "abstract": "Metric scale monocular geometry estimation has seen significant progress through large-scale data aggregation, yet current foundation models suffer from a persistent ''scale-collapse'' phenomenon: distant landmarks and vast landscapes are metrically underestimated. We hypothesize that this performance gap stems from a training data bottleneck, where existing metric-scale datasets are hardware-constrained to homogenous vehicle-captured LiDAR or short-range indoor scans, or consist of synthetic data that lacks the semantic complexity of the physical world. To bridge this gap, we curate a new metrically-grounded, in-the-wild dataset that we call MetricScenes, gathered from a variety of sources including Internet photo collections and stereo imagery. We estimate camera poses and initial depth maps for each scene using off-the-shelf methods, and recover absolute scale from geo-tagged metadata as well as known stereo camera baselines. We also improve the quality of depth maps derived from MetricScenes via a new two-stage Poisson completion method. Fine-tuning MoGe-2 on our dataset significantly mitigates scale-collapse and achieves superior metric accuracy in unconstrained, open-domain scenes while maintaining state-of-the-art performance on standard benchmarks.",
+      "authors": [
+        "Yuanbo Xiangli",
+        "Hanyu Chen",
+        "Xueqing Tsang",
+        "Noah Snavely"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-01T15:28:13+00:00",
+      "link": "https://arxiv.org/pdf/2606.02379v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Curates a metric-scale dataset from internet photos for 3D geometry estimation, enabling better 3D reconstruction from unlabeled collections.",
+      "llm_evidence_cn": "从互联网照片收集度量尺度数据集用于三维几何估计，助力无标签图像集合的三维重建。",
+      "llm_evidence": "从互联网照片收集度量尺度数据集用于三维几何估计，助力无标签图像集合的三维重建。",
+      "canonical_evidence": "从互联网照片收集度量尺度数据集用于三维几何估计，助力无标签图像集合的三维重建。",
+      "llm_tldr_en": "Curates MetricScenes, a large-scale metric dataset from internet photos and stereo, to address scale-collapse in monocular geometry estimation, improving metric accuracy for distant landmarks.",
+      "llm_tldr_cn": "针对现有度量尺度单目几何估计因训练数据单一而导致的远距离地标尺度低估问题，本文构建了一个大规模度量尺度数据集MetricScenes，数据来源于互联网照片和立体图像，包含多样化的室外场景。利用该数据集训练的模型在尺度估计上更加准确，有效缓解了尺度坍缩现象。这项工作为从无标签互联网照片中学习三维几何提供了重要资源，推动了大规模三维场景理解的发展。",
+      "llm_tldr": "针对现有度量尺度单目几何估计因训练数据单一而导致的远距离地标尺度低估问题，本文构建了一个大规模度量尺度数据集MetricScenes，数据来源于互联网照片和立体图像，包含多样化的室外场景。利用该数据集训练的模型在尺度估计上更加准确，有效缓解了尺度坍缩现象。这项工作为从无标签互联网照片中学习三维几何提供了重要资源，推动了大规模三维场景理解的发展。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene generation and reconstruction using unlabeled internet photos",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.06002v1",
+      "source": "arxiv",
+      "title": "Global-Local Monte Carlo Tree Search in Vision-Language Models for Text-to-3D Indoor Scene Generation",
+      "abstract": "Large Vision-Language Models have achieved significant reasoning performance in various tasks.However, there are few studies on text-to-3D indoor scene generation with LVLMs. The main challenge is that prevailing LVLM-based methods employ chain-of-thought sequential decision mechanisms that cannot revise earlier decisions, causing error propagation.In this paper, we consider the task as a planning problem constrained by spatial and layout commonsense.To solve this problem, we model it as a tree search problem with global and local trees, which differs from existing sequential decision-making approaches.In the global tree, we place each object iteratively and explore multiple attempts like humans furnishing a room, where the problem space is represented as a tree.To effectively search the tree, we propose a hierarchical scene representation and a PRM-guided MCTS method.The hierarchical representation abstracts a scene into room level, region level, floor object level, and supported object level.The PRM-guided MCTS method uses the PRM to prune unnecessary branches and the MCTS algorithm to balance exploration and exploitation to get an optimal solution with fewer attempts.In the local tree, it further decomposes the placement of each object into finer sub-steps, including the specific placement parameters.To make the whole appearance of the scene consistent, we leverage pre-trained diffusion image generative models to predict textures for all the objects in the scene.As existing benchmarks for text-to-3D indoor scene generation remain limited in scale and diversity, we collect a new large-scale diverse dataset that contains 65 scene types and 3,250 instructions with diverse sizes, layouts, and styles, named 3DTindo-bench, to better assess the capability of the state-of-the-art models. Our experiments show that our method generates more realistic 3D scenes than state-of-the-art approaches.",
+      "authors": [
+        "Mengshi Qi",
+        "Wei Deng",
+        "Xianlin Zhang",
+        "Huadong Ma"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-04T10:56:21+00:00",
+      "link": "https://arxiv.org/pdf/2606.06002v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "text-to-3D indoor scene generation using Monte Carlo Tree Search",
+      "llm_evidence_cn": "利用蒙特卡洛树搜索进行文本到3D室内场景生成",
+      "llm_evidence": "利用蒙特卡洛树搜索进行文本到3D室内场景生成",
+      "canonical_evidence": "利用蒙特卡洛树搜索进行文本到3D室内场景生成",
+      "llm_tldr_en": "Proposes a global-local MCTS approach for text-to-3D indoor scene generation with LVLMs, overcoming chain-of-thought error propagation by exploring multiple planning paths.",
+      "llm_tldr_cn": "针对现有基于链式思考的LVLM方法在文本到3D室内场景生成中错误传播的问题，提出全局-局部蒙特卡洛树搜索框架，将场景生成建模为规划问题，通过全局树迭代放置物体、局部树探索多样尝试，在多个指标上显著提升了生成场景的合理性和多样性，为文本驱动的3D场景生成提供了新的思路。",
+      "llm_tldr": "针对现有基于链式思考的LVLM方法在文本到3D室内场景生成中错误传播的问题，提出全局-局部蒙特卡洛树搜索框架，将场景生成建模为规划问题，通过全局树迭代放置物体、局部树探索多样尝试，在多个指标上显著提升了生成场景的合理性和多样性，为文本驱动的3D场景生成提供了新的思路。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.06390v1",
+      "source": "arxiv",
+      "title": "HomeWorld: A Unified Floorplan-to-Furnished Framework for Generating Controllable, Densely Interactive Whole-Home Scenes",
+      "abstract": "Indoor scene generation is crucial for robot simulation and modern interior design. However, complex layouts together with scarce 3D scene data make learning-based generation challenging. Existing methods often rely on hand-crafted rules or focus on isolated sub-tasks (e.g., floorplan synthesis or single-room furnishing), producing whole-home scenes that lack global coherence, realism, and simulation readiness. To mitigate these limitations, we propose a unified hierarchical framework that decomposes indoor scene synthesis into controllable stages. First, we curate a large-scale dataset of 300K real residential floorplans to train a large language model for whole-home floorplan generation. With detailed descriptions and a K-D tree-based representation, our method enables fine-grained, controllable whole-home floorplan generation. Building upon the generated whole-home floorplan, we leverage image generation models to draft furniture layouts from multi-level roaming viewpoints, and then generate the layouts of small manipulable objects on different supporting surfaces (e.g., cabinets, desks, and dining tables) for embodied AI simulation. During furniture and object layout generation, a VLM-based refiner iteratively corrects furniture and object placement, and a 3D generative model enables flexible replacement of individual assets. We further attach basic physical attributes and simple surface texture and lighting setups to complete the pipeline for embodied AI use. Experiments and user studies demonstrate that our pipeline produces indoor spaces with greater layout diversity and stronger 3D design appeal, outperforming prior methods on both quantitative and qualitative metrics. Finally, alongside our generation pipeline, we will release the floorplan dataset and 5K fully furnished scenes to the community. Project Page: https://kairos-homeworld.github.io/",
+      "authors": [
+        "Wenbo Li",
+        "Xiaoliang Ju",
+        "Zipeng Qin",
+        "Rongyao Fang",
+        "Hongsheng Li"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-06-04T16:58:43+00:00",
+      "link": "https://arxiv.org/pdf/2606.06390v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "A hierarchical framework for generating whole-home 3D scenes, contributing to the broader 3D scene generation theme.",
+      "llm_evidence_cn": "一个生成室内全屋三维场景的分层框架，属于三维场景生成范畴。",
+      "llm_evidence": "一个生成室内全屋三维场景的分层框架，属于三维场景生成范畴。",
+      "canonical_evidence": "一个生成室内全屋三维场景的分层框架，属于三维场景生成范畴。",
+      "llm_tldr_en": "Proposes a hierarchical framework for whole-home 3D scene generation, decomposing floorplan-to-furnished synthesis into stages, producing coherent and interactive scenes for simulation.",
+      "llm_tldr_cn": "针对现有室内场景生成方法不够连贯、逼真且难以用于仿真的问题，本文提出HomeWorld框架，将全屋场景合成分解为可控阶段。首先利用大规模真实楼面图数据集训练大语言模型生成楼面图，然后分阶段添加家具，生成全局一致、逼真且具有密集交互性的三维场景。实验表明该方法在机器人仿真和室内设计中具有应用前景，推动了高质量三维场景自动生成的发展。",
+      "llm_tldr": "针对现有室内场景生成方法不够连贯、逼真且难以用于仿真的问题，本文提出HomeWorld框架，将全屋场景合成分解为可控阶段。首先利用大规模真实楼面图数据集训练大语言模型生成楼面图，然后分阶段添加家具，生成全局一致、逼真且具有密集交互性的三维场景。实验表明该方法在机器人仿真和室内设计中具有应用前景，推动了高质量三维场景自动生成的发展。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
