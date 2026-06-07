@@ -1,0 +1,445 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-07T20:41:57.736221+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 9,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 5,
+    "quick_skim_target": 11,
+    "quick_selected": 5
+  },
+  "deep_dive": [
+    {
+      "id": "2606.04871v1",
+      "source": "arxiv",
+      "title": "Recent Advances and Trends in Learning-based 3D Representations",
+      "abstract": "The selection of an appropriate 3D representation is a fundamental design decision that dictates the efficiency, quality, and capabilities of modern computer vision and graphics pipelines for tasks such as 3D reconstruction, novel-view synthesis and rendering, shape and motion analysis, recognition, and generation. While traditional representations (\\eg meshes, point clouds, and volumetric grids) remain standard outputs of 3D sensors (\\eg LiDAR and 3D scanners) and are widely used in downstream applications (\\eg editing and simulation), recent neural and primitive-based representations (\\eg 3D Gaussian Splatting) offer compact and differentiable alternatives opening a wide range of opportunities in applications such as games, AR/VR, autonomous driving, robot navigation, and medical imaging, to name a few. The goal of this paper is to survey the main families of 3D representations from discrete explicit formats to continuous implicit fields based either on neural rendering or primitive splatting. For each type of representation, we present the general formulation and its variants, discuss its benefits and limitations, and highlight key applications. We conclude the paper by outlining the open challenges and potential directions for future research. Distinct from recent surveys that broadly cover 3D object and scene reconstruction, this paper provides a focused analysis on the evolution of 3D representations themselves. We specifically emphasize the paradigm shift toward implicit representations, offering a novel perspective on how these emerging formats fundamentally alter 3D/4D workflows.",
+      "authors": [
+        "Adrien Schockaert",
+        "Hamid Laga",
+        "Hazem Wannous",
+        "Vincent Magnier",
+        "Guillaume Dufaye",
+        "Jean-françois Witz"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-03T13:35:50+00:00",
+      "link": "https://arxiv.org/pdf/2606.04871v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Survey of learning-based 3D representations for reconstruction, generation, and recognition",
+      "llm_evidence_cn": "面向重建、生成与识别的基于学习的3D表示综述",
+      "llm_evidence": "面向重建、生成与识别的基于学习的3D表示综述",
+      "canonical_evidence": "面向重建、生成与识别的基于学习的3D表示综述",
+      "llm_tldr_en": "Surveys recent advances in learning-based 3D representations, covering traditional and neural representations, and their applications in 3D reconstruction, novel-view synthesis, generation, and recognition.",
+      "llm_tldr_cn": "本文综述了基于学习的3D表示的最新进展，包括传统网格、点云、体素，以及神经和基元表示（如3D高斯泼溅），系统分析了它们在3D重建、新视图合成、生成和识别等任务中的适用性，为后续3D视觉研究提供了全面的参考和指导。",
+      "llm_tldr": "本文综述了基于学习的3D表示的最新进展，包括传统网格、点云、体素，以及神经和基元表示（如3D高斯泼溅），系统分析了它们在3D重建、新视图合成、生成和识别等任务中的适用性，为后续3D视觉研究提供了全面的参考和指导。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.06002v1",
+      "source": "arxiv",
+      "title": "Global-Local Monte Carlo Tree Search in Vision-Language Models for Text-to-3D Indoor Scene Generation",
+      "abstract": "Large Vision-Language Models have achieved significant reasoning performance in various tasks.However, there are few studies on text-to-3D indoor scene generation with LVLMs. The main challenge is that prevailing LVLM-based methods employ chain-of-thought sequential decision mechanisms that cannot revise earlier decisions, causing error propagation.In this paper, we consider the task as a planning problem constrained by spatial and layout commonsense.To solve this problem, we model it as a tree search problem with global and local trees, which differs from existing sequential decision-making approaches.In the global tree, we place each object iteratively and explore multiple attempts like humans furnishing a room, where the problem space is represented as a tree.To effectively search the tree, we propose a hierarchical scene representation and a PRM-guided MCTS method.The hierarchical representation abstracts a scene into room level, region level, floor object level, and supported object level.The PRM-guided MCTS method uses the PRM to prune unnecessary branches and the MCTS algorithm to balance exploration and exploitation to get an optimal solution with fewer attempts.In the local tree, it further decomposes the placement of each object into finer sub-steps, including the specific placement parameters.To make the whole appearance of the scene consistent, we leverage pre-trained diffusion image generative models to predict textures for all the objects in the scene.As existing benchmarks for text-to-3D indoor scene generation remain limited in scale and diversity, we collect a new large-scale diverse dataset that contains 65 scene types and 3,250 instructions with diverse sizes, layouts, and styles, named 3DTindo-bench, to better assess the capability of the state-of-the-art models. Our experiments show that our method generates more realistic 3D scenes than state-of-the-art approaches.",
+      "authors": [
+        "Mengshi Qi",
+        "Wei Deng",
+        "Xianlin Zhang",
+        "Huadong Ma"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-04T10:56:21+00:00",
+      "link": "https://arxiv.org/pdf/2606.06002v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Text-to-3D indoor scene generation using tree search in VLMs",
+      "llm_evidence_cn": "利用视觉语言模型树搜索进行文本到三维室内场景生成",
+      "llm_evidence": "利用视觉语言模型树搜索进行文本到三维室内场景生成",
+      "canonical_evidence": "利用视觉语言模型树搜索进行文本到三维室内场景生成",
+      "llm_tldr_en": "Presents a text-to-3D indoor scene generation method that models object placement as a tree search problem solved with global-local Monte Carlo tree search, reducing error propagation.",
+      "llm_tldr_cn": "针对现有文本到三维室内场景生成中顺序决策无法回溯修正的缺陷，提出基于视觉语言模型的全局-局部蒙特卡洛树搜索方法。它将场景生成形式化为空间常识约束下的规划问题，通过全局树迭代放置物体、局部树优化摆放细节，允许探索多种尝试并选择最优布局。实验验证该方法能有效避免错误累积，生成更符合人类定式的高质量室内场景。",
+      "llm_tldr": "针对现有文本到三维室内场景生成中顺序决策无法回溯修正的缺陷，提出基于视觉语言模型的全局-局部蒙特卡洛树搜索方法。它将场景生成形式化为空间常识约束下的规划问题，通过全局树迭代放置物体、局部树优化摆放细节，允许探索多种尝试并选择最优布局。实验验证该方法能有效避免错误累积，生成更符合人类定式的高质量室内场景。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.01573v1",
+      "source": "arxiv",
+      "title": "$\\text{VG}^2$GT: Voxel-Gaussian Splatting Visual Geometry Grounded Transformer",
+      "abstract": "Gaussian splatting has shown strong potential for 3D reconstruction and novel view synthesis. However, most existing methods require accurate camera parameters and per-scene optimization, while feed-forward methods with pixel-aligned Gaussian primitives often suffer from artifacts and non-uniform primitives. In this paper, we propose $\\text{VG}^2$GT, a Voxel-Gaussian Splatting Visual Geometry-Grounded Transformer. $\\text{VG}^2$GT leverages a frozen pretrained visual foundation model (VFM), incorporates a multi-scale differentiable voxel module to enhance geometric understanding, and directly splits and regresses Gaussian primitive parameters from voxel features. During training, depth maps are supervised through stochastic solid volume rendering, enabling geometrically accurate Gaussian scene reconstruction while keeping the visual foundation model fully frozen. This design enables $\\text{VG}^2$GT to be seamlessly plugged into any patch-feature-based VFM, while substantially reducing the required training cost. $\\text{VG}^2$GT outperforms current state-of-the-art methods on widely used DTU, Replica, TAT, and ScanNet datasets.",
+      "authors": [
+        "Yibin Zhao",
+        "Yihan Pan",
+        "Jun Nan",
+        "Wenli Yang",
+        "Liwei Chen",
+        "Jianjun Yi"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-01T02:21:28+00:00",
+      "link": "https://arxiv.org/pdf/2606.01573v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "3D reconstruction and view synthesis via feed-forward Gaussian splatting",
+      "llm_evidence_cn": "通过前馈高斯泼溅进行三维重建和视图合成",
+      "llm_evidence": "通过前馈高斯泼溅进行三维重建和视图合成",
+      "canonical_evidence": "通过前馈高斯泼溅进行三维重建和视图合成",
+      "llm_tldr_en": "Introduces VG^2GT, a feed-forward method for 3D reconstruction that uses a visual foundation model and multi-scale voxel module to predict Gaussian primitives, avoiding per-scene optimization and improving geometric fidelity.",
+      "llm_tldr_cn": "为解决高斯泼溅需要精确相机参数和逐场景优化的限制，提出VG^2GT方法。它利用冻结的视觉基础模型提取特征，结合多尺度可微体素模块增强场景几何理解，直接从前馈方式回归高斯基元。实验表明该方法在不牺牲质量的前提下实现了高效重建，有助于推动基于图像的三维场景重建发展。",
+      "llm_tldr": "为解决高斯泼溅需要精确相机参数和逐场景优化的限制，提出VG^2GT方法。它利用冻结的视觉基础模型提取特征，结合多尺度可微体素模块增强场景几何理解，直接从前馈方式回归高斯基元。实验表明该方法在不牺牲质量的前提下实现了高效重建，有助于推动基于图像的三维场景重建发展。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.01573v2",
+      "source": "arxiv",
+      "title": "$\\text{VG}^2$GT: Voxel-Gaussian Splatting Visual Geometry Grounded Transformer",
+      "abstract": "Gaussian splatting has shown strong potential for 3D reconstruction and novel view synthesis. However, most existing methods require accurate camera parameters and per-scene optimization, while feed-forward methods with pixel-aligned Gaussian primitives often suffer from artifacts and non-uniform primitives. In this paper, we propose $\\text{VG}^2$GT, a Voxel-Gaussian Splatting Visual Geometry-Grounded Transformer. $\\text{VG}^2$GT leverages a frozen pretrained visual foundation model (VFM), incorporates a multi-scale differentiable voxel module to enhance geometric understanding, and directly splits and regresses Gaussian primitive parameters from voxel features. During training, depth maps are supervised through stochastic solid volume rendering, enabling geometrically accurate Gaussian scene reconstruction while keeping the visual foundation model fully frozen. This design enables $\\text{VG}^2$GT to be seamlessly plugged into any patch-feature-based VFM, while substantially reducing the required training cost. $\\text{VG}^2$GT outperforms current state-of-the-art methods on widely used DTU, Replica, TAT, and ScanNet datasets.",
+      "authors": [
+        "Yibin Zhao",
+        "Yihan Pan",
+        "Jun Nan",
+        "Wenli Yang",
+        "Liwei Chen",
+        "Jianjun Yi"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-01T02:21:28+00:00",
+      "link": "https://arxiv.org/pdf/2606.01573v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Voxel-Gaussian Splatting feed-forward method for 3D reconstruction and novel view synthesis",
+      "llm_evidence_cn": "体素-高斯泼溅前馈方法用于3D重建与新视角合成",
+      "llm_evidence": "体素-高斯泼溅前馈方法用于3D重建与新视角合成",
+      "canonical_evidence": "体素-高斯泼溅前馈方法用于3D重建与新视角合成",
+      "llm_tldr_en": "Proposes VG^2GT, a voxel-gaussian splatting transformer using frozen visual foundation models for efficient 3D reconstruction without per-scene optimization.",
+      "llm_tldr_cn": "针对高斯泼溅对相机参数和逐场景优化的依赖问题，提出VG^2GT，利用冻结预训练视觉基础模型和多尺度可微体素模块增强几何理解，直接回归高斯原语参数，在无需精确相机参数的情况下实现高质量新视角合成和3D重建。",
+      "llm_tldr": "针对高斯泼溅对相机参数和逐场景优化的依赖问题，提出VG^2GT，利用冻结预训练视觉基础模型和多尺度可微体素模块增强几何理解，直接回归高斯原语参数，在无需精确相机参数的情况下实现高质量新视角合成和3D重建。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.02022v1",
+      "source": "arxiv",
+      "title": "Ranking vs. Assignment: The Metric Mismatch in Multi-View Object Association",
+      "abstract": "Multi-view object association is an important computer vision problem that underlies many multi-camera perception tasks. While this task is naturally formulated as a constrained one-to-one matching problem, recent works heavily rely on pairwise ranking metrics like AP and FPR-95 for model evaluation. We highlight a fundamental mismatch between these metrics and the actual assignment objective. Theoretically, we show that AP and FPR-95 can be imperfect even when the assignment is already correct, and that Sinkhorn-based normalization can make them perfect. Conversely, optimal pairwise ranking can still lead to incorrect assignments. We validate this mismatch in practice by using our Sinkhorn-based normalization as a controlled post-processing stress test. We show that optimizing just a few post-processing parameters significantly boosts AP and FPR-95 without corresponding improvements in assignment-level metrics such as ACC and IPAA.",
+      "authors": [
+        "Matvei Shelukhan",
+        "Timur Mamedov",
+        "Aleksandr Chukhrov",
+        "Karina Kvanchiani"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-06-01T10:11:51+00:00",
+      "link": "https://arxiv.org/pdf/2606.02022v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "addresses metric mismatch in multi-view object association, central to feature matching across views",
+      "llm_evidence_cn": "解决多视角物体关联的度量不匹配，核心涉及跨视角特征匹配",
+      "llm_evidence": "解决多视角物体关联的度量不匹配，核心涉及跨视角特征匹配",
+      "canonical_evidence": "解决多视角物体关联的度量不匹配，核心涉及跨视角特征匹配",
+      "llm_tldr_en": "This paper reveals that popular pairwise ranking metrics do not align with the assignment objective in multi-view object association, and proposes Sinkhorn-based normalization to bridge the gap, improving evaluation for feature matching.",
+      "llm_tldr_cn": "该论文指出多视角物体关联任务中，常用排序指标与实际指派目标存在根本不匹配，提出基于Sinkhorn的归一化后处理调和两者，实验验证了指标失效情形，为跨视角特征匹配的评价与优化提供更合理机制。",
+      "llm_tldr": "该论文指出多视角物体关联任务中，常用排序指标与实际指派目标存在根本不匹配，提出基于Sinkhorn的归一化后处理调和两者，实验验证了指标失效情形，为跨视角特征匹配的评价与优化提供更合理机制。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.05124v1",
+      "source": "arxiv",
+      "title": "Geometry Gaussians: Decoupling Appearance and Geometry in Gaussian Splatting",
+      "abstract": "After the success of 3D Gaussian Splatting (3DGS) for novel view synthesis, many works have explored how to also use it for geometric surface representation. However, extracting accurate geometric information directly from 3DGS remains challenging and can often reduce the appearance rendering quality. In this work, we show that 3DGS in its default form is inheritedly unsuited to represent texture and geometry at the same time, by training with complete ground-truth texture and geometry information. We also propose a simple solution by applying a single additional geometry opacity parameter to each splat, together with an optional transparency-curated optimization pipeline. Our experiments, both with ground-truth and vision foundation model geometric input, show that this change leads to improved rendering and geometry performance on a wide variety of dataset, and especially complex scenes with transparent objects benefit significantly from our method.",
+      "authors": [
+        "Hongyu Zhou",
+        "Zorah Lähner"
+      ],
+      "primary_category": "cs.GR",
+      "categories": [
+        "cs.GR",
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-06-03T17:29:36+00:00",
+      "link": "https://arxiv.org/pdf/2606.05124v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Decoupling appearance and geometry in 3DGS for accurate surface reconstruction",
+      "llm_evidence_cn": "在3D高斯泼溅中解耦外观与几何以实现精确表面重建",
+      "llm_evidence": "在3D高斯泼溅中解耦外观与几何以实现精确表面重建",
+      "canonical_evidence": "在3D高斯泼溅中解耦外观与几何以实现精确表面重建",
+      "llm_tldr_en": "Proposes geometry Gaussians, adding a geometry opacity parameter to each splat, to improve geometric surface extraction from 3D Gaussian Splatting without degrading appearance quality.",
+      "llm_tldr_cn": "3D高斯泼溅在同时表示纹理和几何时存在固有缺陷。本文提出几何高斯，为每个 splat 添加几何不透明度参数，并采用可选透明度优化流程，在保持渲染质量的同时提取精确几何信息，在真实和合成数据上验证了其有效性，为多视图立体重建提供了改进方案。",
+      "llm_tldr": "3D高斯泼溅在同时表示纹理和几何时存在固有缺陷。本文提出几何高斯，为每个 splat 添加几何不透明度参数，并采用可选透明度优化流程，在保持渲染质量的同时提取精确几何信息，在真实和合成数据上验证了其有效性，为多视图立体重建提供了改进方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "multi-view stereo 3D reconstruction",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.02406v1",
+      "source": "arxiv",
+      "title": "Edge Prediction for Roof Wireframe Reconstruction with Transformers",
+      "abstract": "This paper presents a competitive solution to the S23DR Challenge 2026, which aims to reconstruct 3D house roof wireframe models from sparse SfM point clouds and ground-level semantic segmentations and depth maps. Our proposed method utilizes an end-to-end Transformer encoder-decoder architecture inspired by DETR. To effectively process the geometric and semantic data, the sparse SfM point cloud input is dynamically subsampled based on semantic priority and augmented with Gestalt and ADE20k class features. To further increase segmentation context, we fuse the point features with additional Gestalt feature encodings which are obtained by projecting the points into latent feature maps produced by a frozen autoencoder. Learned query embeddings are then decoded directly into 3D wireframe edges via cross-attention mechanisms. Evaluated on the \"HoHo 22k\" dataset, our approach significantly outperforms both handcrafted and learned baselines, achieving a Hybrid Structure Score (HSS) of 0.6476 and securing the second-highest position on the challenge's private leaderboard.",
+      "authors": [
+        "Gustav Hanning",
+        "Ludvig Dillén",
+        "Jonathan Astermark",
+        "Johanna Lidholm",
+        "Viktor Larsson"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-01T15:51:30+00:00",
+      "link": "https://arxiv.org/pdf/2606.02406v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "reconstruct 3D house roof wireframe models from sparse SfM point clouds and semantic/depth inputs",
+      "llm_evidence_cn": "利用稀疏SfM点云与语义分割重建3D屋顶线框模型",
+      "llm_evidence": "利用稀疏SfM点云与语义分割重建3D屋顶线框模型",
+      "canonical_evidence": "利用稀疏SfM点云与语义分割重建3D屋顶线框模型",
+      "llm_tldr_en": "Uses a Transformer encoder-decoder inspired by DETR to reconstruct 3D roof wireframes from sparse SfM point clouds and semantic/depth inputs, achieving competitive results in S23DR challenge.",
+      "llm_tldr_cn": "针对从稀疏SfM点云和地面语义分割、深度图重建3D屋顶线框模型的挑战，提出基于DETR的Transformer编码器-解码器方法，通过语义优先级动态子采样和融合Gestalt特征增强几何与语义上下文，在S23DR 2026挑战中取得有竞争力结果。",
+      "llm_tldr": "针对从稀疏SfM点云和地面语义分割、深度图重建3D屋顶线框模型的挑战，提出基于DETR的Transformer编码器-解码器方法，通过语义优先级动态子采样和融合Gestalt特征增强几何与语义上下文，在S23DR 2026挑战中取得有竞争力结果。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.05833v1",
+      "source": "arxiv",
+      "title": "Learning Geometric Representations from Videos for Spatial Intelligent Multimodal Large Language Models",
+      "abstract": "Multimodal Large Language Models (MLLMs) excel at 2D semantic understanding but lack intrinsic 3D awareness, resulting in representations that fail to maintain geometric and spatial consistency across video frames. Given the scarcity of large-scale 3D data, we present GeoVR, a novel framework that learns geometric representations using purely 2D video sequences. This approach effectively restructures the semantic latent space within MLLMs to unlock spatial intelligence. Rather than employing superficial feature mixing, GeoVR reshapes the internal representations of the MLLM by distilling geometry knowledge from pre-trained 3D foundation models. This is accomplished through a multi-objective learning strategy driven by four complementary geometric targets: (1) estimating inter-frame camera poses to embed varying viewpoint dynamics, (2) regressing dense depth maps to anchor physical distances, (3) predicting a metric scale factor for real-world calibration, and (4) distilling multi-scale 3D features to align the intermediate feature space. Guided by these explicit physical and geometric constraints, the model's internal representations naturally develop strong 3D awareness. Extensive experiments on spatial reasoning benchmarks demonstrate that GeoVR achieves state-of-the-art performance, establishing a new paradigm for endowing foundation models with spatial intelligence.",
+      "authors": [
+        "Haibo Wang",
+        "Lifu Huang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-06-04T08:11:12+00:00",
+      "link": "https://arxiv.org/pdf/2606.05833v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "learns geometric representations from videos to enable 3D spatial intelligence in MLLMs",
+      "llm_evidence_cn": "从视频学习几何表示，赋予多模态大模型3D空间智能",
+      "llm_evidence": "从视频学习几何表示，赋予多模态大模型3D空间智能",
+      "canonical_evidence": "从视频学习几何表示，赋予多模态大模型3D空间智能",
+      "llm_tldr_en": "GeoVR distills geometry from 3D foundation models into MLLMs using multi-objective learning on 2D video, achieving spatial consistency, which advances 3D scene understanding from image/video data.",
+      "llm_tldr_cn": "针对多模态大语言模型缺乏3D空间感知的问题，提出GeoVR框架，通过多目标学习从预训练3D基础模型中蒸馏几何知识到视频序列，重塑模型内部表示以保持跨帧几何一致性，为图像/视频集的3D场景理解提供关键能力。",
+      "llm_tldr": "针对多模态大语言模型缺乏3D空间感知的问题，提出GeoVR框架，通过多目标学习从预训练3D基础模型中蒸馏几何知识到视频序列，重塑模型内部表示以保持跨帧几何一致性，为图像/视频集的3D场景理解提供关键能力。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "feature matching and 3D scene understanding from large scale image collections",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.03994v1",
+      "source": "arxiv",
+      "title": "SimuScene: Simulation-Ready Compositional 3D Scene Reconstruction from a Single Image",
+      "abstract": "Reconstructing interactive, simulation-ready 3D scenes from a single image is a critical bottleneck for robotic manipulation. While recent single-image lifters recover plausible per-object shapes, composing them yields scenes that collapse under physical simulation due to interpenetrating, hovering, or sinking objects. Existing physics-aware methods address this strictly as a post-hoc layout correction, leaving the underlying geometric errors unresolved. To address this, we introduce SimuScene, a compositional 3D reconstruction pipeline that puts physics in the loop of shape and layout estimation. Rather than using physics merely for layout cleanup, we utilize the physics engine as a diagnostic measurement tool during the generative process itself. By diagnostically simulating reconstructed objects under gravity, we convert penetration and support failures into quantitative correction signals that drive gravity-axis stretching and amodal shape resampling. This physics-informed feedback loop mitigates accumulated reconstruction errors and produces a stable, simulation-ready compositional 3D scene. Extensive experiments demonstrate state-of-the-art performance on physical stability and geometric alignment benchmarks. We further highlight SimuScene's utility by deploying reconstructed environments in humanoid control and robot-arm manipulation tasks.",
+      "authors": [
+        "Inhee Lee",
+        "Sangwon Baik",
+        "Sungjoo Kim",
+        "Hyeonwoo Kim",
+        "Hyunsoo Cha",
+        "Hanbyul Joo"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.RO"
+      ],
+      "published": "2026-06-02T17:59:59+00:00",
+      "link": "https://arxiv.org/pdf/2606.03994v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "3D scene reconstruction from a single image using physics-aware composition",
+      "llm_evidence_cn": "利用物理感知组合从单幅图像重建3D场景",
+      "llm_evidence": "利用物理感知组合从单幅图像重建3D场景",
+      "canonical_evidence": "利用物理感知组合从单幅图像重建3D场景",
+      "llm_tldr_en": "SimuScene reconstructs simulation-ready 3D scenes from a single image by integrating physics into shape and layout estimation, addressing physical inconsistencies in prior single-image methods, which is relevant to general 3D reconstruction.",
+      "llm_tldr_cn": "针对单图像3D重建导致物体穿模、悬浮等问题，提出SimuScene，将物理引擎作为生成过程中的诊断工具，在形状和布局估计中引入物理约束，实现可仿真的组合式3D场景重建，为多视角重建提供物理一致性思路。",
+      "llm_tldr": "针对单图像3D重建导致物体穿模、悬浮等问题，提出SimuScene，将物理引擎作为生成过程中的诊断工具，在形状和布局估计中引入物理约束，实现可仿真的组合式3D场景重建，为多视角重建提供物理一致性思路。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.03992v1",
+      "source": "arxiv",
+      "title": "Exploring Easy Boosts for Lidar Semantic Scene Completion",
+      "abstract": "This paper investigates \"free lunch\" strategies to boost the performance of lidar semantic scene completion (SSC) without requiring complex architectural redesigns. We first demonstrate that endowing input point clouds with semantic pseudo-labels from off-the-shelf segmentors significantly improves the performance of existing architectures. By evaluating these models against an oracle, we establish that high-quality semantic priors are a primary driver of mIoU gains. Furthermore, we equip the input lidar scan with visibility information that distinguishes between empty and unknown spaces, which provides a secondary performance boost across the tested architectures. Using these simple enhancements, we observe that older models remain competitive with state-of-the-art systems, and can even outperform them. Our code is available at https://github.com/astra-vision/SSC-Priors.",
+      "authors": [
+        "Tetiana Martyniuk",
+        "Jonathan Seele",
+        "Alexandre Boulch",
+        "Gilles Puy",
+        "Renaud Marlet",
+        "Raoul de Charette"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.RO"
+      ],
+      "published": "2026-06-02T17:59:59+00:00",
+      "link": "https://arxiv.org/pdf/2606.03992v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Semantic scene completion from LiDAR using semantic priors",
+      "llm_evidence_cn": "使用语义先验从激光雷达进行语义场景完成",
+      "llm_evidence": "使用语义先验从激光雷达进行语义场景完成",
+      "canonical_evidence": "使用语义先验从激光雷达进行语义场景完成",
+      "llm_tldr_en": "Shows that adding semantic pseudo-labels and visibility information to LiDAR point clouds significantly boosts semantic scene completion performance across architectures.",
+      "llm_tldr_cn": "本文揭示激光雷达语义场景完成的两大免费增强策略：一是利用现成分割器为输入点云赋予语义伪标签，二是引入可见性区分空白与未知空间。实验证明，这两种简单方法能大幅提升多种架构的性能，甚至让旧模型达到最新水平。该发现为三维场景语义理解提供了轻量级且通用的增强手段。",
+      "llm_tldr": "本文揭示激光雷达语义场景完成的两大免费增强策略：一是利用现成分割器为输入点云赋予语义伪标签，二是引入可见性区分空白与未知空间。实验证明，这两种简单方法能大幅提升多种架构的性能，甚至让旧模型达到最新水平。该发现为三维场景语义理解提供了轻量级且通用的增强手段。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.04618v1",
+      "source": "arxiv",
+      "title": "BPDA-GMM: Bayesian Probabilistic Data Association via Gaussian Mixture Models for Semantic SLAM",
+      "abstract": "Probabilistic data association (PDA) improves semantic SLAM in perceptually aliased scenes, but existing methods often assume a fixed landmark set, recompute association weights as the map grows, or rely on hand-tuned null-hypothesis weights. To address these limitations, we propose \\textbf{BPDA-GMM}, an online Bayesian PDA framework for semantic SLAM with a growing object-level map. BPDA-GMM uses a Dirichlet-process prior to induce a Chinese Restaurant Process (CRP) association model, where accumulated evidence favors existing landmarks, and the concentration parameter assigns probability mass to new landmarks. For each semantic detection, plausible candidates are selected by a joint semantic-geometric gate, CRP-weighted association probabilities are computed, and object landmarks are updated as semantic Gaussians in closed form. The resulting landmark set forms a Gaussian mixture model, and its dominant component is passed to the back-end as a max-mixture semantic factor. When association weights are inconclusive, an ambiguity-triggered $α$-divergence tempering step improves discrimination. Finally, a decoupled back-end zeroes the pose Jacobian of semantic factors, allowing noisy detections to refine landmarks without directly perturbing the trajectory. Experiments in simulation and on a real indoor dataset demonstrate improved trajectory accuracy, semantic mapping quality, and robustness to perceptual aliasing and classifier errors over state-of-the-art baselines. Code and video are publicly available at https://github.com/thanhnguyencanh/BPDA-SLAM.",
+      "authors": [
+        "Thanh Nguyen Canh",
+        "Haolan Zhang",
+        "Xiem HoangVan",
+        "Antonio Sgorbissa",
+        "Nak Young Chong"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-06-03T08:53:39+00:00",
+      "link": "https://arxiv.org/pdf/2606.04618v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Feature matching across views in semantic SLAM via probabilistic data association",
+      "llm_evidence_cn": "通过概率数据关联在语义SLAM中进行跨视图特征匹配",
+      "llm_evidence": "通过概率数据关联在语义SLAM中进行跨视图特征匹配",
+      "canonical_evidence": "通过概率数据关联在语义SLAM中进行跨视图特征匹配",
+      "llm_tldr_en": "Proposes a Bayesian probabilistic data association method for semantic SLAM that uses a Dirichlet process to adaptively associate detections to landmarks, improving robustness in ambiguous scenes.",
+      "llm_tldr_cn": "为应对语义SLAM中感知混淆场景的数据关联难题，提出BPDA-GMM。该方法利用狄利克雷过程先验引入中餐馆过程模型，根据累积证据动态关联检测与路标，并自动适应新路标出现。通过联合语义几何门控筛选候选，有效减少了误匹配。实验表明该方法在多视图语义匹配中实现了更高的一致性和鲁棒性，有助于大场景理解。",
+      "llm_tldr": "为应对语义SLAM中感知混淆场景的数据关联难题，提出BPDA-GMM。该方法利用狄利克雷过程先验引入中餐馆过程模型，根据累积证据动态关联检测与路标，并自动适应新路标出现。通过联合语义几何门控筛选候选，有效减少了误匹配。实验表明该方法在多视图语义匹配中实现了更高的一致性和鲁棒性，有助于大场景理解。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    }
+  ]
+}

@@ -1,0 +1,812 @@
+Title: Ranking vs. Assignment: The Metric Mismatch in Multi-View Object Association
+
+URL Source: https://arxiv.org/pdf/2606.02022v1
+
+Published Time: Tue, 02 Jun 2026 02:29:03 GMT
+
+Number of Pages: 26
+
+Markdown Content:
+> arXiv:2606.02022v1 [cs.CV] 1 Jun 2026
+
+SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 1
+
+# Ranking vs. Assignment: The Metric Mismatch in Multi-View Object Association 
+
+Matvei Shelukhan 1* 
+
+matveishelukhan@gmail.com 
+
+Timur Mamedov 1, 2* 
+
+me@timmzak.com 
+
+Aleksandr Chukhrov 1
+
+aleksandr.chukhrov@tevian.ru 
+
+Karina Kvanchiani 1
+
+karinakvanciani@gmail.com  
+
+> 1
+
+Tevian Moscow, Russia  
+
+> 2
+
+Lomonosov Moscow State University Moscow, Russia 
+
+Abstract 
+
+Multi-view object association is an important computer vision problem that under-lies many multi-camera perception tasks. While this task is naturally formulated as a constrained one-to-one matching problem, recent works heavily rely on pairwise rank-ing metrics like AP and FPR-95 for model evaluation. We highlight a fundamental mis-match between these metrics and the actual assignment objective. Theoretically, we show that AP and FPR-95 can be imperfect even when the assignment is already correct, and that Sinkhorn-based normalization can make them perfect. Conversely, optimal pairwise ranking can still lead to incorrect assignments. We validate this mismatch in practice by using our Sinkhorn-based normalization as a controlled post-processing stress test. We show that optimizing just a few post-processing parameters significantly boosts AP and FPR-95 without corresponding improvements in assignment-level metrics such as ACC and IPAA. 
+
+# 1 Introduction 
+
+Multi-view object association aims to match detections of the same physical object across synchronized camera views. Given a set of detections in each view, the goal is to establish one-to-one cross-view correspondences. Each detection can be associated with at most one detection in another view, while objects may remain unmatched in views where they are not visible. Reliable multi-view association is essential for multi-camera perception systems, where a consistent understanding of the scene requires merging observations from multiple viewpoints. It appears in applications such as multi-camera tracking [16], robotic percep-tion [2], sports analytics [11], and human activity understanding [1]. Despite the importance of the task, evaluation protocols for multi-view object association remain heterogeneous. Existing works [3, 5, 18, 20] report a mixture of metrics, including pairwise ranking metrics such as Average Precision (AP) and False Positive Rate at 95% True Positive Rate (FPR-95), and assignment-level metrics such as Accuracy (ACC) and Image-Pair Association Accuracy (IPAA). AP and FPR-95 are natural choices for evaluat-ing pairwise affinity matrices, as they measure whether true cross-view pairs receive higher   
+
+> *These authors contributed equally. 2SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT
+
+Figure 1: Pairwise ranking metrics and assignment-level metrics evaluate different aspects of the affinity matrix. AP and FPR-95 flatten all cross-view pairs and measure their ranking quality, while ACC and IPAA evaluate the one-to-one matching obtained from these scores. scores than false pairs. Accordingly, these metrics have been adopted in recent multi-view association methods. However, multi-view association is not merely a pairwise ranking problem. Since the final output is a constrained one-to-one matching, assignment-level metrics are needed to evaluate the actual association decisions. Pairwise ranking metrics therefore create a funda-mental mismatch when used as primary indicators of association quality (Figure 1). In this paper, we show that this mismatch is not only conceptual but also exploitable. We use Sinkhorn-based normalization [8] as a controlled post-processing stress test to examine whether evaluation metrics are sensitive to score reshaping. We show that learning only a small number of post-processing parameters is sufficient to substantially improve AP and FPR-95 while leaving the underlying model unchanged. Crucially, these improvements in pairwise ranking metrics have only a limited effect on assignment-level metrics such as ACC and IPAA. Our theoretical analysis shows that this issue appears in both directions. First, AP and FPR-95 can be imperfect even when the assignment is correct. In this case, Sinkhorn-based normalization can improve these pairwise metrics to perfect values. Second, optimal pairwise ranking can still coexist with a completely wrong assignment. This paper makes the following contributions: • We analyze the mismatch between pairwise ranking metrics and constrained one-to-one matching in multi-view object association. • Theoretically, we show that AP and FPR-95 can be imperfect even when the assign-ment is correct, and that Sinkhorn-based normalization can make them perfect. Con-versely, optimal pairwise ranking can still lead to wrong assignments. • We evaluate the robustness of common metrics under our Sinkhorn-based post-processing stress test. Using multi-view person association as a representative setting, we show across multiple association methods that AP and FPR-95 can be substantially im-proved by tuning only post-processing parameters, without corresponding gains in Accuracy and IPAA. SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 3
+
+The empirical study is conducted on multi-view person association, where a broad set of public methods and evaluation protocols is available. This choice does not limit the gen-erality of the analysis, since our method operates only on pairwise affinity matrices and is agnostic to the object category. 
+
+# 2 Related Work 
+
+## 2.1 Multi-view Object and Person Association 
+
+Multi-view object association aims to identify object instances that correspond to the same physical object across synchronized camera views. MessyTable [3] studied object asso-ciation in cluttered multi-view tabletop scenes and showed that reliable association requires combining appearance, context, and geometric cues. ViT-P3DE [20] further addressed multi-camera object association with a vision transformer architecture and pseudo 3D position embeddings. A more extensively studied special case is multi-view person association. Person re-identification models [13, 25] provide strong appearance descriptors, but appearance alone can be unreliable in crowded scenes. GNN-CCA [12] and ReST [6] addressed multi-camera association with graph-based models. MvMHAT [9] considered the joint setting of multi-view multi-human association and tracking, using self-supervised learning to exploit spatial and temporal consistency. More recently, Self-MVA [5] proposed a self-supervised uncal-ibrated multi-view person association framework that learns geometric features without re-quiring manual identity annotations. These methods differ in supervision, architecture, and use of geometry, but they share a common interface. They produce pairwise affinity matrices that are converted into one-to-one cross-view matches. This makes multi-view association a natural setting for studying how pairwise affinity quality relates to the quality of the induced assignment. 
+
+## 2.2 Evaluation Metrics 
+
+Evaluation protocols for multi-view object association combine pairwise ranking metrics and assignment-level metrics. Pairwise metrics such as Average Precision (AP) and False Posi-tive Rate at 95% True Positive Rate (FPR-95) evaluate the affinity matrix before enforcing a matching constraint. These metrics are natural for evaluating ranking or retrieval quality and are commonly reported in multi-view association works [3, 5, 18, 20]. Since the final output of multi-view association is not a ranked list of pairs but a con-strained matching, evaluation protocols also include metrics that assess the final predicted matches. MessyTable [3] introduced Image-Pair Association Accuracy (IPAA) to evaluate association quality at the level of an image pair. Self-MVA [5] further complemented AP, FPR-95, and IPAA with Precision, Recall, and Accuracy (ACC) computed from the predicted cross-view matches. These assignment-level metrics evaluate the correctness and coverage of the final matching, while ACC additionally accounts for correctly unmatched identities. This coexistence of metric families reflects a mismatch between pairwise affinity ranking and constrained association quality. Although Self-MVA [5] noted that AP and FPR-95 do not fully capture association capability, the robustness of these metrics to assignment-aware score transformations has not been systematically studied. Our work addresses this gap 4 SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 
+
+by studying whether pairwise ranking metrics can be manipulated through post-processing without corresponding improvements in assignment-level quality. 
+
+## 2.3 Sinkhorn Normalization 
+
+One-to-one matching problems are commonly solved by converting pairwise affinities into a constrained assignment. The Hungarian algorithm [15] provides a classical discrete so-lution, while Sinkhorn normalization offers a differentiable relaxation by transforming an affinity matrix into a doubly-stochastic form [8]. Sinkhorn normalization has also been widely adopted in vision and retrieval models. SuperGlue [19] used a Sinkhorn-based opti-mal matching layer for local feature matching. In retrieval, Sinkhorn-style normalization has been used to balance assignment probabilities [17]. In representation learning and person re-identification, optimal-transport-based transformations have been used to refine features [21] and guide cross-modality matching or pseudo-label assignment [23, 24]. Our use of Sinkhorn normalization differs from these works. Prior methods typically employ Sinkhorn or optimal transport as part of the model or training objective to improve matching, retrieval, or representation quality. In contrast, we use Sinkhorn normalization as part of our controlled post-processing stress test on an already computed affinity matrix. 
+
+# 3 Preliminaries 
+
+## 3.1 Problem Setup and Evaluation Metrics 
+
+We consider synchronized images captured from multiple camera views. For timestamp t
+
+and view c, let 
+
+Dt,c = {d1
+
+> t,c
+
+, . . . , dnt,c 
+
+> t,c
+
+} (1) be the detected objects, with identity labels yit,c ∈ Y t,c. For a view pair (a, b) and timestamp 
+
+t, a multi-view association model outputs an affinity matrix 
+
+St,a,b ∈ Rnt,a×nt,b , (2) where larger St,a,bi j indicates that detections dit,a and d jt,b are more likely to correspond to the same object. For readability, we omit timestamps and view indices and denote an affinity matrix by S. Each Si j is labeled positive when the corresponding detections share the same identity and negative otherwise. Let {(sq, zq)}Nq=1 be all flattened scores and binary labels from all evaluated image pairs, sorted by decreasing score as sπ(1) ≥ · · · ≥ sπ(N). Average Precision evaluates whether posi-tive pairs are ranked above negative pairs: AP = 1
+
+N+
+
+> N
+
+# ∑
+
+> k=1
+
+1
+
+k
+
+> k
+
+# ∑
+
+> ℓ=1
+
+zπ(ℓ)
+
+!
+
+· zπ(k), N+ =
+
+> N
+
+# ∑
+
+> q=1
+
+zq. (3) False Positive Rate at 95% True Positive Rate is defined as FPR-95 = min  
+
+> γ: TPR (γ)≥0.95
+
+FPR (γ), (4) where TPR (γ) = ∑q 1[sq ≥ γ] · zq
+
+∑q zq
+
+, FPR (γ) = ∑q 1[sq ≥ γ] · (1 − zq)
+
+∑q(1 − zq) . (5) SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 5
+
+Both AP and FPR-95 operate on flattened pairwise scores before enforcing any one-to-one matching constraint. Assignment-level metrics first convert the affinity matrix into a predicted matching. Fol-lowing prior evaluation protocols, we compute a maximum-weight bipartite matching with the Hungarian algorithm and then discard matches below a threshold θ :
+
+M(S) = {(i, j) ∈ Hungarian (S) : Si j ≥ θ }. (6) A predicted match is correct if y1 
+
+> i
+
+= y2 
+
+> j
+
+. For an image pair, let C be the number of correct predicted matches, Ptot = |M| , and 
+
+Rtot = |I 1 ∩ I 2|, Atot = |I 1 ∪ I 2|, (7) where I1 and I2 are the identity sets in the two views. Precision and Recall are aggregated over all image pairs as Precision = ∑C
+
+∑ Ptot 
+
+, Recall = ∑C
+
+∑ Rtot 
+
+. (8) Accuracy and IPAA also account for identities that correctly remain unmatched. Let T
+
+be the number of correctly unmatched identities, i.e., identities present in only one view and not selected in the predicted matching. Then the association accuracy is ACC = ∑(C + T )
+
+∑ Atot 
+
+. (9) For each image pair p, define 
+
+rp = Cp + T p
+
+Ap
+
+> tot
+
+. (10) Image-Pair Association Accuracy at threshold X is IPAA-X = 1
+
+|P| ∑
+
+> p∈P
+
+1
+
+
+
+rp ≥ X
+
+100 
+
+
+
+. (11) Thus, ACC aggregates correct association decisions over all image pairs, while IPAA-X
+
+counts the fraction of image pairs whose association accuracy exceeds a predefined thresh-old, commonly 80%, 90%, or 100%. 
+
+## 3.2 Sinkhorn Normalization 
+
+Sinkhorn normalization transforms an affinity matrix into a soft assignment matrix. For an affinity matrix S ∈ Rn×m and temperature τ > 0, define the positive kernel 
+
+Gτ (S)i j = exp (Si j /τ). (12) The Sinkhorn-normalized matrix is obtained by alternately normalizing the rows and columns of Gτ (S) for K iterations: 
+
+Pτ = Sinkhorn K (Gτ (S)) . (13) Lower values of τ produce sharper matrices, while larger values produce smoother matrices. After normalization, Pτ is approximately doubly stochastic, so rows and columns compete for assignment mass. Thus, Sinkhorn normalization can be viewed as a soft relaxation of one-to-one bipartite matching. Notably, this transformation leaves the detections, features, and model parameters fixed. It only reshapes the affinity matrix before pairwise ranking or assignment-level metrics are computed. 6 SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 
+
+# 4 Theoretical Analysis 
+
+We now formalize two complementary failure modes of pairwise ranking metrics in multi-view association. First, AP and FPR-95 can be imperfect even when the Hungarian match-ing already recovers the correct assignments. In this case, Sinkhorn-based normalization can make these pairwise metrics perfect. The second result shows the converse limitation: even optimal pairwise ranking does not guarantee correct assignment quality. Together, these results demonstrate that AP and FPR-95 are not sufficient indicators of association perfor-mance in a constrained matching task. Detailed proofs of both theorems are provided in the supplementary material. 
+
+## 4.1 Correct Assignment Does Not Imply Perfect Pairwise Metrics 
+
+We consider the two-view association case with m detections in one view, n detections in the other view, and k identities shared across both views. Let S ∈ Rm×n be an affinity matrix and let M⋆ ⊂ [m] × [n] be the ground-truth matching of size k. Assume that M⋆ is the unique maximum-weight k-matching: 
+
+# ∑ 
+
+> (i,j)∈M⋆
+
+Si j > ∑ 
+
+> (i,j)∈M
+
+Si j ∀M ∈ M k, M̸ = M⋆. (14) Thus, the constrained matching problem already recovers the correct assignment. 
+
+Theorem 1. Under the condition above, there exists a Sinkhorn-based transformation T τ ,such that Tτ (S) → X⋆ as τ → 0+, (15) 
+
+where X ⋆ 
+
+> i j
+
+= 1[( i, j) ∈ M⋆]. Consequently, for all sufficiently small τ > 0,
+
+AP (Tτ (S)) = 1, FPR -95 (Tτ (S)) = 0. (16) The condition above does not imply that the original pairwise ranking is perfect. There exist matrices satisfying it in which a negative pair is ranked above a positive pair, so AP and FPR-95 are imperfect before normalization. Thus, the theorem shows that Sinkhorn-based normalization can make pairwise metrics perfect in a setting where the assignment is already correct, without degrading association quality. In practice, however, association models produce imperfect affinity matrices that do not satisfy this idealized condition. As a result, ACC and IPAA are generally below one, and the effect of Sinkhorn normalization on assignment-level metrics becomes harder to predict. This motivates our post-processing stress test (Section 5), which empirically tests whether AP and FPR-95 can be improved without corresponding gains in assignment-level quality. 
+
+## 4.2 Perfect Pairwise Ranking Does Not Imply Correct Assignment 
+
+The second result shows that the mismatch can occur in the opposite direction. Even if pair-wise ranking is perfect, the assignment induced by Hungarian matching can be completely wrong. Consider two views containing N shared identities A0, . . . , AN−1. In addition, the first view contains one extra identity X, and the second view contains one extra identity U. The SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 7
+
+extra identities are not shared across views and therefore should remain unmatched. Thus, the only ground-truth cross-view matches are 
+
+(Ai, Ai), i = 0, . . . , N − 1. (17) We now construct an affinity matrix S ∈ R(N+1)×(N+1). Its rows correspond to (A0, . . . , AN−1, X)
+
+in the first view, and its columns correspond to (A0, . . . , AN−1,U) in the second view. 
+
+Theorem 2. For any N ≥ 1, there exists an affinity matrix S ∈ R(N+1)×(N+1) such that every true pair has a higher score than every false pair. Therefore, 
+
+AP (S) = 1, FPR -95 (S) = 0. (18) 
+
+Nevertheless, Hungarian matching selects only false matches. For a valid range of thresh-olds, the resulting assignment-level metrics satisfy 
+
+Precision = 0, Recall = 0, ACC = 0, IPAA -X = 0 (19) 
+
+for every X > 0.
+
+We briefly describe the construction; the full proof and a concrete example for N = 2 are provided in the supplementary material. Choose three scores a > b > c such that 
+
+b − c > N · (a − b). (20) The N true matches receive score a:
+
+Si,i = a, i = 0, . . . , N − 1. (21) Next, assign score b to a false cycle that shifts each shared identity to the next one and uses the two open-set objects to close the cycle: 
+
+A0 → A1, A1 → A2, . . . , AN−2 → AN−1, AN−1 → U, X → A0. (22) Equivalently, 
+
+Si,i+1 = b (i = 0, . . . , N − 2), SN−1,N = b, SN,0 = b. (23) All remaining entries receive score c. Since a > b, every true pair is ranked above every false pair, which gives perfect AP and zero FPR-95. However, the correct assignment has score 
+
+Na + c, since it contains N true matches and one low-score open-set edge. The wrong cycle contains N + 1 false edges, each of score b, and therefore has score (N + 1) · b. The condition above gives 
+
+(N + 1) · b > N · a + c, (24) so Hungarian matching selects the all-false cycle. Theorem 2 clarifies why AP and FPR-95 can disagree with Precision, Recall, Accuracy, and IPAA. Pairwise ranking metrics depend on the ordering of individual entries in the affin-ity matrix. Assignment-level metrics depend only on the final thresholded matching M(S).8 SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 
+
+Figure 2: Overview of our Sinkhorn-based post-processing stress test. The raw affinity ma-trix is transformed by Sinkhorn normalization with learned temperature and dustbin param-eters, producing scores that are more consistent with one-to-one matching. This can sharply improve pairwise ranking metrics without comparable gains in assignment-level metrics. 
+
+## 4.3 Effect on Assignment-Level Metrics 
+
+Unlike AP and FPR-95, assignment-level metrics are not smooth functions of all pairwise scores. They depend on the thresholded Hungarian matching produced from the score ma-trix. As a result, Sinkhorn normalization affects these metrics only through changes in the final selected associations. This can lead to three different outcomes. First, Sinkhorn may leave the selected match-ing unchanged, in which case Precision, Recall, Accuracy, and IPAA remain unchanged even if the pairwise ranking changes. Second, it may improve the matching by reducing compe-tition from false positives and making the correct one-to-one structure more pronounced. Third, it may degrade the matching by concentrating mass on an incorrect but globally com-petitive assignment or by moving correct matches below the acceptance threshold. Thus, the impact of Sinkhorn on assignment-level quality is inherently tied to the discrete matching and thresholding procedure. This motivates our empirical protocol. We use Sinkhorn-based post-processing to test whether pairwise ranking metrics can be improved without corresponding improvements in the actual association decisions. 
+
+# 5 Post-processing Stress Test 
+
+Our theoretical analysis shows that pairwise ranking metrics can be sensitive to score trans-formations. We therefore introduce a Sinkhorn-based post-processing stress test that oper-ates directly on the affinity matrices produced by a fixed association model. Our method does not modify detections, features, or model weights. Instead, it learns a small set of post-processing parameters that transform each affinity matrix before evaluation. The goal is to test whether AP and FPR-95 can be improved by reshaping the score matrix, without nec-essarily improving the final association decisions. Figure 2 illustrates the proposed pipeline. SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 9
+
+## 5.1 Dustbin Sinkhorn Transformation 
+
+Standard Sinkhorn normalization encourages all row and column mass to be assigned, which is restrictive in open-set multi-view association where detections may remain unmatched. To allow unmatched detections, we augment each affinity matrix with a dustbin row and column (Figure 2). Given an affinity matrix S ∈ Rn×m, we define 
+
+S+ 
+
+> γ
+
+=
+
+ S γ · 1n
+
+γ · 1⊤ 
+
+> m
+
+γ
+
+
+
+∈ R(n+1)×(m+1), (25) where γ ∈ R is a learnable dustbin score. The augmented matrix is converted into a positive kernel and normalized with Sinkhorn: 
+
+P+ 
+
+> τ,γ
+
+= Sinkhorn K
+
+ exp (S+ 
+
+> γ
+
+/τ) , (26) where τ > 0 is a learnable temperature and K is the number of Sinkhorn iterations. In practice, Sinkhorn normalization is performed with non-uniform row and column marginals that allocate larger mass to the dustbin row and column. The exact marginals and log-space iterations are given in the supplementary material. The stress test parameters are therefore 
+
+φ = ( τ, γ). (27) After normalization, the real n × m block of P+ 
+
+> τ,γ
+
+is used as the transformed cross-view affinity matrix. In implementation, this block is row-renormalized to keep the transformed values comparable to the original affinity scores used by thresholded Hungarian matching, as detailed in the supplementary material. We denote the final transformed matrix as eSφ .
+
+## 5.2 Optimization Objective 
+
+Our method optimizes only the post-processing parameters φ = ( τ, γ). We use two loss terms. The first term encourages better pairwise ranking between positive and negative en-tries of the transformed matrix. Let P and N be the sets of positive and negative valid entries. We use a smooth pairwise ranking loss :
+
+Lrank = 1
+
+|P||N | ∑
+
+> p∈P
+
+# ∑
+
+> n∈N
+
+log 1 + exp − eSp − eSn
+
+η
+
+!! 
+
+, (28) where η > 0 is a ranking-loss temperature. This term pushes positive pairs above negative pairs and acts as a differentiable surrogate for improving AP and FPR-95. The second term is an assignment drift loss that discourages large changes in the original assignment structure. Let A(S) ∈ { 0, 1}n×m be the binary mask of the thresholded Hungarian matching computed from the original affinity matrix. We penalize deviations from this mask with a binary cross-entropy loss: 
+
+Ldrift = BCE  σ (Zφ ), A(S) , (29) where Zφ denotes standardized logits obtained from the transformed scores. This term does not enforce identical assignments, but biases the optimization toward transformations that do not arbitrarily change the matching. The final objective is 
+
+L = Lrank + Ldrift . (30) All affinity matrices are fixed during optimization, and gradients are applied only to τ and γ.The exact evaluation protocols and parameter selection criteria are described in Section 6. 10 SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 
+
+# 6 Experiments 
+
+## 6.1 Datasets and Association Methods 
+
+We evaluate the proposed Sinkhorn-based post-processing stress test on multi-view person association benchmarks. Although our analysis applies to general multi-view object associ-ation, we focus the empirical study on person association because it provides a larger set of public models with different architectures, supervision regimes, and uses of geometry. We conduct experiments on WILDTRACK [4] and MVOR [22]. Following the standard split used in prior multi-view association work [6, 12], 70% of the data is used for model training, 20% for model validation, and 10% for model testing. WILDTRACK is a multi-view video dataset captured by seven synchronized cameras in a public outdoor area with a dense group of pedestrians. MVOR is a multi-view operating-room dataset captured by three cameras and contains clinicians during surgical procedures, where similar clothing and occlusions make cross-view association challenging. SOLDIERS [7] is another challenging multi-view benchmark, but we do not include it in the final evaluation because it lacks the annotation format. We consider a diverse set of association methods, including appearance-based [14, 25], geometry-aware [3], graph-based [12], and self-supervised [5, 9] approaches. GNN-CCA is reported only on WILDTRACK because no official MVOR checkpoint was available. For each method and dataset split, we store the pairwise affinity matrices and apply our method without retraining any detector, feature extractor, or association model. 
+
+## 6.2 Implementation Details 
+
+Our framework is implemented in PyTorch. All experiments are conducted on a desktop with an Intel Core i5-10600K CPU and an NVIDIA GeForce RTX 2060 GPU. For all evaluated association methods, we use the official implementations and publicly available checkpoints. The models are kept fixed throughout our experiments, and the stress test is applied only to the cached pairwise affinity matrices. We use K = 20 Sinkhorn iterations and optimize the post-processing parameters for 50 steps. Optimization is performed with full-batch gradient descent over all cached affinity matrices of the corresponding split, without mini-batching. We use the Adam optimizer [10] with learning rate 0 .03. The temperature and dustbin score are initialized as τ = 0.015 and γ = 0.6, respectively. The pairwise ranking loss temperature 
+
+η is set to 0 .05. 
+
+## 6.3 Main Results 
+
+We evaluate the Sinkhorn-based post-processing stress test under two protocols. In the test-to-test protocol, the post-processing parameters are optimized directly on the test split and evaluated on the same split. This setting measures how much the reported metrics can be changed when the evaluation affinity matrices and labels are available. In the val-to-test pro-tocol, the Sinkhorn parameters (τ, γ) are optimized on the validation split and then applied to the disjoint test split without using test labels. This is our main and more challenging pro-tocol, since it tests whether the post-processing effect transfers to unseen test data without direct access to test annotations. For each method, we compare the original affinity matrices with the Sinkhorn-transformed affinity matrices. Pairwise ranking metrics are computed from flattened affinity scores, while SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 11 
+
+(a) Test-to-test protocol                                                                                                                                                                                 
+
+> Dataset Method AP ↑FPR-95 ↓ACC ↑IPAA-80 ↑IPAA-100 ↑
+> WILDTRACK OSNet [25] 0.167 →0.295 0.919 →0.838 0.438 →0.456 0.164 →0.148 0.004 →0.004
+> MvMHAT [9] 0.237 →0.322 0.928 →0.820 0.439 →0.473 0.075 →0.095 0.004 →0.005
+> GNN-CCA [12] 0.493 →0.555 0.833 →0.420 0.618 →0.627 0.218 →0.231 0.008 →0.010
+> ReText [14] 0.528 →0.659 0.755 →0.457 0.659 →0.670 0.273 →0.300 0.020 →0.013
+> Self-MVA [5] 0.567 →0.955 0.112 →0.011 0.921 →0.911 0.901 →0.875 0.471 →0.485
+> OSNet + ESC [3] 0.595 →0.810 0.127 →0.070 0.834 →0.828 0.687 →0.676 0.276 →0.286
+> MVOR MvMHAT [9] 0.561 →0.802 0.832 →0.480 0.679 →0.670 0.470 →0.498 0.465 →0.493
+> OSNet [25] 0.605 →0.797 0.801 →0.453 0.698 →0.679 0.488 →0.470 0.479 →0.460
+> ReText [14] 0.718 →0.889 0.629 →0.225 0.793 →0.784 0.662 →0.662 0.662 →0.662
+> OSNet + ESC [3] 0.763 →0.888 0.399 →0.224 0.792 →0.792 0.709 →0.728 0.709 →0.728
+> Self-MVA [5] 0.840 →0.946 0.492 →0.103 0.836 →0.821 0.709 →0.714 0.704 →0.704
+
+(b) Val-to-test protocol                                                                                                                                                                                 
+
+> Dataset Method AP ↑FPR-95 ↓ACC ↑IPAA-80 ↑IPAA-100 ↑
+> WILDTRACK OSNet [25] 0.167 →0.300 0.919 →0.779 0.429 →0.455 0.074 →0.105 0.004 →0.002
+> MvMHAT [9] 0.237 →0.311 0.928 →0.779 0.437 →0.479 0.075 →0.104 0.004 →0.005
+> GNN-CCA [12] 0.493 →0.555 0.833 →0.447 0.615 →0.623 0.200 →0.214 0.008 →0.010
+> ReText [14] 0.528 →0.692 0.755 →0.376 0.659 →0.674 0.271 →0.295 0.020 →0.011
+> Self-MVA [5] 0.567 →0.953 0.112 →0.010 0.917 →0.901 0.867 →0.835 0.475 →0.463
+> OSNet + ESC [3] 0.595 →0.809 0.127 →0.069 0.834 →0.824 0.687 →0.658 0.276 →0.279
+> MVOR MvMHAT [9] 0.561 →0.799 0.832 →0.480 0.688 →0.676 0.521 →0.521 0.516 →0.516
+> OSNet [25] 0.605 →0.797 0.801 →0.453 0.698 →0.664 0.435 →0.441 0.435 →0.441
+> ReText [14] 0.718 →0.894 0.629 →0.224 0.696 →0.661 0.676 →0.695 0.676 →0.695
+> OSNet + ESC [3] 0.763 →0.884 0.399 →0.268 0.795 →0.790 0.714 →0.695 0.714 →0.695
+> Self-MVA [5] 0.840 →0.940 0.492 →0.175 0.830 →0.806 0.708 →0.685 0.703 →0.681
+
+Table 1: Main results of our Sinkhorn-based post-processing stress test on WILDTRACK and MVOR. Each cell reports the original score followed by the transformed score (raw →
+
+transformed). assignment-level metrics are computed after Hungarian matching and thresholding. For assignment-level metrics, we evaluate a fixed threshold grid and select the threshold θ that maximizes ACC. In the test-to-test protocol, θ is selected on the test split. In the val-to-test 
+
+protocol, θ is selected on the validation split and then fixed for test evaluation. Therefore, the absolute values of ACC and IPAA may slightly differ from those reported in the origi-nal papers, where thresholds or evaluation details may differ. Additional metrics, including Precision and Recall, are reported in the supplementary material. 
+
+Test-to-Test Results. Table 1(a) shows that Sinkhorn-based post-processing substantially improves pairwise ranking metrics on both datasets. On WILDTRACK, the largest AP gain is observed for Self-MVA, from 0 .567 to 0 .955, while FPR-95 is consistently reduced, for example from 0 .833 to 0 .420 for GNN-CCA. The same trend holds on MVOR, where Re-Text improves from 0 .718 to 0 .889 in AP and from 0 .629 to 0 .225 in FPR-95. In contrast, ACC and IPAA usually remain close to their original values or move inconsistently. This suggests that improvements in pairwise ranking do not necessarily translate into better final associations. 
+
+Val-to-Test Results. Table 1(b) reports our main protocol, where both the post-processing parameters and the assignment threshold are selected on the validation split and then ap-plied to the test split. Despite not using test annotations for parameter or threshold selection, Sinkhorn-based post-processing still substantially improves AP and FPR-95 across methods 12 SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 
+
+Figure 3: Mean metric change across all evaluated methods on WILDTRACK under the validation-to-test protocol. Our post-processing produces substantially larger changes in pairwise ranking metrics, AP and FPR-95, than in assignment-level metrics, ACC and IPAA. 
+
+Figure 4: Distribution of pairwise scores before and after the Sinkhorn-based post-processing. and datasets. On WILDTRACK, Self-MVA improves from 0 .567 to 0 .953 AP, while FPR-95 drops from 0 .112 to 0 .010. On MVOR, MvMHAT improves from 0 .561 to 0 .799 AP, while FPR-95 decreases from 0 .832 to 0 .480. These improvements are not accompanied by com-parable gains in assignment-level metrics. For example, on WILDTRACK, ReText changes from 0 .659 to 0 .674 in ACC and from 0 .271 to 0 .295 in IPAA-80. On MVOR, OSNet + ESC changes from 0 .795 to 0 .790 in ACC and from 0 .714 to 0 .695 in IPAA-80. This shows that AP and FPR-95 can still be strongly affected by validation-selected post-processing, while ACC and IPAA do not show corresponding improvements on the unseen test split. Figure 3 summarizes this effect by averaging metric changes across different methods under the validation-to-test protocol on WILDTRACK. Our stress test also changes the leaderboard under pairwise ranking metrics. For example, on WILDTRACK, Self-MVA becomes the clear leader in AP after post-processing, increas-ing from 0 .567 to 0 .953, while its assignment-level metrics do not improve. On MVOR, ReText overtakes OSNet + ESC in AP after post-processing (0 .894 vs. 0 .884), even though its ACC decreases from 0 .696 to 0 .661. 
+
+Score Distributions. Figure 4 illustrates how the Sinkhorn-based post-processing changes the distribution of pairwise scores. Positive pairs are shifted toward larger scores, with many of them concentrated near 1, while negative pairs are strongly compressed toward 0. As a result, the overlap between positive and negative score distributions is greatly reduced. This directly explains why AP increases and FPR-95 decreases after post-processing: our SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 13 
+
+Figure 5: Temperature sensitivity for Self-MVA on WILDTRACK under the test-to-test protocol. Metrics are shown as a function of the Sinkhorn temperature τ; dotted horizontal lines denote the original values and the dashed vertical line marks the stable temperature.                
+
+> Dustbin AP ↑FPR-95 ↓ACC ↑IPAA-100 ↑
+> 0.767 0.142 0.790 0.165
+> ✓0.803 0.117 0.798 0.175
+
+Table 2: Effect of the dustbin component.                       
+
+> τγAP ↑FPR-95 ↓ACC ↑IPAA-100 ↑
+> ✓0.803 0.117 0.798 0.175
+> ✓0.946 0.018 0.904 0.435
+> ✓✓0.955 0.011 0.911 0.485
+
+Table 3: Ablation of learnable post-processing parameters. post-processing makes true pairs easier to rank above false pairs, even though this stronger pairwise separation does not necessarily lead to better final associations. 
+
+Temperature Sensitivity. Figure 5 shows the effect of the Sinkhorn temperature τ for Self-MVA on WILDTRACK. The curves reveal a non-monotonic trade-off between ranking and assignment quality. Very small temperatures make the transformation too sharp and severely degrade ACC and IPAA, while larger temperatures gradually recover the assignment met-rics. At the selected stable point, τ = 0.05, AP increases from 0 .567 to 0 .928 and FPR-95 decreases from 0 .112 to 0 .020, whereas ACC changes only from 0 .921 to 0 .902. For even larger temperatures, the ranking gains start to decrease. In this regime, ACC and IPAA can also drop substantially, showing that Sinkhorn normalization can degrade the affinity matrix. 
+
+## 6.4 Ablation Study 
+
+We conduct an ablation study to evaluate the main components of the Sinkhorn-based post-processing using Self-MVA on WILDTRACK as the default setting. 
+
+Dustbin Effect. Table 2 evaluates whether the dustbin component is necessary for our method. Both variants optimize only the Sinkhorn temperature τ: the first applies Sinkhorn without a dustbin, while the second adds a dustbin with fixed score γ = 0.6. Without the dustbin, Sinkhorn normalization improves AP and FPR-95, but degrades assignment-level metrics, reducing ACC from 0 .921 to 0 .790 and IPAA-100 from 0 .471 to 0 .165. Adding the dustbin produces a much stronger effect on AP and FPR-95 and slightly improves ACC and IPAA-100 compared to the no-dustbin variant. This suggests that the dustbin helps stabilize the transformed assignment, but its strongest effect appears when combined with the full learnable post-processing setup. 
+
+Learnable Parameters. Table 3 studies the effect of optimizing the Sinkhorn temperature 14 SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT                       
+
+> Ldrift Lrank AP ↑FPR-95 ↓ACC ↑IPAA-100 ↑
+> ✓0.774 0.150 0.765 0.174
+> ✓0.944 0.020 0.906 0.432
+> ✓✓0.955 0.011 0.911 0.485
+
+Table 4: Ablation of our loss components. 
+
+τ, the dustbin score γ, or both. Optimizing only τ with fixed γ = 0.6 improves the ranking metrics but strongly harms assignment quality. Optimizing only γ with fixed τ = 0.015 already achieves most of the stress test effect, while joint optimization gives the best overall result. This suggests that the dustbin score is the dominant parameter in this setting, but tuning both parameters provides the most stable configuration. 
+
+Loss Components. Table 4 evaluates the two loss terms used to train our method. The assignment drift loss alone provides no direct ranking signal and therefore gives only mod-erate AP/FPR-95 improvements while degrading assignment-level metrics. The ranking loss is the main driver of the stress test, producing the strongest AP and FPR-95 improvements. Adding the assignment drift loss slightly improves ACC and IPAA-100, indicating that it helps preserve the final assignment decisions without weakening the ranking metrics. 
+
+# 7 Discussion and Recommendations 
+
+Our results suggest that AP and FPR-95 should be interpreted with caution in multi-view association. These metrics remain useful diagnostics of pairwise affinity ranking, but they should not be treated as sufficient evidence of association quality. Assignment-level metrics such as ACC and IPAA are more directly aligned with the structure of the task, since they evaluate the thresholded Hungarian matching rather than the flattened list of pairwise scores. However, they also have an important limitation: they are computed on image-pair affinity matrices and therefore evaluate association quality locally, one pair of views at a time. As a result, they do not fully capture whether a method recovers a globally consistent multi-view association structure across all cameras. A promising direction for future work is to extend assignment-level evaluation toward global multi-view metrics. Such metrics could evaluate the consistency of the full association graph, penalize contradictory pairwise matches, and measure whether detections of the same physical object form coherent multi-view identity groups. 
+
+# 8 Conclusion 
+
+In this paper, we studied the mismatch between pairwise ranking metrics and constrained one-to-one matching in multi-view object association. Our theoretical analysis showed that this mismatch appears in two complementary ways: AP and FPR-95 can be imperfect even when the assignment is already correct, and Sinkhorn-based normalization can make them perfect. Conversely, optimal pairwise ranking can still lead to incorrect assignments. Em-pirically, we demonstrated this effect using a Sinkhorn-based post-processing stress test on multi-view person association benchmarks. Across multiple methods and datasets, AP and FPR-95 were substantially improved by tuning only a small number of post-processing pa-rameters. Crucially, these improvements in pairwise ranking metrics are not reliably reflected in assignment-level metrics such as ACC and IPAA. SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 15 
+
+# References 
+
+[1] Fahmid Al Farid, Ahsanul Bari, Abu Saleh Musa Miah, Sarina Mansor, Jia Uddin, and S Prabha Kumaresan. A structured and methodological review on multi-view human activity recognition for ambient assisted living. Journal of Imaging , 11(6):182, 2025. [2] Chaitanya Bandi and Ulrike Thomas. Action recognition via multi-view perception feature tracking for human–robot interaction. Robotics , 14(4):53, 2025. [3] Zhongang Cai, Junzhe Zhang, Daxuan Ren, Cunjun Yu, Haiyu Zhao, Shuai Yi, Chai Kiat Yeo, and Chen Change Loy. Messytable: Instance association in multiple camera views. In European Conference on Computer Vision , pages 1–16. Springer, 2020. [4] Tatjana Chavdarova, Pierre Baqué, Stéphane Bouquet, Andrii Maksai, Cijo Jose, Timur Bagautdinov, Louis Lettry, Pascal Fua, Luc Van Gool, and François Fleuret. Wildtrack: A multi-camera hd dataset for dense unscripted pedestrian detection. In Proceedings of the IEEE conference on computer vision and pattern recognition , pages 5030–5039, 2018. [5] Keqi Chen, Vinkle Srivastav, Didier Mutter, and Nicolas Padoy. Learning from syn-chronization: Self-supervised uncalibrated multi-view person association in challeng-ing scenes. In Proceedings of the Computer Vision and Pattern Recognition Confer-ence , pages 24419–24428, 2025. [6] Cheng-Che Cheng, Min-Xuan Qiu, Chen-Kuo Chiang, and Shang-Hong Lai. Rest: A reconfigurable spatial-temporal graph model for multi-camera multi-object tracking. In Proceedings of the IEEE/CVF international conference on computer vision , pages 10051–10060, 2023. [7] Leonardo Citraro. Soldiers tracking. https://www.epfl.ch/labs/cvlab/ data/soldiers-tracking/ .[8] Marco Cuturi. Sinkhorn distances: Lightspeed computation of optimal transport. Ad-vances in neural information processing systems , 26, 2013. [9] Yiyang Gan, Ruize Han, Liqiang Yin, Wei Feng, and Song Wang. Self-supervised multi-view multi-human association and tracking. In Proceedings of the 29th ACM international conference on multimedia , pages 282–290, 2021. [10] Diederik P Kingma and Jimmy Ba. Adam: A method for stochastic optimization. arXiv preprint arXiv:1412.6980 , 2014. [11] Qiaokang Liang, Wanneng Wu, Yukun Yang, Ruiheng Zhang, Yu Peng, and Min Xu. Multi-player tracking for multi-view sports videos with improved k-shortest path algo-rithm. Applied Sciences , 10(3):864, 2020. [12] Elena Luna, Juan C SanMiguel, José M Martínez, and Pablo Carballeira. Graph neu-ral networks for cross-camera data association. IEEE Transactions on Circuits and Systems for Video Technology , 33(2):589–601, 2022. 16 SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 
+
+[13] Timur Mamedov, Anton Konushin, and Vadim Konushin. Dynamix: Generalizable person re-identification via dynamic relabeling and mixed data sampling. Neurocom-puting , page 132446, 2025. [14] Timur Mamedov, Karina Kvanchiani, Anton Konushin, and Vadim Konushin. Re-text: Text boosts generalization in image-based person re-identification. arXiv preprint arXiv:2602.05785 , 2026. [15] James Munkres. Algorithms for the assignment and transportation problems. Society for Industrial and Applied Mathematics , 15:196–210, 1962. [16] Duy MH Nguyen, Roberto Henschel, Bodo Rosenhahn, Daniel Sonntag, and Paul Swo-boda. Lmgp: Lifted multicut meets geometry projections for multi-camera multi-object tracking. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 8866–8875, 2022. [17] Zhengxin Pan, Haishuai Wang, Fangyu Wu, Peng Zhang, and Jiajun Bu. Hubness reduction with dual bank sinkhorn normalization for cross-modal retrieval. In Pro-ceedings of the 33rd ACM International Conference on Multimedia , pages 6153–6162, 2025. [18] Sola Park, Seungjin Yang, and Hyuk-Jae Lee. Mvdet: multi-view multi-class object detection without ground plane assumption. Pattern Analysis and Applications , 26(3): 1059–1070, 2023. [19] Paul-Edouard Sarlin, Daniel DeTone, Tomasz Malisiewicz, and Andrew Rabinovich. Superglue: Learning feature matching with graph neural networks. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 4938– 4947, 2020. [20] Minseok Seo, Hyuk-Jae Lee, and Xuan Truong Nguyen. Vit-p3de*: Vision transformer based multi-camera instance association with pseudo 3d position embeddings. In IJ-CAI , pages 1340–1350, 2023. [21] Daniel Shalam and Simon Korman. The self-optimal-transport feature transform. arXiv preprint arXiv:2204.03065 , 3, 2022. [22] Vinkle Srivastav, Thibaut Issenhuth, Abdolrahim Kadkhodamohammadi, Michel de Mathelin, Afshin Gangi, and Nicolas Padoy. Mvor: A multi-view rgb-d operating room dataset for 2d and 3d human pose estimation. arXiv preprint arXiv:1808.08180 ,2018. [23] Jiangming Wang, Zhizhong Zhang, Mingang Chen, Yi Zhang, Cong Wang, Bin Sheng, Yanyun Qu, and Yuan Xie. Optimal transport for label-efficient visible-infrared per-son re-identification. In European Conference on Computer Vision , pages 93–109. Springer, 2022. [24] Zhizhong Zhang, Jiangming Wang, Xin Tan, Yanyun Qu, Junping Wang, Yong Xie, and Yuan Xie. Mutual information guided optimal transport for unsupervised visible-infrared person re-identification. arXiv preprint arXiv:2407.12758 , 2024. SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 17 
+
+[25] Kaiyang Zhou, Yongxin Yang, Andrea Cavallaro, and Tao Xiang. Learning general-isable omni-scale representations for person re-identification. IEEE transactions on pattern analysis and machine intelligence , 44(9):5056–5069, 2021. 18 SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 
+
+# A Pseudocode 
+
+For clarity, we provide the pseudocode for our Sinkhorn-based normalization (Algorithm 1). 
+
+Algorithm 1 Dustbin Sinkhorn normalization 
+
+Require: Affinity matrix S ∈ Rn×m, temperature τ, dustbin score γ, iterations K 
+
+> 1:
+
+Augment S with a dustbin row and column: 
+
+S+ 
+
+> γ
+
+=
+
+ S γ · 1n
+
+γ · 1⊤ 
+
+> m
+
+γ
+
+ 
+
+> 2:
+
+Set log-kernel Z = S+ 
+
+> γ
+
+/τ 
+
+> 3:
+
+Define row and column marginals: 
+
+μ = (1, . . . , 1, m)
+
+n + m , ν = (1, . . . , 1, n)
+
+n + m 
+
+> 4:
+
+Initialize u = 0, v = 0 
+
+> 5:
+
+for k = 1, . . . , K do  
+
+> 6:
+
+u ← log μ − log ∑ j exp (Zi j + v j) 
+
+> 7:
+
+v ← log ν − log ∑i exp (Zi j + ui) 
+
+> 8:
+
+end for  
+
+> 9:
+
+log P+ = Z + u1⊤ + 1v⊤ 
+
+> 10:
+
+Extract real block P = P+ 
+
+> 1: n,1: m
+> 11:
+
+Row-normalize the real block to obtain score-like affinities: 
+
+eSi j = Pi j /μi 
+
+> 12:
+
+return eS
+
+# B Proof of Theorem 1 
+
+We prove the result by explicitly constructing the Sinkhorn-based transformation Tτ . Let 
+
+M⋆ ∈ M k be the ground-truth matching, and define 
+
+W ⋆ = ∑ 
+
+> (i,j)∈M⋆
+
+Si j , X⋆ 
+
+> i j
+
+= 1[( i, j) ∈ M⋆]. (31) For r = k + 1, . . . , min (m, n), let OPT r = max  
+
+> M∈Mr
+
+# ∑ 
+
+> (i,j)∈M
+
+Si j . (32) If k < min (m, n), define 
+
+Γ = max 
+
+> r=k+1,..., min (m,n)
+
+OPT r −W ⋆
+
+r − k , (33) and if k = min (m, n), set Γ = −∞.SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 19 
+
+We augment the rectangular matrix S ∈ Rm×n into a square matrix eS ∈ RN×N , where 
+
+N = m + n − k. (34) Specifically, we add n − k dustbin rows and m − k dustbin columns. For a constant C >
+
+max {0, Γ}, define 
+
+eSi j =
+
+
+
+Si j , i ∈ [m], j ∈ [n],
+
+0, i ∈ [m], j /∈ [n],
+
+0, i /∈ [m], j ∈ [n],
+
+−C, i /∈ [m], j /∈ [n].
+
+(35) Thus, mixed real-dustbin assignments have zero score, while dustbin-dustbin assignments receive a penalty −C.Let 
+
+BN = {P ∈ RN×N 
+
+> ≥0
+
+: P1 = 1, P⊤1 = 1} (36) be the Birkhoff polytope. We first show that every optimum of the linear assignment problem over BN has the same real block X⋆.Consider a permutation π of [N] and its permutation matrix Pπ . Let 
+
+M(π) = {(i, j) ∈ [m] × [n] : π(i) = j} (37) be the real matching induced by π, and let r = |M(π)|. Since r real rows are assigned to real columns, m − r real rows are assigned to dustbin columns. There are m − k dustbin columns in total, hence the number of dustbin columns assigned to dustbin rows is 
+
+(m − k) − (m − r) = r − k. (38) Therefore r ≥ k, and the number of dustbin-dustbin assignments is exactly r − k. By con-struction of eS,
+
+⟨Pπ , eS⟩ = ∑ 
+
+> (i,j)∈M(π)
+
+Si j −C · (r − k). (39) There exists a permutation inducing exactly M⋆ in the real block: unmatched real rows are assigned to dustbin columns and dustbin rows are assigned to unmatched real columns. For this permutation r = k, there are no dustbin-dustbin assignments, and the total score is 
+
+W ⋆.Now consider any permutation π. If r = k, then 
+
+⟨Pπ , eS⟩ = ∑ 
+
+> (i,j)∈M(π)
+
+Si j . (40) By the uniqueness assumption on M⋆, this value equals W ⋆ only when M(π) = M⋆; otherwise it is strictly smaller. If r > k, then 
+
+⟨Pπ , eS⟩ ≤ OPT r −C · (r − k). (41) Since C > Γ, we have 
+
+C > OPT r −W ⋆
+
+r − k , (42) and therefore OPT r −C · (r − k) < W ⋆. (43) 20 SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 
+
+Hence every permutation with r > k has score strictly smaller than W ⋆.Thus, the optimal permutation matrices of the augmented linear assignment problem are exactly those whose real block is X⋆. Since a linear functional over BN attains its maximum on the convex hull of its optimal vertices, every optimal solution P of max 
+
+> P∈BN
+
+⟨P, eS⟩ (44) satisfies 
+
+P|[m]×[n] = X⋆. (45) We now define the Sinkhorn-based transformation. For τ > 0, let 
+
+Pτ = arg max 
+
+> P∈BN
+
+n
+
+⟨P, eS⟩ + τ · H(P)
+
+o
+
+, (46) where 
+
+H(P) = − ∑ 
+
+> i,j
+
+Pi j · log Pi j , (47) with the convention 0 log 0 = 0. This entropic assignment solution is equivalently obtained by Sinkhorn scaling of exp (eS/τ). We define 
+
+Tτ (S) = Pτ |[m]×[n]. (48) It remains to show that Tτ (S) → X⋆. Let 
+
+L(P) = ⟨P, eS⟩, L⋆ = max 
+
+> P∈BN
+
+L(P). (49) Let Q⋆ be any optimizer of the unregularized linear problem. By optimality of Pτ ,
+
+L(Pτ ) + τ · H(Pτ ) ≥ L(Q⋆) + τ · H(Q⋆) = L⋆ + τ · H(Q⋆). (50) Since L(Pτ ) ≤ L⋆, we get 0 ≤ L⋆ − L(Pτ ) ≤ τ H(Pτ ) − H(Q⋆). (51) The entropy is bounded on BN , for example 0 ≤ H(P) ≤ N log N. Hence 
+
+L(Pτ ) → L⋆ as τ → 0+. (52) Take any sequence τℓ → 0+. By compactness of BN , a subsequence of Pτℓ converges to some Q ∈ B N . By continuity of L, the limit satisfies L(Q) = L⋆, so Q is an optimal solution of the unregularized linear problem. From the argument above, every such optimizer has real block X⋆. Therefore, 
+
+Q|[m]×[n] = X⋆. (53) Since every limit point has the same real block, the entire family satisfies 
+
+Tτ (S) = Pτ |[m]×[n] → X⋆ as τ → 0+. (54) Finally, because the number of real entries is finite, this convergence implies that there exists τ0 > 0 such that for all 0 < τ < τ0,
+
+Tτ (S)i j > 23 for all (i, j) ∈ M⋆, Tτ (S)i j < 13 for all (i, j) /∈ M⋆. (55) SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 21 
+
+Thus all positive pairs are ranked strictly above all negative pairs, and therefore AP (Tτ (S)) = 1. (56) If mn − k ≥ 1, then there is at least one negative pair, and the threshold t = 1/2 accepts all positives and rejects all negatives. Hence TPR (t) = 1, FPR (t) = 0. (57) Since TPR (t) ≥ 0.95, the definition of FPR-95 gives FPR-95 (Tτ (S)) = 0. (58) This completes the proof. 
+
+Nontrivial Example. The assumption above does not imply that the original pairwise rank-ing is perfect. For example, let m = 2, n = 3, k = 2, M⋆ = {(1, 1), (2, 2)}, and 
+
+S =
+
+0.49 0.50 0.20 0.44 0.48 0.22 
+
+
+
+. (59) The ground-truth matching has score 0 .49 + 0.48 = 0.97, while every other matching of size 2 has smaller total score. Thus the constrained assignment recovers M⋆. However, the negative pair (1, 2) has score 0 .50, which is larger than the positive pair (2, 2) with score 0.48. Therefore, the original pairwise ranking is not perfect, so AP is below 1 and FPR-95 is above 0. The theorem shows that the Sinkhorn-based transformation can make these pairwise metrics perfect while the constrained assignment was already correct. 
+
+# C Proof of Theorem 2 
+
+We prove the claim by construction. Let the two views contain 
+
+A0, . . . , AN−1, X and A0, . . . , AN−1,U,
+
+respectively. The shared identities are A0, . . . , AN−1, so the true matches are 
+
+(Ai, Ai), i = 0, . . . , N − 1.
+
+The objects X and U are open-set objects and should remain unmatched. Choose three scores a > b > c such that 
+
+b − c > N · (a − b). (60) For example, one can take a = 1, b = 1 − ε, and c = 0 for any 0 < ε < 1/(N + 1).We construct S ∈ R(N+1)×(N+1) as follows. The N true pairs receive score a:
+
+Si,i = a, i = 0, . . . , N − 1. (61) Next, assign score b to the following false cycle: 
+
+A0 → A1, A1 → A2, . . . , AN−2 → AN−1, AN−1 → U, X → A0. (62) 22 SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 
+
+Equivalently, 
+
+Si,i+1 = b (i = 0, . . . , N − 2), SN−1,N = b, SN,0 = b. (63) All remaining entries are assigned score c.First, every true pair has score a, while every false pair has score at most b. Since a > b,all positives are ranked above all negatives in the flattened list of pairwise scores. Therefore, AP (S) = 1. (64) Moreover, any threshold t ∈ (b, a] accepts all true pairs and rejects all false pairs, so TPR (t) = 
+
+1 and FPR (t) = 0. Hence, FPR-95 (S) = 0. (65) It remains to show that Hungarian matching selects the false cycle. The assignment that matches all shared identities correctly and assigns X to U has total score 
+
+N · a + c. (66) The false cycle assignment contains N + 1 false edges, each with score b, and therefore has total score 
+
+(N + 1) · b. (67) Condition (60) is equivalent to 
+
+(N + 1) · b > N · a + c. (68) Thus, the false cycle is better than the natural assignment that contains all true matches. We now show that the false cycle is globally optimal. Consider any permutation assign-ment. If the assignment uses no true diagonal edge and is not the false cycle, then it cannot use all N + 1 cycle edges. Therefore, it uses at most N edges of score b and at least one edge of score c. Its total score is at most 
+
+N · b + c < (N + 1) · b, (69) so it is worse than the false cycle. Now suppose the assignment uses q ≥ 1 true diagonal edges. Once a true diagonal edge is used, the false cycle is broken, so the assignment must include at least one edge outside the true diagonals and outside the high-score cycle; such an edge has score c. The best possible total score of such an assignment is therefore at most 
+
+q · a + ( N − q) · b + c. (70) Indeed, the remaining N − q non-c edges can have score at most b, and one additional edge has score c. Rewriting this upper bound gives 
+
+q · a + ( N − q) · b + c = ( N + 1) · b + q · (a − b) − (b − c). (71) Since q ≤ N, we have 
+
+q · (a − b) ≤ N · (a − b) < b − c (72) SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 23 
+
+by (60). Hence 
+
+q · a + ( N − q) · b + c < (N + 1) · b. (73) Thus, every assignment using at least one true match is also worse than the false cycle. Therefore, Hungarian matching selects the false cycle, and all selected matches are false. Finally, choose any threshold θ such that 
+
+c < θ ≤ b. (74) All edges of the false cycle have score b, so they remain after thresholding, while low-score 
+
+c edges are discarded. The retained predicted matches are exactly the false cycle. Thus the number of correct predicted matches is zero, while N + 1 matches are predicted: Precision = 0
+
+N + 1 = 0. (75) Since none of the N ground-truth cross-view matches is recovered, Recall = 0
+
+N = 0. (76) For the association accuracy used in the main paper, the numerator counts correct predicted matches and correctly unmatched identities. Here, there are no correct predicted matches. Moreover, neither open-set object is correctly left unmatched: X is matched to A0, and U is matched from AN−1. Hence the number of correctly unmatched identities is also zero, and therefore ACC = 0. (77) For each image pair, IPAA-X is the indicator that the association accuracy is at least X/100. Since the association accuracy is zero, we have IPAA-X = 0 (78) for every X > 0. This completes the proof. 
+
+Nontrivial Example. For N = 2, one possible matrix is 
+
+S =
+
+0.90 0.89 0.01 0.01 0.90 0.89 0.89 0.01 0.01 
+
+ , (79) where rows are ordered as (A0, A1, X) and columns as (A0, A1,U). Both true pairs have score 0.90, while all false pairs have score at most 0 .89, so the pairwise ranking is perfect. However, Hungarian matching maximizes the total assignment score and therefore se-lects the higher-scoring false cycle 
+
+A0 → A1, A1 → U, X → A0.
+
+This cycle has total score 3 · 0.89 = 2.67, which is larger than the assignment containing the two true matches and the open-set edge, 
+
+A0 → A0, A1 → A1, X → U,
+
+whose total score is 0 .90 + 0.90 + 0.01 = 1.81. Thus, the pairwise metrics report perfect separability, while the induced assignment is completely wrong. 24 SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT                                                                           
+
+> (a) WILDTRACK
+> Method Precision ↑Recall ↑
+> OSNet [25] 0.511 →0.644 0.168 →0.183
+> MvMHAT [9] 0.349 →0.489 0.357 →0.320
+> GNN-CCA [12] 0.987 →0.964 0.397 →0.415
+> ReText [14] 0.694 →0.829 0.582 →0.524
+> OSNet + ESC [3] 0.799 →0.798 0.803 →0.799
+> Self-MVA [5] 0.938 →0.919 0.928 →0.930
+> (b) MVOR
+> Method Precision ↑Recall ↑
+> MvMHAT [9] 0.777 →0.754 0.688 →0.693
+> OSNet [25] 0.794 →0.783 0.699 →0.682
+> ReText [14] 0.842 →0.832 0.803 →0.795
+> OSNet + ESC [3] 0.816 →0.813 0.822 →0.838
+> Self-MVA [5] 0.910 →0.903 0.893 →0.889
+
+Table 5: Additional Precision and Recall results under the test-to-test protocol. Each cell reports the original value followed by the value after the Sinkhorn-based post-processing stress test (raw → transformed). 
+
+# D Additional Precision and Recall Results 
+
+In the main paper, we focus on AP, FPR-95, ACC, and IPAA. For completeness, we ad-ditionally report Precision and Recall under the test-to-test protocol in Table 5. Precision and Recall change less systematically than AP and FPR-95. This is expected because they are computed after Hungarian matching and thresholding, where the threshold θ induces a trade-off between the two metrics. A stricter threshold can increase Precision by discarding uncertain matches, while a smaller threshold can increase Recall by keeping more associ-ations. Since the threshold is re-selected after Sinkhorn-based post-processing, changes in Precision and Recall reflect both the transformed scores and the newly selected threshold. 
+
+# E Grid Search over Sinkhorn Parameters 
+
+In the main experiments, the Sinkhorn temperature τ and dustbin score γ are optimized by gradient descent. As an additional baseline, we evaluate a simple grid search over these two parameters on WILDTRACK under the test-to-test protocol (Table 6). We use the following grid: 
+
+τ ∈ { 0.0001 , 0.0002 , 0.0005 , 0.001 , 0.002 , 0.005 , 0.007 , 0.01 ,
+
+0.02 , 0.03 , 0.05 , 0.1, 0.2, 0.3, 0.5}, (80) 
+
+γ ∈ {− 0.5, −0.25 , 0.0, 0.05 , 0.1, 0.2, 0.3, 0.4, 0.5, 0.75 , 1.0}. (81) Grid search improves AP and FPR-95 for all methods, confirming that the metric mis-match can be exposed even without gradient-based optimization. However, the gains are generally weaker than those obtained by the learned Sinkhorn-based post-processing in the main paper. For example, for Self-MVA, grid search improves AP from 0 .567 to 0 .926, whereas the learned method reaches 0 .955. For GNN-CCA, grid search reduces FPR-95 from 0 .833 to 0 .610, while gradient-based optimization reduces it to 0 .420. A similar gap SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 25 
+
+Method AP ↑ FPR-95 ↓ ACC ↑ IPAA-80 ↑ IPAA-100 ↑
+
+OSNet [25] 0.167 → 0.279 0.919 → 0.842 0.438 → 0.447 0.164 → 0.125 0.004 → 0.002 
+
+MvMHAT [9] 0.237 → 0.251 0.928 → 0.819 0.437 → 0.444 0.075 → 0.067 0.004 → 0.000 
+
+GNN-CCA [12] 0.493 → 0.522 0.833 → 0.610 0.618 → 0.621 0.218 → 0.200 0.008 → 0.012 
+
+ReText [14] 0.528 → 0.628 0.755 → 0.520 0.659 → 0.661 0.273 → 0.269 0.020 → 0.014 
+
+Self-MVA [5] 0.567 → 0.926 0.112 → 0.021 0.921 → 0.908 0.901 → 0.845 0.471 → 0.483 
+
+OSNet + ESC [3] 0.595 → 0.833 0.127 → 0.059 0.834 → 0.810 0.687 → 0.619 0.276 → 0.238 
+
+Table 6: Grid search over Sinkhorn temperature τ and dustbin score γ on WILDTRACK under the test-to-test protocol. Each cell reports the original value followed by the best grid-search value (raw → grid).                                                                       
+
+> Post-processing AP ↑FPR-95 ↓ACC ↑IPAA-80 ↑IPAA-100 ↑
+> Row min-max 0.567 →0.482 0.112 →0.078 0.921 →0.808 0.901 →0.520 0.471 →0.231 Row softmax 0.567 →0.489 0.112 →0.116 0.921 →0.858 0.901 →0.746 0.471 →0.300 Row+column softmax 0.567 →0.611 0.112 →0.098 0.921 →0.867 0.901 →0.758 0.471 →0.355 Ours 0.567 →0.955 0.112 →0.011 0.921 →0.911 0.901 →0.875 0.471 →0.485
+
+Table 7: Comparison with simple post-processing baselines on Self-MVA under the WILD-TRACK test-to-test protocol. Each cell reports the original value followed by the post-processed value (raw → processed). appears for ReText, where grid search reaches 0 .628 AP and 0 .520 FPR-95, compared to 0.659 AP and 0 .457 FPR-95 with the learned post-processing. These results indicate that the two-parameter Sinkhorn transformation is already sensitive under coarse parameter search, but gradient optimization provides a stronger and more reliable way to find metric-hacking configurations. 
+
+# F Comparison with Simple Post-processing Baselines 
+
+We also compare our Sinkhorn-based post-processing stress test with three lightweight post-processing baselines on Self-MVA under the WILDTRACK test-to-test protocol (Table 7). Given an affinity matrix S, row softmax is defined as 
+
+S′ 
+
+> i j
+
+= exp (Si j /τ)
+
+∑ j′ exp (Si j ′ /τ) . (82) Row min-max normalization rescales each row independently: 
+
+S′ 
+
+> i j
+
+= Si j − min j′ Si j ′
+
+max j′ Si j ′ − min j′ Si j ′ + ε . (83) Finally, row+column softmax averages row-wise and column-wise softmax scores: 
+
+S′ = 12 (RowSoftmax (S/τ) + ColSoftmax (S/τ)) . (84) Simple post-processing baselines do not reproduce the behavior of our Sinkhorn-based post-processing. In contrast, our method improves AP to 0 .955 and FPR-95 to 0 .011, while 26 SHELUKHAN, MAMEDOV, CHUKHROV, KVANCHIANI: RANKING VS. ASSIGNMENT 
+
+keeping ACC and IPAA much closer to their original values. These results suggest that the observed metric vulnerability is not merely a consequence of row-wise calibration or independent score rescaling. The dustbin Sinkhorn transformation is more effective because it reshapes the matrix using a global one-to-one structure while still allowing unmatched detections through the dustbin.
