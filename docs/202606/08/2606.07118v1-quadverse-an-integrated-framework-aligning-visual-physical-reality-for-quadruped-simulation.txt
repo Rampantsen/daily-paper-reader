@@ -1,0 +1,612 @@
+Title: QuadVerse: An Integrated Framework Aligning Visual-Physical Reality for Quadruped Simulation
+
+URL Source: https://arxiv.org/pdf/2606.07118v1
+
+Published Time: Mon, 08 Jun 2026 00:51:46 GMT
+
+Number of Pages: 22
+
+Markdown Content:
+# QuadVerse: An Integrated Framework Aligning Visual-Physical Reality for Quadruped Simulation 
+
+Yuxiang Chen 1,∗ Yuanhao Wang 2,∗ Ziheng Zhang 3,† Meng Zhang 3,†
+
+Yu Liu 3 Yufei Jia 4 Tiancai Wang 3 Erjin Zhou 3 Jin Xie 1,‡
+
+> 1
+
+Nanjing University 2BUPT 3DEXMAL 4Tsinghua University 
+
+> ∗
+
+Equal contribution †Project lead ‡Corresponding author Rendered View  Real Capture Robot View  Dynamics Compensation 
+
+> Residual Network
+> Simulator
+> Locomotion
+> Policy
+
+Isaac Gym  QuadVerse  Real World 
+
+Figure 1: QuadVerse augments existing physics simulators with batched photorealistic ego-view rendering, semantic mesh-based contact calibration, and an in-situ residual dynamics compensator. Together, these components reduce sim-to-real discrepancies across visual perception , physical in-teraction , and actuator dynamics , enabling zero-shot visual-navigation policy deployment.Project page: https://quad-verse.github.io/ .
+
+Abstract: Simulation is central to robot learning, yet the sim-to-real gap remains a major bottleneck. Existing approaches often tackle visual or dynamic gaps sep-arately, overlooking how these individual mismatches accumulate and propagate throughout the robot’s state evolution. In this paper, we introduce QuadVerse ,an integrated framework that uses reconstructed scenes as a calibration substrate for aligning visual perception, physical interaction, and actuator dynamics. From captured RGB videos, we reconstruct geometry-constrained 3D Gaussian Splat-ting (3DGS) scenes that support batched photorealistic ego-view rendering and collision-ready semantic mesh extraction. The meshes further enable contact cal-ibration by initializing spatially varying friction priors and refining them through trajectory-based posterior search. To address remaining actuator discrepancies, QuadVerse trains a residual dynamics compensator by replaying real-world tra-jectories on the contact-calibrated terrain, reducing the entanglement between terrain-induced contact errors and actuator non-idealities. Experiments show that QuadVerse improves reconstruction quality and locomotion tracking over relevant baselines. Leveraging this foundation, we demonstrate robust zero-shot visual-navigation policy deployment without task-specific real-world rollouts. 
+
+Keywords: Real-to-Sim-to-Real, Quadruped Robots, Reinforcement Learning 
+
+> arXiv:2606.07118v1 [cs.RO] 5 Jun 2026
+
+## 1 Introduction 
+
+Legged robots, particularly quadrupeds, have demonstrated exceptional mobility in complex, un-structured terrains [1, 2, 3]. Deep Reinforcement Learning (DRL) [4, 5] has emerged as the pre-vailing paradigm for learning agile locomotion skills. Due to hardware costs and safety risks, physics-based simulators have become the cornerstone of policy training [6, 7, 8, 9]. However, the sim-to-real gap remains a major bottleneck for transferring policies to the real world [10]. Recent work has made substantial progress on individual aspects of sim-to-real transfer. Real-to-sim reconstruction and 3DGS-based simulators improve visual realism for vision-based policy learn-ing [11, 12, 13, 14], while domain randomization and system identification improve robustness to dynamics mismatch [15, 16, 17, 18, 19, 20]. For contact-rich quadruped deployment, however, these discrepancies interact: visual observations determine policy actions, terrain geometry and contact parameters shape external forces, and actuator delays or nonlinearities alter the executed motion. Er-rors at any of these interfaces accumulate into trajectory mismatch, motivating an integrated frame-work that systematically reduces these discrepancies. Guided by this perspective, we present QuadVerse , an integrated framework that uses reconstructed scenes as a shared substrate for aligning visual perception, physical interaction, and actuator dynam-ics. From captured RGB videos, QuadVerse reconstructs geometry-constrained 3D Gaussian Splat-ting (3DGS) [21] scenes that support batched photorealistic ego-view rendering and collision-ready semantic mesh extraction. The resulting meshes enable spatially varying contact calibration, where coarse friction priors are initialized from terrain semantics and refined through trajectory-based pos-terior search. To reduce the remaining actuator mismatch, QuadVerse trains a residual actuator dy-namics compensator by replaying real-world trajectories on the contact-calibrated terrain, thereby reducing the entanglement between terrain-induced contact errors and actuator non-idealities. We validate QuadVerse through targeted experiments that evaluate both module-level fidelity and system-level sim-to-real transfer. Our reconstruction pipeline achieves accurate geometry and high-fidelity rendering while supporting high-throughput ego-view generation at over 2000 FPS at 640 × 480 resolution for RL training. Our prior-posterior contact calibration reduces mean posi-tion error during command replay on mixed-friction terrain, and our residual actuator compensation improves joint-space replay accuracy and downstream locomotion deployment. Finally, in an in-tegrated outdoor navigation task, zero-shot deployment of policies trained in QuadVerse attains an 84% real-world success rate, compared with 92% in the aligned simulation, without task-specific real-world rollouts. We will release the code to facilitate future research. 
+
+## 2 Related Works 
+
+Visual Sim-to-Real Adaptation High-fidelity visual simulation is essential for minimizing do-main shifts in vision-based policy training. While conventional rasterization-based simulators require substantial manual asset design to reproduce complex scenes, 3D Gaussian Splatting (3DGS) [21] has recently emerged as an effective representation for constructing photorealistic robot simulation environments, including manipulation [22, 23, 24] and navigation [12, 11, 13, 14] tasks. These works leverage 3DGS to construct photorealistic digital twins, significantly narrowing the visual gap. However, existing 3DGS-based real-to-sim systems primarily use reconstructed scenes for visual rendering or geometric interaction, while their role in calibrating contact properties and actuator responses remains underexplored. In contrast, QuadVerse uses reconstructed 3DGS scenes as a geometric substrate for contact calibration and residual dynamics compensation, while also supporting scalable batched ego-view rendering for RL training. 
+
+Terrain Contact Parameter Alignment Inferring exact terrain contact parameters solely from visual appearance is inherently ill-posed, as visually similar materials may differ significantly in properties. Prior works have used semantic terrain understanding, learned vision-to-physical-parameter prediction, or VLM/LLM-based physical priors to estimate terrain attributes before con-tact [25, 26, 27, 28]. These approaches provide useful priors, but directly using semantic labels or 2appearance-based predictions as simulator parameters remains fragile due to intra-class variance. Interaction-based and system-identification methods can further refine terrain parameters from real robot responses, but often require dedicated probing motions, online estimation, or active explo-ration [29, 30, 31, 20]. QuadVerse therefore adopts a lightweight two-stage strategy: 3D semantics initialize coarse spatially varying friction priors, while trajectory-based posterior search refines con-tact parameters by replaying real-world locomotion on the contact-calibrated terrain. 
+
+Dynamics Sim-to-Real Alignment Dynamics mismatch remains a persistent bottleneck for sim-to-real robot learning. Domain randomization (DR) improves robustness by perturbing physi-cal parameters during training [15, 16, 17], but may trade tracking accuracy for conservative behavior. System identification (SysID) instead refines simulator parameters from real-world data [32, 18, 19, 20], yet remains limited by the expressiveness of predefined analytical models. Beyond such parameter-level alignment, data-driven approaches can further model residual dynam-ics or actuator responses that remain unexplained by nominal simulators. Prior works have learned neural actuator models for legged locomotion [4], compensators from matched command-response data [33], neural dynamics models for dexterous manipulation [34], or full-body residual models using rich motion-capture supervision [35]. However, low-cost residual compensation for high-load floating-base robots remains challenging, especially when terrain-induced contact errors can be en-tangled with actuator-level discrepancies. 
+
+## 3 Problem Formulation 
+
+We view sim-to-real transfer as minimizing the discrepancy between simulated and real state tra-jectories. Let q and v denote the generalized coordinates and velocities of the quadruped. The constrained rigid-body dynamics can be written as 
+
+M (q) ˙ v + C(q, v) + G(q) = τ + JT fext , (1) where M , C, and G denote the inertia, Coriolis/centrifugal, and gravity terms, τ is the joint torque, 
+
+fext is the external contact force, and J is the contact Jacobian. After nominal inertial calibration, the dominant trajectory mismatch can be organized around three interfaces: visual observations that determine policy actions, contact modeling that determines fext , and actuator response that determines the executed torque τ .In vision-based control, the commanded torque is generated through a policy and an actuator model: 
+
+τt = A(at) = A πθ (st, It), (2) where st is the proprioceptive state and It is the visual observation. A domain shift between sim-ulated and real images changes the policy input distribution and can therefore induce mismatched actions. QuadVerse reduces this discrepancy with high-fidelity 3DGS rendering. The physical interaction gap appears in the external force term. We write it abstractly as 
+
+fext = Fcontact (vrel , n, Φ), (3) where vrel is the relative contact velocity, n is the contact normal, and Φ denotes contact parameters such as friction. Coarse terrain geometry or uniform contact parameters can bias both n and Φ.QuadVerse therefore extracts collision-ready meshes to improve geometric contact modeling and uses semantic contact calibration to assign spatially varying contact parameters. Finally, even with aligned observations and contact modeling, the simulated actuator model Asim 
+
+may differ from the real actuator response Areal due to delays, nonlinear friction, and other motor non-idealities. We model the remaining effective actuation mismatch as a residual term: 
+
+τreal = τsim + ∆ act (st, at), (4) where τsim denotes the torque predicted by the nominal actuator model, τreal denotes the torque executed by the real robot, and ∆act captures actuator-level discrepancies. In practice, this residual is implemented in the action space. 3TSDF                  
+
+> VIDEO
+> GLOMAP Normal Semantic
+> Geometry -Constrained GS Optimization
+> LLM Coarse Prior
+> +
+> Posterior Refined
+> (a) Residual Network Training
+> Residual
+> Network
+> PPO
+> Reward
+> Loco -
+> motion
+> Policy
+> Loco -
+> motion
+> Policy
+> Real Terrain
+> (b) Locomotion Policy Fine -tuning
+> Simulator
+> Residual
+> Network
+> open -loop eval
+> Real -world Deployment
+> Visual Navigation
+> Training in QuadVerse
+> Zero -shot Transfer
+> Reconstruction &Calibration Dynamics Compensation Sim -to -Real Deployment
+> 2D Planar
+> Regularization
+> Unbiased Depth
+> Rendering Multi -View Photometric
+> Consistency
+> Batched Render
+
+1 2 3     
+
+> {𝑠 !
+> "#$% ,𝑎 !
+> "#$% }
+> 𝑠 &
+> "#$%
+> 𝐼𝑛𝑖𝑡 𝑠 '
+> (!)
+> 𝑠 '
+> (!)
+> 𝑠 '*+
+> (!) 𝑠 '*+
+> "#$%
+> 𝑠 '
+> (!)
+> 𝑠 '*+
+> (!)
+> 𝑎 '
+> (!)
+> 𝑎 '
+> (!)
+> 𝑎 '
+> "#(
+> 𝑎 '
+> "#(
+> 𝑠 "#$% 𝑎 "#$%
+> 𝑎 '
+> 𝑎 '
+> ,
+> 🔧
+> ❄
+> 🔥
+
+🏆    
+
+> 🔥
+> ❄
+> 🕗
+> 🕗
+> ⚙
+> Real Capture
+> Contact -calibrated Terrain
+> 3DGS
+> Semantic Mesh
+> Calib .Terrain
+> Simulator
+> ⚙
+
+Figure 2: Overview of QuadVerse. (1) Reconstruction and Calibration: QuadVerse reconstructs 3DGS scenes for batched ego-view rendering and extracts collision-ready semantic meshes for con-tact calibration. (2) Dynamics Compensation: A dynamics compensator is trained using RL by replaying real-world trajectories on the contact-calibrated terrain; the locomotion policy is then fine-tuned under the corrected dynamics. (3) Sim-to-Real Deployment: Policies trained in QuadVerse are deployed zero-shot to outdoor visual navigation tasks without task-specific real-world rollouts. 
+
+## 4 Method 
+
+Building upon the perspective outlined above, QuadVerse aims to achieve reliable sim-to-real trans-fer by coordinating visual perception, physical interaction, and actuator dynamics within a recon-structed real-to-sim environment, as shown in Fig. 2. 
+
+4.1 Geometry-Anchored Reconstruction and Batched Rendering Geometry-Consistent Scene Reconstruction. To create photorealistic and geometrically accurate digital twins, we reconstruct 3D scenes from captured RGB video sequences. We initialize camera poses and sparse geometry via global structure-from-motion (GLOMAP [36]), which effectively prevents cumulative drift in large outdoor scenes. The scene is then represented with 3D Gaussian Splatting (3DGS) [21]. However, vanilla 3DGS is primarily optimized for photometric reconstruc-tion and may produce inaccurate surface geometry, which are unsuitable for collision modeling. To extract collision-ready meshes for downstream physical simulation, we introduce geometric con-straints during 3DGS optimization. Specifically, we flatten Gaussian primitives via 2D planar reg-ularization [37], reduce depth bias through unbiased depth rendering [38], and enforce multi-view photometric consistency using induced homographies [39, 40, 38]. For texture-less regions where photometric supervision is weak, we incorporate normal priors predicted by StableNormal [41] to regularize the rendered surface normals. Detailed formulations are provided in the Appendix. 
+
+High-Throughput Batched Rasterization. To support visual RL training with many parallel environments, QuadVerse implements batched ego-view rendering directly within the simulation pipeline. Instead of rendering each environment sequentially, we batch camera matrices across par-allel environments while sharing static scene Gaussians. Dynamic Gaussian groups, such as task objects, are transformed according to their per-environment poses. The resulting batched scene representation is rendered using a tile-based Gaussian rasterizer [42, 43], enabling high-throughput ego-view generation for policy training. 
+
+4.2 Semantic Mesh-Based Contact Calibration 
+
+To reduce the physical interaction gap, QuadVerse converts the reconstructed 3DGS scene into a collision-ready semantic mesh and calibrates spatially varying contact parameters on top of it. 4Semantic Collision Mesh Extraction. After 3DGS optimization, unbiased depth maps are ren-dered from all training views and fused into a volumetric Truncated Signed Distance Function (TSDF) [44]. A watertight mesh is extracted via Marching Cubes [45]. Metric scale and coordi-nate alignment are obtained through a similarity transformation based on known scene markers, and the mesh is transformed into the simulator’s z-up frame for physics simulation. To associate contact properties with terrain regions, we augment each Gaussian primitive with a learnable semantic feature supervised by pseudo-labels from a 2D segmentation model [46]. The learned 3D semantic features are then propagated to mesh faces via k-nearest neighbors (kNN) [47], producing a semantic collision mesh that supports region-wise contact calibration. 
+
+Prior-Posterior Friction Calibration. Since the outdoor terrains considered in this work are mostly rigid and the dominant contact failure is tangential slip, we focus on friction as the primary calibrated parameter. For each semantic terrain region, a commonsense reasoning model (e.g., GPT-4 [48]) provides a coarse nominal friction prior. For regions with sufficiently high friction, we keep the nominal prior without posterior refinement, since the robot trajectory becomes insensitive to the exact value of μ above an empirical slip threshold, set to μ = 0 .5 in our experiments. For slip-prone regions, we perform a grid search over a region-level friction coefficient by replaying the recorded locomotion commands and selecting the value that minimizes trajectory discrepancy: 
+
+μ⋆r = arg min  
+
+> μr∈[μmin ,μ max ]
+
+X
+
+> t
+
+xsim t (μr ) − xreal t 
+
+> 22
+
+, (5) where r denotes a slip-prone semantic region and xt denotes the trajectory state used for calibration. Details of the calibration protocol are provided in the Appendix. 
+
+4.3 Dynamics Compensation via Residual RL 
+
+Even with visual and contact interfaces aligned, the nominal simulator may still fail to capture actuator-level effects such as signal delays, internal motor friction, and nonlinear response. To address this, QuadVerse trains an action-space residual dynamics compensator from real-world tra-jectory replay on the contact-calibrated terrain. 
+
+Data Collection and Replay. We collect approximately 10 minutes of real-world locomotion data across the targeted unstructured terrain. This dataset comprises high-level locomotion commands, joint-space commands, high-frequency proprioceptive states, and LiDAR-tracked global base poses. During replay, each simulation episode is initialized from a sampled timestamp using the corre-sponding base pose and joint state. We then replay the recorded joint-space commands on the contact-calibrated terrain rather than on a flat plane. This better matches the real replay condition and prevents terrain-induced contact errors from being absorbed into the actuator residual. 
+
+Residual Network Training. We train a residual policy via PPO [49] to output an additive action correction ares . During replay, the applied simulation action is asim = aref + ares , where aref 
+
+denotes the recorded action. We use an asymmetric actor-critic architecture: the actor observes only simulation-available quantities, including joint states, contact states, and base pose, while the critic additionally uses privileged real-world trajectory information to guide value estimation. The reward balances joint-space tracking, pose/contact consistency, and residual regularization. The tracking terms encourage the simulated replay to follow the recorded trajectory, while the regularization terms penalize large or rapidly varying residual actions. Episodes are terminated when joint errors exceed a safety threshold, preventing training from diverging far outside the replay distribution. 
+
+Locomotion Policy Fine-tuning. After training, the residual compensator is frozen and inserted into the simulation loop for downstream locomotion policy fine-tuning. Given a nominal policy action aπ , the executed simulation action is 
+
+asim = aπ + clip( ares , −δ, δ), (6) where δ bounds the compensation magnitude. This clipping prevents aggressive over-compensation when the policy explores states outside the replay distribution. Detailed network architectures, re-ward terms, and hyperparameters are provided in the Appendix. 5GT Image 2DGS (0.784) MILO (0.838) Vid2Sim * (0.271) QuadVerse (0.932) 
+
+Figure 3: Geometric reconstruction evaluation. We compare extracted meshes against LiDAR-scanned geometry using F1 score ↑. QuadVerse reconstructs a coherent watertight mesh and achieves the highest F1 score (0.932), while competing methods suffer from over-smoothing or surface noise. The * indicates that Vid2Sim [11] performs ground reconstruction separately. 
+
+## 5 Experiments 
+
+5.1 Experimental Setup 
+
+All real-world experiments are conducted on a Unitree Go2 quadruped robot. For visual perception, a head-mounted Intel RealSense D435i camera provides 640 × 480 RGB images. A Livox Mid-360 LiDAR coupled with a FAST-LIO SLAM backend [50] is used to collect geometric reference scans for reconstruction evaluation and to track robot base poses during replay experiments. QuadVerse uses Isaac Gym [6] for rigid-body dynamics and contact simulation. During training, we instantiate 1024 parallel environments on a single NVIDIA RTX 4090 GPU. With batched 3DGS rendering using a minibatch size of 128, QuadVerse achieves over 2000 FPS rendering throughput at 640 × 480 resolution. Consequently, this highly efficient pipeline completes the training of the residual compensation model and the fine-tuning of the locomotion policy within 1 hour, along-side the training of visual RL navigation policy within 2 hours. Additional experimental settings, implementation details, and extended results are provided in the Appendix. 
+
+5.2 Visual Fidelity and Contact Modeling 
+
+Table 1: Rendering quality and simulation ca-pability. Interact. denotes collision-ready inter-action, and Batch denotes batched ego-view ren-dering for parallel RL.                                       
+
+> Methods Rendering Simulation PSNR ↑SSIM ↑LPIPS ↓Interact. Batch Instant-NGP 20.46 0.475 0.598 ✗✗
+> VGGT-X 16.75 0.299 0.538 ✗✗
+> 3DGS 20.85 0.554 0.378 ✗✗
+> 2DGS 20.57 0.524 0.456 ✓✗
+> Vid2Sim 20.18 0.533 0.384 ✓✗
+> Ours 21.04 0.569 0.394 ✓✓
+
+We first evaluate QuadVerse on 10 self-collected outdoor scenes covering ramps, grass, staircases, mixed pavements, and other unstruc-tured terrains. As shown in Table 1, QuadVerse achieves the best average PSNR (21.04) and SSIM (0.569) among representative NeRF [51], 3DGS-based [21, 37, 11], and feed-forward re-construction [52] baselines, demonstrating su-perior photometric reconstruction. More im-portantly for robot learning, the reconstructed scenes support both collision-ready interaction and batched ego-view rendering, enabling their use in massively parallel RL rather than only offline visualization. To balance geometric fidelity and computational efficiency during mesh extraction, we set the TSDF truncation distance to 10 m and the voxel size to 0.01 m. As shown in Fig. 3, QuadVerse reconstructs coherent watertight surfaces with sharper terrain boundaries, achieving an F1 score of 0.932 and outperforming existing geometric reconstruction baselines [37, 53, 11]. Table 2: Evaluation of contact calibra-tion. Mean base-position error during re-play on mixed-friction terrains.      
+
+> Contact Modeling Mean Error (m) ↓
+> Uniform Friction 0.70 LLM Coarse Prior 0.20
+> Posterior Refined (Ours) 0.12
+
+We further evaluate the effectiveness of our prior-posterior friction calibration on the mixed-friction ter-rains. Across multiple recorded replay segments, we measure the mean base-position error over time be-tween simulated and real trajectories. As reported in Table 2, uniform friction fails to reproduce traction loss, resulting in a large replay error. The LLM coarse prior, initialized from semantic terrain labels, reduces 6Figure 6: Real-world trajectory tracking for the right-turn maneuver. Left: Global trajectory in the world frame. Top: The nominal policy without dynamics compensation drifts away from the reference path. Bottom: The policy fine-tuned with QuadVerse’s compensated dynamics follows the reference trajectory more closely. the error by identifying low-friction regions, while posterior refinement further calibrates the slip response and achieves the lowest mean error of 0.12 m. 
+
+5.3 Actuator Modeling and Tracking Accuracy 
+
+We next evaluate whether the residual actuator compensator improves replay accuracy and whether the compensated dynamics benefits downstream locomotion policy fine-tuning. 0.0 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 
+
+> −2.0
+> −1.8
+> −1.6
+> −1.4
+> −1.2
+> −1.0
+> −0.8
+> joint position(rad)
+> Nominal Simulator
+> Flat-replay Residual
+> QuadVerse(ours)
+> Real Reference
+> (s)
+
+Figure 4: Joint-space tracking during open-loop replay. The nominal simulator shows large actuator mismatch, and flat-replay residual overcompensates under unstructured contacts. QuadVerse replay on contact-calibrated terrain most closely matches the real reference. 
+
+Open-Loop Joint-Space Replay. We evaluate the residual model by replaying recorded joint-space commands and comparing simulated joint trajectories with real measurements. We compare three settings: Nominal Simulator , which uses the default actuator model without compensation; 
+
+Flat-Replay Residual , where the residual model is trained from replay on flat terrain; and Quad-Verse , where the residual model is trained from replay on the contact-calibrated terrain. As shown in Fig. 4, the nominal simulator devi-ates substantially from real reference due to ac-tuator latency, internal friction, and other unmod-eled motor effects. Flat-replay residual reduces this mismatch, but remains biased. In contrast, QuadVerse trains the compensator under matched terrain geometry and calibrated contact conditions, achieving the lowest mean per-joint tracking er-ror among the three settings: 0.127 rad for Nominal Simulator, 0.064 rad for Flat-Replay Residual, and 0.043 rad for QuadVerse. Additional experiments on Unitree Go1 and A2 are provided in the Appendix to demonstrate the applicability of our compensation method across quadruped platforms. right-turn left-turn slow-fwd fast-fwd figure-eight 
+
+> 0.0
+> 0.3
+> 0.6
+> 0.9
+> 1.2
+> 1.5
+> Trajectory Error (m)
+> Nominal policy
+> QuadVerse policy
+
+Figure 5: Real-world trajectory error across locomotion tasks. Policies fine-tuned with QuadVerse’s residual actuator compensation achieve lower tracking errors than the nominal policy without compensation. 
+
+Policy Fine-Tuning and Real-World Tracking. 
+
+After training, we freeze the residual compen-sator and insert it into the simulation loop for lo-comotion policy fine-tuning. Fig. 5 summarizes real-world trajectory track-ing errors across multiple locomotion commands. Fine-tuning under the compensated dynamics re-duces the average trajectory error by 47% relative to the nominal policy, indicating that improved replay fidelity translates to better closed-loop de-ployment. Fig. 6 provides a qualitative example on a highly dynamic right-turn maneuver. With-out compensation, the real robot accumulates substantial drift, whereas the fine-tuned policy follows the intended trajectory more closely. 75.4 Zero-Shot Visual Navigation Deployment 
+
+Finally, we evaluate the full QuadVerse workflow on zero-shot real-world visual navigation. Fol-lowing our pipeline, we reconstruct the deployment scene, calibrate the semantic contact mesh, and integrate a replay-trained residual actuator compensator before training the navigation policy. The robot must navigate to a colored cone on unstructured outdoor terrain using only egocentric RGB observations within a 25-second time limit. We adopt a hierarchical RL framework [12], where a 5 Hz high-level visual planner outputs velocity commands to a 50 Hz low-level locomotion con-troller. The visual navigation policy is trained entirely in simulation and deployed to the real robot without task-specific real-world rollouts. Table 3: Zero-shot visual navigation perfor-mance. SR denotes success rate and ART denotes average reaching time.            
+
+> Setting SR (%) ↑ART (s) ↓
+> Full QuadVerse (Sim) 92 13.49
+> Full QuadVerse (Real) 84 14.24
+> QuadVerse w/o Reconstruction 36 19.36 QuadVerse w/o Residual Comp. 76 18.20
+
+Real-world results are averaged over 25 tri-als with randomized initial robot poses and goal locations, while simulation results are averaged over 200 episodes. We compare four settings: Full QuadVerse (Sim) , the com-plete pipeline evaluated in simulation; Full QuadVerse (Real) , the same trained policy deployed on hardware; QuadVerse w/o Re-construction , a policy trained without scene-specific real-to-sim reconstruction; and QuadVerse w/o Residual Comp. , a policy trained in the re-constructed scene but without residual actuator compensation. As shown in Table 3, the full QuadVerse policy achieves an 84% success rate on the real robot, approaching its 92% performance in simulation. Removing scene-specific reconstruction causes a large performance drop, suggesting that reconstructed visual and geometric scene structure is im-portant for this navigation task. Removing residual actuator compensation also reduces the success rate and increases the reaching time. This degradation mainly comes from poorer tracking of high-level velocity commands: the robot accumulates trajectory deviations, follows less direct navigation paths, and is less likely to reach the goal within the episode horizon. Overall, these results show that the aligned simulation built by QuadVerse supports zero-shot visual-navigation policy deployment. 
+
+## 6 Conclusion 
+
+We introduced QuadVerse , an integrated real-to-sim-to-real framework for quadruped robot learn-ing in reconstructed scenes. By combining batched 3DGS rendering, semantic mesh-based contact calibration, and replay-trained residual actuator compensation, QuadVerse reduces discrepancies across visual perception, physical interaction, and actuator dynamics. Experiments demonstrate im-proved reconstruction quality, contact replay fidelity, and locomotion tracking accuracy, enabling robust zero-shot visual-navigation deployment without task-specific real-world rollouts. 
+
+## 7 Limitations and Future Work 
+
+While QuadVerse provides a practical framework for real-to-sim-to-real transfer, several limitations remain. First, our scene representation assumes static geometry and rigid collision meshes, which may be insufficient for strongly deformable terrains, such as shrub-covered areas, sandy ground, or soft soil. Second, our contact calibration is most suitable for regions with clear semantic bound-aries and relatively homogeneous physical properties; it may be less effective on terrains with high-frequency spatial variations in contact properties. In addition, posterior contact calibration and dy-namics compensation rely on offline trajectory data collected in the target environment, which may limit scalability to rapidly changing scenes or substantially different robot hardware. Future work will explore dynamic scene representations, finer-grained contact calibration, deformable terrain models, and online adaptation to reduce environment-specific calibration requirements. 8References 
+
+[1] G. Bledt, M. J. Powell, B. Katz, J. Di Carlo, P. M. Wensing, and S. Kim. Mit cheetah 3: Design and control of a robust, dynamic quadruped robot. In 2018 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) , pages 2245–2252. IEEE, 2018. [2] B. Katz, J. Di Carlo, and S. Kim. Mini cheetah: A platform for pushing the limits of dynamic quadruped control. In 2019 international conference on robotics and automation (ICRA) , pages 6295–6301. IEEE, 2019. [3] J. Lee, J. Hwangbo, L. Wellhausen, V. Koltun, and M. Hutter. Learning quadrupedal locomo-tion over challenging terrain. Science robotics , 5(47):eabc5986, 2020. [4] J. Hwangbo, J. Lee, A. Dosovitskiy, D. Bellicoso, V. Tsounis, V. Koltun, and M. Hutter. Learn-ing agile and dynamic motor skills for legged robots. Science Robotics , 4(26):eaau5872, 2019. [5] T. Miki, J. Lee, J. Hwangbo, L. Wellhausen, V. Koltun, and M. Hutter. Learning robust percep-tive locomotion for quadrupedal robots in the wild. Science robotics , 7(62):eabk2822, 2022. [6] V. Makoviychuk, L. Wawrzyniak, Y. Guo, M. Lu, K. Storey, M. Macklin, D. Hoeller, N. Rudin, A. Allshire, A. Handa, et al. Isaac gym: High performance gpu-based physics simulation for robot learning. arXiv preprint arXiv:2108.10470 , 2021. [7] M. Mittal, P. Roth, J. Tigue, A. Richard, O. Zhang, P. Du, A. Serrano-Mu˜ noz, X. Yao, R. Zurbr¨ ugg, N. Rudin, et al. Isaac lab: A gpu-accelerated simulation framework for multi-modal robot learning. arXiv preprint arXiv:2511.04831 , 2025. [8] E. Todorov, T. Erez, and Y. Tassa. Mujoco: A physics engine for model-based control. In 2012 IEEE/RSJ international conference on intelligent robots and systems , pages 5026–5033. IEEE, 2012. [9] K. Zakka, B. Tabanpour, Q. Liao, M. Haiderbhai, S. Holt, J. Y. Luo, A. Allshire, E. Frey, K. Sreenath, L. A. Kahrs, et al. Mujoco playground. arXiv preprint arXiv:2502.08844 , 2025. [10] W. Zhao, J. P. Queralta, and T. Westerlund. Sim-to-real transfer in deep reinforcement learning for robotics: a survey. In 2020 IEEE symposium series on computational intelligence (SSCI) ,pages 737–744. IEEE, 2020. [11] Z. Xie, Z. Liu, Z. Peng, W. Wu, and B. Zhou. Vid2sim: Realistic and interactive simulation from video for urban navigation. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 2024. [12] S. Zhu, L. Mou, D. Li, B. Ye, R. Huang, and H. Zhao. Vr-robo: A real-to-sim-to-real frame-work for visual robot navigation and locomotion. IEEE Robotics and Automation Letters ,2025. [13] G. Chhablani, X. Ye, M. Z. Irshad, and Z. Kira. Embodiedsplat: Personalized real-to-sim-to-real navigation with gaussian splats from a mobile device. In Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 25431–25441, 2025. [14] A. Escontrela, J. Kerr, A. Allshire, J. Frey, R. Duan, C. Sferrazza, and P. Abbeel. Gaussgym: An open-source real-to-sim framework for learning locomotion from pixels. arXiv preprint arXiv:2510.15352 , 2025. [15] J. Tobin, R. Fong, A. Ray, J. Schneider, W. Zaremba, and P. Abbeel. Domain randomization for transferring deep neural networks from simulation to the real world. In 2017 IEEE/RSJ international conference on intelligent robots and systems (IROS) , pages 23–30. IEEE, 2017. [16] X. B. Peng, M. Andrychowicz, W. Zaremba, and P. Abbeel. Sim-to-real transfer of robotic control with dynamics randomization. In 2018 IEEE international conference on robotics and automation (ICRA) , pages 3803–3810. IEEE, 2018. 9[17] J. Siekmann, Y. Godse, A. Fern, and J. Hurst. Sim-to-real learning of all common bipedal gaits via periodic reward composition. In 2021 IEEE International Conference on Robotics and Automation (ICRA) , pages 7309–7315. IEEE, 2021. [18] S. Masuda and K. Takahashi. Sim-to-real transfer of compliant bipedal locomotion on torque sensor-less gear-driven humanoid. In 2023 IEEE-RAS 22nd International Conference on Hu-manoid Robots (Humanoids) , pages 1–8. IEEE, 2023. [19] M. O’Connell, G. Shi, X. Shi, K. Azizzadenesheli, A. Anandkumar, Y. Yue, and S.-J. Chung. Neural-fly enables rapid learning for agile flight in strong winds. Science Robotics , 7(66): eabm6597, 2022. [20] N. Sobanbabu, G. He, T. He, Y. Yang, and G. Shi. Sampling-based system identification with active exploration for legged sim2real learning. In 9th Annual Conference on Robot Learning ,2025. [21] B. Kerbl, G. Kopanas, T. Leimk¨ uhler, and G. Drettakis. 3d gaussian splatting for real-time radiance field rendering. ACM Transactions on Graphics , 42(4), 2023. [22] H. Lou, Y. Liu, Y. Pan, Y. Geng, J. Chen, W. Ma, C. Li, L. Wang, H. Feng, L. Shi, et al. Robo-gs: A physics consistent spatial-temporal model for robotic arm with hybrid representation. In 2025 IEEE International Conference on Robotics and Automation (ICRA) , pages 15379– 15386. IEEE, 2025. [23] X. Li, J. Li, Z. Zhang, R. Zhang, F. Jia, T. Wang, H. Fan, K.-K. Tseng, and R. Wang. Robogsim: A real2sim2real robotic gaussian splatting simulator. arXiv preprint arXiv:2411.11839 , 2024. [24] Y. Jia, G. Wang, Y. Dong, J. Wu, Y. Zeng, H. Lin, Z. Wang, H. Ge, W. Gu, K. Ding, et al. Discoverse: Efficient robot simulation in complex high-fidelity environments. arXiv preprint arXiv:2507.21981 , 2025. [25] P. Ewen, G. Gunjal, H. Chen, A. Li, Y. Chen, and R. Vasudevan. Multi-modal semantic percep-tion using bayesian inference. In IEEE IROS Workshop on Integrated Perception, Planning, and Control for Physically and Contextually-Aware Robot Autonomy , 2023. [26] J. Chen, J. Frey, R. Zhou, T. Miki, G. Martius, and M. Hutter. Identifying terrain physical parameters from vision-towards physical-parameter-aware locomotion and navigation. IEEE Robotics and Automation Letters , 2024. [27] B. Peng, D. Baek, Q. Wang, and J. Ramos. Friction-aware safety locomotion for wheeled-legged robots using vision language models and reinforcement learning. arXiv preprint arXiv:2409.09845 , 2024. [28] X. Xu, W. Ge, D. Qiu, Z. Chen, D. Yan, Z. Liu, H. Zhao, H. Zhao, S. Zhang, J. Liang, et al. Gaussianproperty: Integrating physical properties to 3d gaussians with lmms. In Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 7231–7240, 2025. [29] G. B. Margolis, X. Fu, Y. Ji, and P. Agrawal. Learning to see physical properties with active sensing motor policies. arXiv preprint arXiv:2311.01405 , 2023. [30] W. Yu, J. Tan, C. K. Liu, and G. Turk. Preparing for the unknown: Learning a universal policy with online system identification. arXiv preprint arXiv:1702.02453 , 2017. [31] H. Kim, D. Kang, M.-G. Kim, G. Kim, and H.-W. Park. Online friction coefficient identifi-cation for legged robots on slippery terrain using smoothed contact gradients. IEEE Robotics and Automation Letters , 2025. [32] J. Tan, T. Zhang, E. Coumans, A. Iscen, Y. Bai, D. Hafner, S. Bohez, and V. Vanhoucke. Sim-to-real: Learning agile locomotion for quadruped robots. arXiv preprint arXiv:1804.10332 ,2018. 10 [33] N. Fey, G. B. Margolis, M. Peticco, and P. Agrawal. Bridging the sim-to-real gap for athletic loco-manipulation. arXiv preprint arXiv:2502.10894 , 2025. [34] X. Liu, H. Wang, and L. Yi. Dexndm: Closing the reality gap for dexterous in-hand rotation via joint-wise neural dynamics model. arXiv preprint arXiv:2510.08556 , 2025. [35] T. He, J. Gao, W. Xiao, Y. Zhang, Z. Wang, J. Wang, Z. Luo, G. He, N. Sobanbab, C. Pan, et al. Asap: Aligning simulation and real-world physics for learning agile humanoid whole-body skills. arXiv preprint arXiv:2502.01143 , 2025. [36] L. Pan, D. Bar´ ath, M. Pollefeys, and J. L. Sch¨ onberger. Global structure-from-motion revisited. In European Conference on Computer Vision , pages 58–77. Springer, 2024. [37] B. Huang, Z. Yu, A. Chen, A. Geiger, and S. Gao. 2d gaussian splatting for geometrically accurate radiance fields. arXiv preprint arXiv:2403.17888 , 2024. [38] D. Chen, H. Li, W. Ye, Y. Wang, W. Xie, S. Zhai, N. Wang, H. Liu, H. Bao, and G. Zhang. Pgsr: Planar-based gaussian splatting for efficient and high-fidelity surface reconstruction. IEEE Transactions on Visualization and Computer Graphics , 2024. [39] N. D. Campbell, G. Vogiatzis, C. Hern´ andez, and R. Cipolla. Using multiple hypotheses to improve depth-maps for multi-view stereo. In European conference on computer vision , pages 766–779. Springer, 2008. [40] Q. Fu, Q. Xu, Y. S. Ong, and W. Tao. Geo-neus: Geometry-consistent neural implicit surfaces learning for multi-view reconstruction. Advances in Neural Information Processing Systems ,35:3403–3416, 2022. [41] C. Ye, L. Qiu, X. Gu, Q. Zuo, Y. Wu, Z. Dong, L. Bo, Y. Xiu, and X. Han. Stablenormal: Reducing diffusion variance for stable and sharp normal. ACM Transactions on Graphics (TOG) , 43(6):1–18, 2024. [42] V. Ye, R. Li, J. Kerr, M. Turkulainen, B. Yi, Z. Pan, O. Seiskari, J. Ye, J. Hu, M. Tancik, et al. gsplat: An open-source library for gaussian splatting. Journal of Machine Learning Research ,26(34):1–17, 2025. [43] Y. Jia, H. Zhang, Z. Zhang, J. Wu, M. Yu, Z. Wang, D. Jiang, Z. Li, C. Cao, Z. Yu, et al. Gs-playground: A high-throughput photorealistic simulator for vision-informed robot learning. 
+
+arXiv preprint arXiv:2604.25459 , 2026. [44] R. A. Newcombe, S. Izadi, O. Hilliges, D. Molyneaux, D. Kim, A. J. Davison, P. Kohi, J. Shot-ton, S. Hodges, and A. Fitzgibbon. Kinectfusion: Real-time dense surface mapping and track-ing. In 2011 10th IEEE international symposium on mixed and augmented reality , pages 127–136. Ieee, 2011. [45] W. E. Lorensen and H. E. Cline. Marching cubes: A high resolution 3d surface construction algorithm. In Seminal graphics: pioneering efforts that shaped the field , pages 347–353. 1998. [46] Z. Chen, Y. Duan, W. Wang, J. He, T. Lu, J. Dai, and Y. Qiao. Vision transformer adapter for dense prediction. In International Conference on Learning Representations , 2023. [47] T. Cover and P. Hart. Nearest neighbor pattern classification. IEEE transactions on information theory , 13(1):21–27, 1967. [48] J. Achiam, S. Adler, S. Agarwal, L. Ahmad, I. Akkaya, F. L. Aleman, D. Almeida, J. Altenschmidt, S. Altman, S. Anadkat, et al. Gpt-4 technical report. arXiv preprint arXiv:2303.08774 , 2023. [49] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov. Proximal policy optimization algorithms. arXiv preprint arXiv:1707.06347 , 2017. 11 [50] W. Xu and F. Zhang. Fast-lio: A fast, robust lidar-inertial odometry package by tightly-coupled iterated kalman filter. IEEE Robotics and Automation Letters , 6(2):3317–3324, 2021. [51] T. M¨ uller, A. Evans, C. Schied, and A. Keller. Instant neural graphics primitives with a mul-tiresolution hash encoding. ACM Transactions on Graphics (ToG) , 41(4):1–15, 2022. [52] Y. Liu, C. Luo, Z. Tang, J. Peng, and Z. Zhang. Vggt-x: When vggt meets dense novel view synthesis. arXiv preprint arXiv:2509.25191 , 2025. [53] A. Gu´ edon, D. Gomez, N. Maruani, B. Gong, G. Drettakis, and M. Ovsjanikov. Milo: Mesh-in-the-loop gaussian splatting for detailed and efficient surface reconstruction. ACM Transactions on Graphics (TOG) , 44(6):1–15, 2025. 12 Appendix 
+
+## Table of Contents 
+
+A Details of Geometry-Anchored Reconstruction 13 
+
+A.1 Geometry-Constrained Gaussian Optimization . . . . . . . . . . . . . . . . . . . . 14 A.2 Integration of Normal Priors . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 14 A.3 Overall Optimization Objective . . . . . . . . . . . . . . . . . . . . . . . . . . . . 14 
+
+B Details of Semantic Mesh-Based Contact Calibration 15 
+
+B.1 Semantic Gaussian Training and Mesh Label Propagation . . . . . . . . . . . . . . 15 B.2 LLM-Assisted Coarse Friction Prior . . . . . . . . . . . . . . . . . . . . . . . . . 15 B.3 Trajectory-Based Posterior Friction Search . . . . . . . . . . . . . . . . . . . . . . 15 
+
+C Details of Residual Dynamics Compensation 16 
+
+C.1 Network Architecture and State Space . . . . . . . . . . . . . . . . . . . . . . . . 16 C.2 Training Process and Initialization Strategy . . . . . . . . . . . . . . . . . . . . . 17 C.3 Reward Formulation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17 
+
+D Additional Qualitative Results of Scene Reconstruction 17 E Further Experiments and Analysis on Dynamics Compensation 19 
+
+E.1 Evaluation of the Residual Network . . . . . . . . . . . . . . . . . . . . . . . . . 19 E.2 Cross-Platform Sim-to-Sim Transfer . . . . . . . . . . . . . . . . . . . . . . . . . 19 E.3 Locomotion Policy Fine-tuning and Deployment . . . . . . . . . . . . . . . . . . 20 
+
+F Details of Navigation Policy 20 
+
+F.1 Task Formulation and Evaluation Protocol . . . . . . . . . . . . . . . . . . . . . . 20 F.2 Navigation Policy Training . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21 F.3 Reward Design . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22 
+
+G Conclusion 22 
+
+## A Details of Geometry-Anchored Reconstruction 
+
+This section provides the detailed formulations of the geometry constraints used in our reconstruc-tion pipeline. Our goal is not only to obtain photorealistic novel-view rendering, but also to recover surface geometry suitable for mesh extraction and downstream physical simulation. 13 A.1 Geometry-Constrained Gaussian Optimization 
+
+We represent the scene as a set of 3D Gaussian primitives [21]. Each Gaussian is parameterized by a center position μi ∈ R3, covariance matrix Σi ∈ R3×3, opacity αi, and spherical harmonics coefficients ci. Although standard 3DGS provides efficient photorealistic rendering, its optimiza-tion is primarily driven by image reconstruction losses and may produce inaccurate surface geome-try. To make the reconstructed scene suitable for collision mesh extraction, we incorporate several geometry-oriented regularization terms. 
+
+2D Planar Regularization. Following [37], we enforce a regularization term to flatten 3D Gaus-sian ellipsoids into 2D surfels. We minimize the scale component corresponding to the local z-axis (the smallest scale) to ensure primitives align with the physical surface: 
+
+Lscale = X
+
+> i
+
+∥ min( si,x , si,y , si,z )∥1 (7) where si, · represents the scale factors of the i-th Gaussian along its local axes. 
+
+Unbiased Depth Rendering. To eliminate depth errors arising from the positional bias of weight accumulation in volumetric rendering, we adopt the unbiased depth rendering strategy proposed in [38]. This method analytically computes the intersection of rays with Gaussian planes to generate depth maps that accurately conform to the true geometric surface. 
+
+Multi-View Photometric Consistency. Relying solely on single-view reconstruction loss is in-sufficient for global geometric consistency. Inspired by [39, 40, 38], we incorporate a multi-view photometric consistency loss. For a pixel pr in a reference view r, we utilize the rendered depth dr
+
+and normal nr to construct an induced homography Hrn , warping the local patch to a neighboring view n. We constrain surface consistency by maximizing the Normalized Cross-Correlation (NCC): 
+
+Lmulti = 1
+
+|W| 
+
+X 
+
+> pr∈W
+
+(1 − NCC (P(pr ), P(Hrn pr ))) (8) where W denotes the set of valid pixels and P(·) represents the local patch centered at the pixel. 
+
+A.2 Integration of Normal Priors 
+
+Photometric consistency often degrades in texture-less or non-Lambertian regions. To enhance ge-ometric fidelity, we utilize [41] to predict a geometric normal map Nprior for each frame, serving as a prior to constrain the rendered normals Nrend . The normal consistency loss Lnormal is defined as: 
+
+ωimg (p) = ( clip (1 .0 − ∥∇ I(p)∥, 0, 1)) 2 (9) 
+
+Lnormal = 1
+
+|W| 
+
+X
+
+> p∈W
+
+ωimg (p)∥Nprior (p) − Nrend (p)∥1 (10) where ∥∇ I(p)∥ is the magnitude of the image gradient. The weight ωimg adaptively attenuates the supervision in high-frequency texture regions. 
+
+A.3 Overall Optimization Objective 
+
+The final reconstruction objective combines the standard image reconstruction loss with the geometry-oriented regularization terms: 
+
+Lrecon = Lrgb + λscale Lscale + λmulti Lmulti + λnormal Lnormal , (11) where Lrgb is the standard photometric rendering loss, and λscale , λmulti , and λnormal are weight-ing coefficients. In our experiments, we set λscale = 100 , λmulti = 0 .15 , and λnormal = 0 .01 .14 B Details of Semantic Mesh-Based Contact Calibration 
+
+This section provides implementation details for the semantic mesh-based contact calibration de-scribed in the main paper. The calibration pipeline consists of three steps: semantic Gaussian train-ing, mesh-level semantic propagation, and prior-posterior friction calibration. 
+
+B.1 Semantic Gaussian Training and Mesh Label Propagation 
+
+We define a compact set of terrain-level semantic classes for contact calibration, focusing on visu-ally distinguishable categories that are relevant to foot-terrain interaction rather than fine-grained object recognition. Raw 2D segmentation labels are merged into a small number of contact-relevant terrain categories, such as hard ground , grass , snow/ice , soil , sand , gravel , wood , tile , and obsta-cle/background . This merged label space preserves the terrain semantics needed for coarse physical reasoning while avoiding unnecessary visual granularity. The category set is not fixed and can be expanded or merged according to the semantic diversity of each reconstructed environment. To associate semantic labels with the reconstructed 3D scene, we augment each Gaussian primi-tive with a learnable semantic feature vector fi ∈ RC , where C is the number of merged semantic classes. During rendering, these 3D semantic features are splatted to the image plane in the same manner as color features, producing pixel-wise semantic logits Srend . We supervise the rendered semantic logits using pseudo-labels Lpseudo generated by a 2D segmentation model [46]. The se-mantic loss is defined as 
+
+Lsem = CrossEntropy ( Srend , Lpseudo ) . (12) This loss is jointly optimized with the photometric reconstruction loss and geometry regularization terms, yielding a 3DGS scene that is both geometrically consistent and semantically annotated. After mesh extraction, we propagate the learned Gaussian semantics to the collision mesh. For each mesh face, we use its center point as the query point and retrieve the K = 5 nearest Gaussian primi-tives in 3D space. Each neighboring Gaussian is assigned the semantic class with the largest feature logit, and the mesh-face label is determined by majority voting among the five neighbors. Small isolated regions can be merged into the neighboring majority class to avoid fragmented material assignments. The resulting per-face semantic labels define region-level terrain partitions for coarse friction assignment and posterior calibration. 
+
+B.2 LLM-Assisted Coarse Friction Prior 
+
+For each semantic terrain class, we query a commonsense reasoning model, GPT-4 [48], to obtain a deterministic nominal friction coefficient. The LLM output is not treated as an exact physical measurement; instead, it provides a reasonable initialization for spatially varying contact parameters. We use a fixed prompt template and deterministic decoding to ensure consistent output formatting across scenes. The prompt takes the robot context and the list of semantic terrain labels as input, and returns a JSON object mapping each label to a scalar friction coefficient. The prompt template is shown in Table 4. The returned class names are normalized to match the semantic labels on the mesh. For regions whose nominal friction exceeds an empirical slip threshold, we directly keep the coarse prior because the robot trajectory is weakly affected by the exact value in this high-traction regime. The threshold is empirically set to μslip = 0 .5 based on preliminary replay experiments. Posterior search is applied only to slip-prone semantic regions whose friction prior falls below this threshold. 
+
+B.3 Trajectory-Based Posterior Friction Search 
+
+For slip-prone regions, we refine the friction coefficient using real-world locomotion replay. The optimization variable is a single region-level friction coefficient μr for each slip-prone semantic region r, rather than a separate coefficient for every mesh face. This region-level parameterization keeps the search low-dimensional and matches the semantic partition used by the simulator. 15 Table 4: Prompt template used for LLM-assisted coarse friction prior initialization.       
+
+> LLM Prompt Template for Coarse Friction Prior
+> System prompt. You are an expert in robotics simulation and terrain contact modeling. Estimate coarse friction coefficients for a quadruped robot walking on different terrain surfaces.
+> Robot context.
+> • Robot: Unitree Go2 quadruped robot. • Foot material: rubber foot pads. • Robot weight: approximately 15 kg.
+> Task. Given a list of semantic terrain labels, assign one deterministic nominal friction coefficient to each terrain class. The values should be coarse priors for simulation, not exact measured physical parameters.
+> Constraints.
+> • Each coefficient should be a float in [0 .0,1.5] .• Return only a JSON object. • Do not include explanations.
+> User input. List of semantic terrain labels: [class 1, class 2, ..., class N] .
+
+As formulated in Eq. 5 of the main paper, posterior calibration selects the friction value that min-imizes the trajectory discrepancy between simulated replay and real robot motion. In practice, the objective is evaluated over multiple recorded replay segments rather than a single trajectory. For each segment, we initialize the simulation from the recorded base pose and joint state, replay the recorded locomotion command sequence, and compute the mean base-position error against the corresponding recorded LiDAR-SLAM trajectory. We use a one-dimensional grid search centered at the coarse prior μ0 
+
+> r
+
+. Specifically, we search 
+
+μr ∈ [μ0 
+
+> r
+
+− 0.2, μ 0 
+
+> r
+
++ 0 .2] with step size ∆μ = 0 .01 , clipped to the valid simulator range. Dur-ing the search for one slip-prone region, friction values of all other regions are kept fixed at their current priors. If multiple slip-prone regions are present, we calibrate them region by region. Af-ter posterior search, the optimized friction coefficient μ⋆r is assigned to all mesh faces belonging to the corresponding semantic region. The resulting contact-calibrated terrain is then used for residual dynamics compensation and downstream policy training. 
+
+## C Details of Residual Dynamics Compensation 
+
+C.1 Network Architecture and State Space 
+
+The residual dynamics policy is implemented as a Multilayer Perceptron (MLP) with two hidden layers of 128 units each, utilizing ELU activation functions. The network operates at the simulation control frequency (500 Hz). We employ an asymmetric actor-critic architecture to leverage privileged information during train-ing. The policy network (actor) uses only simulation-available observations so that it can be in-serted into the simulation loop during replay and downstream policy fine-tuning. Its input includes the target joint positions from the locomotion policy, proprioceptive joint positions and velocities, binary foot contact states, the gravity vector in the body frame, base height, body orientation, and the previous action. The value network (critic) augments this observation with ground-truth real-world signals to guide learning: real-world joint states, measured foot contact forces, base yaw rate, and true body orientation. To capture temporal dynamics and actuator delays, both networks stack a history window of the preceding 20 frames. 16 C.2 Training Process and Initialization Strategy 
+
+The training process is governed by specific termination criteria to ensure the learned residual dy-namics remain within a valid distribution. An episode is terminated and reset if: (1) the playback trajectory reaches its end; (2) abnormal external forces are detected on the base; or (3) the simulated joint positions deviate from the real-world reference by more than 0.4 rad. Large deviations indicate that the simulation state has diverged significantly from the reference data, rendering subsequent samples uninformative for residual learning. Upon reset, the simulation is initialized by sampling a timestamp from the recorded replay data. The recorded base pose is first transformed into the simulator frame aligned with the reconstructed mesh. The simulated robot’s base pose and joint states are then initialized from the corresponding recorded values, while unobserved or noisy quantities such as base linear velocity are initialized using finite differences or set to zero for stability. This incomplete state initialization inevitably introduces transient tracking errors at the beginning of an episode (a ”cold start” problem). To mitigate the bias introduced by these initial transients, we do not impose a short fixed horizon for episodes. Instead, we allow the simulation to run until the end of the reference trajectory. This strategy provides a sufficiently long horizon for the dynamics to stabilize, ensuring that the gradient updates are dominated by the stable tracking phase rather than the initial alignment error. 
+
+C.3 Reward Formulation 
+
+The reward function is designed to balance joint-space tracking accuracy with gait plausibility. The detailed terms and their corresponding weights are enumerated in Table 5. Table 5: Reward Terms for Dynamics Compensation 
+
+Reward Component Mathematical Term Weight 
+
+Joint Space Tracking 
+
+Joint Pos. (Relaxed) exp( −2.5∥qreal − qsim ∥22) 100 .0
+
+Joint Pos. (Moderate) exp( −20 ∥qreal − qsim ∥22) 100 .0
+
+Joint Pos. (Strict) exp( −100 ∥qreal − qsim ∥22) 100 .0
+
+Gait and Contact Imitation 
+
+Foot Contact I(Fsim > 10 ∧ Freal > 20) 100 .0
+
+Foot Slip Penalty exp( −10 ∥vsim f oot,xy ∥22) 100 .0
+
+Base Linear Vel. (Z) exp( −10 ∥vsim z ∥22) 50 .0
+
+Ang. Vel. (Yaw) exp( −4∥ωreal yaw − ωsim yaw ∥22) 100 .0
+
+Regularization 
+
+Action Rate exp( −∥ at − at−1∥22) 5.0
+
+Action Norm exp( −0.01 ∥at∥22) 100 .0
+
+## D Additional Qualitative Results of Scene Reconstruction 
+
+Figure 7 shows additional qualitative reconstruction results across multiple outdoor scenarios. From left to right, the four key components are as follows: (a) the rendered RGB image, (b) the ren-dered normal map, (c) the extracted mesh, and (d) the simulated robot perspective, with the camera viewpoint lowered to mimic the view of a quadruped robot like Go2. These results showcase the strong visual realism, accurate geometric reconstruction, and alignment with the robot’s perceptual perspective. 17 (a) Rendered Image (b) Rendered Normal (c) Extracted Mesh (d) Rendered Robot View 
+
+Figure 7: Additional qualitative reconstruction results across various scenes. The reconstruction comprises four components (from left to right): (a) rendered RGB image, (b) rendered normal map, (c) extracted mesh, and (d) simulated robot viewpoint (camera lowered to the eye level of a quadruped robot). These qualitative results further illustrate QuadVerse’s visual rendering quality, mesh coherence, and robot-view consistency across diverse outdoor scenes. 18 Figure 8: Learning curves for average playback length, joint tracking reward, and gait reward. Our method (blue) achieves a balanced performance, whereas removing gait rewards (orange) or reset conditions (green) leads to suboptimal convergence in stability or tracking accuracy. 
+
+## E Further Experiments and Analysis on Dynamics Compensation 
+
+This section provides a deeper analysis of the residual dynamics module, evaluating its standalone tracking performance, the necessity of its reward components, and its downstream impact on lo-comotion policy fine-tuning. We also include preliminary sim-to-sim experiments on additional quadruped platforms. 
+
+E.1 Evaluation of the Residual Network Dataset and Evaluation Protocol. To rigorously evaluate the generalization of the residual net-work, we collected a test dataset consisting of 31 distinct trajectories, each lasting 10,000 frames (20 seconds) with a sampling interval of 0.002s, totaling 620 seconds of diverse locomotion data. For evaluation, we initialize the simulation at the start of each trajectory and perform an open-loop replay of the recorded joint commands. We assess performance based on joint tracking error and gait consistency over the first 3,000 frames of each segment. 
+
+Ablation Study. Training the residual network requires a delicate balance between minimizing joint tracking error, maintaining gait similarity, and ensuring long-horizon stability. Figure 8 il-lustrates the learning curves for these objectives. The joint compensation performance typically peaks early but must settle into an equilibrium as gait constraints and longer replay horizons are enforced. We conducted ablation studies on two critical components: the Gait Reward and the Reset Mechanism . Removing the reset condition (triggered by large deviations) severely degrades joint tracking performance, as the policy overfits to divergent trajectories rather than learning to correct instantaneous dynamics mismatch. Removing gait constraints can further reduce joint-space error, but it induces physically unrealistic artifacts such as foot jitter and “sliding” contacts; including gait rewards therefore helps the learned residual dynamics remain accurate in joint space while staying physically consistent at the contact level. 
+
+E.2 Cross-Platform Sim-to-Sim Transfer 
+
+To assess whether the proposed residual dynamics compensation pipeline is specific to a single robot platform, we further conduct cross-platform sim-to-sim transfer experiments on Unitree Go1 and Unitree A2. Due to limited access to additional hardware platforms, these experiments are per-formed as Isaac Gym-to-MuJoCo transfer rather than full real-world deployment. For each robot, we train the residual compensator in Isaac Gym using replay data generated from the target Mu-JoCo model, and evaluate whether the compensated Isaac Gym replay better matches the MuJoCo reference. We adopt the same open-loop joint-space replay protocol as in Sec. E.1. Specifically, we compare the nominal simulator and the residual-compensated simulator by measuring joint-space replay er-ror under identical command replay. The compensator consistently improves replay fidelity across 19 0.00 0.25 0.50 0.75 1.00 1.25 1.50 1.75 2.00 
+
+> 0.6
+> 0.8
+> 1.0
+> 1.2
+> 1.4
+> joint position(rad)
+> Nominal Simulator
+> QuadVerse(ours)
+> Real Reference
+> (s)
+
+(a) Unitree Go1 0.00 0.25 0.50 0.75 1.00 1.25 1.50 1.75 2.00  
+
+> −2.8
+> −2.6
+> −2.4
+> −2.2
+> −2.0
+> −1.8
+> −1.6
+> −1.4
+> joint position(rad)
+> Nominal Simulator
+> QuadVerse(ours)
+> Real Reference
+> (s)
+
+(b) Unitree A2 
+
+Figure 9: Cross-platform joint-space replay in sim-to-sim transfer. Open-loop joint-space replay on Unitree Go1 (left) and Unitree A2 (right). On both platforms, the residual-compensated simulator tracks the reference trajectory more closely than the nominal simulator. platforms. For Unitree Go1, the residual compensator reduces the joint-space replay error by 72.5%; for Unitree A2, the reduction is 85.4%. For reference, the corresponding improvement on Unitree Go2 is 66.1%. Figures 9 provides representative joint-space replay curves, analogous to Fig. 4 in the main paper. In both cases, the compensated simulator tracks the reference trajectory much more closely than the nominal simulator, indicating that the benefit of residual compensation is not limited to a single quadruped embodiment. 
+
+E.3 Locomotion Policy Fine-tuning and Deployment 
+
+To evaluate whether the compensated dynamics benefits downstream policy learning, we fine-tune a locomotion policy with the frozen residual compensator inserted into the simulation loop. Both the nominal pre-training and QuadVerse fine-tuning use the Heterogeneous Information Matching (HIM) locomotion framework with a control frequency of 50 Hz. During fine-tuning, the residual compensator is treated as part of the environment dynamics and its parameters are kept fixed. We fine-tune from a pre-trained locomotion policy rather than training from scratch because the pre-trained policy already provides a strong locomotion prior. This makes adaptation more sample-efficient and keeps exploration close to the replay distribution where the residual compensator is reliable, whereas early-stage training from scratch may visit highly out-of-distribution actions and states that are not covered by the compensation model. We evaluate the resulting policies on five real-world locomotion tasks specified by velocity com-mands: right-turn , left-turn , slow-forward , fast-forward , and figure-eight , with 10 trials per task. As shown in Fig. 10, the QuadVerse policy consistently reduces trajectory error across different loco-motion modes compared with the nominal policy. The improvement is especially visible in turning and figure-eight maneuvers, where actuator mismatch can accumulate into substantial heading and curvature errors; fine-tuning with compensated dynamics improves command tracking and yields more stable real-world trajectories. The remaining difference between left-turn and right-turn per-formance is mainly attributed to the command-tracking bias of the pre-trained locomotion policy, which can already favor one turning direction over the other in simulation. 
+
+## F Details of Navigation Policy 
+
+F.1 Task Formulation and Evaluation Protocol 
+
+We evaluate the full QuadVerse framework through an outdoor visual goal-seeking task. The robot is required to locate and approach a colored target cone using ego-centric RGB observations within a maximum episode duration of Tmax = 25 seconds. An episode is considered successful if the robot’s reference point reaches within ϵ = 0 .35 m of the target cone. To prevent the policy from overfitting to a fixed start-goal configuration, both the robot initial state and the goal location are randomized within predefined feasible regions during training and evaluation. For real-world evaluation, we 20 −1.0 −0.5 0.0 0.5                                
+
+> −1.5
+> −1.0
+> −0.5
+> 0.0
+> right-turn
+> −0.8 −0.4 0.0 0.4 0.8
+> 0.0
+> 0.4
+> 0.8
+> 1.2
+> 1.6
+> left-turn
+> 0.0 0.6 1.2 1.8 2.4
+> −1.2
+> −0.6
+> 0.0
+> 0.6
+> 1.2
+> slow-fwd
+> 0.0 1.5 3.0 4.5
+> −1.5
+> 0.0
+> 1.5
+> fast-fwd
+> −1 012
+> −1
+> 0
+> 1
+> 2
+> 3
+> figure-eight
+> pre-train policy - Real
+> Target
+> −1.0 −0.5 0.0 0.5
+> −1.5
+> −1.0
+> −0.5
+> 0.0
+> right-turn
+> −1.0 −0.5 0.0 0.5
+> 0.0
+> 0.5
+> 1.0
+> 1.5
+> left-turn
+> 0.0 0.6 1.2 1.8 2.4
+> −1.2
+> −0.6
+> 0.0
+> 0.6
+> 1.2
+> slow-fwd
+> 0.0 1.5 3.0 4.5
+> −1.5
+> 0.0
+> 1.5
+> fast-fwd
+> −0.8 0.0 0.8 1.6 2.4
+> 0.0
+> 0.8
+> 1.6
+> 2.4
+> 3.2
+> figure-eight
+> Fine-turn policy - Real
+> Target
+
+Figure 10: Additional real-world locomotion tracking results. Trajectory error across five loco-motion tasks. The QuadVerse policy consistently reduces tracking error compared with the nominal policy across different commanded motion patterns. conduct 25 trials with randomized initial robot poses and goal locations. Simulation results are averaged over 200 episodes. Success rate (SR) is defined as the fraction of successful episodes, and average reaching time (ART) is computed over all trials, with failed trials assigned the maximum episode duration Tmax .
+
+F.2 Navigation Policy Training 
+
+The navigation policy is trained entirely within the QuadVerse simulation framework. We first reconstruct the deployment scene from captured RGB videos and use the optimized 3DGS represen-tation to render ego-centric visual observations consistent with the robot’s head-mounted camera. The reconstructed scene is also converted into a collision-ready semantic mesh and calibrated into a contact-calibrated terrain. The replay-trained residual actuator compensator is then frozen and inserted into the simulation loop, allowing the navigation policy to be trained under dynamics that better match real-world execution. The navigation policy itself does not use real-world navigation rollouts for training or fine-tuning. After training in simulation, the visual navigation policy is de-ployed zero-shot to the physical robot. We use a hierarchical control architecture to decouple visual navigation from low-level loco-motion. The high-level visual navigation policy runs at 5 Hz and outputs a velocity command 
+
+vcmd = ( vx, v y , ω yaw ), which is then tracked by the low-level locomotion controller. The low-level controller runs at 50 Hz and generates joint position targets from the commanded velocity and proprioceptive observations. During navigation policy training, the low-level locomotion con-troller is frozen, while the residual actuator compensator remains active in the simulation loop. The high-level policy observation consists of three components: (1) visual observation, ego-centric RGB images rendered from the reconstructed 3DGS scene. A frozen visual encoder is used to extract image features. (2) task command, a one-hot encoding of the target color or target category. (3) pro-prioceptive history, robot state history including base angular velocity, projected gravity, joint states, and the previous velocity command. The policy output is squashed by a tanh activation and then scaled to predefined command limits, i.e., |vx| ≤ 0.9 m/s, |vy | ≤ 0.4 m/s, and |ωyaw | ≤ 1.0 rad/s. The high-level visual navigation policy is modeled as an actor-critic network and trained using PPO. To handle partial observability, the policy includes an LSTM recurrent module. Training is performed in the QuadVerse simulation environment using 1024 parallel environments for 150 it-erations. We apply visual and dynamics domain randomization to improve deployment robustness. Visual randomization includes camera extrinsic perturbation, image noise, brightness variation, and 21 motion blur. Dynamics randomization includes perturbations to robot mass, friction, external dis-turbances, and initial robot states. Table 6: Reward Function for the High-Level Navigation Policy 
+
+Reward Term Mathematical Formulation Weight 
+
+Task Achievement 
+
+Reach Goal I(dt < 0.35) 0.5
+
+Goal Progress (dt−1 − dt) I(dt > 0.35) 5.0
+
+Goal Close clip 
+
+ 0.75 −dt 
+
+> 0.75 −0.35
+
+, 0, 1
+
+
+
+0.2
+
+Goal Heading 1 − 2|∆ψt|/π , if dt > 0.35 ; otherwise 1 0.3
+
+Stand Still I(dt < 0.35)( ∥vcmd ∥2 + 0 .4) −1 1.0
+
+Command Tracking & Regularization 
+
+Track Lin. Vel. exp( −∥ vcmd xy − vbase xy ∥22/0.25) 0.2
+
+Track Ang. Vel. exp( −(ωcmd z − ωbase z )2/0.25) 0.2
+
+Action Magnitude ∥ahigh ∥22 −0.002 
+
+F.3 Reward Design 
+
+The high-level policy is trained with a composite reward consisting of target-reaching rewards, pla-nar progress and heading terms, velocity-tracking terms, and an action-magnitude penalty. Let dt
+
+denote the planar head-to-goal distance and ∆ψt denote the yaw error between the robot heading and the goal direction. The configured reward weights are shown in Table 6; internally, each configured weight is multiplied by the high-level control period. 
+
+## G Conclusion 
+
+This supplementary material provides implementation details and extended analyses that support the main paper. We first present the reconstruction losses and semantic mesh calibration proto-col, including semantic Gaussian training, LLM-assisted coarse friction priors, and trajectory-based posterior friction search. We then detail the residual actuator compensation module, including its network architecture, replay initialization, reward design, and ablation studies. Additional recon-struction examples, cross-platform sim-to-sim transfer results, locomotion fine-tuning experiments, and navigation policy details further demonstrate how the components of QuadVerse are instantiated in practice. Together, these supplementary results clarify the calibration and training procedures used to construct the aligned simulation environment for zero-shot quadruped visual-navigation de-ployment. 22

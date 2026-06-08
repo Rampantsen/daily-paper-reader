@@ -1,0 +1,399 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-08T21:45:51.400197+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 8,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2606.02096v1",
+      "source": "arxiv",
+      "title": "WebSpline: Structure-Informed Splines for Real-Time 3D Gaussians from Monocular Videos",
+      "abstract": "Dynamic scene reconstruction from monocular videos remains highly challenging, as existing methods often struggle to balance global structural coherence and local fine-grained details under limited multi-view cues. To address this challenge, we propose WebSpline, a novel dynamic 3D Gaussian framework that enables structurally coherent and high-fidelity reconstruction from monocular videos with fast rendering. The core of WebSpline is the Structure-Informed Spline (SIS) representation, which models each dynamic Gaussian trajectory using a learnable cubic Hermite spline whose motion is structurally organized with an auxiliary Structural Proxy Graph (SPG). The proposed framework is optimized in two stages: (i) in the first stage, the SPG is initialized from 2D point tracks and refined with temporal rigidity regularization to establish structural coherence for moving objects across the sequence; and (ii) in the second stage, the SIS representation is initialized from the refined SPG and optimized under both spatial and structural neighborhood constraints. At inference, Gaussian motion is obtained solely by evaluating the learned SIS, enabling fast rendering. Extensive experiments on the challenging monocular dynamic scene benchmarks, iPhone and NVIDIA, demonstrate that our WebSpline achieves state-of-the-art rendering quality while rendering over 10 times faster than WorldTree, the second-best method on the iPhone dataset.",
+      "authors": [
+        "Jongmin Park",
+        "Jeonghwan Yun",
+        "Minh-Quan Viet Bui",
+        "Munchurl Kim"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-01T11:28:17+00:00",
+      "link": "https://arxiv.org/pdf/2606.02096v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "dynamic scene reconstruction from monocular videos",
+      "llm_evidence_cn": "从单目视频动态场景重建",
+      "llm_evidence": "从单目视频动态场景重建",
+      "canonical_evidence": "从单目视频动态场景重建",
+      "llm_tldr_en": "WebSpline is a dynamic 3D Gaussian framework using structure-informed splines to reconstruct high-fidelity, structurally coherent dynamic scenes from monocular videos in real-time.",
+      "llm_tldr_cn": "单目视频动态重建难以兼顾全局结构与局部细节。本文提出WebSpline，一种新型动态3D高斯框架，采用结构引导样条表示运动轨迹，实现单目视频的结构化真实感重建。实验表明该方法速度快且重建质量高。该工作推动了单目动态场景理解。",
+      "llm_tldr": "单目视频动态重建难以兼顾全局结构与局部细节。本文提出WebSpline，一种新型动态3D高斯框架，采用结构引导样条表示运动轨迹，实现单目视频的结构化真实感重建。实验表明该方法速度快且重建质量高。该工作推动了单目动态场景理解。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.02350v1",
+      "source": "arxiv",
+      "title": "TROPHIES: Temporal Reconstruction of Places, Humans, and Cameras from Multi-view Videos",
+      "abstract": "Reconstructing humans and their surrounding environments in a globally consistent 4D space is essential for comprehensive perception. However, prior works typically assume single-view inputs or decouple humans, scenes, and cameras, making them unable to recover coherent geometry, stable motion, and physically aligned trajectories. These limitations motivate us to introduce a new task: unified human-scene-camera reconstruction from multi-view videos, which aims to jointly estimate dynamic humans, static scenes, and camera poses in one global coordinate frame. We propose TROPHIES--Temporal Reconstruction of Places, Humans, and Cameras from Multi-view Videos-a unified framework tailored for this task. TROPHIES features a Human Branch that models humans through temporal and spatial reasoning, and a Scene Branch that reconstructs static geometry with human-aware attention. A global alignment and optimization module couples both branches by enforcing scale consistency, contact priors, and cross-view temporal coherence. Experiments on EgoHuman and EgoExo4D demonstrate that TROPHIES achieves globally aligned, physically plausible 4D reconstructions and consistently outperforms existing paradigms in both global fidelity and human-scene consistency.",
+      "authors": [
+        "Jinpeng Liu",
+        "Yukang Xu",
+        "Yutong Li",
+        "Xingyu Liu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-01T15:00:18+00:00",
+      "link": "https://arxiv.org/pdf/2606.02350v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "unified human-scene-camera reconstruction from multi-view videos",
+      "llm_evidence_cn": "从多视角视频中统一重建人-场景-相机",
+      "llm_evidence": "从多视角视频中统一重建人-场景-相机",
+      "canonical_evidence": "从多视角视频中统一重建人-场景-相机",
+      "llm_tldr_en": "Proposes TROPHIES, a framework for joint 4D reconstruction of humans, scenes, and camera poses from multi-view videos, achieving globally consistent geometry and motion.",
+      "llm_tldr_cn": "提出TROPHIES，一个从多视角视频中联合重建动态人体、静态场景和相机姿态的统一框架，解决了现有方法解耦导致几何不一致的问题，实现了全局一致的4D重建，对元宇宙、运动分析等应用至关重要。",
+      "llm_tldr": "提出TROPHIES，一个从多视角视频中联合重建动态人体、静态场景和相机姿态的统一框架，解决了现有方法解耦导致几何不一致的问题，实现了全局一致的4D重建，对元宇宙、运动分析等应用至关重要。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.04376v1",
+      "source": "arxiv",
+      "title": "FUSE-Flow: A Decoupled Framework for Calibration and Stateless Real-Time Multi-View Point Cloud Fusion",
+      "abstract": "Real-time multi-camera 3D reconstruction is a key foundation for immersive media, remote interaction and spatial computing. While synchronized camera arrays are widely adopted, achieving geometrically consistent and scalable real-time reconstruction remains challenging. A key challenge is the close linkage among extrinsic calibration, multi-view fusion and global optimization, which causes fluctuating reconstruction results, cumulative errors and poor system expandability. We propose a decoupled framework for calibration and stateless real-time multi-view point cloud fusion (FUSE-Flow), a framework with two collaborative components: geometry-aligned multi-view extrinsic calibration (GMAC) and reliability-guided multi-view point cloud fusion (FUSE). This split design avoids conflicting optimization objectives for targeted improvement. The GMAC module refines camera extrinsics via geometric constraints and multi-view reconstruction transformers, enabling accurate sparse-view calibration without calibration targets, dense images or global bundle adjustment. The FUSE module integrates confidence weighting and adaptive spatial hashing for stateless fusion, ensuring linear time and memory consumption. The two modules mutually reinforce each other: accurate camera poses boost fusion accuracy, and confidence-aware fusion corrects calibration biases. Validated on public datasets and real camera setups, FUSE-Flow outperforms mainstream real-time reconstruction methods in visual effect, dynamic stability and scalability, providing a practical solution for large-scale real-time 3D reconstruction.",
+      "authors": [
+        "Chentian Sun"
+      ],
+      "primary_category": "eess.IV",
+      "categories": [
+        "eess.IV",
+        "cs.MM"
+      ],
+      "published": "2026-06-03T02:46:25+00:00",
+      "link": "https://arxiv.org/pdf/2606.04376v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Real-time multi-camera 3D reconstruction via decoupled calibration and point cloud fusion",
+      "llm_evidence_cn": "通过解耦标定与点云融合实现实时多相机三维重建",
+      "llm_evidence": "通过解耦标定与点云融合实现实时多相机三维重建",
+      "canonical_evidence": "通过解耦标定与点云融合实现实时多相机三维重建",
+      "llm_tldr_en": "Addressing the close coupling of calibration, fusion and optimization in multi-camera 3D reconstruction, this paper introduces FUSE-Flow, a decoupled framework with geometry-aligned calibration and reliability-guided fusion, achieving real-time, scalable and consistent point cloud reconstruction.",
+      "llm_tldr_cn": "针对实时多相机三维重建中因标定、多视角融合和全局优化紧密关联导致的几何不一致和扩展性差问题，本文提出FUSE-Flow解耦框架，包含几何对齐多视角外参标定(GMAC)和可靠性引导多视角融合两个协同组件，在保证实时性的同时实现了高质量的几何一致点云重建，为空间计算等应用奠定基础。",
+      "llm_tldr": "针对实时多相机三维重建中因标定、多视角融合和全局优化紧密关联导致的几何不一致和扩展性差问题，本文提出FUSE-Flow解耦框架，包含几何对齐多视角外参标定(GMAC)和可靠性引导多视角融合两个协同组件，在保证实时性的同时实现了高质量的几何一致点云重建，为空间计算等应用奠定基础。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.04871v1",
+      "source": "arxiv",
+      "title": "Recent Advances and Trends in Learning-based 3D Representations",
+      "abstract": "The selection of an appropriate 3D representation is a fundamental design decision that dictates the efficiency, quality, and capabilities of modern computer vision and graphics pipelines for tasks such as 3D reconstruction, novel-view synthesis and rendering, shape and motion analysis, recognition, and generation. While traditional representations (\\eg meshes, point clouds, and volumetric grids) remain standard outputs of 3D sensors (\\eg LiDAR and 3D scanners) and are widely used in downstream applications (\\eg editing and simulation), recent neural and primitive-based representations (\\eg 3D Gaussian Splatting) offer compact and differentiable alternatives opening a wide range of opportunities in applications such as games, AR/VR, autonomous driving, robot navigation, and medical imaging, to name a few. The goal of this paper is to survey the main families of 3D representations from discrete explicit formats to continuous implicit fields based either on neural rendering or primitive splatting. For each type of representation, we present the general formulation and its variants, discuss its benefits and limitations, and highlight key applications. We conclude the paper by outlining the open challenges and potential directions for future research. Distinct from recent surveys that broadly cover 3D object and scene reconstruction, this paper provides a focused analysis on the evolution of 3D representations themselves. We specifically emphasize the paradigm shift toward implicit representations, offering a novel perspective on how these emerging formats fundamentally alter 3D/4D workflows.",
+      "authors": [
+        "Adrien Schockaert",
+        "Hamid Laga",
+        "Hazem Wannous",
+        "Vincent Magnier",
+        "Guillaume Dufaye",
+        "Jean-françois Witz"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-03T13:35:50+00:00",
+      "link": "https://arxiv.org/pdf/2606.04871v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "survey covering learning-based 3D representations for reconstruction, view synthesis, and generation",
+      "llm_evidence_cn": "综述基于学习的3D表示方法，涵盖重建、新视角合成和生成",
+      "llm_evidence": "综述基于学习的3D表示方法，涵盖重建、新视角合成和生成",
+      "canonical_evidence": "综述基于学习的3D表示方法，涵盖重建、新视角合成和生成",
+      "llm_tldr_en": "A comprehensive survey of recent learning-based 3D representations (NeRF, 3DGS, etc.), discussing their roles in 3D reconstruction, novel-view synthesis, editing, and generation pipelines.",
+      "llm_tldr_cn": "本文综述了基于学习的3D表示方法的最新进展，包括神经辐射场、3D高斯泼溅等，系统梳理了它们在三维重建、新视角合成、编辑与生成等任务中的应用与权衡。文章为研究人员提供了选择合适表示的原理和未来方向，对于推动三维视觉与图形学的发展具有重要参考价值。",
+      "llm_tldr": "本文综述了基于学习的3D表示方法的最新进展，包括神经辐射场、3D高斯泼溅等，系统梳理了它们在三维重建、新视角合成、编辑与生成等任务中的应用与权衡。文章为研究人员提供了选择合适表示的原理和未来方向，对于推动三维视觉与图形学的发展具有重要参考价值。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.06002v2",
+      "source": "arxiv",
+      "title": "Global-Local Monte Carlo Tree Search in Vision-Language Models for Text-to-3D Indoor Scene Generation",
+      "abstract": "Large Vision-Language Models have achieved significant reasoning performance in various tasks. However, there are few studies on text-to-3D indoor scene generation with LVLMs. The main challenge is that prevailing LVLM-based methods employ chain-of-thought sequential decision mechanisms that cannot revise earlier decisions, causing error propagation. In this paper, we consider the task as a planning problem constrained by spatial and layout commonsense. To solve this problem, we model it as a tree search problem with global and local trees, which differs from existing sequential decision-making approaches. In the global tree, we place each object iteratively and explore multiple attempts like humans furnishing a room, where the problem space is represented as a tree. To effectively search the tree, we propose a hierarchical scene representation and a PRM-guided MCTS method. This representation abstracts a scene into room level, region level, floor object level, and supported object level. The PRM-guided MCTS method uses the PRM to prune unnecessary branches and the MCTS algorithm to balance exploration and exploitation to get an optimal solution with fewer attempts. In the local tree, it further decomposes the placement of each object into finer sub-steps, including the specific placement parameters. To make the whole appearance of the scene consistent, we leverage pre-trained diffusion image generative models to predict textures for all the objects in the scene. As existing benchmarks for text-to-3D indoor scene generation remain limited in scale and diversity, we collect a new large-scale diverse dataset that contains 65 scene types and 3250 instructions with diverse sizes, layouts, and styles, named 3DTindo-bench, to better assess the capability of the state-of-the-art models. Our experiments show that our method generates more realistic 3D scenes than state-of-the-art methods.",
+      "authors": [
+        "Mengshi Qi",
+        "Wei Deng",
+        "Xianlin Zhang",
+        "Huadong Ma"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-04T10:56:21+00:00",
+      "link": "https://arxiv.org/pdf/2606.06002v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "text-to-3D indoor scene generation using Monte Carlo tree search in VLMs",
+      "llm_evidence_cn": "利用视觉语言模型中的蒙特卡洛树搜索进行文本到三维室内场景生成",
+      "llm_evidence": "利用视觉语言模型中的蒙特卡洛树搜索进行文本到三维室内场景生成",
+      "canonical_evidence": "利用视觉语言模型中的蒙特卡洛树搜索进行文本到三维室内场景生成",
+      "llm_tldr_en": "Introduces a global-local Monte Carlo tree search approach for text-to-3D indoor scene generation, addressing error propagation in sequential decision methods.",
+      "llm_tldr_cn": "提出全局-局部蒙特卡洛树搜索方法，用于文本到三维室内场景生成，通过将任务建模为约束树搜索问题，克服了链式思维决策的错误累积问题，在空间和布局常识约束下生成合理的室内场景。",
+      "llm_tldr": "提出全局-局部蒙特卡洛树搜索方法，用于文本到三维室内场景生成，通过将任务建模为约束树搜索问题，克服了链式思维决策的错误累积问题，在空间和布局常识约束下生成合理的室内场景。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.07280v1",
+      "source": "arxiv",
+      "title": "Geometric-Aware Hypergraph Reasoning for Novel Class Discovery in Point Cloud Segmentation",
+      "abstract": "Novel class discovery in point cloud segmentation aims to transfer knowledge from known classes to automatically identify and segment unlabeled novel classes in point clouds. Existing methods mainly rely on pairwise associations for class assignment and novel class reasoning, which limits their ability to capture complex relationships among known and novel classes and may lead to inaccurate semantic segmentation. To address this issue, we introduce a hypergraph-based framework that models high-order associations among classes and enables collaborative reasoning from known classes to novel classes beyond traditional pairwise relations. Moreover, existing methods tend to focus on semantic feature extraction while paying insufficient attention to geometric information in point clouds. To better exploit spatial structure, we propose Geometric-Aware Prototypes to enhance the representation of class-level geometric cues. By propagating geometric information through hyperedges, the proposed method improves the understanding of spatial distributions across classes and leads to more accurate segmentation. Experiments on the SemanticKITTI and SemanticPOSS datasets demonstrate the effectiveness and superiority of our method.",
+      "authors": [
+        "Zihao Zhang",
+        "Aming Wu",
+        "Yang Li",
+        "Yahong Han",
+        "Jialie Shen"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-05T13:55:58+00:00",
+      "link": "https://arxiv.org/pdf/2606.07280v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "novel class discovery in point cloud segmentation using hypergraph reasoning",
+      "llm_evidence_cn": "基于超图推理的点云分割中新类发现，属于3D场景语义分割",
+      "llm_evidence": "基于超图推理的点云分割中新类发现，属于3D场景语义分割",
+      "canonical_evidence": "基于超图推理的点云分割中新类发现，属于3D场景语义分割",
+      "llm_tldr_en": "Proposes a hypergraph-based framework for novel class discovery in point cloud segmentation, modeling high-order associations among known and novel classes for improved semantic segmentation.",
+      "llm_tldr_cn": "提出一种基于超图的框架，用于点云分割中的新类发现，通过建模已知类和新类之间的高阶关联，突破传统成对关系的局限，在多个3D点云数据集上实现了更准确的语义分割。",
+      "llm_tldr": "提出一种基于超图的框架，用于点云分割中的新类发现，通过建模已知类和新类之间的高阶关联，突破传统成对关系的局限，在多个3D点云数据集上实现了更准确的语义分割。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.07117v1",
+      "source": "arxiv",
+      "title": "Native3D: End-to-End 3D Scene Generation via Unified Mesh-Texture Modeling and Semantic Alignment",
+      "abstract": "This paper presents Native3D, the first end-to-end 3D scene generation framework that completely bypasses 2D intermediate representations. Traditional approaches typically require adapting 3D representations to the 2D domain to leverage pre-trained diffusion models, which inevitably introduces domain adaptation issues including geometric structural distortion and texture detail degradation. To address these limitations, we design a unified mesh-texture joint representation that simultaneously models both geometric structures and texture features through a Transformer-based scene encoder, effectively maintaining spatial relationships and visual consistency among objects within scenes. We further propose the 3D Representation Alignment Loss (3D REPA Loss), which employs an improved contrastive learning mechanism to align multi-level semantic representations in the latent space, significantly enhancing geometric and textural fidelity. Experimental results demonstrate that Native3D outperforms existing methods in both generation quality and editing flexibility, providing a novel solution for 3D scene editing.",
+      "authors": [
+        "Yibo Liu",
+        "Ziwei Zhang",
+        "Haozhou Pang",
+        "Menghao Li",
+        "Lanshan He",
+        "Gan Qi"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-06-05T10:13:17+00:00",
+      "link": "https://arxiv.org/pdf/2606.07117v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "end-to-end 3D scene generation without 2D intermediates",
+      "llm_evidence_cn": "端到端三维场景生成，完全绕过二维中间表示",
+      "llm_evidence": "端到端三维场景生成，完全绕过二维中间表示",
+      "canonical_evidence": "端到端三维场景生成，完全绕过二维中间表示",
+      "llm_tldr_en": "The first framework to directly generate 3D scenes in a unified mesh-texture representation without 2D diffusion models, avoiding geometric and texture distortion.",
+      "llm_tldr_cn": "传统三维场景生成需将三维表示适配二维域以借助预训练扩散模型，易导致几何形变与纹理退化。本文提出Native3D，首个端到端三维场景生成框架，设计统一网格-纹理联合表示并通过Transformer场景编码器同时建模几何结构与纹理特征，保持物体间空间关系与视觉一致性，并采用三维表示对齐实现语义引导生成。该方法直接生成完整三维场景，消除了域适配问题，为高质量三维内容创建开辟了新途径。",
+      "llm_tldr": "传统三维场景生成需将三维表示适配二维域以借助预训练扩散模型，易导致几何形变与纹理退化。本文提出Native3D，首个端到端三维场景生成框架，设计统一网格-纹理联合表示并通过Transformer场景编码器同时建模几何结构与纹理特征，保持物体间空间关系与视觉一致性，并采用三维表示对齐实现语义引导生成。该方法直接生成完整三维场景，消除了域适配问题，为高质量三维内容创建开辟了新途径。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.06695v1",
+      "source": "arxiv",
+      "title": "S23DR 2026 Winning Solution",
+      "abstract": "This text presents the winning solution to the S23DR 2026 challenge for structured 3D wireframe reconstruction from sparse SfM, fitted depth, and semantic segmentations. The method treats vertices as a conditional set and denoises 64 vertex tokens with a flow-matching DiT conditioned on Perceiver-style scene tokens. A global pass predicts the coarse structure, a hull-cropped second pass refines it, and a small multi-sample consensus step keeps the stochastic sampler well behaved. The final system ranked first on the private leaderboard, achievingHSS = 0.654.",
+      "authors": [
+        "Jan Skvrna",
+        "Miroslav Purkrabek",
+        "Lukas Neumann"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-04T20:19:59+00:00",
+      "link": "https://arxiv.org/pdf/2606.06695v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "structured 3D wireframe reconstruction from sparse SfM and semantic segmentations",
+      "llm_evidence_cn": "从稀疏SfM和语义分割中重建结构化三维线框",
+      "llm_evidence": "从稀疏SfM和语义分割中重建结构化三维线框",
+      "canonical_evidence": "从稀疏SfM和语义分割中重建结构化三维线框",
+      "llm_tldr_en": "The winning solution of the S23DR 2026 challenge reconstructs structured 3D wireframes from sparse SfM and semantic segmentations by denoising vertex tokens with a flow-matching DiT conditioned on scene tokens, achieving top accuracy via global and local passes and multi-sample consensus.",
+      "llm_tldr_cn": "S23DR 2026挑战赛优胜方案提出从稀疏运动恢复结构和语义分割中重建结构化三维线框的方法。将顶点视为条件集合，使用基于流匹配的扩散变换器对64个顶点令牌去噪，以感知器生成的场景令牌为条件，全局预测粗结构后通过局部裁剪细化，并采用多采样一致性步骤稳定随机性。在私有排行榜上以HSS=0.654获得第一，展示了从稀疏数据恢复精确三维结构的能力。",
+      "llm_tldr": "S23DR 2026挑战赛优胜方案提出从稀疏运动恢复结构和语义分割中重建结构化三维线框的方法。将顶点视为条件集合，使用基于流匹配的扩散变换器对64个顶点令牌去噪，以感知器生成的场景令牌为条件，全局预测粗结构后通过局部裁剪细化，并采用多采样一致性步骤稳定随机性。在私有排行榜上以HSS=0.654获得第一，展示了从稀疏数据恢复精确三维结构的能力。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.07118v1",
+      "source": "arxiv",
+      "title": "QuadVerse: An Integrated Framework Aligning Visual-Physical Reality for Quadruped Simulation",
+      "abstract": "Simulation is central to robot learning, yet the sim-to-real gap remains a major bottleneck.Existing approaches often tackle visual or dynamic gaps separately, overlooking how these individual mismatches accumulate and propagate throughout the robot's state evolution.In this paper, we introduce QuadVerse, an integrated framework that uses reconstructed scenes as a calibration substrate for aligning visual perception, physical interaction, and actuator dynamics.From captured RGB videos, we reconstruct geometry-constrained 3D Gaussian Splatting (3DGS) scenes that support batched photorealistic ego-view rendering and collision-ready semantic mesh extraction. The meshes further enable contact calibration by initializing spatially varying friction priors and refining them through trajectory-based posterior search.To address remaining actuator discrepancies, QuadVerse trains a residual dynamics compensator by replaying real-world trajectories on the contact-calibrated terrain, reducing the entanglement between terrain-induced contact errors and actuator non-idealities.Experiments show that QuadVerse improves reconstruction quality and locomotion tracking over relevant baselines.Leveraging this foundation, we demonstrate robust zero-shot visual-navigation policy deployment without task-specific real-world rollouts.",
+      "authors": [
+        "Yuxiang Chen",
+        "Yuanhao Wang",
+        "Ziheng Zhang",
+        "Meng Zhang",
+        "Yu Liu",
+        "Yufei Jia",
+        "Tiancai Wang",
+        "Erjin Zhou",
+        "Jin Xie"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-06-05T10:18:24+00:00",
+      "link": "https://arxiv.org/pdf/2606.07118v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "reconstructs geometry-constrained 3DGS scenes from RGB videos for robot simulation with semantic mesh extraction",
+      "llm_evidence_cn": "从RGB视频重建几何约束3DGS场景并提取语义网格用于机器人仿真",
+      "llm_evidence": "从RGB视频重建几何约束3DGS场景并提取语义网格用于机器人仿真",
+      "canonical_evidence": "从RGB视频重建几何约束3DGS场景并提取语义网格用于机器人仿真",
+      "llm_tldr_en": "QuadVerse uses 3D Gaussian Splatting reconstructed from captured RGB videos to create a calibration substrate that aligns visual perception, physical interaction and actuator dynamics for quadruped simulation, effectively reducing sim-to-real gap.",
+      "llm_tldr_cn": "机器人仿真中视觉与物理域的对齐一直是难题。QuadVerse从RGB视频重建几何约束的3D高斯泼溅场景，同时提取语义网格用于接触校准，将视觉感知、物理交互与执行器动态协同对齐。该方法在四足机器人仿真中显著缩小了仿真与现实的差距，证明重建场景可作为多领域对齐的基底，为机器人学习提供高保真环境。",
+      "llm_tldr": "机器人仿真中视觉与物理域的对齐一直是难题。QuadVerse从RGB视频重建几何约束的3D高斯泼溅场景，同时提取语义网格用于接触校准，将视觉感知、物理交互与执行器动态协同对齐。该方法在四足机器人仿真中显著缩小了仿真与现实的差距，证明重建场景可作为多领域对齐的基底，为机器人学习提供高保真环境。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.07419v1",
+      "source": "arxiv",
+      "title": "DisPOSE: Projected Polystochastic Diffusion for Self-Supervised Multi-View 3D Human Pose Estimation",
+      "abstract": "Recovering 3D human poses for multiple individuals from different camera views is a fundamental bottleneck for analyzing interacting behaviors. Existing self-supervised approaches leverage synthetic catalogues of 3D poses; however, this leads to poor generalization in real-world scenarios due to distribution shifts. We therefore introduce DisPOSE, a self-supervised framework that approximates the inherently discrete multi-view person-assignment problem as a generative diffusion process over the space of polystochastic tensors. By employing differentiable Sinkhorn projections during denoising, our model learns to guide solutions toward valid and feasible assignments based on 2D image priors. The complete 3D skeletons of localized individuals are then regressed using a Hypergraph-Convolutional Decoder that explicitly models relational structures and articulated joints across multiple views. The proposed approach outperforms current state-of-the-art self-supervised methods on standard datasets and demonstrates strong performance on a newly proposed benchmark featuring highly occluded scenes from surgical operating rooms. Our diffusion-based localization demonstrates high label efficiency, retaining 99% of its performance with only 10% of the pseudo-labels. Notably, disentangling the assignment and root regression components while maintaining differentiability makes DisPOSE nearly agnostic to different camera arrangements.",
+      "authors": [
+        "Tony Danjun Wang",
+        "Tolga Birdal",
+        "Nassir Navab"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-05T16:14:39+00:00",
+      "link": "https://arxiv.org/pdf/2606.07419v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Multi-view feature matching for 3D pose via person assignment as a polystochastic diffusion process",
+      "llm_evidence_cn": "将多视角人员匹配问题建模为多随机扩散过程，实现多视角特征匹配与三维姿态估计",
+      "llm_evidence": "将多视角人员匹配问题建模为多随机扩散过程，实现多视角特征匹配与三维姿态估计",
+      "canonical_evidence": "将多视角人员匹配问题建模为多随机扩散过程，实现多视角特征匹配与三维姿态估计",
+      "llm_tldr_en": "This paper addresses self-supervised multi-view 3D human pose estimation by formulating the person assignment problem as a generative diffusion process over polystochastic tensors, effectively learning feature matching across views without synthetic data.",
+      "llm_tldr_cn": "本文针对多视角三维人体姿态估计中的数据标注和分布偏移问题，提出自监督框架DisPOSE，将离散的多视角人员匹配问题近似为多随机张量上的扩散生成过程，利用可微Sinkhorn投影引导去噪，从2D图像先验中学习有效的跨视角特征匹配与分配，无需合成数据集即可泛化至真实场景。",
+      "llm_tldr": "本文针对多视角三维人体姿态估计中的数据标注和分布偏移问题，提出自监督框架DisPOSE，将离散的多视角人员匹配问题近似为多随机张量上的扩散生成过程，利用可微Sinkhorn投影引导去噪，从2D图像先验中学习有效的跨视角特征匹配与分配，无需合成数据集即可泛化至真实场景。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
