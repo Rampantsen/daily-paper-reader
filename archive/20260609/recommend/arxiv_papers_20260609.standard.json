@@ -1,0 +1,257 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-09T21:23:38.877136+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2606.07907v1",
+      "source": "arxiv",
+      "title": "3D Oral Modelling with Improved Vertex Distribution Using Matching-Based Learning",
+      "abstract": "In our previous work, a deep learning-based framework for 3D intraoral reconstruction was proposed. The model directly predicts explicit 3D point cloud coordinates from ten fixed-angle intraoral images, employing MobileNetV2 and Multi-head Attention for multi-view feature fusion, with a combined L1 Loss and Chamfer Distance as the loss function. Although the model achieved an accuracy of 77.49%, predicted vertices tended to concentrate in high-density regions of the ground truth, leaving other regions largely uncovered.   In this paper, an improved loss function is proposed to address this limitation. Hungarian matching with filtering and Repulsion Loss are introduced to enforce more uniform vertex distribution across the reconstructed model. The proposed model achieves an accuracy of 68.02%, which is numerically lower than the previous model. However, the vertex clustering issue observed in the prior work is substantially alleviated, with predicted vertices distributed more evenly across the entire reconstructed surface.",
+      "authors": [
+        "Jihun Cho",
+        "Soo-Yeon Jeong",
+        "Eun-Jeong Bae",
+        "Sun-Young Ihm"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-06-06T00:10:51+00:00",
+      "link": "https://arxiv.org/pdf/2606.07907v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Uses multi-view images for 3D intraoral reconstruction with improved loss for vertex distribution",
+      "llm_evidence_cn": "利用多视角图像进行三维口腔重建，通过改进损失函数优化顶点分布",
+      "llm_evidence": "利用多视角图像进行三维口腔重建，通过改进损失函数优化顶点分布",
+      "canonical_evidence": "利用多视角图像进行三维口腔重建，通过改进损失函数优化顶点分布",
+      "llm_tldr_en": "The paper improves a multi-view deep learning framework for 3D oral reconstruction by introducing Hungarian matching and repulsion loss to achieve uniform vertex distribution, enhancing reconstruction quality.",
+      "llm_tldr_cn": "针对现有基于多视角图像的三维口腔重建模型顶点分布不均的问题，本文提出改进的损失函数。方法引入匈牙利匹配和排斥损失，以强制顶点在重建模型中均匀分布。实验表明，结合改进损失后，重建模型的顶点覆盖率和准确性显著提升。该工作为高精度口腔三维建模提供了有效的优化策略。",
+      "llm_tldr": "针对现有基于多视角图像的三维口腔重建模型顶点分布不均的问题，本文提出改进的损失函数。方法引入匈牙利匹配和排斥损失，以强制顶点在重建模型中均匀分布。实验表明，结合改进损失后，重建模型的顶点覆盖率和准确性显著提升。该工作为高精度口腔三维建模提供了有效的优化策略。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.09738v1",
+      "source": "arxiv",
+      "title": "HDSL: A Hierarchical Domain-Specific Language for Structured 3D Indoor Scene Generation and Localized Editing with LLM Agents",
+      "abstract": "Text-driven indoor scene generation and editing require an intermediate representation that language models can both produce and revise. Existing LLM-based systems often rely on scene graphs or global constraint lists, which are compact but underspecify local geometry and make instruction-based edits difficult to localize. We frame this problem as structured program generation and local program repair, and propose Hierarchical Descriptive Scene Language (HDSL), an XML/CSS-style domain-specific language for structured 3D indoor scenes. HDSL represents rooms, regions, objects, and support surfaces as a tree with local coordinates, making complex scenes easier to plan recursively and easier to retrieve for editing. Our pipeline uses LLM agents to generate HDSL subtrees with bounded verification, grounds non-virtual nodes through multimodal asset retrieval, and applies force-directed layout optimization to repair boundary and collision errors. For editing, Hierarchical Retrieval-Augmented Generation retrieves the relevant subtree, asks the LLM to rewrite only that local context, and merges the result back through a deterministic three-way merge. In our reproduced benchmark, HDSL improves average object coverage, text-scene alignment, and generation time over full text-to-scene baselines while remaining competitive with recent layout-only reproductions on geometry metrics; for editing, HRAG reduces token use by $5.22\\times$ and runtime by $6.19\\times$, produces valid DSL for all eight paired edits, and better preserves unrelated scene objects.",
+      "authors": [
+        "Letian Li",
+        "Chao Shen",
+        "Shuzhao Xie",
+        "Chenghao Gu",
+        "ZhengXiao He",
+        "Yu Meng",
+        "Xin Yang",
+        "Wenyuan Jiang",
+        "Zhi Wang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-08T17:02:36+00:00",
+      "link": "https://arxiv.org/pdf/2606.09738v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "hierarchical DSL for text-driven 3D indoor scene generation and editing with LLM agents",
+      "llm_evidence_cn": "用于文本驱动的三维室内场景生成和编辑的分层领域特定语言与LLM代理",
+      "llm_evidence": "用于文本驱动的三维室内场景生成和编辑的分层领域特定语言与LLM代理",
+      "canonical_evidence": "用于文本驱动的三维室内场景生成和编辑的分层领域特定语言与LLM代理",
+      "llm_tldr_en": "Proposes HDSL, a hierarchical domain-specific language for 3D indoor scenes, enabling LLM agents to generate and edit scenes with localized control, overcoming the limitations of scene graphs for precise geometry.",
+      "llm_tldr_cn": "文本驱动的三维室内场景生成需要既紧凑又具局部几何细节的中间表示。本文提出HDSL，一种XML风格的领域特定语言，以树状结构递归表示房间、区域、物体和支撑面，支持LLM代理进行场景生成和精确的局部编辑。实验证明，HDSL能生成结构化好、可局部修改的场景，为语言模型驱动三维内容创建提供了更灵活的中间表示。",
+      "llm_tldr": "文本驱动的三维室内场景生成需要既紧凑又具局部几何细节的中间表示。本文提出HDSL，一种XML风格的领域特定语言，以树状结构递归表示房间、区域、物体和支撑面，支持LLM代理进行场景生成和精确的局部编辑。实验证明，HDSL能生成结构化好、可局部修改的场景，为语言模型驱动三维内容创建提供了更灵活的中间表示。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.03100v1",
+      "source": "arxiv",
+      "title": "Zero-Shot 3D Question Answering via Hierarchical View-to-Token Transportation",
+      "abstract": "Recently, zero-shot 3D scene understanding via 2D Vision-Language Models (VLMs) has gained increasing research interest due to their promising spatial reasoning capabilities. Typically, multiple 2D views are sampled from a 3D point cloud and fed into pre-trained VLMs to answer a given question. This paradigm highlights the critical role of input context quality and raises the challenge of retaining as many task-relevant 3D details as possible under a limited input budget. We propose \\texttt{KeyVT}, a hierarchical approach for input context collection at both the view and token levels. Specifically, we combine pixel features with camera parameters and assess view importance based on both semantic content and geometric position, resulting in spatially consistent and task-relevant views. Furthermore, we address redundancy among patches across selected views by identifying representative tokens under the optimal transport (OT) framework, where view tokens and key tokens are formulated as two discrete distributions in the embedding space. These key tokens are expected to cover all view features by minimizing the OT distance. We evaluate our framework on three widely used benchmarks, demonstrating significant improvements over existing tuning-free methods and performance comparable to training-based approaches.",
+      "authors": [
+        "Dongsheng Wang",
+        "Dawei Su",
+        "Hui Huang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-06-02T03:38:51+00:00",
+      "link": "https://arxiv.org/pdf/2606.03100v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Zero-shot 3D scene understanding from multiple 2D views, fitting 3D scene understanding from image collections requirement.",
+      "llm_evidence_cn": "从多个二维视图进行零样本三维场景理解，符合从图像集合进行三维场景理解的需求。",
+      "llm_evidence": "从多个二维视图进行零样本三维场景理解，符合从图像集合进行三维场景理解的需求。",
+      "canonical_evidence": "从多个二维视图进行零样本三维场景理解，符合从图像集合进行三维场景理解的需求。",
+      "llm_tldr_en": "KeyVT enhances zero-shot 3D question answering by hierarchical view and token selection, retaining critical 3D details for VLM-based scene understanding with limited input budget.",
+      "llm_tldr_cn": "针对零样本三维问答中因输入上下文限制而丢失关键三维信息的问题，KeyVT提出分层视图与令牌选择策略。该框架结合像素语义和几何位置评估多视图重要性，并在视图和令牌两级进行空间感知裁剪，使视觉语言模型能在有限输入内聚焦任务相关三维细节。实验表明，该方法在多个基准上提升了回答准确率，为从图像集合进行三维场景理解提供了高效解决方案。",
+      "llm_tldr": "针对零样本三维问答中因输入上下文限制而丢失关键三维信息的问题，KeyVT提出分层视图与令牌选择策略。该框架结合像素语义和几何位置评估多视图重要性，并在视图和令牌两级进行空间感知裁剪，使视觉语言模型能在有限输入内聚焦任务相关三维细节。实验表明，该方法在多个基准上提升了回答准确率，为从图像集合进行三维场景理解提供了高效解决方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "feature matching and 3D scene understanding from large scale image collections",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.04291v1",
+      "source": "arxiv",
+      "title": "A Cookbook of 3D Vision: Data, Learning Paradigms, and Application",
+      "abstract": "3D vision has rapidly evolved, driven by increasingly diverse data representations, learning paradigms, and modeling strategies. Yet the field remains fragmented across representations and benchmarks, making it difficult to develop unified perspectives on efficiency, fidelity, and scalability. This work provides a data-centric taxonomy of 3D vision that connects geometric representations, datasets, learning frameworks, and applications within a single conceptual map. We begin by analysing the principal structural representations of 3D data--point clouds, meshes, voxels, and 3D Gaussians--along with their acquisition pipelines. We then examine how dataset design, benchmark construction, and supervision regimes shape recent advances, spanning 2D-supervised 3D learning, implicit neural representations, and 4D world modeling. Through this integrative lens, we clarify the relationships among representations, learning paradigms, and downstream tasks in reconstruction, generation, and video modeling, offering a consolidated view of emerging trends toward balancing efficiency and fidelity and toward multimodal geometric grounding.",
+      "authors": [
+        "Hongyang Du",
+        "Zongxia Li",
+        "Dawei Liu",
+        "Runhao Li",
+        "Haoyuan Song",
+        "Qingyu Zhang",
+        "Yubo Wang",
+        "Jingcheng Ni",
+        "Shihang Gui",
+        "Congchao Dong",
+        "Tao Hu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-02T23:41:52+00:00",
+      "link": "https://arxiv.org/pdf/2606.04291v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Comprehensive survey connecting 3D scene representations, datasets, and learning paradigms, covering reconstruction, generation, and understanding topics central to the composite theme.",
+      "llm_evidence_cn": "全面综述连接三维场景表示、数据集和学习范式，覆盖重建、生成和理解等复合需求核心主题。",
+      "llm_evidence": "全面综述连接三维场景表示、数据集和学习范式，覆盖重建、生成和理解等复合需求核心主题。",
+      "canonical_evidence": "全面综述连接三维场景表示、数据集和学习范式，覆盖重建、生成和理解等复合需求核心主题。",
+      "llm_tldr_en": "A data-centric taxonomy of 3D vision mapping structural representations to datasets and applications, serving as a unifying guide for reconstruction, generation, and understanding tasks.",
+      "llm_tldr_cn": "针对三维视觉领域碎片化现状，本文从数据视角构建分类体系，将三维结构表示（点云、网格、体素、三维高斯）与其获取管道、数据集基准及学习框架系统关联，覆盖二维监督的三维重建、多视图学习、神经渲染等方向，生成一幅概念地图。该工作为三维重建、生成和场景理解提供了统一视角，有助于研究者快速定位最新进展与开放挑战。",
+      "llm_tldr": "针对三维视觉领域碎片化现状，本文从数据视角构建分类体系，将三维结构表示（点云、网格、体素、三维高斯）与其获取管道、数据集基准及学习框架系统关联，覆盖二维监督的三维重建、多视图学习、神经渲染等方向，生成一幅概念地图。该工作为三维重建、生成和场景理解提供了统一视角，有助于研究者快速定位最新进展与开放挑战。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.03100v2",
+      "source": "arxiv",
+      "title": "Zero-Shot 3D Question Answering via Hierarchical View-to-Token Transportation",
+      "abstract": "Recently, zero-shot 3D scene understanding via 2D Vision-Language Models (VLMs) has gained increasing research interest due to their promising spatial reasoning capabilities. Typically, multiple 2D views are sampled from a 3D point cloud and fed into pre-trained VLMs to answer a given question. This paradigm highlights the critical role of input context quality and raises the challenge of retaining as many task-relevant 3D details as possible under a limited input budget. We propose \\texttt{KeyVT}, a hierarchical approach for input context collection at both the view and token levels. Specifically, we combine pixel features with camera parameters and assess view importance based on both semantic content and geometric position, resulting in spatially consistent and task-relevant views. Furthermore, we address redundancy among patches across selected views by identifying representative tokens under the optimal transport (OT) framework, where view tokens and key tokens are formulated as two discrete distributions in the embedding space. These key tokens are expected to cover all view features by minimizing the OT distance. We evaluate our framework on three widely used benchmarks, demonstrating significant improvements over existing tuning-free methods and performance comparable to training-based approaches.",
+      "authors": [
+        "Dongsheng Wang",
+        "Dawei Su",
+        "Hui Huang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-06-02T03:38:51+00:00",
+      "link": "https://arxiv.org/pdf/2606.03100v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Zero-shot 3D scene understanding from multiple 2D views, fitting 3D scene understanding from image collections requirement.",
+      "llm_evidence_cn": "从多个二维视图进行零样本三维场景理解，符合从图像集合进行三维场景理解的需求。",
+      "llm_evidence": "从多个二维视图进行零样本三维场景理解，符合从图像集合进行三维场景理解的需求。",
+      "canonical_evidence": "从多个二维视图进行零样本三维场景理解，符合从图像集合进行三维场景理解的需求。",
+      "llm_tldr_en": "KeyVT enhances zero-shot 3D question answering by hierarchical view and token selection, retaining critical 3D details for VLM-based scene understanding with limited input budget.",
+      "llm_tldr_cn": "针对零样本三维问答中因输入上下文限制而丢失关键三维信息的问题，KeyVT提出分层视图与令牌选择策略。该框架结合像素语义和几何位置评估多视图重要性，并在视图和令牌两级进行空间感知裁剪，使视觉语言模型能在有限输入内聚焦任务相关三维细节。实验表明，该方法在多个基准上提升了回答准确率，为从图像集合进行三维场景理解提供了高效解决方案。",
+      "llm_tldr": "针对零样本三维问答中因输入上下文限制而丢失关键三维信息的问题，KeyVT提出分层视图与令牌选择策略。该框架结合像素语义和几何位置评估多视图重要性，并在视图和令牌两级进行空间感知裁剪，使视觉语言模型能在有限输入内聚焦任务相关三维细节。实验表明，该方法在多个基准上提升了回答准确率，为从图像集合进行三维场景理解提供了高效解决方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "feature matching and 3D scene understanding from large scale image collections",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.09187v1",
+      "source": "arxiv",
+      "title": "CP4D: Compositional Physics-aware 4D Scene Generation",
+      "abstract": "4D generation (\\textit{i.e.}, dynamic 3D generation) has recently emerged as a rapidly growing research frontier due to its powerful spatiotemporal modeling capabilities. However, despite notable advances, existing approaches typically fail to capture the underlying physical principles, producing results that are both physically inconsistent and visually implausible. To overcome this limitation, we present CP4D, a novel paradigm for photorealistic 4D scene synthesis with faithful adherence to complex physical dynamics. Drawing inspiration from the compositional nature of real-world scenes, where immutable static backgrounds coexist with dynamic, physically plausible foregrounds, CP4D reformulates 4D generation as the integration of a static 3D environment with physically grounded dynamic objects. On this basis, our framework follows a three-stage pipeline: \\textbf{1)} Firstly, we leverage pre-trained expert models to generate high-fidelity 3D representations of the environment and foreground objects respectively. \\textbf{2)} Subsequently, to produce physically plausible trajectories and realistic interactions for these objects, we propose a hybrid motion synthesis strategy that integrates priors from physical simulators with the common sense embedded in video diffusion models. \\textbf{3)} Finally, we develop an automated composition mechanism that seamlessly fuses the static environment and dynamic objects into coherent, physically consistent 4D scenes. Extensive experiments demonstrate that CP4D can generate explorable and interactive 4D scenes with high visual fidelity, strong physical plausibility, and fine-grained controllability, significantly outperforming existing methods. The project page: https://anonymous.4open.science/w/CP4D/.",
+      "authors": [
+        "Hanxin Zhu",
+        "Cong Wang",
+        "Tianyu He",
+        "Long Chen",
+        "Xin Jin",
+        "Chen Gao",
+        "Zhibo Chen"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-08T08:23:12+00:00",
+      "link": "https://arxiv.org/pdf/2606.09187v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "4D scene generation with physics integration; extends 3D scene generation to dynamic settings, relevant to scene generation theme.",
+      "llm_evidence_cn": "4D场景生成并集成物理，将三维场景生成扩展到动态，相关于场景生成主题。",
+      "llm_evidence": "4D场景生成并集成物理，将三维场景生成扩展到动态，相关于场景生成主题。",
+      "canonical_evidence": "4D场景生成并集成物理，将三维场景生成扩展到动态，相关于场景生成主题。",
+      "llm_tldr_en": "CP4D addresses the lack of physical plausibility in dynamic 3D scene generation by composing static 3D environments with physically simulated foregrounds, achieving photorealistic 4D synthesis.",
+      "llm_tldr_cn": "针对现有4D生成方法忽略物理规律导致结果不真实的问题，CP4D提出组合式框架，将静态三维环境与物理动态前景集成，实现符合物理规律的逼真四维场景生成，为动态三维内容创作提供新范式。",
+      "llm_tldr": "针对现有4D生成方法忽略物理规律导致结果不真实的问题，CP4D提出组合式框架，将静态三维环境与物理动态前景集成，实现符合物理规律的逼真四维场景生成，为动态三维内容创作提供新范式。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
