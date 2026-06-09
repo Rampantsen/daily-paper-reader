@@ -1,0 +1,617 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-09T07:46:12.911063+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 11,
+    "deep_cap": 6,
+    "deep_selected": 7,
+    "quick_candidates": 8,
+    "quick_skim_target": 11,
+    "quick_selected": 8
+  },
+  "deep_dive": [
+    {
+      "id": "2606.06695v1",
+      "source": "arxiv",
+      "title": "S23DR 2026 Winning Solution",
+      "abstract": "This text presents the winning solution to the S23DR 2026 challenge for structured 3D wireframe reconstruction from sparse SfM, fitted depth, and semantic segmentations. The method treats vertices as a conditional set and denoises 64 vertex tokens with a flow-matching DiT conditioned on Perceiver-style scene tokens. A global pass predicts the coarse structure, a hull-cropped second pass refines it, and a small multi-sample consensus step keeps the stochastic sampler well behaved. The final system ranked first on the private leaderboard, achievingHSS = 0.654.",
+      "authors": [
+        "Jan Skvrna",
+        "Miroslav Purkrabek",
+        "Lukas Neumann"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-04T20:19:59+00:00",
+      "link": "https://arxiv.org/pdf/2606.06695v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "reconstructs 3D wireframes from sparse SfM, depth, and semantic segmentations",
+      "llm_evidence_cn": "从稀疏运动恢复结构、深度和语义分割进行三维线框重建",
+      "llm_evidence": "从稀疏运动恢复结构、深度和语义分割进行三维线框重建",
+      "canonical_evidence": "从稀疏运动恢复结构、深度和语义分割进行三维线框重建",
+      "llm_tldr_en": "The method uses flow-matching diffusion conditioned on scene tokens to denoise vertex tokens for structured 3D reconstruction, achieving top performance.",
+      "llm_tldr_cn": "该获胜方案针对从稀疏SfM点云、深度和语义信息中重建结构化三维线框的任务，提出以顶点为条件集的流匹配扩散模型，通过全局预测与局部精化两阶段生成顶点，多采样一致性保证鲁棒性，在S23DR 2026挑战中获第一名。",
+      "llm_tldr": "该获胜方案针对从稀疏SfM点云、深度和语义信息中重建结构化三维线框的任务，提出以顶点为条件集的流匹配扩散模型，通过全局预测与局部精化两阶段生成顶点，多采样一致性保证鲁棒性，在S23DR 2026挑战中获第一名。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.08980v1",
+      "source": "arxiv",
+      "title": "EPS3D: End-to-End Feed-Forward 3D Panoptic Segmentation",
+      "abstract": "This paper introduces EPS3D, a new end-to-end feed-forward framework for open-vocabulary 3D panoptic segmentation. Unlike existing methods relying on additional preprocessing, we design an end-to-end architecture, with a distillation-based training strategy on diverse 3D scenes to predict 3D-aware semantic and instance features from multi-view images, improving 3D consistency and avoiding error accumulation. We further propose a mutual enhancement module to enforce inherent semantic-instance consistency. By aligning semantics within instances (Ins2Sem) and refining instance features with semantic guidance (Sem2Ins), we achieve more coherent 3D scene understanding. Ultimately, EPS3D outperforms SOTA baselines on two benchmarks (e.g., +13% mIoU for semantics on Replica) with high efficiency (e.g., 1s per scene), supporting tasks like robotic manipulation and 3D scene editing.",
+      "authors": [
+        "Runsong Zhu",
+        "Jiaxin Guo",
+        "Xiaoyang Guo",
+        "Zhengzhe Liu",
+        "Ka-Hei Hui",
+        "Wei Yin",
+        "Kai Chen",
+        "Wei Chen",
+        "Weiqiang Ren",
+        "Yunhui Liu",
+        "Pheng-Ann Heng",
+        "Chi-Wing Fu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-08T03:26:54+00:00",
+      "link": "https://arxiv.org/pdf/2606.08980v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "open-vocabulary 3D panoptic segmentation from multi-view images",
+      "llm_evidence_cn": "从多视图图像进行开放词汇三维全景分割",
+      "llm_evidence": "从多视图图像进行开放词汇三维全景分割",
+      "canonical_evidence": "从多视图图像进行开放词汇三维全景分割",
+      "llm_tldr_en": "Proposes EPS3D, an end-to-end feed-forward framework for open-vocabulary 3D panoptic segmentation that predicts 3D-aware semantic and instance features from multi-view images, achieving state-of-the-art results and improved 3D consistency.",
+      "llm_tldr_cn": "针对现有方法依赖额外预处理的问题，提出端到端框架EPS3D，通过蒸馏训练从多视图图像预测三维语义与实例特征，结合语义-实例互增强模块提升三维场景理解的一致性，在Replica等基准上语义mIoU提高13%，为三维全景分割提供新方案。",
+      "llm_tldr": "针对现有方法依赖额外预处理的问题，提出端到端框架EPS3D，通过蒸馏训练从多视图图像预测三维语义与实例特征，结合语义-实例互增强模块提升三维场景理解的一致性，在Replica等基准上语义mIoU提高13%，为三维全景分割提供新方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.01549v1",
+      "source": "arxiv",
+      "title": "ForestMamba: Sparse Mamba with Geometry-guided Queries for 3D Forest Point Cloud Segmentation",
+      "abstract": "AI-based semantic and instance segmentation of terrestrial and drone LiDAR point clouds is emerging as a transformative approach for converting the complex 3D structure of forests into actionable information for forest monitoring and biodiversity assessment. However, forest LiDAR scenes remain highly challenging due to their large data volumes, irregular sampling density, overlapping and complex canopy structure, and geographic variability. Existing methods based on sparse convolutions or Transformers achieve promising results, but suffer from two key limitations: Quadratic complexity of attention scales poorly to large forest scenes, and Generic context modeling does not exploit forest structural priors, limiting tree separation in complex regions. To address these challenges, we propose ForestMamba, a structure-aware method that incorporates forest-specific priors into feature encoding, query generation, and query refinement, while replacing quadratic attention with linear-time state-space modeling. First, we introduce a sparse encoder with vertical-priority slab serialization that organizes sparse voxels into vertically coherent sequences for efficient long-range context modeling. Second, we propose a geometry-guided query initialization strategy based on an on-the-fly multi-scale Canopy Height Model (CHM), where canopy maxima provide ecologically meaningful query seeds, supplemented by Farthest Point Sampling (FPS) to cover understory trees. Third, we design a Mamba-based query decoder that combines local kNN voxel aggregation with a spatial dual-path Mamba for query refinement with linear computational complexity. Extensive experiments across seven forest regions demonstrate that ForestMamba consistently outperforms existing baselines in both segmentation tasks, while achieving 3 times faster inference and 2.3 times lower GPU memory than Transformer-based methods.",
+      "authors": [
+        "Trung Thanh Nguyen",
+        "Tuan-Anh Vu",
+        "Duc Viet Le",
+        "Yasutomo Kawanishi",
+        "Takahiro Komamizu",
+        "Ichiro Ide",
+        "Teja Kattenborn"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-01T01:49:09+00:00",
+      "link": "https://arxiv.org/pdf/2606.01549v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "semantic and instance segmentation of LiDAR point clouds in 3D forest scenes",
+      "llm_evidence_cn": "三维森林场景的点云语义和实例分割",
+      "llm_evidence": "三维森林场景的点云语义和实例分割",
+      "canonical_evidence": "三维森林场景的点云语义和实例分割",
+      "llm_tldr_en": "ForestMamba proposes a sparse Mamba model with geometry-guided queries for efficient and accurate segmentation of large 3D forest point clouds, overcoming quadratic complexity and lack of structural priors.",
+      "llm_tldr_cn": "ForestMamba针对大规模森林LiDAR点云分割中注意力机制计算复杂度高和缺乏结构先验的问题，提出了一种融合几何引导查询的稀疏Mamba模型。该方法利用状态空间模型实现线性复杂度，通过几何引导的查询机制捕获森林结构特征，在分割精度和效率上均优于现有方法，为森林遥感监测提供了有效的三维理解工具。",
+      "llm_tldr": "ForestMamba针对大规模森林LiDAR点云分割中注意力机制计算复杂度高和缺乏结构先验的问题，提出了一种融合几何引导查询的稀疏Mamba模型。该方法利用状态空间模型实现线性复杂度，通过几何引导的查询机制捕获森林结构特征，在分割精度和效率上均优于现有方法，为森林遥感监测提供了有效的三维理解工具。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.08014v1",
+      "source": "arxiv",
+      "title": "GVC-Seg: Training-Free 3D Instance Segmentation via Geometric Visual Correspondence",
+      "abstract": "Accurate 3D instance segmentation in point cloud data is critical for machine vision applications. Recent advancements leverage multiple pre-trained foundation models to generate 3D proposals, followed by the application of proposal aggregation methods, which significantly enhance performance. However, they often produce sub-optimal results due to inherent variations in confidence levels across different segmentation models, resulting in a bias toward the model with higher confidence. This bias is inherently model-dependent and is influenced by factors such as data preprocessing techniques and training strategies. To address this bias, we propose a novel, training-free 3D instance segmentation approach via Geometric Visual Correspondence (GVC-Seg), which exploits the correspondence between 3D geometric cues and 2D visual cues to mitigate the confidence bias. Additionally, a 3D proposal generation module and a mask-aware CLIP feature extraction module are introduced during the instance mask generation and instance semantic reasoning, respectively. In this way, GVC-Seg enhances proposal quality assessment, ensuring unbiased ensemble learning across different models. Extensive experiments demonstrate that our method achieves state-of-the-art performance on several challenging benchmarks, while also exhibiting strong potential in open-vocabulary semantic segmentation settings.",
+      "authors": [
+        "Liang Xu",
+        "Fangjing Wang",
+        "Jinyu Yang",
+        "Feng Zheng"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-06-06T07:09:15+00:00",
+      "link": "https://arxiv.org/pdf/2606.08014v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Proposes training-free 3D instance segmentation using geometric visual correspondence to address bias in foundation model aggregation.",
+      "llm_evidence_cn": "提出基于几何视觉对应的免训练3D实例分割，解决基础模型聚合中的偏差问题。",
+      "llm_evidence": "提出基于几何视觉对应的免训练3D实例分割，解决基础模型聚合中的偏差问题。",
+      "canonical_evidence": "提出基于几何视觉对应的免训练3D实例分割，解决基础模型聚合中的偏差问题。",
+      "llm_tldr_en": "GVC-Seg improves 3D instance segmentation by aggregating proposals from multiple models with geometric visual correspondence, reducing confidence bias without additional training.",
+      "llm_tldr_cn": "现有3D实例分割聚合多个基础模型时，因置信度差异产生偏差。GVC-Seg提出几何视觉对应方法，训练无关地融合各模型提议，有效降低模型偏好影响，在多个点云基准上显著提升分割精度。",
+      "llm_tldr": "现有3D实例分割聚合多个基础模型时，因置信度差异产生偏差。GVC-Seg提出几何视觉对应方法，训练无关地融合各模型提议，有效降低模型偏好影响，在多个点云基准上显著提升分割精度。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.08957v1",
+      "source": "arxiv",
+      "title": "Rethinking 3D Shape Generation: Diffusion over Superquadrics",
+      "abstract": "Diffusion models have advanced 3D shape generation, yet most methods still denoise in high-cardinality spaces (e.g., voxel/SDF grids, meshes, or point clouds), which is computationally and memory intensive and makes it difficult to scale in terms of both higher resolution and stronger controllability. We rethink the diffusion representation and propose to move diffusion from dense geometry to compact geometric primitives, representing each shape as a small set of superquadrics. Instead of operating on thousands to millions of geometric representation values, we leverage 7KB superquadric parameters (pose, size, and shape), drastically reducing diffusion-state dimensionality and per-step compute/memory. Our diffusion-over-superquadrics improves scalability by supporting broader capabilities (e.g., resolution-free point-cloud decoding, part-level editing, and constraint-based design) and achieving competitive surface-fidelity and distributional performance on standard benchmarks after point-cloud decoding, while enabling efficient generation within 0.6s per shape for most conditions.",
+      "authors": [
+        "Zhiyang Liu",
+        "Wanze Li",
+        "Yuwei Wu",
+        "Chengran Yuan",
+        "Jiawei Sun",
+        "Rui Zheng",
+        "Marcelo H Ang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-08T02:59:15+00:00",
+      "link": "https://arxiv.org/pdf/2606.08957v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "proposes diffusion over superquadrics for efficient 3D shape generation, directly addressing 3D object generation",
+      "llm_evidence_cn": "提出基于超二次曲面的扩散模型进行高效三维形状生成，直接处理三维物体生成",
+      "llm_evidence": "提出基于超二次曲面的扩散模型进行高效三维形状生成，直接处理三维物体生成",
+      "canonical_evidence": "提出基于超二次曲面的扩散模型进行高效三维形状生成，直接处理三维物体生成",
+      "llm_tldr_en": "The paper moves 3D shape diffusion from dense representations to compact superquadrics, drastically reducing dimensionality and improving scalability and controllability.",
+      "llm_tldr_cn": "当前扩散模型以高维密集表示生成三维形状，计算资源消耗大且难控。该文将表示从密集几何切换为紧凑的超二次曲面参数集，仅需7KB参数描述位姿、大小和形状，大幅降低扩散维度。实验表明，超二次曲面扩散在保证生成质量的同时，支持更高分辨率和更强的可控性，为可扩展的三维生成提供新范式。",
+      "llm_tldr": "当前扩散模型以高维密集表示生成三维形状，计算资源消耗大且难控。该文将表示从密集几何切换为紧凑的超二次曲面参数集，仅需7KB参数描述位姿、大小和形状，大幅降低扩散维度。实验表明，超二次曲面扩散在保证生成质量的同时，支持更高分辨率和更强的可控性，为可扩展的三维生成提供新范式。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.09262v1",
+      "source": "arxiv",
+      "title": "See More, Match Better: Multi-Source Feature Fusion for Two-View Correspondence Learning",
+      "abstract": "Two-view correspondence learning aims to distinguish true correspondences (inliers) from false ones (outliers) in image pairs by leveraging their underlying differences. Existing methods mainly rely on coordinate-based geometric consistency. However, they often struggle with pseudo-consistent outliers in scenes containing repetitive structures, textureless regions, or locally similar geometric patterns. To address this limitation, we propose TriMatch, a multi-source feature fusion framework for two-view correspondence learning, which consists of two parts: feature extraction and feature refinement. In feature extraction, TriMatch jointly extracts geometric, texture semantic, and structural semantic features to provide complementary evidence for correspondence discrimination. To bridge the gap between semantic and geometric features, texture and structural semantic features are aligned with geometric features through dedicated Texture-Geometric Alignment and Structural-Geometric Alignment modules, respectively. We further introduce a Semantic-Guided Correspondence Modulation module, which modulates geometric features using semantic information to suppress geometrically plausible but semantically inconsistent correspondences. In feature refinement, a Hierarchical Semantic-Enhanced Correspondence Refinement strategy progressively models correspondence dependencies and recalibrates multi-context feature responses, enabling more reliable inlier-outlier discrimination. Extensive experiments demonstrate the effectiveness, robustness, and generalization capability of TriMatch.",
+      "authors": [
+        "Xiaojie Li",
+        "Xin Jiang",
+        "Luanyuan Dai",
+        "Jinnan Yang",
+        "Yongdong Zhang",
+        "Zechao Li"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-08T09:33:01+00:00",
+      "link": "https://arxiv.org/pdf/2606.09262v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "proposes multi-source feature fusion to improve two-view correspondence matching, directly addressing multi-view feature matching",
+      "llm_evidence_cn": "提出多源特征融合改善两视图对应关系，直接处理多视图特征匹配",
+      "llm_evidence": "提出多源特征融合改善两视图对应关系，直接处理多视图特征匹配",
+      "canonical_evidence": "提出多源特征融合改善两视图对应关系，直接处理多视图特征匹配",
+      "llm_tldr_en": "TriMatch fuses geometric, texture, and structural features to better distinguish inliers from outliers in two-view matching, addressing pseudo-consistent outliers in challenging scenes.",
+      "llm_tldr_cn": "针对重复结构、无纹理区域等场景中伪一致离群点，TriMatch提出多源特征融合框架，联合提取几何、纹理语义和结构语义特征，并逐步优化，以增强两视图对应关系的判别力。实验表明，在困难场景下匹配精度显著提升，为多视图三维重建提供更可靠的对应基础。",
+      "llm_tldr": "针对重复结构、无纹理区域等场景中伪一致离群点，TriMatch提出多源特征融合框架，联合提取几何、纹理语义和结构语义特征，并逐步优化，以增强两视图对应关系的判别力。实验表明，在困难场景下匹配精度显著提升，为多视图三维重建提供更可靠的对应基础。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.09273v1",
+      "source": "arxiv",
+      "title": "EditSSC: Toward Editable Semantic Occupancy Scenes with Unconditional Diffusion Models",
+      "abstract": "3D semantic scene generation is crucial for autonomous driving applications, yet most methods rely on complex 3D-specific architectures such as triplane encoders and adapted diffusion networks, limiting both their simplicity and their editing capabilities. We propose EditSSC, an editing-ready method for 3D semantic scene generation using 2D Bird's Eye View (BEV) representations and off-the-shelf latent diffusion network. Our approach reshapes 3D semantic occupancy grids into multi-channel BEV images and leverages the quantized autoencoder and UNet from Stable Diffusion with minimal modifications. We perform diffusion on the latents after quantization, which enables training-free editing capabilities. By exploiting class-to-code correspondences in the codebook, our method supports sketch-guided generation, inpainting, and outpainting without any retraining. On SemanticKITTI, EditSSC outperforms existing 3D-specific baselines on unconditional generation, demonstrating that well-established 2D architectures can be effectively repurposed for 3D scene generation and editing.",
+      "authors": [
+        "Fatima Balde",
+        "Raoul de Charette",
+        "Alexandre Boulch"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-08T09:41:37+00:00",
+      "link": "https://arxiv.org/pdf/2606.09273v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Proposes 3D semantic scene generation using 2D BEV and diffusion, directly generating editable 3D occupancy scenes.",
+      "llm_evidence_cn": "提出利用2D BEV和扩散模型进行3D语义场景生成，直接生成可编辑的3D占位场景。",
+      "llm_evidence": "提出利用2D BEV和扩散模型进行3D语义场景生成，直接生成可编辑的3D占位场景。",
+      "canonical_evidence": "提出利用2D BEV和扩散模型进行3D语义场景生成，直接生成可编辑的3D占位场景。",
+      "llm_tldr_en": "EditSSC introduces a simple 3D semantic scene generation method by reshaping occupancy grids into BEV images and applying off-the-shelf diffusion, enabling training-free editing for autonomous driving scenes.",
+      "llm_tldr_cn": "针对现有3D语义场景生成方法依赖复杂架构、编辑能力有限的问题，EditSSC将3D语义占用网格重塑为多通道BEV图像，利用Stable Diffusion的量化自编码器和UNet，在潜空间进行扩散，借助类码对应实现无需训练的场景编辑，在自动驾驶数据集上验证了生成质量和编辑灵活性，简化了场景生成流程。",
+      "llm_tldr": "针对现有3D语义场景生成方法依赖复杂架构、编辑能力有限的问题，EditSSC将3D语义占用网格重塑为多通道BEV图像，利用Stable Diffusion的量化自编码器和UNet，在潜空间进行扩散，借助类码对应实现无需训练的场景编辑，在自动驾驶数据集上验证了生成质量和编辑灵活性，简化了场景生成流程。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.06721v1",
+      "source": "arxiv",
+      "title": "SCOUT: Semantic scene COverage via Uncertainty-guided Traversal",
+      "abstract": "Robots that operate over extended periods should not merely visit space; they should progressively understand it. Yet most 3D scene graph pipelines treat perception as a post-processing stage over a fixed dataset, decoupling scene representation from the decisions that determine what is observed in the first place. We present SCOUT, an online semantic exploration framework that closes this loop by coupling active traversal with probabilistic scene graph construction. Given a prior 2D occupancy map and posed RGB-D observations, SCOUT incrementally builds an uncertainty-aware 3D scene graph whose nodes maintain fused geometry and posterior beliefs over open-vocabulary object labels, while edges encode structural relations such as on, inside, belong, and next to. These beliefs are fed back to an uncertainty-guided traversal planner, which selects viewpoints by balancing expected semantic certainty gain, geometric coverage gain, and travel cost. In this way, the robot revisits ambiguous objects when additional evidence matters and expands into unseen free space when the scene remains incomplete. The resulting system treats semantic scene completeness as an operational objective rather than a passive by-product of semantic mapping, moving toward autonomous agents that can patrol, update, and reason about evolving indoor environments with minimal human intervention.",
+      "authors": [
+        "Junyu Mao",
+        "Sara Ayoubi",
+        "Vishnu D. Sharma",
+        "Ilija Hadžić",
+        "Matthew Andrews"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-06-04T21:13:33+00:00",
+      "link": "https://arxiv.org/pdf/2606.06721v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "incrementally builds an uncertainty-aware 3D scene graph with open-vocabulary object labels from RGB-D",
+      "llm_evidence_cn": "从RGB-D在线构建带语义标签的三维场景图谱",
+      "llm_evidence": "从RGB-D在线构建带语义标签的三维场景图谱",
+      "canonical_evidence": "从RGB-D在线构建带语义标签的三维场景图谱",
+      "llm_tldr_en": "SCOUT couples active traversal with probabilistic scene graph construction for online semantic exploration, maintaining fused geometry and label beliefs.",
+      "llm_tldr_cn": "SCOUT提出了一种在线语义探索框架，将主动遍历与概率场景图谱构建相结合，从RGB-D观测中增量式地构建带不确定性的三维场景图。节点存储几何与开放词汇标签的后验信念，边编码结构关系，实现机器人在长时间运行中的渐进式场景理解。",
+      "llm_tldr": "SCOUT提出了一种在线语义探索框架，将主动遍历与概率场景图谱构建相结合，从RGB-D观测中增量式地构建带不确定性的三维场景图。节点存储几何与开放词汇标签的后验信念，边编码结构关系，实现机器人在长时间运行中的渐进式场景理解。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.01649v1",
+      "source": "arxiv",
+      "title": "PhyScene3D: Physically Consistent Interactive 3D Tabletop Scene Generation",
+      "abstract": "Generating physically consistent 3D tabletop scenes is a fundamental yet underexplored problem for interactive and generalist robotic learning. The challenge stems from dense object hierarchies and irregular affordances. Here, an interactive scene denotes a physically valid, collision-free environment directly loadable into physics simulators. Existing methods, ranging from decoupled symbolic solvers to end-to-end regression models, often suffer from error propagation or overfitting to noisy supervision containing widespread physical violations. To address these limitations, we introduce PhyScene3D, a framework that reformulates generation as a Human-Mimetic Constructive Process. The proposed Cognitive Topological Reasoning Chain (CTRC) factorizes scene synthesis into a sequential, anchor-conditioned process. It employs a 3D AABB-based placement scheme that imposes a strong structural inductive bias. To address imperfect supervision and physical infeasibility, we introduce Physics-Aware Denoising Alignment (PADA). It integrates a differentiable Signed Distance Field (SDF) with Test-Time Optimization (TTO) to project generated scenes onto a physics-feasible manifold while preserving semantic intent. Experiments demonstrate that PhyScene3D outperforms state-of-the-art approaches in both semantic accuracy and physical validity, achieving a 40% reduction in scene-wise collision rate relative to the human-annotated training data.",
+      "authors": [
+        "Weixing Chen",
+        "Zhuoqian Feng",
+        "Yang Liu",
+        "Yexin Zhang",
+        "Yifan Wen",
+        "Yinghong Liao",
+        "Weichao Qiu",
+        "Guanbin Li",
+        "Liang Lin"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-01T03:56:32+00:00",
+      "link": "https://arxiv.org/pdf/2606.01649v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Physically consistent 3D tabletop scene generation",
+      "llm_evidence_cn": "物理一致的三维桌面场景生成",
+      "llm_evidence": "物理一致的三维桌面场景生成",
+      "canonical_evidence": "物理一致的三维桌面场景生成",
+      "llm_tldr_en": "Introduces PhyScene3D, a framework for generating physically valid, collision-free 3D tabletop scenes using a human-mimetic constructive process with topological reasoning.",
+      "llm_tldr_cn": "针对现有3D桌面场景生成方法常产生物理违规（如碰撞穿透）的问题，本文提出PhyScene3D，将生成重新定义为仿人构建过程。通过认知拓扑推理链（CTRC）分解场景组合，逐步放置物体并保证物理合法性。实验生成的可交互场景可直接加载到物理模拟器，验证了方法的物理一致性和实用性。该框架为机器人学习环境的自动构建奠定了基础。",
+      "llm_tldr": "针对现有3D桌面场景生成方法常产生物理违规（如碰撞穿透）的问题，本文提出PhyScene3D，将生成重新定义为仿人构建过程。通过认知拓扑推理链（CTRC）分解场景组合，逐步放置物体并保证物理合法性。实验生成的可交互场景可直接加载到物理模拟器，验证了方法的物理一致性和实用性。该框架为机器人学习环境的自动构建奠定了基础。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.08205v1",
+      "source": "arxiv",
+      "title": "Empowering Feed-Forward Reconstruction Models with Metric Scale via Satellite Images",
+      "abstract": "Feed-forward 3D reconstruction models have recently shown strong generalization across diverse scenes, yet most of them recover geometry only up to an unknown global scale. This scale ambiguity limits their use in applications that require metric understanding of the environment. Existing metric reconstruction methods commonly rely on large-scale metric annotations or accurate camera calibration, both of which are costly or unreliable in many real-world settings. We propose a satellite-guided framework for resolving scale ambiguity in feed-forward 3D reconstruction. The key idea is to use readily available satellite imagery as a global metric reference. Given a coarse camera pose, our method retrieves a local satellite patch and integrates it with a feed-forward reconstruction backbone through bidirectional cross-view interaction. By enforcing consistency between the reconstructed scene and the satellite reference, the model infers absolute scale, refines scene geometry, and estimates camera pose in a metric coordinate frame. Experiments on KITTI, nuScenes, and Oxford RobotCar show consistent improvements in metric depth estimation, multi-view point-cloud reconstruction, and cross-view camera localization, while preserving strong generalization across datasets and geographic regions.",
+      "authors": [
+        "Xianghui Ze",
+        "Yongjian Luo",
+        "Mengjun Chao",
+        "Zhenbo Song",
+        "Jianfeng Lu",
+        "Yujiao Shi"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-06T14:44:04+00:00",
+      "link": "https://arxiv.org/pdf/2606.08205v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Metric scale 3D reconstruction guided by satellite images",
+      "llm_evidence_cn": "卫星图像引导的度量尺度三维重建",
+      "llm_evidence": "卫星图像引导的度量尺度三维重建",
+      "canonical_evidence": "卫星图像引导的度量尺度三维重建",
+      "llm_tldr_en": "Proposes a satellite-guided framework to resolve scale ambiguity in feed-forward 3D reconstruction by integrating satellite imagery as a metric reference, achieving globally scaled geometry.",
+      "llm_tldr_cn": "针对前馈3D重建模型普遍存在的尺度歧义问题，本文提出利用卫星图像作为全局度量参考的新框架。通过粗位姿获取局部卫星图块并与重建特征融合，实现度量尺度恢复。实验表明该方法无需昂贵标注或精确标定即可为各种场景提供准确尺度。该工作拓展了前馈重建模型在度量环境理解中的应用。",
+      "llm_tldr": "针对前馈3D重建模型普遍存在的尺度歧义问题，本文提出利用卫星图像作为全局度量参考的新框架。通过粗位姿获取局部卫星图块并与重建特征融合，实现度量尺度恢复。实验表明该方法无需昂贵标注或精确标定即可为各种场景提供准确尺度。该工作拓展了前馈重建模型在度量环境理解中的应用。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.04891v1",
+      "source": "arxiv",
+      "title": "Hierarchical Space Partition for Surface Reconstruction",
+      "abstract": "Generating compact polygonal models from point clouds is a key problem in 3D vision and computer graphics. However, due to inherent limitations of LiDAR scanning (e.g. range constraints and occlusions), critical scene information is often missing, leading to degraded reconstruction accuracy. To address this, we propose a plane assembling strategy that effectively recovers missing details while maintaining model compactness. We classify all the planes extracted from the scene into three categories: highly visible, barely visible, and invisible. The invisible planes, which are recovered by scene structure analysis, indicate the missing details. The three types of planes correspond to the three growth priorities. Each plane grows according to the priority level, and the space is partitioned progressively, namely, the hierarchical partition. Subsequently, we generate a watertight polygonal mesh from the partition via a min-cut-based optimization. Finally, comparisons on public datasets show the effectiveness and superiority of our method against mainstream approaches. The project page is available at https://hsr-3dv.github.io/.",
+      "authors": [
+        "Minjie Tang",
+        "Xiangfei Li"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.CG"
+      ],
+      "published": "2026-06-03T13:52:36+00:00",
+      "link": "https://arxiv.org/pdf/2606.04891v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "surface reconstruction from point clouds using plane assembling, directly relevant to 3D scene reconstruction",
+      "llm_evidence_cn": "利用平面组装从点云重建表面，与三维场景重建直接相关",
+      "llm_evidence": "利用平面组装从点云重建表面，与三维场景重建直接相关",
+      "canonical_evidence": "利用平面组装从点云重建表面，与三维场景重建直接相关",
+      "llm_tldr_en": "A plane assembling strategy classifies plane visibility to recover missing details, generating compact polygonal models from incomplete point clouds for 3D reconstruction.",
+      "llm_tldr_cn": "激光雷达点云因遮挡和距离限制存在信息缺失，影响表面重建精度。该文提出平面组装策略，将场景平面分为高度可见、勉强可见和不可见三类，并赋予不同生长优先级；通过场景结构分析恢复不可见平面，最终生成紧凑多边形模型。实验证明该方法能有效恢复细节，提升重建完整度。",
+      "llm_tldr": "激光雷达点云因遮挡和距离限制存在信息缺失，影响表面重建精度。该文提出平面组装策略，将场景平面分为高度可见、勉强可见和不可见三类，并赋予不同生长优先级；通过场景结构分析恢复不可见平面，最终生成紧凑多边形模型。实验证明该方法能有效恢复细节，提升重建完整度。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.09187v1",
+      "source": "arxiv",
+      "title": "CP4D: Compositional Physics-aware 4D Scene Generation",
+      "abstract": "4D generation (\\textit{i.e.}, dynamic 3D generation) has recently emerged as a rapidly growing research frontier due to its powerful spatiotemporal modeling capabilities. However, despite notable advances, existing approaches typically fail to capture the underlying physical principles, producing results that are both physically inconsistent and visually implausible. To overcome this limitation, we present CP4D, a novel paradigm for photorealistic 4D scene synthesis with faithful adherence to complex physical dynamics. Drawing inspiration from the compositional nature of real-world scenes, where immutable static backgrounds coexist with dynamic, physically plausible foregrounds, CP4D reformulates 4D generation as the integration of a static 3D environment with physically grounded dynamic objects. On this basis, our framework follows a three-stage pipeline: \\textbf{1)} Firstly, we leverage pre-trained expert models to generate high-fidelity 3D representations of the environment and foreground objects respectively. \\textbf{2)} Subsequently, to produce physically plausible trajectories and realistic interactions for these objects, we propose a hybrid motion synthesis strategy that integrates priors from physical simulators with the common sense embedded in video diffusion models. \\textbf{3)} Finally, we develop an automated composition mechanism that seamlessly fuses the static environment and dynamic objects into coherent, physically consistent 4D scenes. Extensive experiments demonstrate that CP4D can generate explorable and interactive 4D scenes with high visual fidelity, strong physical plausibility, and fine-grained controllability, significantly outperforming existing methods. The project page: https://anonymous.4open.science/w/CP4D/.",
+      "authors": [
+        "Hanxin Zhu",
+        "Cong Wang",
+        "Tianyu He",
+        "Long Chen",
+        "Xin Jin",
+        "Chen Gao",
+        "Zhibo Chen"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-08T08:23:12+00:00",
+      "link": "https://arxiv.org/pdf/2606.09187v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Dynamic 3D scene generation with physics",
+      "llm_evidence_cn": "带物理的动态三维场景生成",
+      "llm_evidence": "带物理的动态三维场景生成",
+      "canonical_evidence": "带物理的动态三维场景生成",
+      "llm_tldr_en": "CP4D integrates static 3D environment with physically simulated dynamic foregrounds for photorealistic 4D scene generation, ensuring physical consistency.",
+      "llm_tldr_cn": "针对现有四维生成方法忽略物理规律、产生不真实动态的问题，本文提出CP4D，将场景分解为静态背景与符合物理的动态前景，通过整合静态三维环境与物理模拟生成四维场景。利用组合式框架分别建模，然后融合渲染，生成高度逼真的动态三维场景。实验显示该方法能生成符合复杂物理动力学的四维内容，如流体、柔性体，显著提升视觉真实感和物理合理性。",
+      "llm_tldr": "针对现有四维生成方法忽略物理规律、产生不真实动态的问题，本文提出CP4D，将场景分解为静态背景与符合物理的动态前景，通过整合静态三维环境与物理模拟生成四维场景。利用组合式框架分别建模，然后融合渲染，生成高度逼真的动态三维场景。实验显示该方法能生成符合复杂物理动力学的四维内容，如流体、柔性体，显著提升视觉真实感和物理合理性。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.08402v1",
+      "source": "arxiv",
+      "title": "SceneConductor: 3D Scene Generation from Single Image with Multi-Agent Orchestration",
+      "abstract": "Generating complete 3D scenes from a single image requires inferring globally consistent geometry, object relationships, and environmental context from inherently ambiguous visual evidence. Despite recent progress in joint layout-and-mesh generation, existing methods often rely on holistic or weakly decomposed pipelines that entangle many factors at once and demand extensive scene-level supervision, limiting their generalization to complex real-world environments. We propose a multi-agent orchestration framework that decomposes single-image 3D scene generation into three structured stages: scene initialization, environment construction, and multi-agent refinement. The initialization stage extracts image-derived object masks, builds object-level 3D representations, and predicts an initial spatial layout to form a coarse 3D scene. The environment-construction stage then leverages this initialization together with point-map geometry to build an environmental scaffold of supporting surfaces, room boundaries, materials, and illumination. Finally, in the refinement stage, a planner agent identifies structural and visual inconsistencies, applies simple corrections directly, and dispatches specialist agents for complex localized revisions that are reintegrated into the global scene. To provide reliable structural initialization while reducing reliance on scene-level annotations, we further introduce a geometry-aware layout predictor supervised by sparse geometric priors derived from point maps. Unlike fully supervised layout generators, the predictor can be trained from segmentation-level data and generalizes robustly to diverse real-world scenes. Extensive experiments on benchmark datasets show that our method consistently outperforms prior approaches in geometric accuracy, spatial consistency, and perceptual realism.",
+      "authors": [
+        "Jeonghwan Kim",
+        "Yushi Lan",
+        "Yongwei Chen",
+        "Hieu Trung Nguyen",
+        "Chuanyu Pan",
+        "Xingang Pan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI",
+        "cs.MA"
+      ],
+      "published": "2026-06-07T01:38:39+00:00",
+      "link": "https://arxiv.org/pdf/2606.08402v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "generates complete 3D scenes from a single image using multi-agent orchestration",
+      "llm_evidence_cn": "从单张图像生成完整的3D场景",
+      "llm_evidence": "从单张图像生成完整的3D场景",
+      "canonical_evidence": "从单张图像生成完整的3D场景",
+      "llm_tldr_en": "SceneConductor decomposes single-image 3D scene generation into three stages with multi-agent refinement, achieving globally consistent geometry and object relations.",
+      "llm_tldr_cn": "SceneConductor针对单张图像生成3D场景时难以保证全局一致性和物体关系的问题，提出多智能体协作框架，将生成过程分解为场景初始化、环境构建和多智能体精化三个阶段。该方法在复杂场景中泛化性更强，生成的场景几何一致且物体关系合理，为单图三维场景生成提供了新思路。",
+      "llm_tldr": "SceneConductor针对单张图像生成3D场景时难以保证全局一致性和物体关系的问题，提出多智能体协作框架，将生成过程分解为场景初始化、环境构建和多智能体精化三个阶段。该方法在复杂场景中泛化性更强，生成的场景几何一致且物体关系合理，为单图三维场景生成提供了新思路。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.09738v1",
+      "source": "arxiv",
+      "title": "HDSL: A Hierarchical Domain-Specific Language for Structured 3D Indoor Scene Generation and Localized Editing with LLM Agents",
+      "abstract": "Text-driven indoor scene generation and editing require an intermediate representation that language models can both produce and revise. Existing LLM-based systems often rely on scene graphs or global constraint lists, which are compact but underspecify local geometry and make instruction-based edits difficult to localize. We frame this problem as structured program generation and local program repair, and propose Hierarchical Descriptive Scene Language (HDSL), an XML/CSS-style domain-specific language for structured 3D indoor scenes. HDSL represents rooms, regions, objects, and support surfaces as a tree with local coordinates, making complex scenes easier to plan recursively and easier to retrieve for editing. Our pipeline uses LLM agents to generate HDSL subtrees with bounded verification, grounds non-virtual nodes through multimodal asset retrieval, and applies force-directed layout optimization to repair boundary and collision errors. For editing, Hierarchical Retrieval-Augmented Generation retrieves the relevant subtree, asks the LLM to rewrite only that local context, and merges the result back through a deterministic three-way merge. In our reproduced benchmark, HDSL improves average object coverage, text-scene alignment, and generation time over full text-to-scene baselines while remaining competitive with recent layout-only reproductions on geometry metrics; for editing, HRAG reduces token use by $5.22\\times$ and runtime by $6.19\\times$, produces valid DSL for all eight paired edits, and better preserves unrelated scene objects.",
+      "authors": [
+        "Letian Li",
+        "Chao Shen",
+        "Shuzhao Xie",
+        "Chenghao Gu",
+        "ZhengXiao He",
+        "Yu Meng",
+        "Xin Yang",
+        "Wenyuan Jiang",
+        "Zhi Wang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-08T17:02:36+00:00",
+      "link": "https://arxiv.org/pdf/2606.09738v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Text-driven 3D indoor scene generation and editing",
+      "llm_evidence_cn": "文本驱动的三维室内场景生成与编辑",
+      "llm_evidence": "文本驱动的三维室内场景生成与编辑",
+      "canonical_evidence": "文本驱动的三维室内场景生成与编辑",
+      "llm_tldr_en": "Introduces HDSL, an XML/CSS-style DSL for 3D indoor scenes, enabling LLMs to plan recursively and edit locally with precise geometric control.",
+      "llm_tldr_cn": "针对现有文本驱动室内场景生成中中间表示缺乏局部几何细节、难以局部编辑的问题，本文提出分层描述性场景语言HDSL，以树形结构组织房间、区域、物体与支撑面，并采用局部坐标。LLM智能体可递归规划复杂场景并通过局部程序修复实现精准编辑。实验表明HDSL大幅提升场景生成的几何精度与编辑的可控性，为语言驱动的三维场景创作提供了结构化交互界面。",
+      "llm_tldr": "针对现有文本驱动室内场景生成中中间表示缺乏局部几何细节、难以局部编辑的问题，本文提出分层描述性场景语言HDSL，以树形结构组织房间、区域、物体与支撑面，并采用局部坐标。LLM智能体可递归规划复杂场景并通过局部程序修复实现精准编辑。实验表明HDSL大幅提升场景生成的几何精度与编辑的可控性，为语言驱动的三维场景创作提供了结构化交互界面。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.08655v1",
+      "source": "arxiv",
+      "title": "PhysGraph: A Physics-aware 3D Scene Graph for Perception and Reasoning",
+      "abstract": "To perform a wide range of daily tasks, robots need to construct a 3D representation that is semantically rich, physically grounded, and structured enough to support task planning and affordance prediction. However, existing approaches primarily focus on semantic retrieval, often overlooking physical and kinematic factors. Methods that attempt to model physical properties typically rely on narrow training sets or single-object modeling, limiting scalability and generalization across diverse object types. To address these challenges, we present PhysGraph, a framework that unifies symbolic reasoning with structured 3D geometry to model kinematic and physical properties in cluttered scenes. Given RGB-D observations, PhysGraph reconstructs object-centric 3D geometry and associates object instances across views. It then decomposes objects into functional parts and infers materials and articulations through visual reasoning. Evaluated on both synthetic and real-world datasets, PhysGraph achieves state-of-the-art results in semantic segmentation, multi-object mass estimation, and articulation prediction. With its simple yet effective design, PhysGraph produces physically consistent and semantically structured scene graphs, serving as a structured 3D representation for downstream tasks such as constraint-aware 3D affordance prediction and real-to-sim transfer, both of which are demonstrated in our experiments.",
+      "authors": [
+        "Haoyu Li",
+        "Aaron Thomas",
+        "Shuyan Zhou",
+        "Xianyi Cheng"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-06-07T14:50:44+00:00",
+      "link": "https://arxiv.org/pdf/2606.08655v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "reconstructs object-centric 3D scenes with physical and kinematic properties from RGB-D observations",
+      "llm_evidence_cn": "从RGB-D观测重建带物理和运动属性的物体级三维场景",
+      "llm_evidence": "从RGB-D观测重建带物理和运动属性的物体级三维场景",
+      "canonical_evidence": "从RGB-D观测重建带物理和运动属性的物体级三维场景",
+      "llm_tldr_en": "PhysGraph unifies symbolic reasoning with 3D geometry to build physics-aware scene graphs from RGB-D, enabling task planning and affordance prediction.",
+      "llm_tldr_cn": "PhysGraph结合符号推理和三维几何，从RGB-D重建物体级三维场景图，并赋予物理和运动属性，支持机器人的任务规划和功能预测。为三维场景理解增添了物理维度。",
+      "llm_tldr": "PhysGraph结合符号推理和三维几何，从RGB-D重建物体级三维场景图，并赋予物理和运动属性，支持机器人的任务规划和功能预测。为三维场景理解增添了物理维度。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
