@@ -1,0 +1,180 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-10T22:20:20.146146+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2606.10594v1",
+      "source": "arxiv",
+      "title": "Segment and Select: Vision-Language Segmentation in 3D Scenarios",
+      "abstract": "3D vision-language segmentation aims to segment target objects in 3D scenarios according to the linguistic instructions and visual observations. Prior art heavily relies on the coarse superpoint representation to reduce the computation complexity, which suffers from poor segmentation quality and messy object boundaries. In this paper, we propose the SEGment-And-select (SEGA3D) paradigm for 3D visionlanguage segmentation that directly operates on the fine-grained visual information and is free from the superpoint dependency. Specifically, we first leverage a mask candidate generator to provide fine-grained categorical mask candidates, substantially improving the quality of candidate masks over the superpoint counterparts. Then, a Large Language Model (LLM) is utilized to generate the semantic and spatial information based on the linguistic description and visual features. The LLM output and visual features are fed to the Semantic-Spatial Selector (SSS) to produce the top-ranking mask candidates. Eventually, the Loopback Verification Module (LVM) is designed to yield the segmentation mask from the selected candidate masks. Our SEGA3D attains competitive performance on ScanRefer, ScanNet and Matterport3D benchmarks. Notably, our SEGA3D surpasses the top-performing counterpart by 8.3 mIoU and 5.3 mIoU on ScanNet and Matterport3D, respectively. Codes will be available upon publication.",
+      "authors": [
+        "Yulin Chen",
+        "Zhihang Zhong",
+        "Yuenan Hou"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-09T08:58:59+00:00",
+      "link": "https://arxiv.org/pdf/2606.10594v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "3D vision-language segmentation directly on fine-grained information",
+      "llm_evidence_cn": "直接基于细粒度信息的三维视觉-语言分割",
+      "llm_evidence": "直接基于细粒度信息的三维视觉-语言分割",
+      "canonical_evidence": "直接基于细粒度信息的三维视觉-语言分割",
+      "llm_tldr_en": "SEGA3D proposes a segment-and-select paradigm for 3D vision-language segmentation, bypassing superpoints and using fine-grained mask candidates with an LLM selector, achieving superior quality and boundaries.",
+      "llm_tldr_cn": "针对现有方法依赖粗糙超点表示导致分割质量差和边界模糊的问题，本文提出SEGA3D范式，直接操作细粒度视觉信息。该方法首先生成细粒度类别掩码候选，然后使用大语言模型作为选择器进行精确筛选。实验表明，SEGA3D在分割质量和边界清晰度上显著优于超点方法，为三维视觉-语言分割提供了更精确的解决方案。",
+      "llm_tldr": "针对现有方法依赖粗糙超点表示导致分割质量差和边界模糊的问题，本文提出SEGA3D范式，直接操作细粒度视觉信息。该方法首先生成细粒度类别掩码候选，然后使用大语言模型作为选择器进行精确筛选。实验表明，SEGA3D在分割质量和边界清晰度上显著优于超点方法，为三维视觉-语言分割提供了更精确的解决方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.08284v1",
+      "source": "arxiv",
+      "title": "G2G: Exploiting Intra-Group Geometry for Inter-Group Pose Estimation",
+      "abstract": "Recovering the relative 6-DoF pose between two image groups underlies cross-sequence relocalization and multi-camera rig odometry. Each group carries known intra-group geometry from visual odometry or rig calibration, and pretrained multi-view backbones already fuse such geometry into visual features. Yet current models treat all views as an unstructured set, leaving cross-group reasoning as the missing piece. We introduce \\ours{}, which keeps the foundation model entirely frozen and adds three lightweight trainable modules to bridge the two groups: a perceiver resampler, a cross-group bridge with merged self-attention, and a multi-frame pose head. The trainable footprint totals about 32M parameters, under 6\\% of the full model, and is supervised only by relative poses. Across four datasets that span indoor and outdoor simulation, real-world cross-season capture, and zero-shot sim-to-real transfer, \\ours{} attains state-of-the-art accuracy on both tasks, while every baseline is retrained with its full original supervision. Code is available at https://github.com/WeiYuFei0217/G2G.",
+      "authors": [
+        "Yufei Wei",
+        "Shuhao Ye",
+        "Chenxiao Hu",
+        "Yiyuan Pan",
+        "Dongyu Feng",
+        "Rong Xiong",
+        "Yue Wang",
+        "Yanmei Jiao"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.RO"
+      ],
+      "published": "2026-06-06T18:08:45+00:00",
+      "link": "https://arxiv.org/pdf/2606.08284v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "estimates relative 6-DoF pose between two image groups using multi-view features",
+      "llm_evidence_cn": "利用多视角特征估计两组图像之间的相对六自由度姿态",
+      "llm_evidence": "利用多视角特征估计两组图像之间的相对六自由度姿态",
+      "canonical_evidence": "利用多视角特征估计两组图像之间的相对六自由度姿态",
+      "llm_tldr_en": "G2G learns lightweight modules on frozen multi-view backbones to bridge two image groups for relative pose estimation, exploiting intra-group geometry.",
+      "llm_tldr_cn": "现有模型处理多视图时缺乏跨组推理，无法有效利用组内几何信息。G2G在冻结的多视图骨干上添加三个轻量级模块：感知重采样器、跨组桥接和多帧姿态头，仅用32M参数实现两组图像间的相对六自由度姿态估计。该方法为跨序列重定位和多相机里程计提供了高效的解决方案。",
+      "llm_tldr": "现有模型处理多视图时缺乏跨组推理，无法有效利用组内几何信息。G2G在冻结的多视图骨干上添加三个轻量级模块：感知重采样器、跨组桥接和多帧姿态头，仅用32M参数实现两组图像间的相对六自由度姿态估计。该方法为跨序列重定位和多相机里程计提供了高效的解决方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.09187v1",
+      "source": "arxiv",
+      "title": "CP4D: Compositional Physics-aware 4D Scene Generation",
+      "abstract": "4D generation (\\textit{i.e.}, dynamic 3D generation) has recently emerged as a rapidly growing research frontier due to its powerful spatiotemporal modeling capabilities. However, despite notable advances, existing approaches typically fail to capture the underlying physical principles, producing results that are both physically inconsistent and visually implausible. To overcome this limitation, we present CP4D, a novel paradigm for photorealistic 4D scene synthesis with faithful adherence to complex physical dynamics. Drawing inspiration from the compositional nature of real-world scenes, where immutable static backgrounds coexist with dynamic, physically plausible foregrounds, CP4D reformulates 4D generation as the integration of a static 3D environment with physically grounded dynamic objects. On this basis, our framework follows a three-stage pipeline: \\textbf{1)} Firstly, we leverage pre-trained expert models to generate high-fidelity 3D representations of the environment and foreground objects respectively. \\textbf{2)} Subsequently, to produce physically plausible trajectories and realistic interactions for these objects, we propose a hybrid motion synthesis strategy that integrates priors from physical simulators with the common sense embedded in video diffusion models. \\textbf{3)} Finally, we develop an automated composition mechanism that seamlessly fuses the static environment and dynamic objects into coherent, physically consistent 4D scenes. Extensive experiments demonstrate that CP4D can generate explorable and interactive 4D scenes with high visual fidelity, strong physical plausibility, and fine-grained controllability, significantly outperforming existing methods. The project page: https://anonymous.4open.science/w/CP4D/.",
+      "authors": [
+        "Hanxin Zhu",
+        "Cong Wang",
+        "Tianyu He",
+        "Long Chen",
+        "Xin Jin",
+        "Chen Gao",
+        "Zhibo Chen"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-08T08:23:12+00:00",
+      "link": "https://arxiv.org/pdf/2606.09187v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "physics-aware 4D scene generation through compositional integration of static and dynamic parts",
+      "llm_evidence_cn": "通过静态与动态部分的组合集成实现物理感知的四维场景生成",
+      "llm_evidence": "通过静态与动态部分的组合集成实现物理感知的四维场景生成",
+      "canonical_evidence": "通过静态与动态部分的组合集成实现物理感知的四维场景生成",
+      "llm_tldr_en": "CP4D generates dynamic 3D scenes by integrating a static 3D environment with physics-driven dynamic foreground, ensuring physical consistency and photorealism. It introduces a compositional paradigm for 4D scene synthesis.",
+      "llm_tldr_cn": "CP4D提出组合式物理感知四维场景生成范式，将静态三维环境与遵循复杂物理定律的动态前景相结合，克服现有方法物理不一致的问题，实现逼真动态场景合成。该框架确保了前景物体的运动符合真实物理。",
+      "llm_tldr": "CP4D提出组合式物理感知四维场景生成范式，将静态三维环境与遵循复杂物理定律的动态前景相结合，克服现有方法物理不一致的问题，实现逼真动态场景合成。该框架确保了前景物体的运动符合真实物理。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.07115v1",
+      "source": "arxiv",
+      "title": "3DMorph: Single-Image-Guided Local 3D Shape Editing and Morphing",
+      "abstract": "Despite recent progress in 3D generation, intuitive editing of existing shapes remains limited. Unlike images, which benefit from well-established inpainting tools, general 3D objects such as meshes still lack simple and effective methods for local shape editing. Existing approaches are often global, domain-specific, require complex user interaction, or focus on appearance (color and texture) rather than geometry. We introduce 3DMorph, a training-free framework for single-image-guided local 3D shape editing and morphing. Given an edited image showing a desired shape modification, our method automatically localizes the relevant 3D region and transfers 2D modifications to 3D while preserving unmodified areas. 3DMorph also enables intermediate shape generation between the original and edited objects, facilitating design exploration. To benchmark editing quality, we introduce Delta3D, an image-guided local 3D editing benchmark with paired ground-truth edits. Experimental results show that 3DMorph translates intuitive 2D edits into 3D, outperforming state-of-the-art generative and editing methods.",
+      "authors": [
+        "Tobias Preintner",
+        "Yunfei Deng",
+        "Phillip Müller",
+        "Sebastian Illing",
+        "Adrian König",
+        "Thomas Bäck",
+        "Elena Raponi",
+        "Niki van Stein"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR"
+      ],
+      "published": "2026-06-05T10:10:33+00:00",
+      "link": "https://arxiv.org/pdf/2606.07115v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Single-image-guided local 3D shape editing",
+      "llm_evidence_cn": "单图像引导的局部三维形状编辑",
+      "llm_evidence": "单图像引导的局部三维形状编辑",
+      "canonical_evidence": "单图像引导的局部三维形状编辑",
+      "llm_tldr_en": "Proposes 3DMorph, a training-free framework that transfers 2D modifications from an edited image to local 3D shape editing, enabling intuitive 3D object morphing.",
+      "llm_tldr_cn": "针对现有3D对象编辑方法交互复杂且多限于全局变换的问题，提出训练自由框架3DMorph，通过将编辑图像中的2D修改传递至3D局部形状，实现直观的3D对象变形与编辑。",
+      "llm_tldr": "针对现有3D对象编辑方法交互复杂且多限于全局变换的问题，提出训练自由框架3DMorph，通过将编辑图像中的2D修改传递至3D局部形状，实现直观的3D对象变形与编辑。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "label": "2026-06-10",
+  "date": "2026-06-10",
+  "generated_at": "2026-06-10T22:23:58",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202606/10/2606.10594v1-segment-and-select-vision-language-segmentation-in-3d-scenarios",
+      "section": "deep",
+      "title_en": "Segment and Select: Vision-Language Segmentation in 3D Scenarios",
+      "authors": "Yulin Chen, Zhihang Zhong, Yuenan Hou",
+      "date": "2026-06-09",
+      "pdf": "https://arxiv.org/pdf/2606.10594v1",
+      "score": "10.0",
+      "evidence": "直接基于细粒度信息的三维视觉-语言分割",
+      "tldr": "3D视觉语言分割依赖超点表示，导致边界粗糙。我们提出SEGA3D范式，通过掩码候选生成器产生细粒度候选，LLM提取语义空间特征，语义空间选择器筛选顶级候选，回环验证模块输出精确掩码。在ScanNet和Matterport3D上，分别以8.3和5.3 mIoU的优势超越最佳方法。该工作消除了超点局限，提升了分割精度与边界质量。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "3D vision-language segmentation aims to segment target objects in 3D scenarios according to the linguistic instructions and visual observations. Prior art heavily relies on the coarse superpoint representation to reduce the computation complexity, which suffers from poor segmentation quality and messy object boundaries. In this paper, we propose the SEGment-And-select (SEGA3D) paradigm for 3D visionlanguage segmentation that directly operates on the fine-grained visual information and is free from the superpoint dependency. Specifically, we first leverage a mask candidate generator to provide fine-grained categorical mask candidates, substantially improving the quality of candidate masks over the superpoint counterparts. Then, a Large Language Model (LLM) is utilized to generate the semantic and spatial information based on the linguistic description and visual features. The LLM output and visual features are fed to the Semantic-Spatial Selector (SSS) to produce the top-ranking mask candidates. Eventually, the Loopback Verification Module (LVM) is designed to yield the segmentation mask from the selected candidate masks. Our SEGA3D attains competitive performance on ScanRefer, ScanNet and Matterport3D benchmarks. Notably, our SEGA3D surpasses the top-performing counterpart by 8.3 mIoU and 5.3 mIoU on ScanNet and Matterport3D, respectively. Codes will be available upon publication.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/10/2606.08284v1-g2g-exploiting-intra-group-geometry-for-inter-group-pose-estimation",
+      "section": "deep",
+      "title_en": "G2G: Exploiting Intra-Group Geometry for Inter-Group Pose Estimation",
+      "authors": "Yufei Wei, Shuhao Ye, Chenxiao Hu, Yiyuan Pan, Dongyu Feng, Rong Xiong, Yue Wang, Yanmei Jiao",
+      "date": "2026-06-06",
+      "pdf": "https://arxiv.org/pdf/2606.08284v1",
+      "score": "9.0",
+      "evidence": "利用多视角特征估计两组图像之间的相对六自由度姿态",
+      "tldr": "恢复两组图像间的相对6-DoF位姿是跨序列重定位和多相机里程计的核心问题。现有方法忽视组内已知的几何约束，将视图视为无结构集合，缺乏跨组推理能力。本文提出G2G，冻结基础模型，仅添加32M轻量可训练模块（感知器重采样器、跨组桥、多帧位姿头），利用相对位姿监督实现跨组几何融合。在四个数据集（室内外仿真、真实跨季节、零样本迁移）上，G2G均达到最优精度，所有基线已用完整监督重训。参数量不足全模型的6%，为高效跨组位姿估计提供了新范式。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Recovering the relative 6-DoF pose between two image groups underlies cross-sequence relocalization and multi-camera rig odometry. Each group carries known intra-group geometry from visual odometry or rig calibration, and pretrained multi-view backbones already fuse such geometry into visual features. Yet current models treat all views as an unstructured set, leaving cross-group reasoning as the missing piece. We introduce \\ours{}, which keeps the foundation model entirely frozen and adds three lightweight trainable modules to bridge the two groups: a perceiver resampler, a cross-group bridge with merged self-attention, and a multi-frame pose head. The trainable footprint totals about 32M parameters, under 6\\% of the full model, and is supervised only by relative poses. Across four datasets that span indoor and outdoor simulation, real-world cross-season capture, and zero-shot sim-to-real transfer, \\ours{} attains state-of-the-art accuracy on both tasks, while every baseline is retrained with its full original supervision. Code is available at https://github.com/WeiYuFei0217/G2G.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/10/2606.09187v1-cp4d-compositional-physics-aware-4d-scene-generation",
+      "section": "quick",
+      "title_en": "CP4D: Compositional Physics-aware 4D Scene Generation",
+      "authors": "Hanxin Zhu, Cong Wang, Tianyu He, Long Chen, Xin Jin, Chen Gao, Zhibo Chen",
+      "date": "2026-06-08",
+      "pdf": "https://arxiv.org/pdf/2606.09187v1",
+      "score": "7.0",
+      "evidence": "通过静态与动态部分的组合集成实现物理感知的四维场景生成",
+      "tldr": "当前4D生成方法忽视物理规律，导致结果物理不一致且视觉不合理。CP4D提出将4D生成分解为静态背景与物理驱动前景的集成，通过三阶段流水线：分别生成3D表示，结合物理模拟与视频扩散先验进行混合运动合成，最后自动组合生成连贯4D场景。实验表明CP4D能够生成高保真、物理合理、可交互的4D场景，并具有细粒度可控性，性能大幅领先现有方法。该工作推进了物理感知的动态3D内容生成。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "4D generation (\\textit{i.e.}, dynamic 3D generation) has recently emerged as a rapidly growing research frontier due to its powerful spatiotemporal modeling capabilities. However, despite notable advances, existing approaches typically fail to capture the underlying physical principles, producing results that are both physically inconsistent and visually implausible. To overcome this limitation, we present CP4D, a novel paradigm for photorealistic 4D scene synthesis with faithful adherence to complex physical dynamics. Drawing inspiration from the compositional nature of real-world scenes, where immutable static backgrounds coexist with dynamic, physically plausible foregrounds, CP4D reformulates 4D generation as the integration of a static 3D environment with physically grounded dynamic objects. On this basis, our framework follows a three-stage pipeline: \\textbf{1)} Firstly, we leverage pre-trained expert models to generate high-fidelity 3D representations of the environment and foreground objects respectively. \\textbf{2)} Subsequently, to produce physically plausible trajectories and realistic interactions for these objects, we propose a hybrid motion synthesis strategy that integrates priors from physical simulators with the common sense embedded in video diffusion models. \\textbf{3)} Finally, we develop an automated composition mechanism that seamlessly fuses the static environment and dynamic objects into coherent, physically consistent 4D scenes. Extensive experiments demonstrate that CP4D can generate explorable and interactive 4D scenes with high visual fidelity, strong physical plausibility, and fine-grained controllability, significantly outperforming existing methods. The project page: https://anonymous.4open.science/w/CP4D/.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/10/2606.07115v1-3dmorph-single-image-guided-local-3d-shape-editing-and-morphing",
+      "section": "quick",
+      "title_en": "3DMorph: Single-Image-Guided Local 3D Shape Editing and Morphing",
+      "authors": "Tobias Preintner, Yunfei Deng, Phillip Müller, Sebastian Illing, Adrian König, Thomas Bäck, Elena Raponi, Niki van Stein",
+      "date": "2026-06-05",
+      "pdf": "https://arxiv.org/pdf/2606.07115v1",
+      "score": "6.0",
+      "evidence": "单图像引导的局部三维形状编辑",
+      "tldr": "尽管3D生成取得进展，3D形状的直观局部编辑仍缺乏像图像涂改那样的简便工具，现有方法多为全局、领域特化或重纹理轻几何。3DMorph提出训练无关框架，仅凭单张编辑图像即可自动定位3D区域，将2D形状修改迁移到3D，保留未改动部分，并支持生成中间形状便于设计探索。在新建的Delta3D基准上，该方法将2D编辑无缝转化为3D，性能显著超越现有生成和编辑方法，为3D资产迭代设计提供了高效直观的解决方案。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Despite recent progress in 3D generation, intuitive editing of existing shapes remains limited. Unlike images, which benefit from well-established inpainting tools, general 3D objects such as meshes still lack simple and effective methods for local shape editing. Existing approaches are often global, domain-specific, require complex user interaction, or focus on appearance (color and texture) rather than geometry. We introduce 3DMorph, a training-free framework for single-image-guided local 3D shape editing and morphing. Given an edited image showing a desired shape modification, our method automatically localizes the relevant 3D region and transfers 2D modifications to 3D while preserving unmodified areas. 3DMorph also enables intermediate shape generation between the original and edited objects, facilitating design exploration. To benchmark editing quality, we introduce Delta3D, an image-guided local 3D editing benchmark with paired ground-truth edits. Experimental results show that 3DMorph translates intuitive 2D edits into 3D, outperforming state-of-the-art generative and editing methods.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
