@@ -1,0 +1,331 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-12T21:07:00.040598+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2606.11152v1",
+      "source": "arxiv",
+      "title": "P3D-Bench: Benchmarking MLLMs for Parametric 3D Generation and Structural Reasoning",
+      "abstract": "Multimodal large language models can write code to produce complex programs as well as use programs to do 3D modeling, which opens up a new avenue for 3D generation powered by their priors, world knowledge and reasoning. Yet existing benchmarks rarely evaluate 3D modeling through code. Such modeling demands more than runnable code: from a text or visual specification, a model must generate a parametric 3D program that is geometrically precise, semantically aligned and assembly-consistent. We introduce P3D-Bench, a benchmark for parametric 3D generation. Unlike a 3D mesh, a parametric 3D program exposes explicit dimensions, construction operations and part relations, revealing whether a model recovers a design's structure, not just its appearance. Under a unified protocol, P3D-Bench covers three task families (Text-to-3D, Image-to-3D and Assembly-3D) and scores each output for executability, geometric fidelity, topology, text-grounded constraints, multiview semantic alignment and part-level structure. We evaluate frontier MLLMs and text-only LLMs on 400 text cases, 400 image cases and 203 annotated assemblies, with domain-specific models as reference points. Our extensive evaluation yields three findings. First, assemblies are the hardest setting, where models still fail to compose multiple parts into a coherent structure. Second, models can often recover the global shape and semantic identity of the target object, yet fail to reproduce the precise parametric geometry specified by the input. Third, part-level modeling remains weak on assemblies, where models recover neither the geometry of each part nor the right number of parts. These results position P3D-Bench as a benchmark for evaluating precise parametric geometry and part-level structure in parametric 3D generation.",
+      "authors": [
+        "Yikang Yang",
+        "Zhanpeng Hu",
+        "Youtian Lin",
+        "Mengqi Zhou",
+        "Jingxi Xu",
+        "Feihu Zhang",
+        "Jiaheng Liu",
+        "Yao Yao"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-09T17:36:34+00:00",
+      "link": "https://arxiv.org/pdf/2606.11152v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Parametric 3D object generation benchmark from text or image input",
+      "llm_evidence_cn": "从文本或图像输入生成参数化3D物体的基准",
+      "llm_evidence": "从文本或图像输入生成参数化3D物体的基准",
+      "canonical_evidence": "从文本或图像输入生成参数化3D物体的基准",
+      "llm_tldr_en": "Introduces P3D-Bench, a benchmark for evaluating multimodal LLMs on parametric 3D generation tasks, requiring precise geometric and structural reasoning from text or visual specifications.",
+      "llm_tldr_cn": "针对现有多模态大模型在3D建模中缺乏几何精度与结构一致性评估的问题，提出P3D-Bench基准，要求模型从文本或视觉规范生成参数化3D程序。该基准关注显式尺寸、构造操作和部件关系，揭示模型是否恢复设计结构而不仅是外观，推动LLM驱动的精确3D生成研究。",
+      "llm_tldr": "针对现有多模态大模型在3D建模中缺乏几何精度与结构一致性评估的问题，提出P3D-Bench基准，要求模型从文本或视觉规范生成参数化3D程序。该基准关注显式尺寸、构造操作和部件关系，揭示模型是否恢复设计结构而不仅是外观，推动LLM驱动的精确3D生成研究。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.07419v2",
+      "source": "arxiv",
+      "title": "DisPOSE: Projected Polystochastic Diffusion for Self-Supervised Multi-View 3D Human Pose Estimation",
+      "abstract": "Recovering 3D human poses for multiple individuals from different camera views is a fundamental bottleneck for analyzing interacting behaviors. Existing self-supervised approaches leverage synthetic catalogues of 3D poses; however, this leads to poor generalization in real-world scenarios due to distribution shifts. We therefore introduce DisPOSE, a self-supervised framework that approximates the inherently discrete multi-view person-assignment problem as a generative diffusion process over the space of polystochastic tensors. By employing differentiable Sinkhorn projections during denoising, our model learns to guide solutions toward valid and feasible assignments based on 2D image priors. The complete 3D skeletons of localized individuals are then regressed using a Hypergraph-Convolutional Decoder that explicitly models relational structures and articulated joints across multiple views. The proposed approach outperforms current state-of-the-art self-supervised methods on standard datasets and demonstrates strong performance on a newly proposed benchmark featuring highly occluded scenes from surgical operating rooms. Our diffusion-based localization demonstrates high label efficiency, retaining 99% of its performance with only 10% of the pseudo-labels. Notably, disentangling the assignment and root regression components while maintaining differentiability makes DisPOSE nearly agnostic to different camera arrangements.",
+      "authors": [
+        "Tony Danjun Wang",
+        "Tolga Birdal",
+        "Nassir Navab",
+        "Lennart Bastian"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-05T16:14:39+00:00",
+      "link": "https://arxiv.org/pdf/2606.07419v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Self-supervised multi-view 3D human pose estimation via diffusion-based multi-view person assignment.",
+      "llm_evidence_cn": "自监督多视角3D人体姿态估计，通过基于扩散的多视角人员匹配。",
+      "llm_evidence": "自监督多视角3D人体姿态估计，通过基于扩散的多视角人员匹配。",
+      "canonical_evidence": "自监督多视角3D人体姿态估计，通过基于扩散的多视角人员匹配。",
+      "llm_tldr_en": "Proposes DisPOSE, a self-supervised framework that treats multi-view person assignment as a diffusion process over polystochastic tensors, using Sinkhorn projections to ensure valid assignments, enabling robust 3D pose estimation from 2D priors.",
+      "llm_tldr_cn": "针对现有多视角三维人体姿态估计自监督方法依赖合成数据、泛化性差的问题，提出DisPOSE框架。将离散的多视角人员分配问题近似为多随机张量上的扩散生成过程，通过可微分Sinkhorn投影在去噪过程中引导分配趋向可行解。基于2D图像先验，模型学习为多个个体恢复完整3D骨架，在真实场景中展现出更强的泛化能力。",
+      "llm_tldr": "针对现有多视角三维人体姿态估计自监督方法依赖合成数据、泛化性差的问题，提出DisPOSE框架。将离散的多视角人员分配问题近似为多随机张量上的扩散生成过程，通过可微分Sinkhorn投影在去噪过程中引导分配趋向可行解。基于2D图像先验，模型学习为多个个体恢复完整3D骨架，在真实场景中展现出更强的泛化能力。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.10478v1",
+      "source": "arxiv",
+      "title": "3D-CoS: A New 3D Reconstruction Paradigm Based on VLM Code Synthesis",
+      "abstract": "Most recent 3D reconstruction and editing systems operate on implicit and explicit representations such as NeRF, point clouds, or meshes. While these representations enable high-fidelity rendering, they are fundamentally low-level and hard to control programmatically. In contrast, we propose and systematically evaluate a new 3D reconstruction paradigm, 3D Code Synthesis (3D-CoS), where 3D assets are constructed as executable Blender code, a programmatic and interpretable medium. To assess how well current VLMs can use code to represent 3D objects, we evaluate representative open-source and closed-source VLMs in code-based reconstruction under a unified protocol. We further introduce a suite of structured code-synthesis workflows, including blueprint-based planning, Retrieval-Augmented Generation (RAG) over Blender API documentation, few-shot geometric demonstrations, and a component-level Agent workflow for part-wise code generation. To demonstrate the unique advantages of this representation, we further evaluate localized text-driven modifications and compare our code-based edits with a point-cloud-based 3D editing baseline. Our study shows that code as a 3D representation offers strong controllability and locality, yielding stronger edit fidelity and better preservation of unedited regions in our targeted editing evaluation. Our work also analyzes the potential of this paradigm, delineates the current capability frontier of VLMs for programmatic 3D modeling, and highlights code synthesis as a promising direction for editable 3D reconstruction.",
+      "authors": [
+        "Yuhao Wang",
+        "Puyi Wang",
+        "Linjie Li",
+        "Zhengyuan Yang",
+        "Kevin Qinghong Lin",
+        "Yu Cheng"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-09T06:46:29+00:00",
+      "link": "https://arxiv.org/pdf/2606.10478v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Proposes using VLM code synthesis to reconstruct 3D objects as Blender code from input images or text",
+      "llm_evidence_cn": "提出利用VLM代码合成从图像或文本重建3D物体为Blender代码",
+      "llm_evidence": "提出利用VLM代码合成从图像或文本重建3D物体为Blender代码",
+      "canonical_evidence": "提出利用VLM代码合成从图像或文本重建3D物体为Blender代码",
+      "llm_tldr_en": "Introduces a new paradigm where vision-language models generate executable Blender code to reconstruct 3D objects from images or text, offering programmatic and interpretable 3D assets; benchmarks multiple VLMs and proposes blueprint-based workflows to improve reconstruction fidelity.",
+      "llm_tldr_cn": "现有3D重建依赖低层表示（NeRF、点云、网格），难以编程控制。本文提出3D代码合成范式，利用视觉语言模型从图像/文本生成可执行的Blender代码来构建3D资产。通过统一协议评测多个开源和闭源VLM的代码重建能力，并引入蓝图引导的结构化工作流程提升保真度。实验表明，通过代码生成3D物体具备高度可解释性和可控性，为3D内容创建开辟了新的交互式途径。该方法将VLM的推理能力与程序化建模结合，有望推动3D生成迈向更灵活、可编辑的方向。",
+      "llm_tldr": "现有3D重建依赖低层表示（NeRF、点云、网格），难以编程控制。本文提出3D代码合成范式，利用视觉语言模型从图像/文本生成可执行的Blender代码来构建3D资产。通过统一协议评测多个开源和闭源VLM的代码重建能力，并引入蓝图引导的结构化工作流程提升保真度。实验表明，通过代码生成3D物体具备高度可解释性和可控性，为3D内容创建开辟了新的交互式途径。该方法将VLM的推理能力与程序化建模结合，有望推动3D生成迈向更灵活、可编辑的方向。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.08041v1",
+      "source": "arxiv",
+      "title": "Wispy to Voluminous: Prior-free Multi-view Capture of Strand-level Facial Hair",
+      "abstract": "Facial hair is a defining trait of personal identity, yet remains a critical bottleneck for digital avatars. Recent volumetric methods achieve photorealism but bake hair into the underlying face geometry, preventing editability and failing to resolve sparse, strand-like structures. Meanwhile, scalp-hair reconstruction methods target dense hair volumes and do not transfer to the sparse, spatially-varying nature of facial hair. We present a pipeline that automatically reconstructs facial hair -- beard, mustache, lashes, and brows -- from multi-view images, converting an unstructured 3D Gaussian representation into an explicit curve-based strand representation. We resolve geometric ambiguities in four stages: (i) optimizing 3D Gaussians constrained by tracked head geometry to enforce early ray termination and suppress sub-surface noise; (ii) tracing continuous strands robust to frequent crossings and extreme curvature; (iii) grounding strands to the surface and resolving root-tip ambiguity via a physically-motivated prior; and (iv) refining the reconstruction through opacity-driven density control under photometric optimization. To our knowledge, this is the first method to reconstruct high-fidelity facial hair strands from a 3D Gaussian representation. The recovered strands faithfully preserve the orientation and sparsity patterns characteristic of facial hair, and yield assets immediately suitable for downstream production tasks, including facial animation and physical simulation, geometric grooming and transfer, appearance editing, and physics-based rendering.",
+      "authors": [
+        "Jaeseong Lee",
+        "Giljoo Nam",
+        "Adrian Jarabo",
+        "Carlos Aliaga"
+      ],
+      "primary_category": "cs.GR",
+      "categories": [
+        "cs.GR",
+        "cs.CV"
+      ],
+      "published": "2026-06-06T08:04:07+00:00",
+      "link": "https://arxiv.org/pdf/2606.08041v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Reconstructs 3D facial hair strands from multi-view images using 3D Gaussians and curve extraction",
+      "llm_evidence_cn": "从多视角图像重建发丝级3D面部毛发",
+      "llm_evidence": "从多视角图像重建发丝级3D面部毛发",
+      "canonical_evidence": "从多视角图像重建发丝级3D面部毛发",
+      "llm_tldr_en": "Proposes a pipeline that reconstructs strand-level facial hair (beard, brows, lashes) from multi-view images by first optimizing 3D Gaussians then converting to explicit curves, enabling prior-free capture.",
+      "llm_tldr_cn": "该研究针对现有方法无法处理稀疏、空间变化的发丝级面部毛发的局限，提出一种从多视角图像自动重建胡须、眉毛、睫毛等毛发结构的管线。方法先优化约束的3D高斯表示，再转换为显式的曲线基元，实现了无需先验的多视角捕获。实验表明，该方法能恢复精细的发丝几何，为数字化身提供了可编辑的毛发资产。",
+      "llm_tldr": "该研究针对现有方法无法处理稀疏、空间变化的发丝级面部毛发的局限，提出一种从多视角图像自动重建胡须、眉毛、睫毛等毛发结构的管线。方法先优化约束的3D高斯表示，再转换为显式的曲线基元，实现了无需先验的多视角捕获。实验表明，该方法能恢复精细的发丝几何，为数字化身提供了可编辑的毛发资产。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "multi-view stereo 3D reconstruction",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.08206v1",
+      "source": "arxiv",
+      "title": "SegmentAnyTreeV2: Scaling Transformer-Based Tree Instance Segmentation Across Sensors, Platforms, and Forests",
+      "abstract": "We present SegmentAnyTreeV2, a sensor- and platform-agnostic framework for semantic and instance segmentation of forest point clouds. The model combines a serialization-based Point Transformer v3 backbone with a lightweight semantic head and a tree-focused cross-attention mask decoder. Semantic predictions restrict instance decoding to tree-class voxels, while instance-aware query initialization, one-to-many seed supervision, and asymmetric mask scoring improve separation in dense and structurally complex stands. We further introduce FOR-instance v3, an expanded benchmark comprising 427 scenes and 26,496 annotated trees across diverse biomes, forest structures, and LiDAR platforms. On the FOR-instanceV2 test split, SegmentAnyTreeV2 achieves 90.5% precision, 80.2% recall, 85.0% F1, 90.7% coverage, and 87.6% semantic mIoU, outperforming previous learning-based methods in both instance detection and mask completeness. Zero-shot evaluation on independent sites further demonstrates strong cross-domain generalization.",
+      "authors": [
+        "Maciej Wielgosz",
+        "Stefano Puliti",
+        "Rasmus Astrup"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-06-06T14:48:25+00:00",
+      "link": "https://arxiv.org/pdf/2606.08206v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "semantic and instance segmentation of forest point clouds",
+      "llm_evidence_cn": "森林点云的语义和实例分割",
+      "llm_evidence": "森林点云的语义和实例分割",
+      "canonical_evidence": "森林点云的语义和实例分割",
+      "llm_tldr_en": "SegmentAnyTreeV2 presents a sensor-agnostic framework for semantic and instance segmentation of tree point clouds using Point Transformer v3 and a cross-attention mask decoder, achieving state-of-the-art performance on a diverse forest benchmark.",
+      "llm_tldr_cn": "SegmentAnyTreeV2提出一种传感器和平台无关的森林点云语义与实例分割框架，结合序列化Point Transformer v3主干和交叉注意力掩码解码器，并构建了覆盖多生物群系的大规模基准。在FOR-instanceV2上测试最佳分割精度，为林业遥感提供了统一稳健的解决方案。",
+      "llm_tldr": "SegmentAnyTreeV2提出一种传感器和平台无关的森林点云语义与实例分割框架，结合序列化Point Transformer v3主干和交叉注意力掩码解码器，并构建了覆盖多生物群系的大规模基准。在FOR-instanceV2上测试最佳分割精度，为林业遥感提供了统一稳健的解决方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.06891v1",
+      "source": "arxiv",
+      "title": "Stream3D-VLM: Online 3D Spatial Understanding with Incremental Geometry Priors",
+      "abstract": "Despite advances in 3D scene understanding, existing 3D Large Multimodal Models operate in offline settings, requiring complete scene observations or predefined video clips. In this paper, we present an online 3D vision-language model that enables real-time spatial understanding from streaming video. Our approach adopts an autoregressive streaming control modeling based on the LLM's next-token prediction objective to learn when to respond, and employs a lightweight Visual-Spatial Feature Integration (VSFI) module to incrementally inject temporally aligned geometry priors into the visual stream. To alleviate long-context decoding overhead, we propose a plug-and-play Geometry-Adaptive Voxel Compression (GAVC) module for efficient visual token compression. To address the scarcity of streaming 3D-language data, we further develop a scalable data generation pipeline that curates over 1M online spatio-temporal 3D QA pairs and establishes a comprehensive benchmark spanning 29 tasks. Extensive experiments show that our approach significantly outperforms both proprietary and open-source models across online and offline 3D spatial understanding, reasoning, and grounding tasks. The project page is available at https://stream3d-vlm.github.io/",
+      "authors": [
+        "Hanxun Yu",
+        "Xuan Qu",
+        "Lei Ke",
+        "Boqiang Zhang",
+        "Yuxin Wang",
+        "Jianke Zhu",
+        "Dong Yu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-05T04:16:24+00:00",
+      "link": "https://arxiv.org/pdf/2606.06891v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Online 3D LLM for real-time spatial understanding from streaming video, using incremental geometry priors",
+      "llm_evidence_cn": "在线3D大语言模型，利用增量几何先验实现流媒体视频的实时空间理解",
+      "llm_evidence": "在线3D大语言模型，利用增量几何先验实现流媒体视频的实时空间理解",
+      "canonical_evidence": "在线3D大语言模型，利用增量几何先验实现流媒体视频的实时空间理解",
+      "llm_tldr_en": "Presents an online 3D vision-language model that incrementally integrates geometry priors from a streaming video to achieve real-time 3D spatial understanding, with a geometry-adaptive voxel compression for efficiency.",
+      "llm_tldr_cn": "现有3D大语言模型仅离线工作，需完整观察。本文提出Stream3D-VLM，通过自回归流控建模和视觉-空间特征增量融合模块，实现从实时视频流在线理解3D环境。为降低长上下文解码开销，引入几何自适应体素压缩模块高效压缩视觉标记。在ScanNet等数据流上，模型展示出实时空间问答和场景理解能力，延迟低、精度高。该框架为机器人、AR等需要实时3D感知的应用提供了轻量且可扩展的解决方案。",
+      "llm_tldr": "现有3D大语言模型仅离线工作，需完整观察。本文提出Stream3D-VLM，通过自回归流控建模和视觉-空间特征增量融合模块，实现从实时视频流在线理解3D环境。为降低长上下文解码开销，引入几何自适应体素压缩模块高效压缩视觉标记。在ScanNet等数据流上，模型展示出实时空间问答和场景理解能力，延迟低、精度高。该框架为机器人、AR等需要实时3D感知的应用提供了轻量且可扩展的解决方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "feature matching and 3D scene understanding from large scale image collections",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.09034v1",
+      "source": "arxiv",
+      "title": "Leveraging NeRF-Rendered Images for 3D Gaussian Splatting",
+      "abstract": "Neural radiance field (NeRF) and 3D Gaussian splatting (3DGS) are two mainstream approaches for novel view synthesis. They often show complementary performance, i.e., 3DGS demonstrating faster rendering speed and NeRF demonstrating higher rendering quality. Motivated by this, we propose leveraging NeRF-rendered images for 3DGS. Specifically, we target street scenes and utilize a pre-trained street-specific NeRF method to produce training images for a target 3DGS method. In our 3DGS training, NeRF-rendered images are used to remove transient objects in street-level input views and to generate bird's-eye views as additional views, inheriting the higher-quality rendering of NeRF into 3DGS. We further incorporate a diffusion-based image enhancement to improve the image quality of the additional views. Experimental results on one synthetic and two real datasets demonstrate that our proposed method improves street-scene rendering while preserving the speed of 3DGS and the quality of NeRF.",
+      "authors": [
+        "Mizuki Morikawa",
+        "Yuta Shimizu",
+        "Chunyu Li",
+        "Yusuke Monno",
+        "Masatoshi Okutomi"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-08T05:03:22+00:00",
+      "link": "https://arxiv.org/pdf/2606.09034v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "leverage NeRF-rendered images to enhance 3D Gaussian Splatting for street scene reconstruction",
+      "llm_evidence_cn": "利用NeRF渲染图像增强3D高斯泼溅进行街景重建",
+      "llm_evidence": "利用NeRF渲染图像增强3D高斯泼溅进行街景重建",
+      "canonical_evidence": "利用NeRF渲染图像增强3D高斯泼溅进行街景重建",
+      "llm_tldr_en": "This paper proposes using NeRF-rendered images to improve 3D Gaussian Splatting for street scenes, by removing transient objects and generating bird's-eye views, effectively inheriting NeRF's higher quality into 3DGS.",
+      "llm_tldr_cn": "该论文针对3D高斯泼溅在街景重建中质量欠佳的问题，提出利用预训练街景NeRF生成高质量训练图像，包括去除瞬时物体和生成鸟瞰图，将NeRF的渲染优势融入3DGS训练。结合扩散增强进一步提升图像质量，实验表明该方法使3DGS渲染质量显著提升。",
+      "llm_tldr": "该论文针对3D高斯泼溅在街景重建中质量欠佳的问题，提出利用预训练街景NeRF生成高质量训练图像，包括去除瞬时物体和生成鸟瞰图，将NeRF的渲染优势融入3DGS训练。结合扩散增强进一步提升图像质量，实验表明该方法使3DGS渲染质量显著提升。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.12368v1",
+      "source": "arxiv",
+      "title": "DepthMaster: Unified Monocular Depth Estimation for Perspective and Panoramic Images",
+      "abstract": "While monocular depth estimation has achieved significant progress, achieving generalized metric depth estimation for both narrow field-of-view (FoV) perspectives and $360^\\circ$ panoramas remains an unsolved challenge. Existing methods are often tailored to specific camera types and struggle to produce accurate metric depth that generalizes across diverse settings. This limitation stems from two key challenges: the inherent geometric discrepancy between perspective and panoramic cameras, and the scarcity of panoramic training data with metric annotations. In this work, we introduce DepthMaster, a unified metric depth estimation framework. Rather than employing specialized networks to learn spherical distortions, we reformulate the problem by decomposing panoramic images into overlapping perspective patches. Crucially, distinct from prior projection-based methods that rely on ad-hoc architectural modifications to handle boundaries, we introduce a novel Correspondence Consistency Loss (CCL) and inject virtual projection cameras as geometric priors, allowing us to seamlessly stitch the patches while avoiding specialized operators and keeping the backbone largely compatible with standard Transformer designs. This strategy also resolves the geometric differences by unifying all inputs into a canonical perspective representation, and effectively circumvents data scarcity by directly unlocking powerful metric priors from vast perspective datasets. Trained on a mixed dataset that contains only one panorama dataset, DepthMaster achieves state-of-the-art zero-shot performance on 13 diverse datasets, outperforming not only universal methods but also leading specialist models in both perspective and panoramic domains.",
+      "authors": [
+        "Pengfei Wang",
+        "Shihao Wang",
+        "Liyi Chen",
+        "Zhiyuan Ma",
+        "Guowen Zhang",
+        "Lei Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-10T17:35:23+00:00",
+      "link": "https://arxiv.org/pdf/2606.12368v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Unified monocular metric depth estimation provides depth priors needed for multi-view stereo reconstruction.",
+      "llm_evidence_cn": "统一度量深度估计为多视图立体重建提供深度先验。",
+      "llm_evidence": "统一度量深度估计为多视图立体重建提供深度先验。",
+      "canonical_evidence": "统一度量深度估计为多视图立体重建提供深度先验。",
+      "llm_tldr_en": "DepthMaster provides unified monocular metric depth estimation for perspective and 360° images, overcoming limits of camera-specific models. It serves as a depth prior for multi-view stereo and 3D reconstruction, improving generalization across camera types.",
+      "llm_tldr_cn": "现有单目深度估计方法通常局限于特定相机类型，难以跨不同视场角泛化。本文提出DepthMaster，一个统一度量深度估计框架，将问题表述为通用模式以处理透视和全景图像，无需专用网络学习球面畸变。实验显示，DepthMaster能输出高质量度量深度，为多视图立体三维重建等下游任务提供了可靠的单视图深度初始值。",
+      "llm_tldr": "现有单目深度估计方法通常局限于特定相机类型，难以跨不同视场角泛化。本文提出DepthMaster，一个统一度量深度估计框架，将问题表述为通用模式以处理透视和全景图像，无需专用网络学习球面畸变。实验显示，DepthMaster能输出高质量度量深度，为多视图立体三维重建等下游任务提供了可靠的单视图深度初始值。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "multi-view stereo 3D reconstruction",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
