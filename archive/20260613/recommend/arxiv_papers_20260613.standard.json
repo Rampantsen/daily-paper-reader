@@ -1,0 +1,138 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-13T20:47:02.946987+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2606.11152v2",
+      "source": "arxiv",
+      "title": "P3D-Bench: Benchmarking MLLMs for Parametric 3D Generation and Structural Reasoning",
+      "abstract": "Multimodal large language models can write code to produce complex programs as well as use programs to do 3D modeling, which opens up a new avenue for 3D generation powered by their priors, world knowledge and reasoning. Yet existing benchmarks rarely evaluate 3D modeling through code. Such modeling demands more than runnable code: from a text or visual specification, a model must generate a parametric 3D program that is geometrically precise, semantically aligned and assembly-consistent. We introduce P3D-Bench, a benchmark for parametric 3D generation. Unlike a 3D mesh, a parametric 3D program exposes explicit dimensions, construction operations and part relations, revealing whether a model recovers a design's structure, not just its appearance. Under a unified protocol, P3D-Bench covers three task families (Text-to-3D, Image-to-3D and Assembly-3D) and scores each output for executability, geometric fidelity, topology, text-grounded constraints, multiview semantic alignment and part-level structure. We evaluate frontier MLLMs and text-only LLMs on 400 text cases, 400 image cases and 203 annotated assemblies, with domain-specific models as reference points. Our extensive evaluation yields three findings. First, assemblies are the hardest setting, where models still fail to compose multiple parts into a coherent structure. Second, models can often recover the global shape and semantic identity of the target object, yet fail to reproduce the precise parametric geometry specified by the input. Third, part-level modeling remains weak on assemblies, where models recover neither the geometry of each part nor the right number of parts. These results position P3D-Bench as a benchmark for evaluating precise parametric geometry and part-level structure in parametric 3D generation.",
+      "authors": [
+        "Yikang Yang",
+        "Zhanpeng Hu",
+        "Youtian Lin",
+        "Mengqi Zhou",
+        "Jingxi Xu",
+        "Feihu Zhang",
+        "Jiaheng Liu",
+        "Yao Yao"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-09T17:36:34+00:00",
+      "link": "https://arxiv.org/pdf/2606.11152v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Benchmark for parametric 3D generation via code, evaluating models on geometric precision and semantic alignment",
+      "llm_evidence_cn": "通过代码进行参数化3D生成的基准，评估模型的几何精度和语义对齐",
+      "llm_evidence": "通过代码进行参数化3D生成的基准，评估模型的几何精度和语义对齐",
+      "canonical_evidence": "通过代码进行参数化3D生成的基准，评估模型的几何精度和语义对齐",
+      "llm_tldr_en": "P3D-Bench introduces a benchmark for evaluating multimodal LLMs on parametric 3D generation, requiring models to generate 3D programs from specifications, and evaluates structural reasoning beyond surface appearance.",
+      "llm_tldr_cn": "针对现有多模态大模型3D生成评估缺乏结构性测度的问题，提出P3D-Bench基准，要求模型从文本或视觉规范生成参数化三维程序，暴露显式尺寸、构建操作和零件关系，以评估几何精度、语义对齐和装配一致性。基准覆盖多种设计类别，证明了现有模型在理解三维结构上仍有明显短板，为三维生成与推理研究提供了新标尺。",
+      "llm_tldr": "针对现有多模态大模型3D生成评估缺乏结构性测度的问题，提出P3D-Bench基准，要求模型从文本或视觉规范生成参数化三维程序，暴露显式尺寸、构建操作和零件关系，以评估几何精度、语义对齐和装配一致性。基准覆盖多种设计类别，证明了现有模型在理解三维结构上仍有明显短板，为三维生成与推理研究提供了新标尺。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.06887v1",
+      "source": "arxiv",
+      "title": "ARAPDiffusion: ARAP Regularization for Diffusion-Based Deformable Shape Space Learning",
+      "abstract": "This paper introduces ARAPDiffusion, a latent diffusion model to learn the underlying continuous shape space of a deformation shape collection. The key innovation is in injecting the as-rigid-as-possible (ARAP) deformation model as regularization losses into latent diffusion (LD), releasing the requirement of having abundant 3D training data for learning generative models. In contrast to the standard LD, we show how the ARAP model can be used to improve both the encoder/decoder and the LD model. The training procedure alternates between using the synthetic distribution defined by the LD model to develop a regularization loss that enhances the shape encoder/decoder and using the shape decoder to develop a regularization loss to improve the LD model. We also show the benefit of the LD paradigm in combining a representation-free LD process and an implicit shape decoder that is applicable to unorganized point clouds. The experimental results of unconditional and conditional shape generation demonstrate the advantages of ARAPDiffusion over baseline approaches.",
+      "authors": [
+        "Haibo Liu",
+        "Jinghan Ke",
+        "Haitao Yang",
+        "Xiangru Huang",
+        "Georgios Pavlakos",
+        "Qixing Huang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-05T04:09:15+00:00",
+      "link": "https://arxiv.org/pdf/2606.06887v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "ARAPDiffusion learns a generative model of 3D deformable shapes, contributing to 3D object generation",
+      "llm_evidence_cn": "ARAPDiffusion学习可变形三维形状的生成模型，有助于三维物体生成",
+      "llm_evidence": "ARAPDiffusion学习可变形三维形状的生成模型，有助于三维物体生成",
+      "canonical_evidence": "ARAPDiffusion学习可变形三维形状的生成模型，有助于三维物体生成",
+      "llm_tldr_en": "ARAPDiffusion uses ARAP regularization in latent diffusion to learn continuous shape spaces with limited data, enabling 3D shape generation without large collections.",
+      "llm_tldr_cn": "针对三维形状生成需要大量训练数据的问题，提出ARAPDiffusion，在潜在扩散模型中注入尽可能刚性（ARAP）变形正则化，交替优化编码器与扩散模型，从少量形状样本学习连续的变形形状空间，实现了数据高效的三维物体生成。",
+      "llm_tldr": "针对三维形状生成需要大量训练数据的问题，提出ARAPDiffusion，在潜在扩散模型中注入尽可能刚性（ARAP）变形正则化，交替优化编码器与扩散模型，从少量形状样本学习连续的变形形状空间，实现了数据高效的三维物体生成。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.10142v1",
+      "source": "arxiv",
+      "title": "DB-3DME: From Dataset to Benchmark for Human-aligned Automatic 3D Mesh Evaluation",
+      "abstract": "Recent advances in 3D generation have led to substantial improvements in realism, controllability, and efficiency, yet the evaluation of 3D assets remains underexplored. Existing evaluation paradigms, including human evaluation, learned metrics, and vision-language models (VLMs) as judges, suffer from limitations in cost, scalability, resolution handling, or task-specific alignment. In this work, we focus on 3D mesh evaluation and introduce DB-3DME, the Dataset and Benchmark for 3D Mesh Evaluation. DB-3DME contains 2,619 synthetic 3D meshes paired with human ratings on Geometry and Prompt Adherence. Using this dataset, we systematically benchmark state-of-the-art VLMs and identify visual encoding of 3D representations as a key factor for human-aligned evaluation performance. Motivated by this finding, we fine-tune an open-weight VLM, Qwen-2.5-VL-7B, for 3D mesh evaluation by adapting the visual encoder while freezing the language model. The fine-tuned model substantially outperforms existing pre-trained VLMs across multiple evaluation dimensions, establishing a new benchmark for automatic 3D mesh evaluation. We publicly release the benchmark dataset on GitHub and Hugging Face to facilitate future research.",
+      "authors": [
+        "Nanshan Jia",
+        "Zhenyu Zhao",
+        "Sui Huang",
+        "Jingshen Wang",
+        "Zeyu Zheng"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-08T20:17:49+00:00",
+      "link": "https://arxiv.org/pdf/2606.10142v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Benchmark for evaluating 3D mesh generation quality and human alignment",
+      "llm_evidence_cn": "用于评估3D网格生成质量与人类对齐的基准",
+      "llm_evidence": "用于评估3D网格生成质量与人类对齐的基准",
+      "canonical_evidence": "用于评估3D网格生成质量与人类对齐的基准",
+      "llm_tldr_en": "DB-3DME introduces a dataset and benchmark for evaluating 3D mesh generation models, containing 2,619 synthetic meshes with human ratings on Geometry and Prompt Adherence, and benchmarks vision-language models as judges to identify key factors for human alignment.",
+      "llm_tldr_cn": "随着3D网格生成技术发展，缺乏有效评估标准。DB-3DME构建了包含2619个合成3D网格的人类评分数据集，覆盖几何和提示遵循度，系统基准测试视觉语言模型作为评判器，发现三维表示的可视化编码是影响人类对齐的关键因素。该基准为3D生成任务提供了可靠评估工具。",
+      "llm_tldr": "随着3D网格生成技术发展，缺乏有效评估标准。DB-3DME构建了包含2619个合成3D网格的人类评分数据集，覆盖几何和提示遵循度，系统基准测试视觉语言模型作为评判器，发现三维表示的可视化编码是影响人类对齐的关键因素。该基准为3D生成任务提供了可靠评估工具。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

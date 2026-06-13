@@ -6,46 +6,31 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-12
-- 运行时间：2026-06-12 21:15:40 UTC
+- 最新运行日期：2026-06-13
+- 运行时间：2026-06-13 20:51:39 UTC
 - 运行状态：成功
-- 本次总论文数：8
-- 精读区：4
-- 速读区：4
+- 本次总论文数：3
+- 精读区：1
+- 速读区：2
 
 ### 今日简报（AI）
-今日深入评析了两篇高分研究：P3D-Bench 为多模态大模型的参数化 3D 生成与结构推理提供了首个系统性基准，而 DisPOSE 则以自监督多视图方法刷新了 3D 人体姿态估计。  
-最值得关注的结论是：大模型从理解 3D 到亲手“建模”的跨越已进入可量化评估阶段，同时自监督在多视图姿态估计中展现出替代昂贵标注的潜力。  
-若你对 3D 生成或视觉推理感兴趣，不妨优先细读 P3D-Bench 的评测设计，看看大模型如今的“三维想象力”到底几斤几两。
-- 详情：[/202606/12/README](/202606/12/README)
+今日精选三维生成与评估前沿，精读了一篇多模态大模型的结构推理基准，并速览了可变形扩散模型与网格质量评测。
+最亮眼的结论是：当前顶尖多模态模型在参数化三维生成中仍缺乏真正的结构理解，而 DB-3DME 则提出更贴合人类感知的网格评估新标尺。
+建议从业者从 P3D-Bench 的推理测试出发，对照检验自家模型的几何逻辑能力，再用 DB-3DME 框架校准生成结果的观感质量。
+- 详情：[/202606/13/README](/202606/13/README)
 
 ### 精读区论文标签
-1. [P3D-Bench: Benchmarking MLLMs for Parametric 3D Generation and Structural Reasoning](/202606/12/2606.11152v1-p3d-bench-benchmarking-mllms-for-parametric-3d-generation-and-structural-reasoning)  
-   标签：评分：10.0/10、query:d-gen-recon
-   evidence：从文本或图像输入生成参数化3D物体的基准
-2. [DisPOSE: Projected Polystochastic Diffusion for Self-Supervised Multi-View 3D Human Pose Estimation](/202606/12/2606.07419v2-dispose-projected-polystochastic-diffusion-for-self-supervised-multi-view-3d-human-pose-estimation)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：自监督多视角3D人体姿态估计，通过基于扩散的多视角人员匹配。
-3. [3D-CoS: A New 3D Reconstruction Paradigm Based on VLM Code Synthesis](/202606/12/2606.10478v1-3d-cos-a-new-3d-reconstruction-paradigm-based-on-vlm-code-synthesis)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：提出利用VLM代码合成从图像或文本重建3D物体为Blender代码
-4. [Wispy to Voluminous: Prior-free Multi-view Capture of Strand-level Facial Hair](/202606/12/2606.08041v1-wispy-to-voluminous-prior-free-multi-view-capture-of-strand-level-facial-hair)  
+1. [P3D-Bench: Benchmarking MLLMs for Parametric 3D Generation and Structural Reasoning](/202606/13/2606.11152v2-p3d-bench-benchmarking-mllms-for-parametric-3d-generation-and-structural-reasoning)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：从多视角图像重建发丝级3D面部毛发
+   evidence：通过代码进行参数化3D生成的基准，评估模型的几何精度和语义对齐
 
 ### 速读区论文标签
-1. [SegmentAnyTreeV2: Scaling Transformer-Based Tree Instance Segmentation Across Sensors, Platforms, and Forests](/202606/12/2606.08206v1-segmentanytreev2-scaling-transformer-based-tree-instance-segmentation-across-sensors-platforms-and-forests)  
-   标签：评分：7.0/10、query:d-gen-recon
-   evidence：森林点云的语义和实例分割
-2. [Leveraging NeRF-Rendered Images for 3D Gaussian Splatting](/202606/12/2606.09034v1-leveraging-nerf-rendered-images-for-3d-gaussian-splatting)  
-   标签：评分：7.0/10、query:d-gen-recon
-   evidence：利用NeRF渲染图像增强3D高斯泼溅进行街景重建
-3. [Stream3D-VLM: Online 3D Spatial Understanding with Incremental Geometry Priors](/202606/12/2606.06891v1-stream3d-vlm-online-3d-spatial-understanding-with-incremental-geometry-priors)  
+1. [ARAPDiffusion: ARAP Regularization for Diffusion-Based Deformable Shape Space Learning](/202606/13/2606.06887v1-arapdiffusion-arap-regularization-for-diffusion-based-deformable-shape-space-learning)  
    标签：评分：6.0/10、query:d-gen-recon
-   evidence：在线3D大语言模型，利用增量几何先验实现流媒体视频的实时空间理解
-4. [DepthMaster: Unified Monocular Depth Estimation for Perspective and Panoramic Images](/202606/12/2606.12368v1-depthmaster-unified-monocular-depth-estimation-for-perspective-and-panoramic-images)  
+   evidence：ARAPDiffusion学习可变形三维形状的生成模型，有助于三维物体生成
+2. [DB-3DME: From Dataset to Benchmark for Human-aligned Automatic 3D Mesh Evaluation](/202606/13/2606.10142v1-db-3dme-from-dataset-to-benchmark-for-human-aligned-automatic-3d-mesh-evaluation)  
    标签：评分：6.0/10、query:d-gen-recon
-   evidence：统一度量深度估计为多视图立体重建提供深度先验。
+   evidence：用于评估3D网格生成质量与人类对齐的基准
 
 
 <div class="dpr-home-promo-card">
