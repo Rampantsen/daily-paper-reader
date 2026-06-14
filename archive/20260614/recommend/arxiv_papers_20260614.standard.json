@@ -1,0 +1,299 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-14T20:13:23.419425+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 6,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2606.13644v1",
+      "source": "arxiv",
+      "title": "Surflo: Consistent 3D Surface Flow Model with Global State",
+      "abstract": "Geometry is invariant to viewpoint, which makes any collection of images a redundant encoding of a single 3D state. Existing feed-forward reconstruction models fail to exploit this: per-view methods emit overlapping, unaligned pointmaps that grow linearly with input count, while global-latent methods commit to a fixed, low-resolution output. We introduce Surflo, which compresses a variable number of unposed RGB views into K latent tokens-one global state-and decodes oriented 3D surface points by independently transporting them from noise onto the surface via flow matching. This frees the output from any fixed grid or token budget: the same latent yields from a few thousand to a million points in a single forward pass. To suppress the local inconsistencies inherent to independent per-point decoding, an inference-time guidance term correlates nearby points by injecting a photometric gradient during ODE integration. Surflo matches or surpasses feed-forward baselines on surface metrics, runs an order of magnitude faster than optimization-based methods that require hundreds of views, and is the only feed-forward approach to combine a global latent with arbitrary-resolution decoding.",
+      "authors": [
+        "Antoine Guédon",
+        "Shu Nakamura",
+        "Nicolas Dufour",
+        "Jiahui Lei",
+        "Ko Nishino",
+        "Angjoo Kanazawa"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-11T17:48:38+00:00",
+      "link": "https://arxiv.org/pdf/2606.13644v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Compresses multiple unposed RGB views into a global state and decodes oriented 3D surface points via flow matching for multi-view 3D reconstruction.",
+      "llm_evidence_cn": "将多张无姿态RGB视图压缩为全局状态，通过流匹配解码有向3D表面点，实现多视图3D重建。",
+      "llm_evidence": "将多张无姿态RGB视图压缩为全局状态，通过流匹配解码有向3D表面点，实现多视图3D重建。",
+      "canonical_evidence": "将多张无姿态RGB视图压缩为全局状态，通过流匹配解码有向3D表面点，实现多视图3D重建。",
+      "llm_tldr_en": "Surflo proposes a consistent 3D surface flow model that compresses variable unposed RGB views into a global latent state, then reconstructs oriented 3D surface points at arbitrary resolution using flow matching, advancing multi-view reconstruction.",
+      "llm_tldr_cn": "针对现有前馈重建模型输出随时间线性增长或固定低分辨率的问题，Surflo提出将多张无姿态RGB视图压缩为K个潜在令牌作为全局状态，再通过流匹配将噪声独立传输到表面以解码有向3D点。该方法摆脱了固定网格或令牌预算限制，单次前向可生成数千至百万点，并通过几何一致性损失抑制局部不一致。实验表明其在多视图3D表面重建中具有灵活性和一致性。该工作为高效、可扩展的多视图3D重建提供了新思路。",
+      "llm_tldr": "针对现有前馈重建模型输出随时间线性增长或固定低分辨率的问题，Surflo提出将多张无姿态RGB视图压缩为K个潜在令牌作为全局状态，再通过流匹配将噪声独立传输到表面以解码有向3D点。该方法摆脱了固定网格或令牌预算限制，单次前向可生成数千至百万点，并通过几何一致性损失抑制局部不一致。实验表明其在多视图3D表面重建中具有灵活性和一致性。该工作为高效、可扩展的多视图3D重建提供了新思路。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.11894v2",
+      "source": "arxiv",
+      "title": "Wild3R: Feed-Forward 3D Gaussian Splatting from Unconstrained Sparse Photo Collection",
+      "abstract": "Feed-forward 3D Gaussian Splatting (3DGS) removes the need for time-consuming per-scene optimization required by traditional 3DGS. However, existing feed-forward approaches struggle with real-world photo collections that include diverse lighting conditions and transient objects. In this paper, we present Wild3R, a feed-forward approach for unconstrained sparse photo collections. The main bottleneck is the lack of training data that provides multiple viewpoints, a variety of illuminations, and transient variations necessary for learning robust scene representations. To address this, we introduce the WildCity dataset, which comprises 200 scenes, 170 lighting conditions, and transient objects, resulting in 337,500 images in total. By leveraging the dataset, our model learns appearance consistency across viewpoints conditioned on reference views, while removing transient content. Extensive experiments demonstrate that our method outperforms existing feed-forward approaches and achieves results competitive with prior per-scene optimization-based methods.",
+      "authors": [
+        "Yuto Furutani",
+        "Takashi Otonari",
+        "Kaede Shiohara",
+        "Toshihiko Yamasaki"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-10T10:23:06+00:00",
+      "link": "https://arxiv.org/pdf/2606.11894v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Feed-forward 3D Gaussian Splatting from unconstrained sparse photo collections for 3D scene generation.",
+      "llm_evidence_cn": "从无约束稀疏照片集合中前馈生成3D场景，使用3D高斯散点。",
+      "llm_evidence": "从无约束稀疏照片集合中前馈生成3D场景，使用3D高斯散点。",
+      "canonical_evidence": "从无约束稀疏照片集合中前馈生成3D场景，使用3D高斯散点。",
+      "llm_tldr_en": "Wild3R presents a feed-forward method for 3D scene reconstruction from unconstrained sparse photo collections, introducing the WildCity dataset with diverse illuminations and transients, enabling robust 3DGS without per-scene optimization.",
+      "llm_tldr_cn": "现有前馈3DGS方法难以处理现实多变光照和瞬态物体的照片集合。Wild3R提出针对无约束稀疏照片集的前馈方法，并构建WildCity数据集包含200个场景、170种光照和瞬态物体共33万张图像，使模型能学习鲁棒场景表示，实现无需逐场景优化的高效三维重建，直接适用于互联网照片等非约束场景。",
+      "llm_tldr": "现有前馈3DGS方法难以处理现实多变光照和瞬态物体的照片集合。Wild3R提出针对无约束稀疏照片集的前馈方法，并构建WildCity数据集包含200个场景、170种光照和瞬态物体共33万张图像，使模型能学习鲁棒场景表示，实现无需逐场景优化的高效三维重建，直接适用于互联网照片等非约束场景。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene generation and reconstruction using unlabeled internet photos",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.13652v1",
+      "source": "arxiv",
+      "title": "World Tracing: Generative Pixel-Aligned Geometry Beyond the Visible",
+      "abstract": "Image-to-3D methods often trade off faithfulness and completeness: depth estimators are anchored to input pixels but stop at the visible surface, while image-to-3D models generate complete shapes that are often misaligned with the input. We introduce World Tracing, a generative pixel-aligned geometry representation that predicts 3D points aligned with observed pixels while completing geometry beyond the visible surface. For each input pixel, World Tracing predicts an ordered stack of camera-space 3D points, where the first layer represents the visible surface and subsequent layers represent front-to-back intersections with occluded surfaces. We instantiate this representation with a world-tracing diffusion transformer, WT-DiT, which treats multiple geometry layers as separate denoising tokens coupled through factorized and global attention. WT-DiT is trained with pixel-space flow matching and a mixed noise schedule that balances visible-surface reconstruction with occluded-geometry generation. World Tracing achieves strong performance on visible-surface reconstruction and complete geometry generation across object, scene, and dynamic benchmarks, outperforming both depth predictors and image-to-3D generators. It also preserves 2D-to-3D correspondence, enabling text-driven 3D scene editing, geometry-conditioned novel-view video synthesis, and training-free integration with textured-mesh generators.",
+      "authors": [
+        "Hao Zhang",
+        "Mohamed El Banani",
+        "Jen-Hao Cheng",
+        "Paul Zhang",
+        "Yi Hua",
+        "Ben Mildenhall",
+        "Christoph Lassner",
+        "Narendra Ahuja",
+        "Gengshan Yang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR"
+      ],
+      "published": "2026-06-11T17:52:48+00:00",
+      "link": "https://arxiv.org/pdf/2606.13652v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "image-to-3D with pixel-aligned generative geometry completing occluded surfaces",
+      "llm_evidence_cn": "图像到3D生成，像素对齐生成式几何补全遮挡表面",
+      "llm_evidence": "图像到3D生成，像素对齐生成式几何补全遮挡表面",
+      "canonical_evidence": "图像到3D生成，像素对齐生成式几何补全遮挡表面",
+      "llm_tldr_en": "Addresses the trade-off in image-to-3D between faithfulness and completeness. Proposes World Tracing, a representation that predicts per-pixel ordered 3D point stacks for visible and occluded surfaces, instantiated with a diffusion transformer.",
+      "llm_tldr_cn": "针对image-to-3D方法中保真度与完整性的矛盾，提出世界追踪（World Tracing）表示，为每个像素预测一组有序的相机空间3D点，首层对应可见表面，后续层补全被遮挡几何。用扩散Transformer WT-DiT实现，在单图输入下同时保证与像素的对齐和几何完整性，解决了传统方法只估计可见表面或生成形状错位的问题。",
+      "llm_tldr": "针对image-to-3D方法中保真度与完整性的矛盾，提出世界追踪（World Tracing）表示，为每个像素预测一组有序的相机空间3D点，首层对应可见表面，后续层补全被遮挡几何。用扩散Transformer WT-DiT实现，在单图输入下同时保证与像素的对齐和几何完整性，解决了传统方法只估计可见表面或生成形状错位的问题。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.12396v1",
+      "source": "arxiv",
+      "title": "VLGA: Vision-Language-Geometry-Action Models for Autonomous Driving",
+      "abstract": "Vision-language-action (VLA) models can describe scenes and reason about them in language, yet still struggle to ground their actions in the dense 3D world around them. Existing approaches either inject features from a frozen 3D foundation model without an objective that ensures the policy uses them, or constrain geometry with sparse box and map losses that provide no dense spatial signal. We introduce VLGA, the first vision-language-action model supervised to reconstruct the dense 3D world it drives through. VLGA introduces geometry as a fourth modality alongside vision, language, and action through a dedicated expert supervised by a per-pixel pointmap regression loss against LiDAR. Extensive experiments conducted on challenging nuScenes and Bench2Drive datasets for open-loop and closed-loop evaluations, respectively, show the superiority of VLGA over counterpart VLA methods. In particular, on open-loop nuScenes, VLGA sets a new state of the art among VLA methods without ego status, with the lowest L2 (0.50\\,m average) and 3-second collision rate (0.18\\%). On closed-loop Bench2Drive, VLGA attains the state-of-the-art driving score of 79.08, +0.71 over the strongest prior VLA, at comparable efficiency and comfort.",
+      "authors": [
+        "Jin Yao",
+        "Dhruva Dixith Kurra",
+        "Tom Lampo",
+        "Zezhou Cheng",
+        "Danhua Guo",
+        "Burhan Yaman"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.RO"
+      ],
+      "published": "2026-06-10T17:57:06+00:00",
+      "link": "https://arxiv.org/pdf/2606.12396v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Model reconstructs dense 3D world from multi-view images via geometry modality, directly addressing 3D scene reconstruction.",
+      "llm_evidence_cn": "模型通过几何模态从多视图图像重建稠密三维世界，直接实现三维场景重建。",
+      "llm_evidence": "模型通过几何模态从多视图图像重建稠密三维世界，直接实现三维场景重建。",
+      "canonical_evidence": "模型通过几何模态从多视图图像重建稠密三维世界，直接实现三维场景重建。",
+      "llm_tldr_en": "Introduces VLGA, which adds geometry as a fourth modality with pointmap regression loss, enabling dense 3D world reconstruction from multi-view driving scenes, outperforming prior methods in action prediction and 3D understanding.",
+      "llm_tldr_cn": "视觉-语言-动作模型在稠密三维世界中难以落地。本文提出VLGA，将几何作为第四模态，通过逐像素点云回归损失监督，从多视图驾驶场景重建稠密三维世界。在nuScenes和Bench2Drive上实验证明，该方法显著提升动作预测和三维理解性能，为端到端自动驾驶提供更可靠的空间基础。",
+      "llm_tldr": "视觉-语言-动作模型在稠密三维世界中难以落地。本文提出VLGA，将几何作为第四模态，通过逐像素点云回归损失监督，从多视图驾驶场景重建稠密三维世界。在nuScenes和Bench2Drive上实验证明，该方法显著提升动作预测和三维理解性能，为端到端自动驾驶提供更可靠的空间基础。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.13376v1",
+      "source": "arxiv",
+      "title": "MoVerse: Real-Time Video World Modeling with Panoramic Gaussian Scaffold",
+      "abstract": "We present MoVerse, a real-time video world model that creates an interactively navigable scene from a single narrow-field-of-view image. This setting is challenging because the input observes only a small fraction of the environment, while interactive roaming requires a complete surrounding world, persistent geometry, controllable camera motion, and temporally coherent high-fidelity observations. MoVerse addresses this problem by separating world construction from observation rendering. It first expands the input into a gravity-aligned 360$^\\circ$ panorama with topology-aware diffusion, closing the missing field of view before 3D reasoning. It then lifts the panorama into a persistent 3D Gaussian scaffold using panoramic geometry-aware residual prediction, yielding a dense and directly renderable spatial memory. Finally, a Gaussian-conditioned video renderer translates scaffold renderings along user-specified camera trajectories into photorealistic video. To make this renderer practical for interaction, we train a bidirectional diffusion teacher for high-quality conditional rendering and distill it into a causal autoregressive student for bounded-latency streaming. This design combines the controllability and long-range consistency of explicit 3D representations with the perceptual quality of generative video models. MoVerse supports real-time scene roaming at 8~FPS on a single NVIDIA RTX~4090 GPU, demonstrating a practical path toward single-image world creation with interactive video output.",
+      "authors": [
+        "Yang Zhou",
+        "Ziheng Wang",
+        "Yuqin Lu",
+        "Haofeng Liu",
+        "Jun Liang",
+        "Shengfeng He",
+        "Jing Li"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-11T14:01:02+00:00",
+      "link": "https://arxiv.org/pdf/2606.13376v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "3D scene reconstruction from a single image for interactive navigation",
+      "llm_evidence_cn": "从单幅图像实时交互式3D场景重建",
+      "llm_evidence": "从单幅图像实时交互式3D场景重建",
+      "canonical_evidence": "从单幅图像实时交互式3D场景重建",
+      "llm_tldr_en": "MoVerse generates a navigable 3D world from a single narrow-FOV image by expanding to a 360° panorama and lifting into a persistent 3D Gaussian scaffold for real-time view synthesis.",
+      "llm_tldr_cn": "针对窄视场单幅图像无法满足交互式漫游需求的问题，MoVerse提出了一种实时视频世界模型，先通过拓扑感知扩散将输入扩展为重力对齐的360°全景图，再基于全景几何感知残差预测将其提升为持久3D高斯骨架，实现了从单幅图像构建可交互三维场景，支持可控相机运动和时序一致的高保真渲染。",
+      "llm_tldr": "针对窄视场单幅图像无法满足交互式漫游需求的问题，MoVerse提出了一种实时视频世界模型，先通过拓扑感知扩散将输入扩展为重力对齐的360°全景图，再基于全景几何感知残差预测将其提升为持久3D高斯骨架，实现了从单幅图像构建可交互三维场景，支持可控相机运动和时序一致的高保真渲染。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.13460v1",
+      "source": "arxiv",
+      "title": "VISA: VLM-Guided Instance Semantic Auditing for 3D Occupancy World Models",
+      "abstract": "Semantic 3D occupancy provides a voxelized world state for autonomous driving and robot decision making, but object and rare-class errors can affect free-space interpretation, collision checking, and temporal state propagation. We show that a common VLM strategy, aligning 3D voxel or object features with crop-caption embeddings, improves text-space similarity without reliably improving closed-set occupancy mIoU. Motivated by this mismatch, we propose VISA, a training-time semantic auditing approach for existing occupancy world models. VISA queries an offline VLM on a representative crop of each physical object instance, obtains a structured audit with class hypotheses, plausible confusions, reliability, attributes, and evidence, and propagates it along the object track. The audit is grounded to matched 3D object voxels and distilled into semantic logits through reliability-weighted taxonomy, attribute-factor, and scene-level audit graph losses, while inference remains unchanged and requires no VLM. On nuScenes, averaged across three runs, VISA improves OccWorld from 19.06 to 20.05 mIoU and GaussianWorld from 21.36 to 21.91 mIoU; on GaussianWorld, object mIoU improves from 18.18 to 19.16 and rare-class mIoU from 15.60 to 16.79. These results suggest that VLMs are better suited to closed-set occupancy as reliability-aware semantic auditors than as generic caption-embedding targets.",
+      "authors": [
+        "Ruiqi Xian",
+        "Yuehan Xian",
+        "Jing Liang",
+        "Xuewei Qi",
+        "Dinesh Manocha"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-11T15:15:34+00:00",
+      "link": "https://arxiv.org/pdf/2606.13460v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "semantic segmentation of 3D occupancy via VLM auditing",
+      "llm_evidence_cn": "通过VLM审计提升3D占据网格的语义分割",
+      "llm_evidence": "通过VLM审计提升3D占据网格的语义分割",
+      "canonical_evidence": "通过VLM审计提升3D占据网格的语义分割",
+      "llm_tldr_en": "Observes that VLM feature alignment doesn't reliably improve closed-set occupancy mIoU. Proposes VISA, a training-time auditing approach using an offline VLM to provide structured semantic feedback per object instance, enhancing segmentation for autonomous driving.",
+      "llm_tldr_cn": "发现常见的VLM特征对齐策略无法可靠提升3D占据网格的闭集mIoU，提出VISA方法，在训练时利用离线VLM对每个物体实例进行结构化语义审计，生成类别假设、混淆、可靠性等反馈并传播，以增强语义预测。该方法在不改变模型推理结构的前提下，显著提升了占位场世界模型的语义分割质量，尤其改善了稀有类别错误。",
+      "llm_tldr": "发现常见的VLM特征对齐策略无法可靠提升3D占据网格的闭集mIoU，提出VISA方法，在训练时利用离线VLM对每个物体实例进行结构化语义审计，生成类别假设、混淆、可靠性等反馈并传播，以增强语义预测。该方法在不改变模型推理结构的前提下，显著提升了占位场世界模型的语义分割质量，尤其改善了稀有类别错误。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.09828v1",
+      "source": "arxiv",
+      "title": "Latent Spatial Memory for Video World Models",
+      "abstract": "Video world models that maintain 3D spatial consistency across generated frames typically rely on explicit point cloud memory constructed in RGB space. This design is both computationally expensive, requiring repeated rendering and VAE encoding, and inherently lossy, as the round trip through pixel space discards rich features of the learned latent representation. In this paper, we introduce \\emph{latent spatial memory} for video world models, a persistent 3D cache that stores scene information directly in the diffusion latent space, avoiding pixel-space reconstruction. Building on this, we propose Mirage, a latent-space spatial memory framework that constructs the memory by lifting latent tokens into 3D via depth-guided back-projection and queries it by synthesizing novel views through direct latent-space warping. This unified formulation eliminates both the information loss of pixel-space reconstruction and the computational burden of repeated encoding and rendering. Experiments show that latent spatial memory achieves up to \\textbf{10.57}$\\times$ faster end-to-end video generation and \\textbf{55}$\\times$ reduction in memory footprint relative to explicit 3D baselines. Leveraging the geometric prior of the diffusion model, Mirage attains state-of-the-art performance on WorldScore and strong reconstruction quality on RealEstate10K.",
+      "authors": [
+        "Weijie Wang",
+        "Haoyu Zhao",
+        "Yifan Yang",
+        "Feng Chen",
+        "Zeyu Zhang",
+        "Yefei He",
+        "Zicheng Duan",
+        "Donny Y. Chen",
+        "Yuqing Yang",
+        "Bohan Zhuang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-08T17:59:54+00:00",
+      "link": "https://arxiv.org/pdf/2606.09828v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "persistent 3D latent memory for multi-view consistent video generation",
+      "llm_evidence_cn": "持久3D潜空间记忆用于多视角一致视频生成",
+      "llm_evidence": "持久3D潜空间记忆用于多视角一致视频生成",
+      "canonical_evidence": "持久3D潜空间记忆用于多视角一致视频生成",
+      "llm_tldr_en": "Mirage uses latent spatial memory to store scene information directly in diffusion latent space, avoiding costly pixel-space rendering, for efficient 3D-consistent video world modeling.",
+      "llm_tldr_cn": "现有视频世界模型通过显式点云记忆维持三维空间一致性，但存在计算开销大和信息损失问题。本文提出潜空间记忆方法，直接在扩散潜在空间中构建持久三维缓存，利用深度引导反投影将潜在token提升到3D空间并合成新视图，避免了像素空间重建，实现了高效且一致的视频生成。",
+      "llm_tldr": "现有视频世界模型通过显式点云记忆维持三维空间一致性，但存在计算开销大和信息损失问题。本文提出潜空间记忆方法，直接在扩散潜在空间中构建持久三维缓存，利用深度引导反投影将潜在token提升到3D空间并合成新视图，避免了像素空间重建，实现了高效且一致的视频生成。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
