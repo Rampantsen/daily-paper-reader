@@ -1,0 +1,452 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-15T22:10:22.749612+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 7,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 5,
+    "quick_skim_target": 11,
+    "quick_selected": 5
+  },
+  "deep_dive": [
+    {
+      "id": "2606.13727v1",
+      "source": "arxiv",
+      "title": "Occupancy-Grounded Room Segmentation for Hierarchical 3D Scene Graphs",
+      "abstract": "Hierarchical 3D scene graphs (3DSGs) for indoor robots organize geometric and semantic information across spatial scales, with a room layer that connects object-level perception to room-scale reasoning. Existing systems construct this layer from different spatial substrates (\\eg{} place clusters, wall planes, or segmentation outputs), and as a result, room nodes are not evaluated on a common geometric criterion. We present an occupancy-grounded 3DSG pipeline in which room nodes are anchored to tracked free-space regions derived from occupancy decomposition, giving each room an explicit polygonal footprint. We evaluate the pipeline on 12 Matterport3D scenes by matching predicted room polygons to annotated room instances and compare against Hydra, a representative state-of-the-art place-connectivity baseline. The results show that occupancy-grounded anchoring recovers substantially more room instances than place-connectivity construction, at the cost of lower precision, and that wall-accurate room boundaries remain an open problem for both methods. Code is available at https://github.com/crcz25/OccuSG.",
+      "authors": [
+        "Carlos Cueto Zumaya",
+        "Iacopo Catalano",
+        "Jorge Peña-Queralta",
+        "Wallace Moreira Bessa"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-06-11T09:36:15+00:00",
+      "link": "https://arxiv.org/pdf/2606.13727v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Performs room segmentation in 3D scene graphs, a direct form of 3D scene semantic segmentation",
+      "llm_evidence_cn": "对3D场景图进行房间分割，直接实现3D场景语义分割",
+      "llm_evidence": "对3D场景图进行房间分割，直接实现3D场景语义分割",
+      "canonical_evidence": "对3D场景图进行房间分割，直接实现3D场景语义分割",
+      "llm_tldr_en": "The paper proposes an occupancy-grounded 3D scene graph pipeline that segments rooms based on tracked free-space regions, providing explicit polygonal footprints for robust spatial understanding in indoor robotics.",
+      "llm_tldr_cn": "分层3D场景图中房间层构建缺乏统一几何标准，限制机器人空间推理。本文提出基于占据分解的房间分割流程，将房间节点锚定到追踪的自由空间区域，赋予每个房间明确的多边形足迹。在12个Matterport3D场景上评估，与Hydra等现有方法相比，在房间实例匹配上取得更高精度。该工作为室内机器人提供了更可靠的房间级语义结构，增强了导航和任务规划能力。",
+      "llm_tldr": "分层3D场景图中房间层构建缺乏统一几何标准，限制机器人空间推理。本文提出基于占据分解的房间分割流程，将房间节点锚定到追踪的自由空间区域，赋予每个房间明确的多边形足迹。在12个Matterport3D场景上评估，与Hydra等现有方法相比，在房间实例匹配上取得更高精度。该工作为室内机器人提供了更可靠的房间级语义结构，增强了导航和任务规划能力。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.14307v1",
+      "source": "arxiv",
+      "title": "Pano3D: Unified 3D Reconstruction and Panoptic Segmentation",
+      "abstract": "Recent advances in 3D feedforward reconstruction neural networks have achieved remarkable success in dense reconstruction from images without any camera parameters. Yet, equipping these models with robust semantic understanding remains an open problem. Here we introduce an approach that performs 3D reconstruction and 3D panoptic segmentation in a unified framework. We build on existing 3D reconstruction models and augment them with a set-based mask decoder. The approach is jointly trained with a geometric and semantic loss, which are shown to be mutually beneficial. More precisely, the features are initialized from the geometric information and then finetuned to capture jointly geometry and semantics. We demonstrate the generality of our approach by successfully applying our framework both to online and all-to-all attention reconstruction backbones. Our method achieves state-of-the-art performance in 3D panoptic segmentation across ScanNet, ScanNet200, and ScanNet++ datasets. Ablation studies show that such joint training of a unified model equips 3D feedforward reconstruction neural networks with panoptic segmentation and yields mutually beneficial improvements.",
+      "authors": [
+        "Victor Barberteguy",
+        "Ahmet Iscen",
+        "Mathilde Caron",
+        "Alireza Fathi",
+        "Gül Varol",
+        "Cordelia Schmid"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-12T09:43:13+00:00",
+      "link": "https://arxiv.org/pdf/2606.14307v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Joint 3D reconstruction and semantic/instance segmentation from images",
+      "llm_evidence_cn": "从图像联合进行三维重建与全景分割",
+      "llm_evidence": "从图像联合进行三维重建与全景分割",
+      "canonical_evidence": "从图像联合进行三维重建与全景分割",
+      "llm_tldr_en": "Pano3D unifies 3D reconstruction and 3D panoptic segmentation by augmenting a reconstruction network with a set-based mask decoder, jointly trained with geometric and semantic losses.",
+      "llm_tldr_cn": "针对现有前馈三维重建网络缺乏鲁棒语义理解的不足，Pano3D通过添加集合式掩码解码器，实现联合几何重建与全景分割；几何与语义损失相互促进，在多个数据集上验证了从无相机参数图像同时恢复稠密几何与全景语义的能力，为场景理解提供了统一框架。",
+      "llm_tldr": "针对现有前馈三维重建网络缺乏鲁棒语义理解的不足，Pano3D通过添加集合式掩码解码器，实现联合几何重建与全景分割；几何与语义损失相互促进，在多个数据集上验证了从无相机参数图像同时恢复稠密几何与全景语义的能力，为场景理解提供了统一框架。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.08548v1",
+      "source": "arxiv",
+      "title": "OASIS: From Simulation Data Collection to Real-World Humanoid Loco-Manipulation",
+      "abstract": "Recent progress in robot manipulation has been largely driven by learning from large-scale demonstrations. For humanoid robot loco-manipulation tasks, however, existing data sources force an unsatisfying tradeoff between trajectory quality and scalability. Real-world teleoperation provides the highest-quality trajectories but requires dedicated physical space and time-consuming scene resets. Simulation offers an alternative way out of this dilemma: it can produce clean, embodiment-aligned data at scale without any physical hardware. In this paper, we propose OASIS, a simulation-data-driven framework for humanoid loco-manipulation. OASIS automatically reconstructs realistic object assets from real-world images using a 3D generative model. Based on these assets, trajectories are first collected through teleoperation in simulation, and then augmented under diverse domain randomizations in a post-processing stage. With the resulting simulation data, we further design a hierarchical visuomotor policy for humanoid loco-manipulation. Extensive experiments on the real humanoid robot show that, under zero-shot deployment, the policy trained on our simulation data achieves higher success rates on most tasks than that trained on real-robot teleoperation data, owing largely to the broad lighting and environmental variations covered by our simulation rendering, which real-robot data fails to capture. The project page is available at https://oasis-humanoid.github.io/.",
+      "authors": [
+        "Zehao Yu",
+        "Jiakun Zheng",
+        "Weiji Xie",
+        "Jiyuan Shi",
+        "Chenyun Zhang",
+        "Chenjia Bai",
+        "Xuelong Li"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-06-07T10:01:53+00:00",
+      "link": "https://arxiv.org/pdf/2606.08548v1",
+      "tags": [
+        "keyword:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Reconstructs 3D object assets from real-world images using a 3D generative model",
+      "llm_evidence_cn": "使用3D生成模型从真实世界图像重建3D物体资产",
+      "llm_evidence": "使用3D生成模型从真实世界图像重建3D物体资产",
+      "canonical_evidence": "使用3D生成模型从真实世界图像重建3D物体资产",
+      "llm_tldr_en": "OASIS automates reconstruction of realistic object assets for simulation from real-world images via a 3D generative model, enabling scalable robot learning.",
+      "llm_tldr_cn": "为解决人形机器人移动操作中仿真数据稀缺且质量低的问题，OASIS利用3D生成模型从真实图像自动重建逼真的物体资产，构建高质量仿真环境。实验表明，该框架能生成大规模、高质量的操作轨迹，显著提升了sim-to-real迁移性能。",
+      "llm_tldr": "为解决人形机器人移动操作中仿真数据稀缺且质量低的问题，OASIS利用3D生成模型从真实图像自动重建逼真的物体资产，构建高质量仿真环境。实验表明，该框架能生成大规模、高质量的操作轨迹，显著提升了sim-to-real迁移性能。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.14168v1",
+      "source": "arxiv",
+      "title": "MUSE: Agentic 3D Scene Authoring via Memory-Grounded Incremental Requirement Satisfaction",
+      "abstract": "Text-driven 3D scene generation is a promising technique for digital content creation, embodied AI simulation, and interactive design, yet practical workflows often require refining, extending, or correcting existing scenes while preserving non-target content. Existing methods can produce realistic and structurally plausible scenes, but they generally lack editability with requirement-level state tracking, so part-level failures often lead to full-scene regeneration or manual intervention. To tackle this challenge, we formulate controllable 3D scene authoring as incremental requirement satisfaction, unifying construction and editing. In this paper, we present MUSE, a memory-grounded multi-agent framework in which an Architect compiles instructions into structured requirements, a Sculptor executes local scene operations, and an Inspector verifies each step while updating Working, Scene, and Skill Memory. To evaluate requirement-level controllability and preservation-aware editing, we introduce AuthorBench, offering 145 constrained construction cases and a 1,584-case preservation-aware editing pool paired with external structured checks. On full construction cases, MUSE improves All-Goal success from 37.9 to 80.7 and surface-constraint fulfillment from 35.0 to 92.6 over the strongest baseline. On a stratified 240-case editing test split, MUSE achieves 49.6 All-Goal success, 99.9 preservation rate, and only 0.6 unintended change rate. Beyond automated metrics, human evaluations on compared local-editing baselines support stronger alignment with user intent, and downstream navigation-proxy tests indicate stronger spatial stability. Combined with ablations validating our memory designs, these results establish MUSE as an effective framework for controllable 3D scene authoring.",
+      "authors": [
+        "Ruijie Xu",
+        "Xinnan Zhu",
+        "Jiayu Ying",
+        "Daoguo Dong",
+        "Yuzhou Ji",
+        "Xin Tan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-12T06:51:08+00:00",
+      "link": "https://arxiv.org/pdf/2606.14168v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Agentic framework for controllable 3D scene generation from text with editability",
+      "llm_evidence_cn": "具备可编辑性的从文本可控生成3D场景的智能体框架",
+      "llm_evidence": "具备可编辑性的从文本可控生成3D场景的智能体框架",
+      "canonical_evidence": "具备可编辑性的从文本可控生成3D场景的智能体框架",
+      "llm_tldr_en": "MUSE formulates controllable 3D scene authoring as incremental requirement satisfaction using a memory-grounded multi-agent system, enabling construction and editing while preserving non-target content.",
+      "llm_tldr_cn": "针对现有3D场景生成缺乏可编辑性和需求状态追踪的问题，MUSE将场景创作建模为渐进式需求满足过程，利用多智能体框架通过记忆锚定实现增量构建与编辑，避免整体重新生成。在复杂场景编辑任务中，MUSE有效保持了非目标内容并精确满足修改需求。",
+      "llm_tldr": "针对现有3D场景生成缺乏可编辑性和需求状态追踪的问题，MUSE将场景创作建模为渐进式需求满足过程，利用多智能体框架通过记忆锚定实现增量构建与编辑，避免整体重新生成。在复杂场景编辑任务中，MUSE有效保持了非目标内容并精确满足修改需求。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.14389v1",
+      "source": "arxiv",
+      "title": "MooMIns -- Monocular 3D Reconstruction and Object Pose Estimation from Multiple Instances",
+      "abstract": "Simultaneous 3D reconstruction and 6D object pose estimation from a single monocular image is an inherently ill-posed problem. In industrial settings, however, multiple instances of an object are often randomly arranged in bins, implicitly providing several views of the same object within a single image. We show that this implicit multi-view geometry can be exploited to simultaneously reconstruct the object in 3D and estimate the 6D pose of each visible object instance. We present MooMIns, a new Gaussian-splatting-based approach that inverts the original Gaussian splatting formulation: instead of rendering a single scene from multiple cameras, we render multiple object instances from a single camera. Our method is initialized with SAM3 instance segmentation masks and a modified Structure from Motion (SfM) pipeline. In contrast to learned monocular depth estimation, we perform true geometry-based reconstruction from image evidence, avoiding hallucinations caused by training data priors. We evaluate MooMIns on synthetic and real bin-picking scenarios, and demonstrate accurate reconstruction of previously unseen objects as well as reliable pose estimation of individual instance",
+      "authors": [
+        "Robert Langendörfer",
+        "Markus Hillemann",
+        "Markus Ulrich"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-12T12:24:50+00:00",
+      "link": "https://arxiv.org/pdf/2606.14389v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "3D reconstruction from a single image with multiple object instances, using implicit multi-view geometry",
+      "llm_evidence_cn": "利用单图像中多实例隐式多视图几何进行三维重建",
+      "llm_evidence": "利用单图像中多实例隐式多视图几何进行三维重建",
+      "canonical_evidence": "利用单图像中多实例隐式多视图几何进行三维重建",
+      "llm_tldr_en": "MooMIns exploits implicit multi-view geometry from multiple object instances in a single image to simultaneously reconstruct 3D objects and estimate 6D poses, using an inverted Gaussian splatting approach.",
+      "llm_tldr_cn": "针对单目图像三维重建与姿态估计的病态问题，MooMIns利用工业场景中同一物体多实例隐式提供的多视角信息，通过反演高斯泼溅优化物体形状与姿态；在合成与真实数据集上验证了高效准确的重建与估计性能，为工业视觉应用提供了新方案。",
+      "llm_tldr": "针对单目图像三维重建与姿态估计的病态问题，MooMIns利用工业场景中同一物体多实例隐式提供的多视角信息，通过反演高斯泼溅优化物体形状与姿态；在合成与真实数据集上验证了高效准确的重建与估计性能，为工业视觉应用提供了新方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.13127v1",
+      "source": "arxiv",
+      "title": "Fully Distributed Multi-View 3D Tracking in Real-Time",
+      "abstract": "Multi-camera tracking with overlapping fields of view typically relies on centralized fusion, which creates computational bottlenecks that prevent deployment at scale. We present MV3DT, a fully distributed framework for real-time multi-view 3D tracking that achieves accurate identity propagation and occlusion recovery through peer-to-peer coordination, eliminating the need for central aggregation. Each camera node executes a lightweight modular pipeline comprising monocular 3D perception, distributed multi-view association, and collaborative fusion via lightweight messaging. MV3DT achieves 94.3% IDF1 and 93.3% MOTA on WILDTRACK, competitive with state-of-the-art centralized methods, while demonstrating superior scalability by sustaining 30 FPS on 100 cameras with less than 10 ms inter-camera latency and only 2.2% communication overhead. MV3DT operates in a zero-shot regime given camera calibrations, requiring no scene-specific learning and making it directly deployable in new environments. These results establish MV3DT as a practical solution for real-time multi-view tracking in large-scale overlapping camera networks.",
+      "authors": [
+        "Byron Hernandez",
+        "Fangyu Li",
+        "Aotian Wu",
+        "Paul J. Shin",
+        "Kaustubh Purandare",
+        "Henry Medeiros"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-11T09:51:55+00:00",
+      "link": "https://arxiv.org/pdf/2606.13127v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "distributed multi-view association for 3D tracking matches features across views",
+      "llm_evidence_cn": "分布式多视图数据关联实现跨视图特征匹配",
+      "llm_evidence": "分布式多视图数据关联实现跨视图特征匹配",
+      "canonical_evidence": "分布式多视图数据关联实现跨视图特征匹配",
+      "llm_tldr_en": "MV3DT presents a fully distributed multi-view 3D tracking system that associates objects across cameras via peer-to-peer coordination, achieving real-time performance with competitive accuracy using lightweight messaging.",
+      "llm_tldr_cn": "多相机3D跟踪通常依赖集中式融合，难以扩展。MV3DT提出全分布式框架，通过点对点协调实现多视图关联和遮挡恢复，无需中央聚合。在WILDTRACK上达到94.3% IDF1，同时支持100路相机30FPS实时运行，展现了优越的可扩展性。",
+      "llm_tldr": "多相机3D跟踪通常依赖集中式融合，难以扩展。MV3DT提出全分布式框架，通过点对点协调实现多视图关联和遮挡恢复，无需中央聚合。在WILDTRACK上达到94.3% IDF1，同时支持100路相机30FPS实时运行，展现了优越的可扩展性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.14562v1",
+      "source": "arxiv",
+      "title": "NEST3D: A High-Resolution Multimodal Dataset of Sociable Weaver Tree Nests",
+      "abstract": "Sociable weaver nests function as complex ecological structures offering thermoregulatory microhabitats and sustaining diverse species; however, datasets used in prior studies lack fine-grained 3D structural detail. Producing usable and accurate 3D weaver nest data is challenging due to their irregular geometry and integration with complex host vegetation. We bridge this gap with an open-access, 1.4 TB multimodal drone dataset of 104 nest-bearing trees, comprising 27,945 RGB images, 111,780 multispectral images, approximately 781 million 3D points, and expert-annotated semantic segmentation labels. We benchmark semantic segmentation using KPConv, RandLA-Net, and Point Transformer V3, with PT-v3 achieving an mIoU of 86.35% on the test set. While the results demonstrate strong performance for transformer-based and point-wise methods, they also highlight architecture-dependent challenges, particularly for convolution-based approaches such as KPConv. By uniquely combining spectral, spatial, and structural information, the presented dataset advances 3D reconstruction, segmentation, and classification algorithms, enabling ecological applications from nest volume estimation to species conservation, and serves as a demanding benchmark that exposes architecture-dependent performance under extreme class imbalance.",
+      "authors": [
+        "Constanza A. Molina Catricheo",
+        "Simon Boeder",
+        "Ting-Jia Guo",
+        "Giacomo May",
+        "Clément Berthelot",
+        "Devis Tuia",
+        "Friedrich Fedor Reinhard",
+        "Fabio Remondino",
+        "Benjamin Risse"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-06-12T15:39:18+00:00",
+      "link": "https://arxiv.org/pdf/2606.14562v1",
+      "tags": [
+        "keyword:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "High-resolution 3D dataset with semantic segmentation for complex ecological structures, benchmarking point cloud segmentation.",
+      "llm_evidence_cn": "高分辨率3D数据集，含语义分割标注，用于复杂生态结构并基准测试点云分割",
+      "llm_evidence": "高分辨率3D数据集，含语义分割标注，用于复杂生态结构并基准测试点云分割",
+      "canonical_evidence": "高分辨率3D数据集，含语义分割标注，用于复杂生态结构并基准测试点云分割",
+      "llm_tldr_en": "NEST3D provides a large-scale multimodal dataset of weaver bird nests with 3D point clouds and semantic segmentation labels, benchmarking state-of-the-art 3D segmentation methods.",
+      "llm_tldr_cn": "NEST3D针对群体织巢鸟巢研究中3D结构细节不足的问题，构建了一个1.4TB的多模态无人机数据集，包含高分辨率RGB、多光谱图像和点云，以及专家标注的语义分割标签。基准测试表明，Point Transformer V3在3D点云语义分割上达到86.35% mIoU。该开源数据集为生态学中的3D场景理解提供了重要资源，推动了3D语义分割在自然结构分析中的应用。",
+      "llm_tldr": "NEST3D针对群体织巢鸟巢研究中3D结构细节不足的问题，构建了一个1.4TB的多模态无人机数据集，包含高分辨率RGB、多光谱图像和点云，以及专家标注的语义分割标签。基准测试表明，Point Transformer V3在3D点云语义分割上达到86.35% mIoU。该开源数据集为生态学中的3D场景理解提供了重要资源，推动了3D语义分割在自然结构分析中的应用。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.10019v1",
+      "source": "arxiv",
+      "title": "Generalized-CVO: Fast and Correspondence-Free Local Point Cloud Registration with Second Order Riemannian Optimization",
+      "abstract": "We propose a fast and correspondence-free local point cloud registration method that leverages geometric surface structure and reproducing kernel Hilbert space (RKHS) embeddings. The method represents point clouds as continuous functions with point-wise anisotropic kernels that encode local geometry. This formulation improves alignment along surface normals while relaxing alignment along tangential directions. To solve the resulting registration problem, we propose a second-order on-manifold optimization scheme with approximate Riemannian Hessians, achieving a speedup of up to 10x over the first-order solvers used in prior correspondence-free RKHS-based methods. We demonstrate improved frame-to-frame LiDAR and RGB-D tracking accuracy across diverse indoor and outdoor datasets. On a LiDAR tracking registration task in the driving domain, we achieve a reduction of $>55\\%$ in both translational and rotational drift in challenging feature-sparse environments. On object registration benchmarks, we show improved robustness over ICP-based methods and further gains when refining global initialization, particularly under moderate misalignment.",
+      "authors": [
+        "Ray Zhang",
+        "Marcus Greiff",
+        "Thomas Lew",
+        "John Subosits"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI",
+        "cs.RO"
+      ],
+      "published": "2026-06-08T18:07:11+00:00",
+      "link": "https://arxiv.org/pdf/2606.10019v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Fast point cloud registration method, enables multi-view alignment without feature matching",
+      "llm_evidence_cn": "快速点云配准方法，无需特征匹配即可实现多视图对齐",
+      "llm_evidence": "快速点云配准方法，无需特征匹配即可实现多视图对齐",
+      "canonical_evidence": "快速点云配准方法，无需特征匹配即可实现多视图对齐",
+      "llm_tldr_en": "Generalized-CVO introduces a fast, correspondence-free point cloud registration using second-order Riemannian optimization, achieving 10x speedup over prior RKHS methods and improving LiDAR frame-to-frame alignment.",
+      "llm_tldr_cn": "现有的无对应点云配准方法多采用一阶优化，收敛速度慢且易陷入局部最优。本文提出一种基于二阶黎曼优化的快速无对应局部点云配准方法（Generalized-CVO），利用各向异性核函数编码局部几何，在曲面法线方向加强对齐，切线方向放松约束，并通过近似黎曼海森矩阵实现二阶优化，速度较以往一阶方法提升10倍。在LiDAR帧间配准等任务上，该方法展现出更高的精度和鲁棒性，为多视图三维重建提供了高效的对齐工具。",
+      "llm_tldr": "现有的无对应点云配准方法多采用一阶优化，收敛速度慢且易陷入局部最优。本文提出一种基于二阶黎曼优化的快速无对应局部点云配准方法（Generalized-CVO），利用各向异性核函数编码局部几何，在曲面法线方向加强对齐，切线方向放松约束，并通过近似黎曼海森矩阵实现二阶优化，速度较以往一阶方法提升10倍。在LiDAR帧间配准等任务上，该方法展现出更高的精度和鲁棒性，为多视图三维重建提供了高效的对齐工具。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.11782v1",
+      "source": "arxiv",
+      "title": "Seeing What Matters: Perceptual Wrapper with Common Randomness for 3D Gaussian Splatting",
+      "abstract": "While 3D Gaussian Splatting (3DGS) achieves impressive real-time rendering, it frequently struggles to synthesize high-frequency textures, a limitation heavily exacerbated in memory-constrained and rate-distortion-optimized (RDO) pipelines. To address this, we propose a versatile 2D perceptual wrapper that enhances the rendered outputs of existing 3DGS representations in a content- and view-dependent manner. Our method leverages a lightweight synthesis network conditioned on pseudo-random Gaussian noise to synthesize perceptually plausible textures. Supervised by Wasserstein Distortion, the network learns to match local feature statistics rather than strictly enforcing pixel-wise reconstruction fidelity, effectively mitigating the blurriness inherent in standard frameworks. We demonstrate the broad applicability of our plug-and-play approach across vanilla, memory-constrained, and RDO 3DGS methods. Comprehensive subjective and objective experiments confirm that our method significantly improves over existing baselines, yielding superior perceptual quality at sharply reduced file or model sizes.",
+      "authors": [
+        "He-Bi Yang",
+        "Jing-Zhong Chen",
+        "Yen-Kuan Ho",
+        "Sang NguyenQuang",
+        "Fan-Yi Hsu",
+        "Yun-Yu Lee",
+        "Jui-Chiu Chiang",
+        "Wen-Hsiao Peng"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-10T08:14:47+00:00",
+      "link": "https://arxiv.org/pdf/2606.11782v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Perceptual wrapper to enhance 3DGS rendering, a core component in 3D scene reconstruction",
+      "llm_evidence_cn": "用于增强3D高斯溅射渲染的感知包装器，3DGS是三维场景重建核心组件",
+      "llm_evidence": "用于增强3D高斯溅射渲染的感知包装器，3DGS是三维场景重建核心组件",
+      "canonical_evidence": "用于增强3D高斯溅射渲染的感知包装器，3DGS是三维场景重建核心组件",
+      "llm_tldr_en": "Introduces a perceptual wrapper for 3D Gaussian Splatting to improve rendering quality under memory constraints, using noise-conditioned synthesis and Wasserstein Distortion to match local feature statistics.",
+      "llm_tldr_cn": "该文针对3D高斯溅射在内存受限下难以渲染高频纹理的问题，提出一个内容与视角依赖的二维感知包装器，通过伪随机噪声条件化合成网络，并采用Wasserstein失真监督来匹配局部特征统计，从而增强渲染输出的感知质量。实验表明该方法有效减轻模糊瑕疵，提升了3DGS在低资源场景下的渲染品质，对三维场景重建后处理具有应用价值。",
+      "llm_tldr": "该文针对3D高斯溅射在内存受限下难以渲染高频纹理的问题，提出一个内容与视角依赖的二维感知包装器，通过伪随机噪声条件化合成网络，并采用Wasserstein失真监督来匹配局部特征统计，从而增强渲染输出的感知质量。实验表明该方法有效减轻模糊瑕疵，提升了3DGS在低资源场景下的渲染品质，对三维场景重建后处理具有应用价值。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.13345v1",
+      "source": "arxiv",
+      "title": "JointEdit3D: Feed-Forward 3D Scene Editing in a Unified Latent Space",
+      "abstract": "Existing 3D scene editing methods typically rely on per-scene optimization over explicit 3D representations or cascaded edit-and-reconstruct pipelines, resulting in high test-time cost, limited 3D awareness, and structural inconsistencies. To couple appearance synthesis and geometry prediction during editing, we build on a unified RGB-geometry reconstruction-generation latent space and adapt it to feed-forward 3D scene editing. The resulting framework, \\textbf{JointEdit3D}, performs asymmetric latent inpainting by observing only a single edited RGB reference latent and generating the remaining RGB views and edited geometry latent under source-scene anchoring. JointEdit3D introduces a dedicated SceneAnchor Branch to inject source-scene structure without forcing direct copying, and adopts edit/background-aware losses to balance edited-region fidelity with unedited-content preservation. To address the lack of paired resources for standardized 3D scene editing evaluation, we introduce SceneEdit3D-15K, a dataset with 15K paired editing samples and renderer-provided 3D annotations, together with SceneEdit3D-Bench, a curated 100-sample benchmark. Experiments show that JointEdit3D improves edited-region quality and 3D structural completeness over prior baselines while maintaining competitive background preservation.",
+      "authors": [
+        "Xinnan Zhu",
+        "Ruijie Xu",
+        "Jiayu Ying",
+        "Daoguo Dong",
+        "Jiachen Xu",
+        "Yuan Xie",
+        "Xin Tan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-11T13:35:23+00:00",
+      "link": "https://arxiv.org/pdf/2606.13345v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Joint RGB-geometry latent space for feed-forward 3D scene editing, closely related to scene generation and reconstruction theme.",
+      "llm_evidence_cn": "联合RGB-几何潜在空间的前馈式3D场景编辑，与场景生成与重建主题紧密相关",
+      "llm_evidence": "联合RGB-几何潜在空间的前馈式3D场景编辑，与场景生成与重建主题紧密相关",
+      "canonical_evidence": "联合RGB-几何潜在空间的前馈式3D场景编辑，与场景生成与重建主题紧密相关",
+      "llm_tldr_en": "JointEdit3D enables feed-forward 3D scene editing from a single edited reference by operating in a unified RGB-geometry latent space, ensuring multi-view consistency without per-scene optimization.",
+      "llm_tldr_cn": "JointEdit3D针对传统3D场景编辑需重复优化、难以保持几何一致性的问题，提出了基于统一潜在空间的前馈式编辑框架。它通过在一次编辑参考图输入后，生成其余视角的编辑外观和几何信息，并利用源场景锚定分支保留结构。实验表明，该方法能快速生成多视角一致的编辑效果，无需场景特定优化，大幅提高了3D内容编辑的效率，为交互式3D场景应用提供了新可能。",
+      "llm_tldr": "JointEdit3D针对传统3D场景编辑需重复优化、难以保持几何一致性的问题，提出了基于统一潜在空间的前馈式编辑框架。它通过在一次编辑参考图输入后，生成其余视角的编辑外观和几何信息，并利用源场景锚定分支保留结构。实验表明，该方法能快速生成多视角一致的编辑效果，无需场景特定优化，大幅提高了3D内容编辑的效率，为交互式3D场景应用提供了新可能。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.13676v1",
+      "source": "arxiv",
+      "title": "Modality Forcing for Scalable Spatial Generation",
+      "abstract": "Text-to-image (T2I) models contain rich spatial priors. Synthesizing photorealistic, cluttered scenes requires an understanding of geometry, including perspective and relative scale. Prior works adapt T2I models to leverage this prior for depth prediction, but they require dense depth data and involve complex recipes. We propose Modality Forcing, a simple, scalable post-training recipe for joint image-depth generation using a single DiT trained on sparse depth data. Modality Forcing enables conditional and joint generation of image and depth in any permutation by assigning separate noise levels per modality. Per-modality decoders let us train on sparse, real-world depth and achieve strong, generalizable depth prediction. We further show that Modality Forcing inherits the scalability of T2I pre-training: by training a set of T2I models from scratch (370M to 3.3B parameters), we find that larger models trained on more image data produce more accurate depth. Our strongest model is competitive with state-of-the-art monocular depth estimators and reduces AbsRel by 57% relative to existing joint image-depth generative models. These results provide strong evidence that image generation is a scalable pre-training objective for spatial perception. https://modality-forcing.github.io/",
+      "authors": [
+        "Bardienus Pieter Duisterhof",
+        "Deva Ramanan",
+        "Jeffrey Ichnowski",
+        "Justin Johnson",
+        "Keunhong Park"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-11T17:59:45+00:00",
+      "link": "https://arxiv.org/pdf/2606.13676v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Enables joint image-depth generation for scalable spatial generation",
+      "llm_evidence_cn": "实现图像与深度联合生成，支持可扩展空间生成",
+      "llm_evidence": "实现图像与深度联合生成，支持可扩展空间生成",
+      "canonical_evidence": "实现图像与深度联合生成，支持可扩展空间生成",
+      "llm_tldr_en": "Modality Forcing introduces a simple post-training recipe for joint image-depth generation using a single DiT, achieving strong and generalizable depth prediction while inheriting photorealistic scene priors from T2I models.",
+      "llm_tldr_cn": "针对文本到图像模型蕴含丰富空间先验但缺少高效深度利用机制的问题，提出模态强制方法，在单一DiT上实现图像与深度的联合生成；通过分离噪声水平实现任意排列的条件生成，仅需稀疏真实深度数据即可获得强泛化的深度预测，并从生成模型中继承逼真场景先验，推动可扩展的空间内容生成。",
+      "llm_tldr": "针对文本到图像模型蕴含丰富空间先验但缺少高效深度利用机制的问题，提出模态强制方法，在单一DiT上实现图像与深度的联合生成；通过分离噪声水平实现任意排列的条件生成，仅需稀疏真实深度数据即可获得强泛化的深度预测，并从生成模型中继承逼真场景先验，推动可扩展的空间内容生成。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
