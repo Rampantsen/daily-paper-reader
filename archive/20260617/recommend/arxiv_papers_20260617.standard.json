@@ -1,0 +1,424 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-17T22:07:10.370167+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 7,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2606.17564v1",
+      "source": "arxiv",
+      "title": "Geometric Consistency Protocol for Foundation Model Features in Multi-View Satellite Imagery",
+      "abstract": "Standardized evaluation protocols are indispensable for robust benchmarking in remote sensing, particularly as foundation features are increasingly transferred across diverse sensors and complex imaging geometries. In satellite multi-view reconstruction, conventional evaluations relying on unconstrained 2D global matching are often misleading. The Rational Function Model (RFM) and its Rational Polynomial Coefficients (RPC) dictate a curved, height-dependent epipolar geometry that render flat 2D search spaces physically inconsistent. We propose a geometry-faithful and reproducible protocol tailored for the RPC framework. Our approach integrates an RPC-projected 3D consistency metric with a geometry-constrained dense matching proxy, specifically evaluating whether similarity responses remain localized and unique under physically plausible search manifolds. A pivotal finding of our joint reporting strategy is the decoupling of semantic agreement and geometric localization: high cross-view similarity at a projected 3D point does not guarantee reliable matchability in practical inference. Our benchmark demonstrates that incorporating geometric constraints is fundamental to the problem definition in satellite imagery. Furthermore, we show that state-of-the-art 2D backbones remain remarkably competitive against specialized 3D-aware models when subjected to this RPC-consistent evaluation.",
+      "authors": [
+        "Qiyan Luo",
+        "Jie Yang",
+        "Yingdong Pi",
+        "Lekang Wen",
+        "Mi Wang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-06-16T06:09:08+00:00",
+      "link": "https://arxiv.org/pdf/2606.17564v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Geometry-consistent protocol for multi-view satellite 3D reconstruction and feature matching",
+      "llm_evidence_cn": "用于多视角卫星三维重建和特征匹配的几何一致性协议",
+      "llm_evidence": "用于多视角卫星三维重建和特征匹配的几何一致性协议",
+      "canonical_evidence": "用于多视角卫星三维重建和特征匹配的几何一致性协议",
+      "llm_tldr_en": "Proposes a geometry-faithful protocol for multi-view satellite reconstruction that uses RPC epipolar geometry to ensure 3D consistency in feature matching, replacing misleading unconstrained 2D matching.",
+      "llm_tldr_cn": "卫星多视角重建中，传统评估方法使用无约束二维全局匹配，忽视有理函数模型定义的弯曲、高度依赖的核线几何，导致物理不一致。本文提出适用于RPC框架的几何忠实可复现协议，结合RPC投影的三维一致性度量和几何约束密集匹配代理。实验表明该协议能可靠评估基础特征在复杂成像几何下的性能，为遥感多视角重建提供了精确基准工具。",
+      "llm_tldr": "卫星多视角重建中，传统评估方法使用无约束二维全局匹配，忽视有理函数模型定义的弯曲、高度依赖的核线几何，导致物理不一致。本文提出适用于RPC框架的几何忠实可复现协议，结合RPC投影的三维一致性度量和几何约束密集匹配代理。实验表明该协议能可靠评估基础特征在复杂成像几何下的性能，为遥感多视角重建提供了精确基准工具。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "multi-view stereo 3D reconstruction",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.17935v1",
+      "source": "arxiv",
+      "title": "MoonSplat: Monocular Online Gaussian Splatting with Sim(3) Global Optimization",
+      "abstract": "Online 3D reconstruction from monocular image sequences is a challenging and ongoing research topic. 3D Gaussian Splatting (3DGS), leveraging its high-quality real-time rendering capability, empowers online 3D reconstruction to represent dense scenes with enhanced expressiveness, and thus holds great promise for a wide range of applications such as robotics and AR/VR. However, existing online 3DGS methods still suffer from some key challenges: fragile camera pose estimation due to the lack of global optimization, and low optimization efficiency in large-scale or long-sequence scenarios. To address these issues, we propose a robust and efficient online voxelized 3DGS reconstruction framework integrated with global $\\text{Sim}(3)$ optimization, which enables reliable camera tracking and efficient global loop closure for both camera poses and voxelized 3DGS. To accelerate the convergence of the voxelized 3DGS, we further introduce a color residual learning strategy, which not only boosts optimization speed but also enhances rendering quality. Extensive experiments on diverse indoor and outdoor datasets demonstrate that our method achieves state-of-the-art performance in both camera pose estimation accuracy and rendering quality, while retaining real-time efficiency. Additionally, we develop and deploy a real-world UAV-based active reconstruction system grounded on our proposed method, validating its robustness and generalizability for practical online 3D reconstruction tasks. Our code and data are available at https://github.com/TrickyGo/MoonSplat.",
+      "authors": [
+        "Guo Pu",
+        "Yixuan Han",
+        "Haofeng Li",
+        "Yao Zhang",
+        "Hui Zhou",
+        "Zhouhui Lian"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-16T13:43:35+00:00",
+      "link": "https://arxiv.org/pdf/2606.17935v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "online 3D reconstruction from monocular sequences using 3DGS with global pose optimization",
+      "llm_evidence_cn": "利用全局位姿优化的3D高斯泼溅从单目序列实现在线三维重建",
+      "llm_evidence": "利用全局位姿优化的3D高斯泼溅从单目序列实现在线三维重建",
+      "canonical_evidence": "利用全局位姿优化的3D高斯泼溅从单目序列实现在线三维重建",
+      "llm_tldr_en": "MoonSplat proposes a robust online 3DGS reconstruction framework that integrates global Sim(3) optimization to improve camera pose estimation and efficiency for large-scale scenes.",
+      "llm_tldr_cn": "针对在线3D高斯重建中相机位姿估计脆弱和长序列效率低的问题，MoonSplat提出集成全局Sim(3)优化的体素化3DGS框架。该方法增强了位姿一致性并提升了大场景优化效率，为机器人和AR/VR等应用提供了更鲁棒的在线三维重建方案。",
+      "llm_tldr": "针对在线3D高斯重建中相机位姿估计脆弱和长序列效率低的问题，MoonSplat提出集成全局Sim(3)优化的体素化3DGS框架。该方法增强了位姿一致性并提升了大场景优化效率，为机器人和AR/VR等应用提供了更鲁棒的在线三维重建方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.18250v1",
+      "source": "arxiv",
+      "title": "Future Dynamic 3D Reconstruction: A 3D World Model with Disentangled Ego-Motion",
+      "abstract": "Forecasting the evolution of dynamic environments is crucial for autonomous agents. While generative world models have recently achieved high photorealism in 2D video synthesis by mixing ego-motion and environmental dynamics within the image plane, they exhibit physical inconsistencies, such as morphing or vanishing objects, especially over long time horizons. In this paper, we propose FR3D, a world model that predicts a persistent 3D latent representation for future dynamic 3D reconstruction. Unlike prior works that treat the world as a sequence of image-based features, FR3D explicitly decouples the 3D evolution of the scene from the agent's trajectory, treating the inferred ego-motion as a latent proxy for action. This disentanglement resolves the ambiguities between self-motion and world-motion, ensuring geometric consistency into the future. Furthermore, we introduce a teacher-student distillation strategy that leverages the spatial \"common sense\" of off-the-shelf foundation models, leading to robust zero-shot generalization. Extensive experiments demonstrate FR3D's strong performance for future dynamic 3D reconstruction from monocular observations across multiple datasets, even 2 seconds into the future. Project page: https://fr3d-wm.github.io.",
+      "authors": [
+        "Nils Morbitzer",
+        "Jonathan Evers",
+        "Artem Savkin",
+        "Thomas Stauner",
+        "Nassir Navab",
+        "Federico Tombari",
+        "Stefano Gasperini"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-16T17:59:46+00:00",
+      "link": "https://arxiv.org/pdf/2606.18250v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "proposes a world model for future dynamic 3D reconstruction by decoupling ego-motion and scene evolution",
+      "llm_evidence_cn": "提出了一种通过解耦自运动与场景演进的未来动态三维重建世界模型",
+      "llm_evidence": "提出了一种通过解耦自运动与场景演进的未来动态三维重建世界模型",
+      "canonical_evidence": "提出了一种通过解耦自运动与场景演进的未来动态三维重建世界模型",
+      "llm_tldr_en": "FR3D predicts a persistent 3D latent representation for future dynamic 3D reconstruction, improving long-term consistency by disentangling ego-motion from scene dynamics.",
+      "llm_tldr_cn": "FR3D提出一种预测未来动态三维场景的世界模型，通过显式解耦自车运动与场景三维演变，解决了现有2D生成模型中的物体变形消失问题。该方法将自运动视为隐式动作代理，学习持久的三维隐表示，在长时预测中显著提升了物理一致性和重建稳定性。",
+      "llm_tldr": "FR3D提出一种预测未来动态三维场景的世界模型，通过显式解耦自车运动与场景三维演变，解决了现有2D生成模型中的物体变形消失问题。该方法将自运动视为隐式动作代理，学习持久的三维隐表示，在长时预测中显著提升了物理一致性和重建稳定性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.15534v1",
+      "source": "arxiv",
+      "title": "Track2View: 4D-Consistent Camera-Controlled Video Generation via Paired 3D Point Tracks",
+      "abstract": "Re-rendering an existing video from a novel camera viewpoint requires the output to follow the prescribed camera trajectory while preserving the appearance and dynamics of the original scene across every frame. Existing methods rely on per-frame pose embeddings, noisy point-cloud renderings, or implicit learned correspondences, none of which provides an explicit, temporally continuous link between source and target pixels. We propose Track2View, which conditions a video diffusion transformer on paired 3D point tracks: sparse trajectories of scene points projected into both the source and target camera views. These tracks provide explicit spatiotemporal correspondences that are temporally continuous by construction, encoding what content should appear where and when. At the core of Track2View is a dual-view track conditioner that transfers visual context from source to target view through parameter-free geometric operations and learned temporal aggregation, ensuring generalization to arbitrary camera trajectories without memorizing specific motions. We further introduce a data curation pipeline that extracts one-to-one track correspondences by running a 3D point tracker on temporally concatenated multi-camera view pairs. On a 400-video benchmark spanning static and dynamic scenes, Track2View achieves state-of-the-art results across visual quality, view synchronization, and camera accuracy, reducing rotation error by 30-65% and translation error by 61-72% relative to leading baselines. Project page is available at this https URL: https://qjizhi.github.io/track2view",
+      "authors": [
+        "Feng Qiao",
+        "Zhaochong An",
+        "Zhexiao Xiong",
+        "Serge Belongie",
+        "Nathan Jacobs"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-14T01:23:50+00:00",
+      "link": "https://arxiv.org/pdf/2606.15534v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "uses paired 3D point tracks for explicit multi-view spatiotemporal correspondences in novel view synthesis",
+      "llm_evidence_cn": "利用配对3D点轨迹为多视图时空对应提供显式链接，实现新视角合成",
+      "llm_evidence": "利用配对3D点轨迹为多视图时空对应提供显式链接，实现新视角合成",
+      "canonical_evidence": "利用配对3D点轨迹为多视图时空对应提供显式链接，实现新视角合成",
+      "llm_tldr_en": "Conditions video diffusion on paired 3D point tracks, providing continuous correspondences across source and target views to generate novel-view video with preserved dynamics.",
+      "llm_tldr_cn": "现有视频新视角渲染方法缺乏明确的时空连续对应关系。Track2View将视频扩散模型建立在配对的3D点轨迹上，这些轨迹编码了源视图和目标视图间哪些内容需要保留，从而实现4D一致的相机控制视频生成。实验表明该方法能生成外观和动态保真的新视角视频，为视频编辑和视角操控提供了有效方案。",
+      "llm_tldr": "现有视频新视角渲染方法缺乏明确的时空连续对应关系。Track2View将视频扩散模型建立在配对的3D点轨迹上，这些轨迹编码了源视图和目标视图间哪些内容需要保留，从而实现4D一致的相机控制视频生成。实验表明该方法能生成外观和动态保真的新视角视频，为视频编辑和视角操控提供了有效方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.13345v1",
+      "source": "arxiv",
+      "title": "JointEdit3D: Feed-Forward 3D Scene Editing in a Unified Latent Space",
+      "abstract": "Existing 3D scene editing methods typically rely on per-scene optimization over explicit 3D representations or cascaded edit-and-reconstruct pipelines, resulting in high test-time cost, limited 3D awareness, and structural inconsistencies. To couple appearance synthesis and geometry prediction during editing, we build on a unified RGB-geometry reconstruction-generation latent space and adapt it to feed-forward 3D scene editing. The resulting framework, \\textbf{JointEdit3D}, performs asymmetric latent inpainting by observing only a single edited RGB reference latent and generating the remaining RGB views and edited geometry latent under source-scene anchoring. JointEdit3D introduces a dedicated SceneAnchor Branch to inject source-scene structure without forcing direct copying, and adopts edit/background-aware losses to balance edited-region fidelity with unedited-content preservation. To address the lack of paired resources for standardized 3D scene editing evaluation, we introduce SceneEdit3D-15K, a dataset with 15K paired editing samples and renderer-provided 3D annotations, together with SceneEdit3D-Bench, a curated 100-sample benchmark. Experiments show that JointEdit3D improves edited-region quality and 3D structural completeness over prior baselines while maintaining competitive background preservation.",
+      "authors": [
+        "Xinnan Zhu",
+        "Ruijie Xu",
+        "Jiayu Ying",
+        "Daoguo Dong",
+        "Jiachen Xu",
+        "Yuan Xie",
+        "Xin Tan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-11T13:35:23+00:00",
+      "link": "https://arxiv.org/pdf/2606.13345v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "feed-forward 3D scene editing in a unified latent space coupled with reconstruction and generation",
+      "llm_evidence_cn": "在统一潜在空间中耦合重建与生成的前馈式3D场景编辑",
+      "llm_evidence": "在统一潜在空间中耦合重建与生成的前馈式3D场景编辑",
+      "canonical_evidence": "在统一潜在空间中耦合重建与生成的前馈式3D场景编辑",
+      "llm_tldr_en": "Introduces a feed-forward 3D scene editor using a unified RGB-geometry latent space, enabling one-shot scene editing without per-scene optimization.",
+      "llm_tldr_cn": "针对现有3D场景编辑需逐场景优化、成本高且结构不一致的问题，构建统一RGB-几何重建-生成潜在空间，提出前馈式框架JointEdit3D。只需单张编辑后的RGB参考图，即可生成多视角图像和编辑后的几何，并通过场景锚定分支保持源结构。实验表明该方法实现了高效、一致的3D场景编辑，推动了交互式3D内容创作。",
+      "llm_tldr": "针对现有3D场景编辑需逐场景优化、成本高且结构不一致的问题，构建统一RGB-几何重建-生成潜在空间，提出前馈式框架JointEdit3D。只需单张编辑后的RGB参考图，即可生成多视角图像和编辑后的几何，并通过场景锚定分支保持源结构。实验表明该方法实现了高效、一致的3D场景编辑，推动了交互式3D内容创作。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.17310v1",
+      "source": "arxiv",
+      "title": "SierpinskiCam: Camera-Controlled Video Retaking with Sierpinski Triangle Pattern Cues",
+      "abstract": "Generating novel renderings of a scene along user-defined camera trajectories from a single monocular video, dubbed video retaking, is a compelling but difficult problem in content creation and visual effects. Existing geometry-guided approaches reconstruct a 4D representation from the source video and render it along the target trajectory to condition video diffusion models. However, this guidance degrades as the target camera departs from the source trajectory, leaving newly revealed regions sparse or entirely missing. We propose SierpinskiCam, which addresses this limitation by augmenting geometry-based guidance with Sierpinski dome texture cues that contains rich trackable features even under large viewpoint changes. We further introduce a reference video conditioning mechanism that appends source-video tokens to the target-token sequence and separates the two streams with negative RoPE indices, enabling appearance grounding without architectural modification or per-video adaptation. Extensive experiments show that SierpinskiCam achieves significant gains in camera controllability, geometric consistency, and video quality across diverse and challenging retaking scenarios. Project page: https://hyelinnam.github.io/SierpinskiCam/.",
+      "authors": [
+        "Suttisak Wizadwongsa",
+        "Hyelin Nam",
+        "Supasorn Suwajanakorn",
+        "Jeong Joon Park"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-15T21:32:01+00:00",
+      "link": "https://arxiv.org/pdf/2606.17310v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "uses geometry-guided diffusion and Sierpinski dome cues for novel view synthesis from monocular video",
+      "llm_evidence_cn": "利用几何引导扩散和谢尔宾斯基地毯纹理线索从单目视频生成新视角",
+      "llm_evidence": "利用几何引导扩散和谢尔宾斯基地毯纹理线索从单目视频生成新视角",
+      "canonical_evidence": "利用几何引导扩散和谢尔宾斯基地毯纹理线索从单目视频生成新视角",
+      "llm_tldr_en": "SierpinskiCam enables camera-controlled video retaking by augmenting 4D geometry reconstruction with Sierpinski dome texture cues, which provide rich trackable features for large viewpoint changes.",
+      "llm_tldr_cn": "针对单目视频重拍中摄像机大幅偏离原轨迹时几何引导退化的问题，SierpinskiCam引入谢尔宾斯基穹顶纹理线索增强4D重建，提供大量可追踪特征以支持大视角变化下的新视角渲染。该方法改善了缺失区域的填补质量，实现了稳健的摄像机控制视频重拍。",
+      "llm_tldr": "针对单目视频重拍中摄像机大幅偏离原轨迹时几何引导退化的问题，SierpinskiCam引入谢尔宾斯基穹顶纹理线索增强4D重建，提供大量可追踪特征以支持大视角变化下的新视角渲染。该方法改善了缺失区域的填补质量，实现了稳健的摄像机控制视频重拍。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.17480v1",
+      "source": "arxiv",
+      "title": "GeneralVLA-2: Geometry-Aware Reconstruction and Governed Memory for Robot Planning",
+      "abstract": "Generalist vision-language-action systems need object-centric 3D evidence and reusable manipulation experience to plan reliable robot trajectories. GeneralVLA provides a hierarchical interface for converting language and RGB-D observations into 3D end-effector paths, but two bottlenecks remain. First, monocular SAM3D-style object reconstruction can hallucinate pose and unseen geometry, while manipulation benefits from stable object shape when calibrated multi-view observations are available. Second, the original KnowledgeBank mainly retrieves semantically similar snippets and appends new knowledge, which makes it difficult to control memory quality, conflicts, confidence, and geometric relevance. To address the first challenge, we introduce GeoFuse-MV3D, a geometry-prior-guided MV-SAM3D reconstruction branch that verifies external geometry cues with input-view masks, applies soft visual-hull support, performs axis-wise refinement, and fuses only geometry while preserving appearance. To address the second challenge, we upgrade KnowledgeBank into a governed long-term memory system with explicit quality, confidence, lifecycle, verifier, and conflict metadata, together with precision-oriented retrieval. Finally, we evaluate the reconstruction branch on GSO-30 and the memory module on Terminal-Bench 2.0 and SWE-Bench Verified; GeoFuse-MV3D improves over the MV-SAM3D baseline by reducing CD and LPIPS by 2.20% and 2.02% while increasing PSNR and SSIM by 2.36% and 1.03%, and KnowledgeBank improves over ReasoningBank by 4.53% on Terminal-Bench SR and 3.73% on SWE-Bench resolve rate, while reducing AS by 4.95% and 5.65%, respectively. Code: https://github.com/AIGeeksGroup/GeneralVLA-2. Website: https://aigeeksgroup.github.io/GeneralVLA-2.",
+      "authors": [
+        "Haoyu Wang",
+        "Guoqing Ma",
+        "Zeyu Zhang",
+        "Yandong Guo",
+        "Boxin Shi",
+        "Hao Tang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.RO"
+      ],
+      "published": "2026-06-16T03:45:24+00:00",
+      "link": "https://arxiv.org/pdf/2606.17480v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "introduces geometry-aware object reconstruction using calibrated multi-view observations for robot planning",
+      "llm_evidence_cn": "引入利用标定多视图观测进行几何感知物体重建以支持机器人规划",
+      "llm_evidence": "引入利用标定多视图观测进行几何感知物体重建以支持机器人规划",
+      "canonical_evidence": "引入利用标定多视图观测进行几何感知物体重建以支持机器人规划",
+      "llm_tldr_en": "GeneralVLA-2 improves robot planning by using multi-view calibrated observations for stable 3D object reconstruction, overcoming monocular hallucination.",
+      "llm_tldr_cn": "针对单目SAM3D风格物体重建易产生位姿和未见几何幻觉的问题，GeneralVLA-2引入基于标定多视图观测的几何感知重建模块。同时通过受控记忆质量与几何相关性，改进知识库检索。实验表明该方法能为机器人操作提供更稳定鲁棒的三维物体证据。",
+      "llm_tldr": "针对单目SAM3D风格物体重建易产生位姿和未见几何幻觉的问题，GeneralVLA-2引入基于标定多视图观测的几何感知重建模块。同时通过受控记忆质量与几何相关性，改进知识库检索。实验表明该方法能为机器人操作提供更稳定鲁棒的三维物体证据。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.12601v1",
+      "source": "arxiv",
+      "title": "Dual-State Slot Attention: Decoupling Appearance and Identity for Video Object-Centric Learning",
+      "abstract": "Unsupervised video object-centric learning aims to decompose dynamic scenes into persistent, object-level representations without supervision. However, existing slot-based methods struggle to maintain stable object identity in challenging settings such as rapid motion and partial occlusion. First, they typically encode both the per-frame appearance of an object and its identity across frames in a single slot vector, creating an objective conflict that leads to slot swapping: reconstruction requires sensitivity to transient visual changes, whereas temporal consistency requires invariance to them. Second, the token renormalization used in Slot Attention can amplify weakly attending slots, allowing them to absorb tokens from other objects and destabilize slot-to-object correspondence.   We propose Dual-State Slot Attention (DSSA), a fully self-supervised framework that addresses these limitations by separating appearance from identity and by reducing spurious updates from weakly matching slots. DSSA decomposes each slot into a local state for per-frame appearance and an identity state for temporally stable object information, thereby aligning reconstruction and temporal consistency with separate representations. The identity state is updated through a learned recurrent transition that acts as a temporal filter on the local state, while competition-modulated aggregation (CMA) down-weights updates from weakly matching slots and prevents them from absorbing tokens from other objects. Experiments on MOVi-C, MOVi-D, and YouTube-VIS demonstrate that DSSA consistently improves segmentation quality and temporal consistency over prior methods, while also yielding stronger downstream object recognition and video dynamics prediction. Code and models will be made publicly available upon acceptance.",
+      "authors": [
+        "Sieu Tran",
+        "Duc Nguyen",
+        "Hao Vo",
+        "Khoa Vo",
+        "Ngan Le"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-10T19:00:47+00:00",
+      "link": "https://arxiv.org/pdf/2606.12601v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "unsupervised video object-centric learning decomposes scenes into objects, relevant to unsupervised segmentation from multi-view",
+      "llm_evidence_cn": "无监督视频物体中心学习将场景分解为物体，适用于多视图无监督分割",
+      "llm_evidence": "无监督视频物体中心学习将场景分解为物体，适用于多视图无监督分割",
+      "canonical_evidence": "无监督视频物体中心学习将场景分解为物体，适用于多视图无监督分割",
+      "llm_tldr_en": "This work proposes dual-state slot attention to decouple appearance and identity, improving object persistence in video object-centric learning, which can benefit unsupervised 3D segmentation from multi-view videos.",
+      "llm_tldr_cn": "为克服现有槽方法在快速运动和遮挡下身份不稳定问题，本文提出双状态槽注意力，将物体外观和身份解耦为两个独立状态，并改进槽注意力机制避免弱槽吸收令牌，从而在视频物体中心学习中实现更稳定持久的对象分解，有望推广到多视图无监督三维分割。",
+      "llm_tldr": "为克服现有槽方法在快速运动和遮挡下身份不稳定问题，本文提出双状态槽注意力，将物体外观和身份解耦为两个独立状态，并改进槽注意力机制避免弱槽吸收令牌，从而在视频物体中心学习中实现更稳定持久的对象分解，有望推广到多视图无监督三维分割。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "unsupervised 3D object generation and semantic segmentation from multi view images",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.15749v1",
+      "source": "arxiv",
+      "title": "OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning",
+      "abstract": "Traffic scene understanding requires models to reason beyond object recognition, including lane topology, multi-view geometry, temporal evolution, and signal-phase semantics. However, existing traffic-oriented multimodal benchmarks largely emphasize passive visual recognition or isolated video understanding, offering limited support for evaluating structure-aware traffic reasoning under controlled conditions. We introduce OmniTraffic, a controllable generation pipeline and benchmark for spatio-temporal traffic reasoning. Built around 12 real-world intersections reconstructed into editable 3D traffic environments and complemented by surveillance footage from two countries, OmniTraffic supports both controlled and natural-condition evaluation. It defines a three-level task hierarchy spanning scene perception, multi-view and temporal reasoning, and decision support. Using structured traffic metadata, OmniTraffic generates synchronized multi-view VQA samples covering vehicle states, lane functions, view--BEV correspondence, temporal dynamics, and signal-phase analysis, resulting in 8M VQA samples and a 3K human-verified test set. Evaluation of eleven frontier MLLMs reveals a large human--model gap, with the most pronounced failures in topology-grounded and spatio-temporal reasoning tasks. Fine-tuning a lightweight MLLM on simulated OmniTraffic data further improves performance on real-world traffic scenes, demonstrating the value of simulation-generated supervision for traffic-specific multimodal reasoning. Beyond a fixed dataset, OmniTraffic provides an extensible pipeline with configurable intersections, camera views, traffic demands, signal phases, visual conditions, and rare events.",
+      "authors": [
+        "Maonan Wang",
+        "Zhengyan Huang",
+        "Kemou Jiang",
+        "Yuhang Fu",
+        "Jiayue Zhu",
+        "Yuxin Cai",
+        "Xingchen Zou",
+        "Qiaosheng Zhang",
+        "Yi Yu",
+        "Ding Wang",
+        "Xi Chen",
+        "Ben M. Chen",
+        "Yuxuan Liang",
+        "Zhiyong Cui",
+        "Man On Pun",
+        "Yirong Chen"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI",
+        "eess.SY"
+      ],
+      "published": "2026-06-14T11:16:53+00:00",
+      "link": "https://arxiv.org/pdf/2606.15749v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "reconstructs real-world intersections into editable 3D environments for generating and benchmarking traffic scenes",
+      "llm_evidence_cn": "将真实路口重建为可编辑3D环境，用于生成和评估交通场景",
+      "llm_evidence": "将真实路口重建为可编辑3D环境，用于生成和评估交通场景",
+      "canonical_evidence": "将真实路口重建为可编辑3D环境，用于生成和评估交通场景",
+      "llm_tldr_en": "Builds a pipeline that reconstructs 12 real-world intersections into 3D editable scenes, enabling controlled generation and benchmark for spatio-temporal traffic reasoning beyond object recognition.",
+      "llm_tldr_cn": "现有交通场景理解基准侧重视觉识别，缺乏对结构感知交通推理的支持。OmniTraffic将12个真实路口重建为可编辑3D环境，结合多国监控视频，构建可控生成流水线与时空推理基准。实验显示该基准能有效评估模型的车道拓扑、多视图几何和时序推理能力，推动了交通场景理解研究。",
+      "llm_tldr": "现有交通场景理解基准侧重视觉识别，缺乏对结构感知交通推理的支持。OmniTraffic将12个真实路口重建为可编辑3D环境，结合多国监控视频，构建可控生成流水线与时空推理基准。实验显示该基准能有效评估模型的车道拓扑、多视图几何和时序推理能力，推动了交通场景理解研究。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.18156v1",
+      "source": "arxiv",
+      "title": "ReAge3D: Re-Aging 3D Faces with View Consistency",
+      "abstract": "We present a novel framework for realistic and controllable 3D face re-aging which produces highly detailed, identity-preserving results. Existing 3D editing methods, while effective for coarse semantic changes, are not well suited for re-aging, as even small inconsistencies across re-aged 2D views can lead to over-smoothing of subtle but perceptually important age-related details. To address this challenge, we first introduce a 2D diffusion-based re-aging model, DiffReaging, trained on synthetically generated image pairs. We further propose a center-out editing propagation strategy that leverages this re-aging model to reconstruct multi-view-consistent re-aged images. Specifically, starting from a re-aged frontal pivot view, we reconstruct the remaining views through warping and our proposed Masked-DiffReaging process. By injecting existing content at every step of the diffusion process, Masked-DiffReaging ensures that the reconstructed regions remain coherent with existing pixels. The resulting consistent set of re-aged views supervises the optimization of the re-aged 3D representation. Our method outperforms existing 3D editing techniques both visually and quantitatively, enabling smooth, fine-grained control over age transformations in 3D face models.",
+      "authors": [
+        "Libing Zeng",
+        "Li Ma",
+        "Mingming He",
+        "Ning Yu",
+        "Paul Debevec",
+        "Nima Khademi Kalantari"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-06-16T16:56:00+00:00",
+      "link": "https://arxiv.org/pdf/2606.18156v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Generates 3D face aging results with multi-view consistency, relevant to 3D object generation",
+      "llm_evidence_cn": "生成具有多视角一致性的三维人脸老化结果，与三维物体生成相关",
+      "llm_evidence": "生成具有多视角一致性的三维人脸老化结果，与三维物体生成相关",
+      "canonical_evidence": "生成具有多视角一致性的三维人脸老化结果，与三维物体生成相关",
+      "llm_tldr_en": "Proposes a 2D diffusion-based re-aging model and a center-out editing propagation strategy to generate multi-view-consistent 3D face re-aging results.",
+      "llm_tldr_cn": "针对现有三维编辑方法在再老化中难以保持多视角细节一致的问题，提出DiffReaging二维扩散模型和由中心向外传播的编辑策略，生成高保真、身份保留的多视角一致三维人脸再老化结果，为三维人脸编辑提供了视角一致性的新解法。",
+      "llm_tldr": "针对现有三维编辑方法在再老化中难以保持多视角细节一致的问题，提出DiffReaging二维扩散模型和由中心向外传播的编辑策略，生成高保真、身份保留的多视角一致三维人脸再老化结果，为三维人脸编辑提供了视角一致性的新解法。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

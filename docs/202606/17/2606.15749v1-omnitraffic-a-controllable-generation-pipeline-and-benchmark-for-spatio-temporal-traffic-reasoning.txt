@@ -1,0 +1,1246 @@
+Title: OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning
+
+URL Source: https://arxiv.org/pdf/2606.15749v1
+
+Published Time: Tue, 16 Jun 2026 01:11:30 GMT
+
+Number of Pages: 34
+
+Markdown Content:
+# OMNI TRAFFIC : A C ONTROLLABLE GENERATION PIPELINE AND 
+
+# BENCHMARK FOR SPATIO -T EMPORAL TRAFFIC REASONING 
+
+A P REPRINT 
+
+Maonan Wang 1,2, Zhengyan Huang 2, Kemou Jiang 3, Yuhang Fu 3, Jiayue Zhu 3, Yuxin Cai 4,Xingchen Zou 5, Qiaosheng Zhang 2, Yi Yu 2, Ding Wang 2, Xi Chen 6,
+
+Ben M. Chen 6, Yuxuan Liang 5, Zhiyong Cui 3, Man On Pun 1,∗, Yirong Chen 2,* 
+
+> 1
+
+The Chinese University of Hong Kong, Shenzhen 2 Shanghai AI Lab  
+
+> 3
+
+Beihang University 4 Nanyang Technological University  
+
+> 5
+
+The Hong Kong University of Science and Technology (Guangzhou)  
+
+> 6
+
+The Chinese University of Hong Kong 
+
+## ABSTRACT 
+
+Traffic scene understanding requires models to reason beyond object recognition, including lane topology, multi-view geometry, temporal evolution, and signal-phase semantics. However, existing traffic-oriented multimodal benchmarks largely emphasize passive visual recognition or isolated video understanding, offering limited support for evaluating structure-aware traffic reasoning under controlled conditions. We introduce OmniTraffic , a controllable generation pipeline and benchmark for spatio-temporal traffic reasoning. Built around 12 real-world intersections reconstructed into editable 3D traffic environments and complemented by surveillance footage from two countries, OmniTraffic supports both controlled and natural-condition evaluation. It defines a three-level task hierarchy spanning scene perception, multi-view and temporal reasoning, and decision support. Using structured traffic metadata, OmniTraffic generates synchronized multi-view VQA samples covering vehicle states, lane functions, view–BEV correspondence, temporal dynamics, and signal-phase analysis, resulting in 8M VQA samples and a 3K human-verified test set. Evaluation of eleven frontier MLLMs reveals a large human–model gap, with the most pronounced failures in topology-grounded and spatio-temporal reasoning tasks. Fine-tuning a lightweight MLLM on simulated OmniTraffic data further improves performance on real-world traffic scenes, demonstrating the value of simulation-generated supervision for traffic-specific multimodal reasoning. Beyond a fixed dataset, OmniTraffic provides an extensible pipeline with configurable intersections, camera views, traffic demands, signal phases, visual conditions, and rare events. 
+
+## 1 Introduction 
+
+Roadside traffic cameras capture rich information about vehicle movements, lane usage, congestion, special vehicles, abnormal events, and signal phases. Multimodal large language models (MLLMs) offer a promising interface for interpreting such data through natural-language queries [ 1, 2, 3, 4, 5 , 6], with recent applications in traffic anomaly detection [ 7, 8], congestion analysis [ 9], traffic question answering [ 10 , 11 , 12 ], and signal-aware decision support [ 13 ,14 ]. However, traffic scene understanding requires models to go beyond generic visual recognition and reason over structured traffic states, including lane topology, cross-view geometry and temporal changes. Existing traffic benchmarks provide limited controllability for structure-aware evaluation. Real-world videos offer visual diversity, but they provide little control over intersection layouts, signal phases, traffic events, or viewpoint configurations. As a result, evaluations often favor passive perception over reasoning about lane topology, multi-view alignment, and temporal dynamics. Moreover, annotating complex and synchronized traffic states from real footage is labor-intensive and difficult to scale. Controllable simulation offers a practical alternative by directly recording structured metadata, including topology, vehicle states, and signal phases, for traceable VQA generation. 
+
+> ∗
+
+Corresponding authors. 
+
+> arXiv:2606.15749v1 [cs.CV] 14 Jun 2026
+
+OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 100                  
+
+> 80
+> 60
+> 40
+> 20
+> 59.7
+> 92.9
+> 72.4
+> 59.1
+> Level 2: Spatiotemporal Reasoning
+> Q: Given the BEV, select the option match-
+> ing the direction marked by the star.
+> Spatial Reasoning BEV to View Matching
+> (A) (B) (C)
+> Level 1: Perception
+> Q: What type of emergency
+> vehicle is shown in the image?
+> (A) Police Car (B) Fire Truck
+> (C) Ambulance (D) None
+> Recognition Vehicle Type
+> Level 3: Decision Support
+> Q: Based on traffic conditions & phase
+> info, what is the optimal decision?
+> (A) P1 (B) P2 (C) P3 (D) P4
+> Decision Making Traffic Signal Control
+> East West
+> South North
+> Human
+> Level
+> Gemini
+> -3 Pro
+> Claude-
+> sonnet-
+> 4-5
+> Qwen3-
+> VL-235B
+> 0
+> 59.8
+> Grok-4
+> Human-MLLM
+> Performance Gap
+> Real
+> Sim.
+
+Figure 1: Overview of OmniTraffic. Left: OmniTraffic reconstructs real-world intersections as controllable 3D traffic environments, generates synchronized multi-view observations and structured metadata, and converts them into a three-level VQA hierarchy for perception, spatio-temporal reasoning, and decision support. Right: overall accuracy comparison reveals a significant performance gap between human experts (92.9%) and the best MLLM (72.4%). In this work, we introduce OmniTraffic , an extensible generation pipeline and benchmark that shifts traffic-oriented VQA from isolated visual recognition toward structured multimodal reasoning. As shown in Fig. 1, OmniTraffic organizes traffic understanding into a three-level cognitive hierarchy: Perception , which grounds visual recognition in road structure; Spatio-Temporal Reasoning , which requires cross-view, view–BEV, and temporal reasoning; and 
+
+Decision Support , which evaluates signal-phase analysis and control-oriented reasoning. To support these tasks, OmniTraffic reconstructs 12 real-world intersections as controllable 3D environments and complements them with real surveillance footage. As illustrated by the Level-2 in Fig. 1, real road layouts are reproduced in simulation, enabling controllable scene generation while preserving correspondence to real traffic environments. The pipeline renders synchronized multi-view scenarios, extracts structured traffic metadata, and generates 8M VQA samples together with a 3K human-verified test set. Unlike a closed dataset, OmniTraffic is designed as extensible infrastructure: the released 3D assets, metadata schema, rendering scripts, and VQA generation pipeline allow users to create new samples under configurable camera placements, traffic demands, signal phases, visual conditions, and rare events. OmniTraffic evaluates eleven frontier MLLMs and reveals a substantial human–model gap: the best model reaches 72.4% overall accuracy, compared with 92.9% for humans, with pronounced failures on topology-grounded and spatio-temporal reasoning. We further study simulated-to-real transfer by fine-tuning a lightweight MLLM on OmniTraffic dataset and evaluating it on real-world traffic scenes. The resulting overall improvement provides evidence that controllable simulation can offer useful supervision for traffic-specific multimodal reasoning in real-world domain. Our contributions are summarized as follows: • We formulate traffic-oriented multimodal understanding as a three-level cognitive hierarchy spanning scene perception, spatio-temporal reasoning, and decision support, with tasks grounded in lane topology and multi-view geometry. • We introduce OmniTraffic , a controllable generation pipeline and benchmark built from editable 3D intersections, supporting configurable multi-view rendering, traffic states, and rare events, and producing 8M structured VQA samples with 3K human-verified tests. • We evaluate 11 frontier MLLMs, revealing large human–model gaps in structure-aware traffic reasoning, and provide initial evidence that simulated OmniTraffic supervision improves real-world traffic understanding. 
+
+## 2 Related Work 
+
+Traffic Benchmarks and Structure-Aware Evaluation. Traffic benchmarks can be broadly grouped into ego-vehicle and roadside settings. Ego-vehicle datasets such as BDD100K [ 26 ], nuScenes [ 24 ], DriveLM [ 25 ], and Bench2Drive [ 27 ]support perception, prediction, planning, and language-guided driving, while related work on HD mapping [ 28 , 29 , 30 ]and lane topology estimation [ 31 , 32 , 33 ] highlights the importance of structured road semantics. Roadside benchmarks instead focus on traffic cameras, ranging from detection under adverse visual conditions [ 16 , 15 , 34 , 35 , 22 ] to video-level event recognition, accident reasoning, and temporal traffic understanding [ 17 , 20 , 19 , 18 , 21 ]. As summarized in Table 1, existing benchmarks rarely combine lane-level topology, vehicle-to-lane grounding, signal-phase semantics, 2OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 
+
+Table 1: Comparison of roadside and ego-vehicle traffic benchmarks across data properties and cognitive levels. Perc.: Perception; Rea.: Spatiotemporal Reasoning; Dec.: Decision Support. 
+
+Benchmark Source Data Properties Cognitive Levels Scale Topology Multi-View Temporal Perc. Rea. Dec. 
+
+Roadside Benchmarks 
+
+TrafficCAM [15] Real ✗ ✗ ✗ ✓ ✗ ✗ 58,689 MTID [16] Real ✗ ✗ ✓ ✓ ✗ ✗ 69,157 SUTD-TrafficQA [17] Real ✗ ✗ ✓ ✓ ✓ ✗ 62,535 RoadSafe365 [18] Real ✗ ✗ ✓ ✓ ✓ ✗ 217,000 AccidentBench [19] Real ✗ ✗ ✓ ✓ ✓ ✗ 19,000 TUMTraf VideoQA [20] Real ✗ ✗ ✓ ✓ ✓ ✗ 93,000 MITS [21] Real ✗ ✗ ✓ ✓ ✗ ✗ 5,373,391 TSBOW [22] Real ✗ ✗ ✓ ✓ ✓ ✗ 3,267,598 SynTraC [23] Sim. ✗ ✓ ✓ ✓ ✗ ✓ 86,000 
+
+Ego-vehicle Benchmarks 
+
+nuScenes-QA [24] Real ✗ ✗ ✓ ✓ ✓ ✗ 459,941 DriveLM [25] Sim./Real ✗ ✗ ✓ ✓ ✓ ✓ 4,195,000 
+
+OmniTraffic (Ours) Sim./Real ✓ ✓ ✓ ✓ ✓ ✓ 8,092,188 
+
+synchronized multi-view observations, and temporal reasoning within a unified VQA protocol. OmniTraffic addresses this gap by evaluating traffic scenes as structured intersection systems rather than generic images or videos. 
+
+MLLMs for Traffic Reasoning and Decision Support. MLLMs have recently been applied to traffic scene under-standing [ 36 ], anomaly detection [ 37 , 38 ], lane recognition [ 39 , 40 ], accident causality analysis [ 41 , 42 ], safety-oriented captioning [ 43 , 44 , 45 ], driving planning [ 46 , 47 , 48 , 49 ], and traffic signal control [ 13 , 14 ]. However, most adopt task-specific objectives and protocols, leaving model progression from perception to topology-grounded spatio-temporal reasoning and phase-level decision support underexplored. OmniTraffic addresses this gap with a unified traffic cogni-tion hierarchy grounded in lane functions, vehicle–lane assignments, view–BEV correspondence, temporal dynamics, and phase mappings. 
+
+Controllable Traffic Generation and Sim-to-Real Transfer. Real-world traffic data is difficult to scale for structure-aware evaluation because it requires lane-level topology, vehicle states, camera geometry, temporal correspondences, and phase annotations, while rare events are hard to repeatedly capture. Simulators such as CARLA [ 50 ], SUMO [ 51 ], MetaDrive [ 52 ], SMARTS [ 53 ], and LibSignal [ 54 ], with benchmarks such as TSLib [ 55 ] and SynTraC [ 23 ], support scalable traffic simulation and signal-control research. OmniTraffic extends this paradigm to multimodal traffic understanding through reconstructed intersections, structured metadata, and topology-grounded VQA generation. Fine-tuning results show OmniTraffic supervision improves real-world traffic understanding, extending sim-to-real transfer from policy learning to multimodal reasoning. 
+
+## 3 OmniTraffic: Benchmark and Generation Pipeline 
+
+Fig. 2 summarizes the construction pipeline of OmniTraffic. Starting from real-world intersection topology, OmniTraffic reconstructs controllable 3D traffic environments, renders synchronized multi-view and temporal observations, records structured traffic-state metadata, and converts these metadata into VQA samples and multiple-choice questions. The resulting benchmark follows a three-level hierarchy covering perception, spatio-temporal reasoning, and decision support. In addition to the simulated data generated from reconstructed intersections, OmniTraffic incorporates real-world surveillance footage as a complementary evaluation domain for assessing model robustness and simulation-to-reality transfer. 
+
+3.1 Controllable Traffic World Construction 
+
+OmniTraffic draws on two complementary data sources, as shown in Fig. 2(a). Simulated traffic data enables controllable scene generation, synchronized multi-view observation, temporal continuity, and precise traffic-state metadata for 3OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT Step 1: Information Extraction    
+
+> Step 2: VQA Generation
+> Step 3: MCQ Conversion
+> {
+> lane_1: {
+> id: “s001”,
+> length: 120,
+> direction: straight,
+> …
+> },
+> vehicle_1:{
+> id: “v001”,
+> position: “90.1”,
+> …
+> },
+> }
+> A: Incoming lane 1 has 4 vehicles:
+> (3 foreground, 1 distant)
+> How many vehicles are
+> there in incoming lane 1?
+> 3 vehicles (all foreground) A
+> 4 vehicles (3 foreground, 1 distant) B
+> 5 vehicles (4 foreground, 1 distant) C
+> 6 vehicles (3 foreground, 3 distant) DHuman Validation
+> Validated
+> Level 1: Traffic Scene Perception
+> Object Detection
+> Topology Perception
+> Level 2: Spatial-Temporal Reasoning
+> BEV to
+> Roadside
+> View
+> Level 3: Decision Support
+> 𝒕 𝟎 ⋯
+> 𝒕 𝟏
+> Real Traffic Data
+> Vehicle Diversity Adverse Weather Conditions
+> Simulated Traffic Data
+
+(a) (b) (c) 
+
+Figure 2: Overview of the OmniTraffic construction pipeline. (a) OmniTraffic reconstructs real-world intersections as controllable 3D traffic environments and complements them with real-world surveillance footage. (b) Simulated images are paired with structured traffic metadata, converted into VQA pairs, and further normalized into multiple-choice questions. (c) The resulting benchmark covers three cognitive levels: perception, spatio-temporal reasoning, and decision support, with human verification for quality control. scalable VQA construction. Real-world surveillance data provides an authentic evaluation domain for assessing model robustness, generalization, and sim-to-real transfer under natural visual conditions. Details are provided in Appendix A. 
+
+Simulated Traffic Data. We reconstruct 12 real-world intersections as high-fidelity 3D traffic environments. As shown in Fig. 3, each scene preserves its real-world road topology, including lane geometry, road markings, and signal-phase configurations. Traffic flows are generated through calibrated microsimulation, with controllable special vehicles ( e.g. ,ambulances and police cars), special events ( e.g. , accidents and road construction), and lighting conditions. A key advantage is multi-view temporal synchronization : the same intersection state can be rendered from multiple camera viewpoints at each timestep, producing aligned observations across views and over time. This supports cross-view correspondence, view–BEV mapping, temporal reasoning, and phase-level analysis. It also records structured metadata, including road topology, camera configuration, vehicle states, signal phases, and event annotations, which provides the foundation for the VQA generation pipeline in Sec. 3.2. We will release the 3D assets and rendering scripts to support customized data generation with new camera viewpoints, traffic configurations, and environmental conditions. 
+
+Real Traffic Data. OmniTraffic also includes real-world surveillance videos from South Korea [ 22 ] and Tianjin, China, providing an authentic evaluation domain beyond simulation. As shown in Fig. 4, these videos cover diverse road geometries, traffic patterns, vehicle populations, and seasonal conditions. The real-world portion contains 33.86 hours of video: 32.36 hours from South Korea under sunny, cloudy, rainy, and snowy conditions, and 1.5 hours of continuous 30 fps recordings from Tianjin. Since real-world cameras are fixed and do not provide synchronized multi-view coverage of the same traffic state, the real split is used for perception and temporal reasoning tasks that can be reliably constructed from video content. Tasks requiring synchronized multi-view inputs are generated from simulation. This design combines the controllability and exact metadata of simulation with the visual complexity of real roadside footage. 
+
+3.2 Metadata-Driven VQA Generation and Benchmark Curation 
+
+After constructing controllable traffic worlds, OmniTraffic converts rendered observations and structured traffic-state metadata into VQA samples. The goal of this stage is to generate questions that are grounded in operational traffic semantics, rather than relying on unconstrained manual question writing. As shown in Fig. 2(b), the generation pipeline first produces open-ended question-answer pairs from simulated metadata or real-world annotation, and then converts them into multiple-choice questions for standardized evaluation. 4OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT (a) Beihuan, Beijing 
+
+> (e) Pinganli, Beijing
+> (i) Zhijingdao, Tianjin
+> (b) Beishahe, Beijing
+> (f) Yongrunlu, Beijing
+> (j) Massy, France
+> (c) Changjianglu, Beijing
+> (g) Chenghannan, Chengdu
+> (k) Yau Ma Tei, Hong Kong
+> (d) Gaojiaoyuan, Beijing
+> (h) Guanghua, Chengdu
+> (l) Songdo, South Korea
+
+Figure 3: The 12 reconstructed intersections in OmniTraffic. Each pair shows the satellite imagery (left) and the corresponding simulation rendering (right). (a) Bus scenario (Tianjin, China) (b) Emergency vehicle scenario (Tianjin, China) 
+
+(c) Rainy weather (Suwon, South Korea) (d) Snowy weather (Suwon, South Korea) 
+
+Figure 4: Sample frames from real-world surveillance footage collected in South Korea and Tianjin, China, covering diverse traffic conditions and seasonal variations. 
+
+Metadata-driven VQA generation. For simulated scenes, each rendered frame is paired with structured JSON metadata describing the traffic state. The metadata includes lane length, current signal-phase combination, vehicle-to-lane assignment, each vehicle’s longitudinal distance along the lane, vehicle speed, camera viewpoint, and event annotations. These metadata allow OmniTraffic to programmatically generate VQA samples through rule-based templates while preserving exact traceability between the visual observation, the question, and the answer. The same metadata schema supports different levels of the benchmark hierarchy. For Level 1 perception tasks, vehicle-to-lane assignments and event labels are used to generate questions about vehicle counting, special vehicle recognition, special event recognition, and road infrastructure understanding. For Level 2 spatio-temporal reasoning tasks, synchronized views and temporal state records support questions about cross-view comparison, multi-view localization, view–BEV mapping, and temporal traffic-state changes. For Level 3 decision-support tasks, lane-level traffic states and signal-phase mappings are used to generate phase analysis and phase decision questions. For regular scenes, the phase decision follows a MaxPressure-based rule. For special-event scenes, phases blocked by obstacles are first masked out, and the target phase is selected from the remaining feasible phases. These rules provide interpretable supervision for signal-phase reasoning while keeping the generated answers grounded in scene-specific metadata. For real-world footage, such structured traffic-state metadata is unavailable. Therefore, three annotators construct and verify VQA samples directly from video content. These real-world questions focus on perception and temporal reasoning tasks that can be reliably annotated from fixed surveillance videos. Since real-world cameras do not 5OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 
+
+Table 2: Overview of the OmniTraffic task hierarchy, including the input format, data source, and evaluation focus of each category.                                     
+
+> Category (Abbr.) Input Source Description
+> L1: Perception
+> Vehicle Counting (Veh. Count) Single img Sim./Real Count vehicles per image/lane. Special Vehicle Recog. (Spe. Veh.) Single img Sim./Real Detect and classify special vehicles. Special Event Recog. (Spe. Evt.) Single img Sim. Detect and classify special events. Road Infrastructure (Road Infra.) Single img Sim./Real Identify lane counts and functions. Scene Attribute (Scene Attr.) Single img Real Recognize weather and pedestrians.
+> L2: Spatio-Temporal Reasoning
+> Multi-view Comparison (View Comp.) Multi-img Sim. Compare vehicle counts across views. Multi-view Localization (View Loc.) Multi-img Sim. Locate special vehicles across views. view-BEV Mapping (view-BEV) Multi-img Sim. Map between perspective and BEV. Temporal Reasoning (Temp. Reas.) Multi-img Sim./Real Order frames and track queues.
+> L3: Decision Support
+> Signal Phase Analysis (Phase Ana.) Multi-img Sim. Analyze vehicles/events per phase. Signal Phase Decision (Phase Dec.) Multi-img Sim. Recommend next optimal green phase.
+
+provide synchronized multi-view observations of the same traffic state, the real-world split excludes tasks that require synchronized multi-view inputs, such as view–BEV mapping and multi-view phase reasoning. 
+
+Multiple-choice conversion. After obtaining open-ended QA pairs, OmniTraffic normalizes the evaluation format by converting each question into a multiple-choice question. Distractors are sampled from values of the same question type within the same scene, which keeps the options contextually plausible while avoiding trivial choices. For example, vehicle-counting distractors are sampled from other timesteps or camera views of the same scene, temporal prediction distractors are sampled from neighboring frames, and phase-decision options include available signal phases. Duplicate options are removed, and each question is checked to ensure it has a unique correct answer. 
+
+Quality control and benchmark curation. We apply both automatic and manual quality control. Automatic checks verify that numeric answers fall within valid ranges, options are non-duplicated, and each correct answer can be traced back to the corresponding metadata or annotation record. From the full VQA pool, we sample 3,204 items to construct the human-verified benchmark, preserving coverage across task categories and scenes. Three annotators then manually inspect the benchmark to verify image-question alignment, answer correctness, and distractor validity. During this process, questions that are too similar to existing ones are removed and replaced with new samples from the same category and scene group. We additionally develop a web-based evaluation platform where human participants answer the same benchmark questions, enabling a direct comparison between human and model performance across all task levels, see Appendix C for details. 
+
+3.3 Task Hierarchy and Benchmark Statistics 
+
+OmniTraffic contains 8,092,188 VQA pairs in total, generated from 12 reconstructed simulated intersections and real-world surveillance videos from South Korea and Tianjin, China. The real-world portion contains 33.86 hours of video, including 32.36 hours of multi-condition footage from South Korea covering sunny, cloudy, rainy, and snowy scenarios, and 1.5 hours of continuous 30 fps recordings from Tianjin. The simulated portion provides synchronized multi-view observations, temporal sequences, and structured traffic-state metadata, supporting the full three-level task hierarchy. Table 2 summarizes the OmniTraffic hierarchy; details are in Appendix B. The benchmark contains eleven task categories organized into three cognitive levels. Level 1 covers single-image perception tasks, including vehicle counting, special vehicle recognition, special event recognition, road infrastructure understanding, and scene attribute recognition. Level 2 covers spatio-temporal reasoning tasks that require multi-image inputs, including multi-view comparison, multi-view localization, view–BEV mapping, and temporal reasoning. Level 3 covers decision-support tasks that require models to analyze signal phases and recommend the next green phase based on multi-view and multi-temporal traffic evidence. Each category contains multiple question variants. For example, vehicle counting ranges from whole-scene counting to lane-specific counting, progressively testing whether MLLMs can connect visual observations with fine-grained traffic topology. 6OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT Scene Attr. 
+
+> 𝟐𝟓. 𝟎%
+> Phase Dec.
+> 𝟏. 𝟒%
+> View Comp.
+> 𝟐. 𝟕%
+> View Loc.
+> 𝟐. 𝟕%
+> 𝟏. 𝟐%
+
+OmniTraffic 
+
+Figure 5: Distribution of the OmniTraffic benchmark across three task levels and eleven categories. The human-verified benchmark contains 3,204 VQA samples. As shown in Fig. 5, its distribution follows the three-level hierarchy while preserving coverage across task cate-gories and scenes. Perception tasks form the largest portion because they provide the foun-dational capabilities for traffic understanding. Spatio-temporal reasoning tasks are fewer but more demanding, as they require mod-els to compare multiple views or timesteps. Decision-support tasks form the most com-pact subset, reflecting their reliance on higher-order evidence aggregation and signal-phase reasoning. Together, Table 2 and Fig. 5 show that OmniTraffic is not only large, but orga-nized by increasing cognitive burden: from single-image topology-grounded perception, to multi-image spatio-temporal reasoning, to phase-level decision support. This human-verified benchmark serves as the standardized test set for MLLMs and human participants. 
+
+## 4 Experiments 
+
+4.1 Evaluation Protocol 
+
+We evaluate 11 frontier MLLMs, including proprietary models ( e.g. , GPT-5.2 and Gemini-3-Pro) and open-weight models ( e.g. , Qwen3-VL-235B), with results reported in Table 3; full model identifiers are provided in Appendix C.3. We additionally report a zero-shot human baseline from ten non-expert evaluators. The benchmark aggregates 14 scenarios (12 simulated, 2 real) following the task hierarchy in Table 2. For reproducibility, all inferences use greedy decoding ( τ = 0 , max 500 tokens). Accuracy ( %) is measured via exact match against ground-truth labels. To mitigate autoregressive formatting failures, we allow up to three inference attempts per query; invalid responses after three attempts are scored as incorrect. 
+
+4.2 Main Benchmark Results 
+
+As shown in Table 3, Gemini-3-Pro achieves the highest overall model accuracy at 72.4%, yet remains 20.5 percentage points below the human baseline of 92.9%. This gap shows that frontier MLLMs still fall substantially short of human performance on traffic-oriented multimodal reasoning. Additional results are provided in Appendix D. However, this gap is non-uniform. Models perform relatively well on tasks with visually salient cues, such as special vehicle recognition and multi-view localization ( e.g. , best model accuracy is 98.9% on View Localization vs. 93.3% human). Conversely, performance drops sharply when grounding visual evidence in intersection topology, BEV layouts, temporal traffic evolution, or signal semantics. For instance, accuracy falls to 39.2% on View–BEV Mapping and 56.4% on Temporal Reasoning (vs. humans’ 100.0% and 94.1%). These results highlight that structure-aware spatio-temporal reasoning, rather than generic object recognition, is the primary bottleneck. Fig. 6 further summarizes this capability pattern across simulated and real scenes: the model–human gap is evident in L1 perception tasks requiring lane-level grounding, becomes largest in L2 spatio-temporal reasoning, and appears mixed in L3 decision support. We detail these findings below. 
+
+4.3 Capability Diagnosis Topology-Grounded Perception Remains Challenging (L1). L1 tasks go beyond generic object recognition by requiring models to ground visual evidence in lane topology and road semantics. As shown in Table 3 and Fig. 6(a), the strongest model achieves 77.2% on Vehicle Counting, still far below the human baseline of 93.3%, indicating difficulty in associating vehicles with specific lanes rather than merely detecting instances. Similarly, for Road Infrastructure understanding, which requires inferring lane functions and semantics from road geometry, Gemini-3-Pro reaches 70.2%, compared with 86.9% for humans. These gaps show that general-purpose MLLMs still lack the topology-aware spatial grounding needed for perception-level traffic understanding. 7OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 
+
+Table 3: Performance comparison on the OmniTraffic benchmark (%). ∗, †, and ‡ denote the first, second, and third best model results. 
+
+Models 
+
+L1 Perception L2 Spatio-Temporal Reasoning L3 Decision Support Overall Avg. Veh. Count Spe. Veh. Spe. Evt. Road Infra. Scene Attr. View Comp. View Loc. View-BEV Temp. Reas. Phase Ana. Phase Dec. 
+
+Proprietary Models 
+
+GPT-4o 41.4 76.5 ‡ 78.1 36.0 82.5 90.9 ∗ 92.0 32.8 ‡ 48.7 74.1 56.5 55.0 GPT-5.2 55.6 78.5 † 78.6 ‡ 41.0 80.0 76.1 89.8 25.6 43.0 67.8 58.7 ‡ 57.1 Gemini-2.5-Pro 51.9 72.8 70.8 43.3 92.5 ∗ 70.5 96.6 † 9.2 22.8 71.1 63.0 † 51.0 Gemini-3-Pro 77.2 ∗ 88.2 ∗ 90.8 ∗ 70.2 ∗ 87.5 † 89.8 † 98.9 ∗ 34.0 † 48.9 81.6 † 65.2 ∗ 72.4 ∗
+
+Claude-Sonnet-4.5 59.0 † 56.7 65.6 58.1 † 65.0 87.5 ‡ 86.4 29.6 54.9 † 82.0 ∗ 58.7 ‡ 59.7 ‡
+
+Doubao-1.5 46.6 59.0 71.7 40.3 85.0 ‡ 85.2 75.0 26.0 50.7 ‡ 72.8 56.5 53.4 Grok-4 47.6 78.5 † 82.5 † 43.1 80.0 83.0 93.2 39.2 ∗ 56.4 ∗ 74.5 56.5 59.8 †
+
+Qwen-VL-Max 57.5 ‡ 68.5 66.7 55.8 ‡ 85.0 ‡ 86.4 95.4 28.0 45.7 77.8 ‡ 65.2 ∗ 59.1 Qwen3-VL-Plus 50.2 68.8 70.8 38.7 77.5 63.6 95.5 ‡ 31.6 41.6 81.6 † 63.0 † 54.6 
+
+Open-source Models 
+
+InternVL 56.0 59.6 61.9 54.4 70.0 45.5 86.4 18.0 28.7 70.3 56.5 51.4 Qwen3-VL-235B 55.5 67.9 73.6 48.8 87.5 † 89.8 † 90.9 28.4 50.5 77.4 58.7 ‡ 59.1 
+
+Human Level 93.3 96.0 100.0 86.9 93.3 100.0 93.3 100.0 94.1 88.8 55.0 92.9     
+
+> -,).
+> !
+> ',&+
+> (
+> !
+> '
+> &)
+> %(
+> *
+> *#$-$*',)*!"+
+> "%,$+ $
+
+(a) Level -wise diagnostic gaps (b) Source -domain shift 
+
+Figure 6: Capability gaps and source-domain shift in OmniTraffic. (a) Accuracy on two representative tasks from each level, aligned with the L1–L3 analysis in the main text. (b) Simulated versus real-world average MLLM accuracy on task categories supported by both sources. 
+
+Spatio-Temporal Reasoning Exposes the Largest Gaps (L2). L2 results reveal a sharp asymmetry: models excel at matching salient visual anchors but fail at structured reasoning. On View Localization, Gemini-3-Pro reaches 98.9%, and several models surpass the 93.3% non-expert human baseline, suggesting that MLLMs can track distinctive vehicles across views. However, this ability does not transfer to tasks requiring fine-grained spatial grounding: on View–BEV Mapping, model accuracy drops to 9.2%–39.2%, far below humans’ 100.0%, and on Temporal Reasoning, the best model reaches only 56.4%, compared with 94.1% for humans. These results identify view–BEV alignment and temporal state reasoning as major bottlenecks. Fig. 6(b) shows a similar pattern under real-world visual conditions: salient Special Vehicle recognition improves, while Vehicle Counting, Road Infrastructure, and Temporal Reasoning decline, indicating that real footage mainly amplifies weaknesses in lane-level topology, queue-state estimation, and temporal reasoning. 
+
+Decision-Support Tasks Reveal Divergent Human–Model Strengths (L3). Unlike L1 and L2, top models perform competitively here. On Signal Phase Analysis, Claude-Sonnet-4.5 and Gemini-3-Pro approach the human baseline (82.0% and 81.6% vs. 88.8%). On Signal Phase Decision, Gemini-3-Pro and Qwen-VL-Max (65.2%) even exceed non-expert humans (55.0%). However, this reversal should be interpreted cautiously: MLLMs likely exploit traffic-rule knowledge from pretraining, whereas human evaluators lack traffic-engineering backgrounds. MLLMs show promise for phase-level decision support, but their geometric and temporal grounding remains fundamentally limited. 8OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 
+
+4.4 Simulation-to-Reality Transfer 
+
+Beyond benchmarking existing models, we examine whether simulated OmniTraffic data improves real-world traffic scene understanding. We use Qwen3-VL-2B-Instruct as a lightweight backbone and fine-tune it with Low-Rank Adaptation (LoRA) [ 56 ]. The model is trained only on simulated OmniTraffic samples and evaluated on real-world traffic VQA, testing whether controllable simulation provides transferable supervision. Detailed settings are provided in Appendix E. Table 4: Simulated-to-real transfer results on real-world traffic scene understanding tasks (%). 
+
+Model Korea Tianjin All 
+
+Proprietary Models 
+
+Grok-4 54.9 53.7 54.1 GPT-5.2 48.4 48.9 48.7 Gemini-3-Pro 60.7 54.5 56.6 Claude-4.5 50.8 52.4 51.8 Doubao-1.5 54.1 47.2 49.6 Qwen-VL-Max 51.6 49.8 50.4 
+
+Open-source Models 
+
+Qwen3-235B 53.3 52.8 53.0 Qwen3-8B 49.2 50.2 49.9 Qwen3-2B 39.3 51.9 47.6 
+
+OmniTraffic Fine-tuning 
+
+Qwen3-2B+FT 52.5 54.5 53.8 
+
+As shown in Table 4, the fine-tuned 2B model achieves 53.8% overall accuracy on real-world scenes, improving its base counterpart by +6.2 points (47.6%). The gain is scene-dependent, with a larger improvement on Korea (+13.2 points) than on Tianjin (+2.6 points). Notably, the simulation-tuned 2B model surpasses Qwen3-8B (49.9%) and slightly exceeds Qwen3-235B (53.0%), suggesting that OmniTraffic provides effective synthetic supervision without real-world training annotations. This overall improvement indicates that simulation can teach domain-invariant traffic structures, including lane topology, queue evolution, and rule-like semantic asso-ciations. However, simulation-only fine-tuning remains limited for appearance-sensitive real-world understand-ing, such as viewpoint variation, occlusion, illumination, and local visual details; category-level evidence is pro-vided in Appendix E.2. Together, these results show that OmniTraffic is not only a benchmark, but also a controlled generation pipeline for training and validating sim-to-real traffic-scene understanding models. 
+
+## 5 Conclusion 
+
+We presented OmniTraffic , a controllable generation pipeline and benchmark for spatio-temporal traffic reasoning. Built from reconstructed real-world intersections and complemented by real-world surveillance footage, OmniTraffic generates metadata-grounded VQA samples across perception, spatio-temporal reasoning, and decision support. Experiments with eleven frontier MLLMs reveal a substantial human–model gap, particularly on topology-grounded and temporal reasoning tasks such as view–BEV mapping and traffic-state evolution. Fine-tuning a lightweight MLLM on simulated OmniTraffic data improves overall real-world performance, providing evidence that controllable simulation can offer useful supervision for traffic-specific multimodal reasoning. OmniTraffic provides an extensible benchmark and generation pipeline for future research on structure-aware traffic intelligence. 
+
+## References 
+
+[1] Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne Lachaux, Timothée Lacroix, Baptiste Rozière, Naman Goyal, Eric Hambro, Faisal Azhar, et al. Llama: Open and efficient foundation language models. arXiv preprint arXiv:2302.13971 , 2023. [2] Josh Achiam, Steven Adler, Sandhini Agarwal, Lama Ahmad, Ilge Akkaya, Florencia Leoni Aleman, Diogo Almeida, Janko Altenschmidt, Sam Altman, Shyamal Anadkat, et al. Gpt-4 technical report. arXiv preprint arXiv:2303.08774 , 2023. [3] Shukang Yin, Chaoyou Fu, Sirui Zhao, Ke Li, Xing Sun, Tong Xu, and Enhong Chen. A survey on multimodal large language models. National Science Review , 11(12):nwae403, 2024. [4] Gheorghe Comanici, Eric Bieber, Mike Schaekermann, Ice Pasupat, Noveen Sachdeva, Inderjit Dhillon, Marcel Blistein, Ori Ram, Dan Zhang, Evan Rosen, et al. Gemini 2.5: Pushing the frontier with advanced reasoning, multimodality, long context, and next generation agentic capabilities. arXiv preprint arXiv:2507.06261 , 2025. [5] Shuai Bai, Yuxuan Cai, Ruizhe Chen, Keqin Chen, Xionghui Chen, Zesen Cheng, Lianghao Deng, Wei Ding, Chang Gao, Chunjiang Ge, et al. Qwen3-vl technical report. arXiv preprint arXiv:2511.21631 , 2025. 9OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 
+
+[6] xAI. Grok 4 model card. Technical report, xAI, August 2025. [7] Svetlana Orlova, Tommie Kerssies, Brunó B Englert, and Gijs Dubbelman. Simplifying traffic anomaly detection with video foundation models. In Proceedings of the IEEE/CVF International Conference on Computer Vision ,pages 852–862, 2025. [8] Aryan Keskar, Srinivasa Perisetla, and Ross Greer. Evaluating multimodal vision-language model prompting strategies for visual question answering in road scene understanding. In Proceedings of the Winter Conference on Applications of Computer Vision , pages 1027–1036, 2025. [9] Hsiu-Fu Wu, Ya-Ting Yang, Yung-Ter Chen, and I-Fan Chou. Trafficinternvl: Understanding traffic scenarios with vision-language models. In Proceedings of the IEEE/CVF International Conference on Computer Vision ,pages 5229–5236, 2025. [10] Senyun Kuang, Yang Liu, Xiaobo Qu, and Yintao Wei. Traffic-it: Enhancing traffic scene understanding for multimodal large language models. Transportation Research Part C: Emerging Technologies , 180:105325, 2025. [11] Zihao Sheng, Zilin Huang, Yansong Qu, Yue Leng, and Sikai Chen. Talk2traffic: Interactive and editable traffic scenario generation for autonomous driving with multimodal large language model. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 3797–3806, 2025. [12] Yaxuan Lu, Guangyu Huo, Xiaohui Cui, Boyue Wang, Yong Zhang, and Zhiyong Cui. Emergency events traffic flow forecasting using text-prompt-guided multimodal large language models. IEEE Transactions on Intelligent Transportation Systems , 2026. [13] Siqi Lai, Zhao Xu, Weijia Zhang, Hao Liu, and Hui Xiong. Llmlight: Large language models as traffic signal control agents. In Proceedings of the 31st ACM SIGKDD Conference on Knowledge Discovery and Data Mining V. 1 , pages 2335–2346, 2025. [14] Maonan Wang, Yirong Chen, Aoyu Pang, Yuxin Cai, Chung Shue Chen, Yuheng Kan, and Man-On Pun. Vlmlight: Safety-critical traffic signal control via vision-language meta-control and dual-branch reasoning architecture. In 
+
+Advances in Neural Information Processing Systems (NeurIPS) , 2025. [15] Zhongying Deng, Yanqi Cheng, Lihao Liu, Shujun Wang, Rihuan Ke, Carola-Bibiane Schönlieb, and Angelica I Aviles-Rivero. TrafficCAM: A versatile dataset for traffic flow segmentation. IEEE Transactions on Intelligent Transportation Systems , 26(2):2747–2759, 2024. [16] Morten B Jensen, Andreas Møgelmose, and Thomas B Moeslund. Presenting the multi-view traffic intersection dataset (mtid): A detailed traffic-surveillance dataset. In 2020 IEEE 23rd International Conference on Intelligent Transportation Systems (ITSC) , pages 1–6. IEEE, 2020. [17] Li Xu, He Huang, and Jun Liu. Sutd-trafficqa: A question answering benchmark and an efficient network for video reasoning over traffic events. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 9878–9888, 2021. [18] Xinyu Liu, Darryl C Jacob, Yuxin Liu, Xinsong Du, Muchao Ye, Bolei Zhou, and Pan He. Understanding real-world traffic safety through roadsafe365 benchmark. arXiv preprint arXiv:2602.07212 , 2026. [19] Shangding Gu, Xiaohan Wang, Donghao Ying, Haoyu Zhao, Runing Yang, Ming Jin, Boyi Li, Marco Pavone, Serena Yeung-Levy, Jun Wang, et al. Accidentbench: Benchmarking multimodal understanding and reasoning in vehicle accidents and beyond. arXiv preprint arXiv:2509.26636 , 2025. [20] Xingcheng Zhou, Konstantinos Larintzakis, Hao Guo, Walter Zimmer, Mingyu Liu, Hu Cao, Jiajie Zhang, Venkatnarayanan Lakshminarasimhan, Leah Strand, and Alois Knoll. Tumtraf videoqa: Dataset and benchmark for unified spatio-temporal video understanding in traffic scenes. In Forty-second International Conference on Machine Learning , 2025. [21] Kaikai Zhao, Zhaoxiang Liu, Peng Wang, Xin Wang, Zhicheng Ma, Yajun Xu, Wenjing Zhang, Yibing Nan, Kai Wang, and Shiguo Lian. MITS: A large-scale multimodal benchmark dataset for intelligent traffic surveillance. 
+
+Image and Vision Computing , page 105736, 2025. [22] Ngoc Doan-Minh Huynh, Duong Nguyen-Ngoc Tran, Long Hoang Pham, Tai Huu-Phuong Tran, Hyung-Joon Jeon, Huy-Hung Nguyen, Duong Khac Vu, Hyung-Min Jeon, Son Hong Phan, Quoc Pham-Nam Ho, Chi Dai Tran, Trinh Le Ba Khanh, and Jae Wook Jeon. Tsbow: Traffic surveillance benchmark for occluded vehicles under various weather conditions. Proceedings of the AAAI Conference on Artificial Intelligence , 40(7):5239–5247, Mar. 2026. [23] Tiejin Chen, Prithvi Shirke, Bharatesh Chakravarthi, Arpitsinh Vaghela, Longchao Da, Duo Lu, Yezhou Yang, and Hua Wei. Syntrac: a synthetic dataset for traffic signal control from traffic monitoring cameras. In 2024 IEEE 27th International Conference on Intelligent Transportation Systems (ITSC) , pages 2386–2391. IEEE, 2024. 10 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 
+
+[24] Holger Caesar, Varun Bankiti, Alex H Lang, Sourabh Vora, Venice Erin Liong, Qiang Xu, Anush Krishnan, Yu Pan, Giancarlo Baldan, and Oscar Beijbom. nuScenes: A multimodal dataset for autonomous driving. In 
+
+Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 11621–11631, 2020. [25] Chonghao Sima, Katrin Renz, Kashyap Chitta, Li Chen, Hanxue Zhang, Chengen Xie, Jens Beißwenger, Ping Luo, Andreas Geiger, and Hongyang Li. DriveLM: Driving with graph visual question answering. In European conference on computer vision , pages 256–274. Springer, 2024. [26] Fisher Yu, Haofeng Chen, Xin Wang, Wenqi Xian, Yingying Chen, Fangchen Liu, Vashisht Madhavan, and Trevor Darrell. Bdd100k: A diverse driving dataset for heterogeneous multitask learning. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 2636–2645, 2020. [27] Xiaosong Jia, Zhenjie Yang, Qifeng Li, Zhiyuan Zhang, and Junchi Yan. Bench2drive: Towards multi-ability benchmarking of closed-loop end-to-end autonomous driving. Advances in Neural Information Processing Systems , 37:819–844, 2024. [28] Qi Li, Yue Wang, Yilun Wang, and Hang Zhao. Hdmapnet: An online hd map construction and evaluation framework. In 2022 International Conference on Robotics and Automation (ICRA) , pages 4628–4634. IEEE, 2022. [29] Bencheng Liao, Shaoyu Chen, Xinggang Wang, Tianheng Cheng, Qian Zhang, Wenyu Liu, and Chang Huang. MapTR: Structured modeling and learning for online vectorized hd map construction. In International Conference on Learning Representations , 2023. [30] Bencheng Liao, Shaoyu Chen, Yunchi Zhang, Bo Jiang, Qian Zhang, Wenyu Liu, Chang Huang, and Xinggang Wang. Maptrv2: An end-to-end framework for online vectorized hd map construction. International Journal of Computer Vision , pages 1–23, 2024. [31] Huijie Wang, Tianyu Li, Yang Li, Li Chen, Chonghao Sima, Zhenbo Liu, Bangjun Wang, Peijin Jia, Yuting Wang, Shengyin Jiang, Feng Wen, Hang Xu, Ping Luo, Junchi Yan, Wei Zhang, and Hongyang Li. OpenLane-V2: A topology reasoning benchmark for unified 3d hd mapping. In NeurIPS , 2023. [32] Tianyu Li, Li Chen, Huijie Wang, Yang Li, Jiazhi Yang, Xiangwei Geng, Shengyin Jiang, Yuting Wang, Hang Xu, Chunjing Xu, Junchi Yan, Ping Luo, and Hongyang Li. Graph-based topology reasoning for driving scenes. arXiv preprint arXiv:2304.05277 , 2023. [33] Tianyu Li, Peijin Jia, Bangjun Wang, Li Chen, Kun Jiang, Junchi Yan, and Hongyang Li. LaneSegNet: Map learning with lane segment perception for autonomous driving. In ICLR , 2024. [34] Yajun Xu, Huan Hu, Chuwen Huang, Yibing Nan, Yuyao Liu, Kai Wang, Zhaoxiang Liu, and Shiguo Lian. Tad: A large-scale benchmark for traffic accidents detection from video surveillance. IEEE Access , 13:2018–2033, 2024. [35] Yajun Xu, Huan Hu, Xiaoya Zhu, Yibing Nan, Kai Wang, Zhaoxiang Liu, and Shiguo Lian. Raod: A benchmark for road abandoned object detection from video surveillance. IEEE Access , 12:123985–123994, 2024. [36] Sasin Phimsiri, Sarut Sunpawatr, Riu Cherdchusakulchai, Pornprom Kiawjak, Teepakorn Tosawadi, Suchat Tungjitnob, Visarut Trairattanapa, Supawit Vatathanavaro, Wasu Kudisthalert, Chaitat Utintu, et al. Trafficinternvl: Spatially-guided fine-tuning with caption refinement for fine-grained traffic safety captioning and visual question answering. In Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 5299–5306, 2025. [37] Yuqiang Lin, Kehua Chen, Sam Lockyer, Arjun Yadav, Mingxuan Sui, Shucheng Zhang, Yan Shi, Bingzhang Wang, Yuang Zhang, Markus Zarbock, Florain Stanek, Adrian Evans, Wenbin Li, Yinhai Wang, and Nic Zhang. Tau-r1: Visual language model for traffic anomaly understanding. arXiv preprint arXiv:2603.19098 , 2026. [38] Liyun Zhu, Qixiang Chen, Xi Shen, and Xiaodong Cun. VAU-R1: Advancing video anomaly understanding via reinforcement fine-tuning. arXiv preprint arXiv:2505.23504 , 2025. [39] Sibel Yenikaya, Gökhan Yenikaya, and Ekrem Düven. Keeping the vehicle on the road: A survey on on-road lane detection systems. ACM Computing Surveys (Csur) , 46(1):1–43, 2013. [40] Yun Zhang, Xin Cheng, Zhou Zhou, Jingmei Zhou, and Tong Yang. Ladel: Lane detection via multimodal large language model with visual instruction tuning. Journal of Visual Communication and Image Representation , page 104704, 2026. [41] Kaidi Liang, Ke Li, Xianbiao Hu, and Ruwen Qin. CrashChat: A multimodal large language model for multitask traffic crash video analysis. arXiv preprint arXiv:2512.18878 , 2025. [42] Waikit Xiu, Qiang Lu, Xiying Li, Chen Hu, and Shengbo Sun. Traffic-mllm: A spatio-temporal mllm with retrieval-augmented generation for causal inference in traffic. arXiv preprint arXiv:2509.11165 , 2025. 11 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 
+
+[43] Quang Minh Dinh, Minh Khoi Ho, Anh Quan Dang, and Hung Phong Tran. TrafficVLM: A controllable visual language model for traffic video captioning. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 7134–7143, 2024. [44] Huthaifa I Ashqar, Ahmed Jaber, Taqwa I Alhadidi, and Mohammed Elhenawy. Advancing object detection in transportation with multimodal large language models (mllms): A comprehensive review and empirical testing. 
+
+Computation , 13(6):133, 2025. [45] Liang Shi, Boyu Jiang, Tong Zeng, and Feng Guo. ScVLM: Enhancing vision-language model for safety-critical event understanding. In Proceedings of the Winter Conference on Applications of Computer Vision , pages 1061–1071, 2025. [46] Xiaoyu Tian, Junru Gu, Bailin Li, Yicheng Liu, Yang Wang, Zhiyong Zhao, Kun Zhan, Peng Jia, Xianpeng Lang, and Hang Zhao. DriveVLM: The convergence of autonomous driving and large vision-language models. arXiv preprint arXiv:2402.12289 , 2024. [47] Yue Li, Meng Tian, Zhenyu Lin, Jiangtong Zhu, Dechang Zhu, Haiqiang Liu, Yueyi Zhang, Zhiwei Xiong, and Xinhai Zhao. Fine-grained evaluation of large vision-language models in autonomous driving. In Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 9431–9442, 2025. [48] Zhenhua Xu, Yan Bai, Yujia Zhang, Zhuoling Li, Fei Xia, Kwan-Yee K Wong, Jianqiang Wang, and Hengshuang Zhao. Drivegpt4-v2: Harnessing large language model capabilities for enhanced closed-loop autonomous driving. In Proceedings of the Computer Vision and Pattern Recognition Conference , pages 17261–17270, 2025. [49] Rui Zhao, Qirui Yuan, Jinyu Li, Zhiqiang Wang, Yun Li, Zhenhai Gao, Hongyu Hu, and Fei Gao. VLM-Driver: Human-like autonomous driving decision-making via vision language model. IEEE Transactions on Vehicular Technology , 2025. [50] Alexey Dosovitskiy, German Ros, Felipe Codevilla, Antonio Lopez, and Vladlen Koltun. Carla: An open urban driving simulator. In Conference on robot learning , pages 1–16. PMLR, 2017. [51] Pablo Alvarez Lopez, Michael Behrisch, Laura Bieker-Walz, Jakob Erdmann, Yun-Pang Flötteröd, Robert Hilbrich, Leonhard Lücken, Johannes Rummel, Peter Wagner, and Evamarie Wießner. Microscopic traffic simulation using sumo. In 2018 21st international conference on intelligent transportation systems (ITSC) , pages 2575–2582. Ieee, 2018. [52] Quanyi Li, Zhenghao Peng, Lan Feng, Qihang Zhang, Zhenghai Xue, and Bolei Zhou. Metadrive: Composing diverse driving scenarios for generalizable reinforcement learning. IEEE transactions on pattern analysis and machine intelligence , 45(3):3461–3475, 2022. [53] Ming Zhou, Jun Luo, Julian Villella, Yaodong Yang, David Rusu, Jiayu Miao, Weinan Zhang, Montgomery Alban, Iman Fadakar, Zheng Chen, Aurora Chongxi Huang, Ying Wen, Kimia Hassanzadeh, Daniel Graves, Dong Chen, Zhengbang Zhu, Nhat Nguyen, Mohamed Elsayed, Kun Shao, Sanjeevan Ahilan, Baokuan Zhang, Jiannan Wu, Zhengang Fu, Kasra Rezaee, Peyman Yadmellat, Mohsen Rohani, Nicolas Perez Nieves, Yihan Ni, Seyedershad Banijamali, Alexander Cowen Rivers, Zheng Tian, Daniel Palenicek, Haitham bou Ammar, Hongbo Zhang, Wulong Liu, Jianye Hao, and Jun Wang. Smarts: Scalable multi-agent reinforcement learning training school for autonomous driving, 11 2020. [54] Hao Mei, Xiaoliang Lei, Longchao Da, Bin Shi, and Hua Wei. Libsignal: an open library for traffic signal control. 
+
+Machine Learning , 113(8):5235–5271, 2024. [55] Toan V Tran, Thanh-Nam Doan, and Mina Sartipi. TSLib: A unified traffic signal control framework using deep reinforcement learning and benchmarking. In 2021 IEEE international conference on big data (Big Data) , pages 1739–1747. IEEE, 2021. [56] Edward J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, and Weizhu Chen. Lora: Low-rank adaptation of large language models. In ICLR , 2022. 12 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 
+
+## Appendix 
+
+In this appendix, we provide supplementary material to further elaborate the construction, evaluation protocol, and empirical analysis of OmniTraffic. The appendix is organized as follows to help readers quickly locate specific details: • Appendix A details dataset construction and visual diversity across simulated and real scenes. • Appendix B expands the VQA task hierarchy with category-level question examples. • Appendix C reports the evaluation protocol and model details. • Appendix D provides additional benchmark diagnostics beyond the main text. • Appendix E discusses sim-to-real experimental settings and results. • Appendix F presents representative qualitative cases across the task hierarchy. • Appendix G discusses the broader implications of OmniTraffic. 
+
+## A Dataset Construction Details 
+
+OmniTraffic’s simulated data is not generated from abstract or randomly designed road layouts. Instead, each simulated intersection is reconstructed from a real-world counterpart so that the generated images preserve realistic lane geometry, approach topology, signal layouts, and camera-view relationships. This section expands the dataset construction details along four axes. We first show the multi-view observations enabled by the real-aligned 3D scenes, then describe the traffic demand profiles used to create different temporal traffic states. We next present simulated special events and real-world visual variations that broaden the evaluation conditions. Finally, we describe the open 3D assets and custom rendering pipeline, which allows users to generate new views and extend OmniTraffic beyond the released image set. 
+
+A.1 Multi-View Observations of Real-Aligned 3D Scenes 
+
+As discussed in Fig. 3, each reconstructed scene in OmniTraffic corresponds to a real-world intersection rather than a simulated toy layout. Figs. 7 illustrate the multi-view observations enabled by these 3D assets. Each row presents a top-down layout and directional inbound views, showing how the same intersection can be rendered from different camera placements. This design addresses the spatial perception gap in existing traffic benchmarks, which often rely on isolated frames or fixed viewpoints, whereas real traffic understanding requires correlating cross-view observations, inferring viewpoint-to-scene geometry, and grounding vehicles, lanes, and signals within a shared topology. The 12 reconstructed intersections span Beijing, Chengdu, Tianjin, Massy, Yau Ma Tei, and Songdo, covering diverse geographic locations and road structures. Beihuan, Beishahe, Changjianglu, and Chenghannanlu are three-way intersections, while the remaining scenes are four-way intersections with varied lane organizations and approach layouts. Larger scenes such as Yongrunlu and Songdo provide broader road geometry and more complex traffic-state variations. This diversity allows OmniTraffic to evaluate MLLM generalization across viewpoints, intersection scale, topology, and regional road-layout patterns. 1 2 3
+
+> Beijing_Beihuan
+> 3
+> (a)
+
+Figure 7: Multi-view observations of OmniTraffic intersections (Part 1). The row shows a top-down layout on the left and directional inbound views on the right. (a) Beihuan, Beijing. 
+
+A.2 Traffic Demand Profiles 
+
+To further diversify traffic states beyond intersection geometry and camera viewpoints, each real-aligned reconstructed scene is simulated under five traffic demand profiles: Low , High , Random , Increase , and Fluctuation . These profiles 13 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 1 2 3
+
+Beijing_Beishahe 
+
+(b) 1 2 3
+
+Beijing_Changjianglu 
+
+(c) 1 2 3 4
+
+Beijing_Gaojiaoyuan 
+
+(d) 1 2 3 4
+
+Beijing_Pinganli 
+
+> 3
+> 1
+
+(e) 1 2 3 4
+
+Beijing_Yongrunlu 
+
+> 3
+
+(f) 1 2 3
+
+Chengdu_Chenghannanlu 
+
+> 2
+
+(g) 
+
+Figure 7: Multi-view observations of OmniTraffic intersections (Part 2). Each row shows a top-down layout and 14 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 1 2 3 4
+
+> Chengdu_Guanghua
+
+(h) 1 2 3 4
+
+> Tianjin_Zhijingdao
+
+(i) 1 2 3
+
+> France_Massy
+
+(j) 1 2 3 4
+
+> Hongkong_YMT
+
+(k) 1 2 3 4
+
+> SouthKorea_Songdo
+
+(l) 
+
+Figure 7: Multi-view observations of OmniTraffic intersections (Part 3). Each row shows a top-down layout and directional inbound views. (h) Guanghua, Chengdu. (i) Zhijingdao, Tianjin. (j) Massy, France. (k) Yau Ma Tei, Hong Kong. (l) Songdo, South Korea. 15 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 
+
+vary both the overall traffic volume and its temporal evolution while keeping the underlying road topology fixed. This design ensures that OmniTraffic evaluates under different flow intensity. Table 5 reports the overall traffic-flow statistics for the 12 reconstructed scenes. Each entry gives the mean and standard deviation of vehicles per minute over a 10-minute simulation, providing a compact summary of the magnitude and variability induced by each demand profile. The table shows that the traffic profiles are scene-dependent: larger intersections such as Songdo generally support higher volumes, while smaller or three-way intersections exhibit lower overall demand under the same profile family. Table 5: Overall traffic-flow statistics for the 12 reconstructed scenes. Values show mean ± standard deviation of vehicles per minute over a 10-minute simulation, computed from ten one-minute intervals. 
+
+Scene Low High Random Incr. Fluct. 
+
+Beijing Beihuan 28 .4±2.2 52 .6±3.2 45 .6±6.2 38 .0±10 .3 44 .4±2.1
+
+Beijing Beishahe 21 .0±1.9 67 .4±2.2 44 .0±11 .1 47 .6±16 .6 41 .6±12 .3
+
+Beijing Changjianglu 28 .4±2.2 58 .4±2.2 41 .2±10 .2 47 .8±14 .6 47 .4±21 .4
+
+Beijing Gaojiaoyuan 28 .4±1.5 70 .0±2.5 56 .2±8.4 54 .6±18 .7 45 .8±15 .6
+
+Beijing Pinganli 34 .0±1.9 79 .0±2.5 47 .4±13 .6 57 .2±16 .2 54 .6±18 .8
+
+Beijing Yongrunlu 35 .8±2.5 77 .0±2.5 55 .0±12 .7 53 .4±20 .0 39 .8±24 .4
+
+Chengdu Chenghannanlu 20 .2±1.7 49 .0±1.3 32 .2±7.5 33 .8±14 .9 31 .8±10 .6
+
+Chengdu Guanghua 29 .6±2.2 67 .8±2.9 46 .8±4.7 55 .0±20 .4 54 .6±6.0
+
+France Massy 20 .4±1.4 37 .8±7.0 42 .0±7.2 38 .0±8.3 37 .8±14 .8
+
+Hongkong YMT 30 .8±1.0 66 .2±2.4 44 .6±6.6 44 .6±11 .1 40 .4±6.9
+
+SouthKorea Songdo 50 .0±4.0 94 .8±3.6 87 .2±13 .5 73 .6±24 .6 64 .2±18 .0
+
+Tianjin zhijingdao 39 .2±1.5 70 .6±4.1 61 .0±8.7 50 .6±19 .4 44 .8±13 .0
+
+Fig. 8 complements the table by showing how traffic demand changes over time in each reconstructed scene. The five curves correspond to the Low , High , Random , Increase , and Fluctuation profiles across the ten one-minute intervals. This visualization shows that OmniTraffic controls not only the average traffic volume, but also the temporal pattern of demand, enabling questions that depend on queue evolution, temporal ordering, and signal-phase reasoning. 
+
+A.3 Special Events and Real-World Visual Variations 
+
+In addition to varying viewpoints and traffic demand, OmniTraffic includes controllable semantic events in simulation. Fig. 9 shows representative simulated examples, including emergency vehicles and road-blocking events caused by fallen trees. These cases are designed to test whether MLLMs can recognize traffic-relevant entities and events that may alter local traffic states, lane availability, or signal-phase reasoning, rather than relying only on ordinary vehicle-flow patterns. Real-world footage further complements the simulated scenes by exposing models to visual conditions that are difficult to fully specify in simulation. Fig. 10 shows examples from real surveillance videos, including snowy, rainy, and cloudy weather, as well as emergency vehicles and buses. These examples help characterize the appearance gap considered in the sim-to-real experiments: models must handle not only structured traffic semantics, but also weather, visibility, and camera-domain variation. 
+
+A.4 Open 3D Assets and Custom Rendering Pipeline 
+
+OmniTraffic is designed as an extensible scene resource rather than a fixed collection of released images. As shown in Fig. 11(a), we release the reconstructed 3D intersection assets used to generate the simulated scenes. These assets preserve intersection geometry, lane topology, traffic-signal layouts, and scene context, enabling users to inspect, modify, and reuse the underlying environments instead of treating the benchmark as a closed set of images. Together with the 3D assets, we will release the rendering code that controls camera placement and image generation. Fig. 11(b) illustrates how the same traffic event can be rendered from different viewpoints, including top-down views, roadside intersection-camera views, and autonomous-driving-style views. This flexibility allows users to create additional images by changing camera angles, traffic demand profiles, special vehicles, special events, and visual conditions. The released pipeline therefore supports community-driven expansion of OmniTraffic and makes it possible to construct new VQA samples without manually rebuilding scene geometry or annotation logic. 16 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 1 2 3 4 5 6 7 8 9 10 
+
+Time (min) 
+
+30 
+
+40 
+
+50 
+
+> Vehicles/min
+
+Beijing Beihuan 
+
+1 2 3 4 5 6 7 8 9 10 
+
+Time (min) 
+
+20 
+
+30 
+
+40 
+
+50 
+
+60 
+
+70 
+
+> Vehicles/min
+
+Beijing Beishahe 
+
+1 2 3 4 5 6 7 8 9 10 
+
+Time (min) 
+
+20 
+
+30 
+
+40 
+
+50 
+
+60 
+
+70 
+
+> Vehicles/min
+
+Beijing Changjianglu 
+
+1 2 3 4 5 6 7 8 9 10 
+
+Time (min) 
+
+20 
+
+30 
+
+40 
+
+50 
+
+60 
+
+70 
+
+80 
+
+> Vehicles/min
+
+Beijing Gaojiaoyuan 
+
+1 2 3 4 5 6 7 8 9 10 
+
+Time (min) 
+
+30 
+
+40 
+
+50 
+
+60 
+
+70 
+
+80 
+
+> Vehicles/min
+
+Beijing Pinganli 
+
+1 2 3 4 5 6 7 8 9 10 
+
+Time (min) 
+
+20 
+
+30 
+
+40 
+
+50 
+
+60 
+
+70 
+
+80 
+
+> Vehicles/min
+
+Beijing Yongrunlu 
+
+1 2 3 4 5 6 7 8 9 10 
+
+Time (min) 
+
+20 
+
+30 
+
+40 
+
+50 
+
+> Vehicles/min
+
+Chengdu Chenghannanlu 
+
+1 2 3 4 5 6 7 8 9 10 
+
+Time (min) 
+
+30 
+
+40 
+
+50 
+
+60 
+
+70 
+
+80 
+
+> Vehicles/min
+
+Chengdu Guanghua 
+
+1 2 3 4 5 6 7 8 9 10 
+
+Time (min) 
+
+20 
+
+30 
+
+40 
+
+50 
+
+60 
+
+> Vehicles/min
+
+France Massy 
+
+1 2 3 4 5 6 7 8 9 10 
+
+Time (min) 
+
+30 
+
+40 
+
+50 
+
+60 
+
+> Vehicles/min
+
+Hongkong YMT 
+
+1 2 3 4 5 6 7 8 9 10 
+
+Time (min) 
+
+40 
+
+60 
+
+80 
+
+100 
+
+> Vehicles/min
+
+SouthKorea Songdo 
+
+1 2 3 4 5 6 7 8 9 10 
+
+Time (min) 
+
+30 
+
+40 
+
+50 
+
+60 
+
+70 
+
+80 
+
+> Vehicles/min
+
+Tianjin zhijingdao 
+
+Low Fluct. High Random Increas. 
+
+Figure 8: Temporal traffic demand profiles across the 12 real-aligned reconstructed OmniTraffic scenes. Each scene contains five curves corresponding to Low, High, Random, Increase, and Fluctuation demand profiles over ten one-minute intervals. (a) (b) (c) (d) 
+
+Figure 9: Representative special cases in simulated OmniTraffic scenes. (a)–(b) show emergency vehicles, including ambulances, while (c)–(d) show road-blocking events caused by fallen trees. 17 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT (a) (b) (c) (d) 
+
+(e) (f) (g) (h) 
+
+Figure 10: Representative weather conditions and special vehicles in real-world OmniTraffic footage. (a)–(b) show snowy scenes, (c) shows a rainy scene, (d) shows a cloudy scene, (e)–(f) show ambulances, and (g)–(h) show buses. (a) (b) 
+
+Figure 11: Open 3D assets and customizable rendering pipeline in OmniTraffic. (a) Reconstructed 3D intersection assets released with the benchmark. (b) Custom camera rendering enables the same traffic event to be captured from different viewpoints, including top-down, roadside intersection-camera, and autonomous-driving-style views. 18 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 
+
+## B VQA Task Taxonomy and Question Examples 
+
+The main text summarizes OmniTraffic’s three-level task hierarchy in Table 2. This section further supplements the hierarchy with representative VQA examples covering all task categories. Each example includes the visual input, a natural-language question, four answer options, and the ground-truth answer, thereby illustrating the progression from single-image topology grounding to multi-view and temporal reasoning, and further to phase-level decision support. Table 6 maps each category to its corresponding example figure and reports the question used in that example. In the released benchmark, variables such as direction, lane index, timestep, image index, BEV option, and phase definition are instantiated from the corresponding simulation metadata or real-world annotations. Table 6: Representative VQA questions for each OmniTraffic category. Each row links to an example figure and lists the concrete question and answer choices shown in that example.                         
+
+> Category Example Question and choices shown in the VQA example
+> L1: Single-image perception examples
+> Veh. Count Fig. 12a Q: How many vehicles are there in incoming lane 2? Choices: (A) 1 (B) 2 (C) 3 (D) 4. Spe. Veh. Fig. 12b Q: Which lane is the emergency vehicles located in (from left to right, lane index starts from 1)? Choices: (A) Lane 1 (B) Lane 2 (C) Lane 3 (D) Lane 4. Spe. Evt. Fig. 13a Q: What types of traffic accidents or obstructions are visible in the image? Choices: (A) Safety Barrier (B) Vehicle Collision (C) Fallen Tree (D) None. Road Infra. Fig. 13b Q: What traffic movement is the first incoming lane from the left designated for? Choices: (A) left turn (B) straight (C) right turn (D) U-turn. Scene Attr. Fig. 14 Q: What is the weather condition in the image? Choices: (A) sunny (B) cloudy (C) rainy (D) snowy.
+> L2: Multi-image reasoning examples
+> View Comp. Fig. 15 Q: Which image has the most vehicles in incoming lanes? Choices: (A) Image 1 (B) Image 2 (C) Image 3 (D) Image 4. View Loc. Fig. 16 Q: In which image(s) are emergency vehicles visible? Choices: (A) Image 1 (B) Images 2 (C) Image 3 only (D) Image 4. View-BEV Fig. 17 Q: Given the BEV (bird’s-eye view), which directional view does NOT correspond to this BEV? Choices: (A)–(D) candidate view panels. Temp. Reas. Fig. 18 Q: How does the vehicle queue change across the four frames? Choices: (A) increasing (B) decreasing (C) unchanged (D) first decreases then increases.
+> L3: Phase-level decision-support examples
+> Phase Ana. Fig. 19 Q: Which traffic phase is affected by traffic accidents or obstructions? Choices: (A) Phase 1 (B) Phase 2 (C) Phase 3 (D) Phase 4. Phase Dec. Fig. 20 Q: What is the optimal next green phase? Choices: (A) Phase 1 (B) Phase 2 (C) Phase 3 (D) Phase 4.
+
+B.1 Level 1: Perception 
+
+Level 1 evaluates whether a model can convert a single traffic image into structured facts grounded in road topology. Although the input is a single frame, the answer often depends on visibility, direction, lane indexing, or lane function rather than generic object recognition alone. Fig. 12a–Fig. 14 illustrate the five L1 categories with single-image VQA examples. 
+
+B.1.1 Vehicle Counting (Veh. Count) 
+
+Vehicle-counting questions evaluate whether the model can count visible vehicles at different levels of granularity. Beyond conventional whole-image vehicle counting, OmniTraffic introduces lane-specific counting tasks that query the number of vehicles in a particular lane or movement direction. This design is closer to real-world traffic monitoring, where effective perception requires not only a global estimate of traffic volume but also a fine-grained understanding of how vehicles are distributed across lanes. A representative VQA example should therefore present a single traffic image with labeled incoming and outgoing lanes, followed by a lane-grounded counting question such as: 1. How many vehicles are there in total on the incoming and outgoing lanes, considering visibility? 2. How many vehicles are there in the incoming direction, considering visibility? 3. How many vehicles are there in the outgoing direction, considering visibility? 19 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 
+
+4. How many vehicles are there in incoming lane 2, from left to right and starting from 1? The last template is instantiated with different directions and lane indices, which tests whether models can associate vehicles with a specific lane rather than only estimate scene-level traffic density. The answer options are numeric counts sampled from plausible nearby values. 
+
+B.1.2 Special Vehicle Recognition (Spe. Veh.) 
+
+Special-vehicle questions target traffic-relevant vehicle classes such as police cars, ambulances, and fire trucks. A representative VQA example should highlight the special vehicle only subtly, if at all, so that the example remains faithful to the benchmark setting. The questions progress from existence detection to type recognition and lane-level localization: 1. Does the image contain any emergency vehicles such as police cars, ambulances, or fire trucks? 2. What type of emergency vehicle is shown in the image, and where is it located? 3. Which lane are the emergency vehicles located in, from left to right and starting from index 1? Question : How many vehicles are       
+
+> there in incoming lane 2, from left
+> to right and starting from 1?
+> (C)
+> (D)
+> (A)
+> (B) 2-3
+> 4-5
+> 6-7
+> 0-1
+> GT: B
+> (a) Vehicle Counting. Question :Which lane are the
+> emergency vehicles located in (from
+> left to right, lane index starts from 1)?
+> (C)
+> (D)
+> (A)
+> (B) Lane 3
+> Lane 2
+> Lane 1
+> Lane 4
+> GT: C(b) Special Vehicle Recognition.
+
+Figure 12: Representative VQA examples for Vehicle Counting and Special Vehicle Recognition. 
+
+B.1.3 Special Event Recognition (Spe. Evt.) 
+
+Special-event questions focus on rare but traffic-critical conditions that can change lane availability or downstream signal decisions. A representative VQA example should show an obstruction or accident in a specific lane and use options that differ by event type or affected lane: 1. Is there any traffic accident or obstruction visible in the image? 2. What types of traffic accidents or obstructions are visible in the image? 3. Which lanes are affected by the traffic accident or obstruction, from left to right and starting from lane index 1? 
+
+B.1.4 Road Infrastructure (Road Infra.) 
+
+Road-infrastructure questions require models to read the static structure of the intersection, including the number of lanes and their permitted movements. A representative VQA example should use a clear image where lane markings or arrows are visible: 1. How many incoming lanes are there in total? 2. How many outgoing lanes are there in total? 3. How many straight lanes are there in the incoming direction? 4. In the incoming direction, what traffic movement is the third lane from the left designated for? The direction, movement type, and ordinal lane reference vary across samples, enabling evaluation of lane-topology grounding under different road layouts. 20 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT Question : What types of traffic   
+
+> accidents or obstructions are
+> visible in the image?
+> (C)
+> (D)
+> (A)
+> (B) Veh. Collision
+> Fallen Tree
+> None
+> Safety Barrier
+> GT: C
+
+(a) Special Event Recognition. Question : In the incoming direction,    
+
+> what traffic movement is the 1st
+> lane from the left designated for?
+> (C)
+> (D)
+> (A)
+> (B) Right
+> Straight
+> U-Turn
+> Left
+> GT: C
+
+(b) Road Infrastructure. 
+
+Figure 13: Representative VQA examples for Special Event Recognition and Road Infrastructure. 
+
+B.1.5 Scene Attribute (Scene Attr.) 
+
+Scene-attribute questions are constructed from real-world footage. We use two representative examples for this category: one asks for the traffic-light color state, and the other asks for the weather condition. Both examples use real surveillance frames and target a visible attribute rather than the entire scene: 1. Within the main zebra crossing directly in front of the camera, how many pedestrians are present? 2. At the intersection, the traffic light head follows the standard vertical configuration: red on top, yellow in the middle, and green at the bottom. Based on which lamp is illuminated, what is the current color state of the traffic light for the direction facing the camera? 3. What is the weather condition in the image? Question : What is the current color 
+
+state of the traffic light for the 
+
+direction facing the camera?   
+
+> (C)
+> (D)
+> (A)
+> (B) Yellow
+> Green
+> None
+> Red
+> GT: A
+
+(a) Traffic-light color. Question : What is the weather 
+
+condition in the image?    
+
+> (C)
+> (D)
+> (A)
+> (B) Cloudy
+> Snowy
+> Rainy
+> Sunny
+> GT: D
+
+(b) Weather condition. 
+
+Figure 14: Representative VQA examples for Scene Attribute. The examples ask the model to recognize the traffic-light color state and the weather condition from real-world surveillance frames. 
+
+B.2 Level 2: Spatiotemporal Reasoning 
+
+Level 2 extends the input from a single image to a set of images. The model must establish correspondences across views, BEV layouts, or timesteps before answering. These tasks are designed to distinguish models that recognize local content from models that can reason over the shared intersection state. Fig. 15–Fig. 18 illustrate the four L2 categories with multi-image VQA examples. 21 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 
+
+B.2.1 Multi-view Comparison (View Comp.) 
+
+Multi-view comparison questions present multiple synchronized directional views from the same intersection. A representative VQA example should arrange four directional images in a grid and ask for the image index with the largest incoming queue: 1. These images are captured by cameras at an intersection, each showing a different incoming direction. Which direction has the most vehicles, only considering the vehicles in the incoming lanes? Please provide the image index. Question : These images are captured by cameras at an intersection, each showing a 
+
+different incoming direction. Which direction has the most vehicles , only considering the 
+
+vehicles in the incoming lanes? Please provide the image index.    
+
+> View -1View -2View -3View -4
+
+Figure 15: Representative VQA example for Multi-view Comparison. The example asks the model to compare incoming-lane vehicle counts across directional views. 
+
+B.2.2 Multi-view Localization (View Loc.) 
+
+Multi-view localization questions ask the model to search across views and return the image index or indices containing traffic-relevant targets. A representative VQA example should show multiple camera views where only a subset contains an emergency vehicle or special event: 1. These images are captured by cameras at an intersection, each showing a different incoming direction. In which image(s) are emergency vehicles, such as police cars, ambulances, or fire trucks, visible? Please provide the image index. 2. These images are captured by cameras at an intersection, each showing a different incoming direction. In which image(s) are special events visible? Please provide the image index. Question : These images are captured by cameras at an intersection, each showing a 
+
+different incoming direction. In which image(s) are emergency vehicles (police cars, 
+
+ambulances, or fire trucks) visible? Please provide the image index.    
+
+> Image -1Imag e-2Imag e-3Image -4
+
+Figure 16: Representative VQA example for Multi-view Localization. The example asks the model to find which directional view(s) contain a traffic-relevant target. 22 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 
+
+B.2.3 View-BEV Mapping (View-BEV) 
+
+View-BEV mapping questions connect perspective observations with bird’s-eye-view layouts. This category directly evaluates whether models can infer the geometric relation between directional camera views and the global intersection map. A representative VQA example should combine one BEV map and several perspective-view options, or one perspective image and several BEV options: 1. Given a BEV, or bird’s-eye view, determine the driving direction associated with the star-shaped marker. Please select the correct description from the provided options. 2. Given the BEV, which directional view does not correspond to this BEV? 3. Given the directional view, which BEV corresponds to this view? Question : :Given the BEV (bird's -eye 
+
+view), which directional view does NOT 
+
+correspond to this BEV? 
+
+Figure 17: Representative VQA example for View-BEV Mapping. The example asks the model to align a perspective view with the corresponding bird’s-eye-view geometry. 
+
+B.2.4 Temporal Reasoning (Temp. Reas.) 
+
+Temporal-reasoning questions use frames from the same viewpoint at different timesteps. They evaluate ordering, interpolation, prediction, and traffic-state trend recognition. A representative VQA example should show a short ordered or partially ordered sequence from the same camera: 1. Given two reference images from the start and end times, which of the following images occurred between these two time points? 2. Among these images from the same viewpoint at different timesteps, which one occurred first? 3. The image shows the vehicle queue situation in the same direction across four consecutive timesteps. Please determine whether the vehicle queue in this direction is increasing, decreasing, or remaining unchanged. 4. Given two consecutive reference images from timesteps, which of the following images would occur next in the sequence? 
+
+B.3 Level 3: Decision Support 
+
+Level 3 uses the perceptual and spatiotemporal facts from earlier levels as inputs to signal-phase reasoning. Each sample provides synchronized directional views together with phase definitions, such as the lane movements served by each phase. The model must map observed traffic states to the corresponding phases before selecting an answer. Fig. 19 and Fig. 20 illustrate the two L3 categories with phase-level decision-support examples. 
+
+B.3.1 Signal Phase Analysis (Phase Ana.) 
+
+Signal-phase analysis questions ask models to identify which phase is most relevant under the current traffic condition. The evidence may be ordinary queue length, special events, emergency vehicles, or the observed signal color. A representative VQA example should show all directional views and the phase table so that readers can see how visual evidence maps to a phase number: 23 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT Question : Given a sequence of 4 consecutive images, analyze the change in vehicle queue 
+
+length. Please determine if it shows an increasing, decreasing, or stable trend.                
+
+> 𝑡 𝑡 +1𝑡 +2𝑡 +3
+> GT: A(C) (D) (A) (B) Decreasing Stable Varying Increasing
+
+Figure 18: Representative VQA example for Temporal Reasoning. The example asks the model to infer queue evolution from multiple frames. 1. These images are captured by cameras at an intersection, each showing a different incoming direction. The phase information is provided. Which traffic phase has the most vehicles waiting? Please provide the phase number. 2. These images are captured by cameras at an intersection, each showing a different incoming direction. The phase information is provided. Which traffic phase is affected by traffic accidents or obstructions? Please provide the phase number. 3. These images are captured by cameras at an intersection, each showing a different incoming direction. The phase information is provided. Which traffic phase contains emergency vehicles, such as police cars, ambulances, or fire trucks? Please provide the phase number. 4. These images are captured by cameras at an intersection, each showing a different incoming direction. The phase information is provided. Which traffic phase currently has a green light? Please provide the phase number. Question : These images provide multi -camera views of different incoming directions at an 
+
+intersection. The phase information is as follows: Phase 1: All lanes of Image 2; Phase 2: All 
+
+lanes of Image 3; Phase 3: All lanes of Image 0; Phase 4: All lanes of Image 1; Which traffic 
+
+phase is affected by traffic accidents or obstructions? Please provide the phase number.           
+
+> GT: C(C) (D) (A) (B) Phase 2Phase 3Phase 4Phase 1
+
+Ima ge 0 Image 1 Image 2 Image 3
+
+Figure 19: Representative VQA example for Signal Phase Analysis. The example asks the model to map emergency events to a traffic phase. 
+
+B.3.2 Signal Phase Decision (Phase Dec.) 
+
+Signal-phase decision questions move from analysis to recommendation. Instead of asking the model to report an observed phase property, the model must choose the next green phase based on the complete multi-view traffic state and the available phase definitions. A representative VQA example should show the current traffic condition in all directions, the candidate phase definitions, and four phase-number options: 24 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 
+
+1. Based on the current traffic conditions shown in all direction images, what is the optimal traffic signal phase decision? The phase information is provided. Please provide the phase number. Question : Based on the current traffic conditions shown in all direction images, what is the 
+
+optimal traffic signal phase decision? The phase information is as follows: Phase 1: All 
+
+lanes of Image 2; Phase 2: All lanes of Image 3; Phase 3: All lanes of Image 0; Phase 4: All 
+
+lanes of Image 1; Please provide the phase number.           
+
+> GT: B(C) (D) (A) (B) Phase 2Phase 3Phase 4Phase 1
+
+Ima ge 0 Image 1 Image 2 Image 3
+
+Figure 20: Representative VQA example for Signal Phase Decision. The example asks the model to recommend the next green phase from the current multi-view traffic condition. 
+
+## C Evaluation Protocol and Model Details 
+
+The verified OmniTraffic benchmark is evaluated in a unified four-option multiple-choice format so that human and model results are directly comparable. Before evaluation, questions with ambiguous visual evidence, near-duplicate wording, or weak distractors are removed or replaced to reduce artifacts unrelated to traffic understanding. We therefore focus this appendix section on three protocol details that complement the main text: the web platform used for human evaluation, the deterministic model scoring procedure, and the full model identifiers used in the experiments. 
+
+C.1 Human Evaluation Platform and Protocol 
+
+Human evaluation is conducted through a web-based platform using the same multiple-choice benchmark format as model evaluation. Ten participants with no specialized traffic-engineering background complete the benchmark without external aids. As shown in Fig. 21, the platform contains a login page, a task page, and a score page. The task page presents the visual input, question, and four candidate answers, while tracking which questions have been completed. After submission, the score page reports the participant’s final statistics. Human accuracy is computed by exact match against the ground-truth option, allowing a direct comparison with MLLMs under the same scoring rule. 
+
+C.2 Model Evaluation Protocol 
+
+For each benchmark item, the model receives the visual input, the question, and four answer options. The prompt asks the model to reason over the traffic scene and provide an answer in the option format, so model outputs may include explanatory text in addition to the selected choice. To make comparisons reproducible across providers, all evaluations use deterministic decoding whenever the interface allows it: temperature is set to τ = 0 , top-p is kept at its default value of 1.0 when exposed by the API, frequency penalty is kept at its default value of 0, and the maximum output length is set to 500 generated tokens. No external tools, retrieval modules, or task-specific demonstrations are provided. Other provider-specific sampling parameters are left at their default values when they are not exposed consistently across model APIs. Scoring is performed only on the extracted option label rather than on the explanatory text. We use a deterministic regular-expression parser to identify valid option labels in common answer formats, such as “A”, “(A)”, “Option A”, or sentences containing an explicit final choice. If no valid label can be extracted, the same query is retried up to three times with the same visual input and question. A response is counted as invalid only if all three attempts fail to produce a parsable option, and invalid responses are scored as incorrect. Model accuracy is then reported as exact-match 25 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 
+
+(a) Login interface (b) Task interface (c) Score interface Figure 21: Screenshots of the web interface developed for human evaluation. (a) The login interface where users enter their usernames. (b) The task interface, where green indicators represent completed tasks. (c) The final score interface showing user statistics and scores after completion. Instruction . You are given one or more traffic -scene images and a multiple -choice question. 
+
+Analyze the visual evidence and select the best answer. You may provide a brief explanation, 
+
+but your final response must include exactly one option label from A, B, C, or D. 
+
+Inputs. Visual Input: 
+
+single image, multi -view images, cross -timestep images 
+
+Question: 
+
+{question text} 
+
+Options: 
+
+A. {option A}. B. {option B}. C. {option C}. D. {option D} 
+
+Output. 
+
+Reasoning text, if any. Final answer: {A/B/C/D} 
+
+Figure 22: Prompt template used for model evaluation. The template permits explanatory reasoning while requiring an explicit option label for deterministic answer extraction. accuracy between the extracted option and the ground-truth label. The invalid-response rate in Appendix D.3 separately reports this format-compliance failure mode, so it is not conflated with traffic-scene reasoning errors. 
+
+C.3 Model Identifiers 
+
+Table 7 lists the full model identifiers corresponding to the shortened names used in the result tables. The shortened names are used only for readability and do not change the evaluated model variants. 
+
+## D Additional Benchmark Analysis 
+
+The main text argues that current MLLMs are relatively strong at salient visual recognition but weak at lane-level topology grounding, quantitative traffic-state estimation, and temporal reasoning. This section examines whether that interpretation remains stable when the aggregate benchmark is decomposed by source, scene, task category, fine-grained task type, input format, and response validity. We first check whether the results are dominated by a small number of scenes, then identify the ability categories and concrete task types that account for the main weaknesses, distinguish temporal reasoning difficulty from multi-image input complexity, and finally check whether answer-format failures 26 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 
+
+Table 7: Full model identifiers for the abbreviated names used in the experiment tables. 
+
+Short name Full identifier 
+
+GPT-4o GPT-4o GPT-5.2 GPT-5.2 Gemini-2.5-Pro Gemini-2.5-Pro Gemini-3-Pro Gemini-3-Pro-Thinking Claude-Sonnet-4.5 Claude-Sonnet-4.5-Thinking Doubao-1.5 Doubao-1.5-Thinking-Vision-Pro-250428 Grok-4 Grok-4 Qwen-VL-Max Qwen-VL-Max-2025-04-08 Qwen3-VL-Plus Qwen3-VL-Plus InternVL InternVL 3.5 Qwen3-VL-235B Qwen3-VL-235B-A22B-Thinking explain the low scores. Unless otherwise specified, each analysis reports average accuracy across the 11 evaluated MLLMs. 
+
+D.1 Robustness Across Sources and Scenes 
+
+We first ask whether the benchmark conclusions are an artifact of a small number of unusually easy or hard scenes. Fig. 23 summarizes the average MLLM accuracy for each scene. In the simulated split, scene-level accuracy ranges from 54.6% on Beijing Yongrunlu to 64.0% on Beijing Beishahe, indicating moderate variation across reconstructed intersections rather than dependence on a single scene. The two real-world scenes are lower, with 51.2% on Korea and 48.1% on Tianjin. This source-level pattern suggests that benchmark difficulty is broadly distributed, while real-world roadside footage introduces additional challenges beyond the reconstructed simulation scenes. Beishahe 
+
+> Changjianglu
+> Chenghannanlu
+> Hong Kong
+> Zhijingdao
+> Beihuan
+> Pinganli
+> France
+> South Korea
+> Gaojiaoyuan
+> Guanghua
+> Yongrunlu
+> Korea
+> Tianjin
+> 0
+> 20
+> 40
+> 60
+> Avg. accuracy (%)
+
+Scene-level accuracy    
+
+> Simulated scene Real-world scene Simulated mean Real-world mean
+
+Figure 23: Scene-level average MLLM accuracy across simulated and real-world sources. Bar colors distinguish simulated reconstructed scenes from real-world roadside scenes; dashed lines mark the mean of each source. Table 8 reports the corresponding model-by-scene scores. The table shows that the trend in Fig. 23 is not driven by a single model family: most models exhibit moderate variation across simulated scenes, while the real-world columns remain relatively difficult for both proprietary and open-source/open-weight models. Gemini-3-Pro is the strongest model on all simulated scenes and on Korea, yet its accuracy still drops from 67.8–79.0% on simulated scenes to 60.7% on Korea and 54.5% on Tianjin. Other strong models show a similar source shift, with real-world scores generally concentrated around 48–55%. These per-model results are consistent with the additional visual and structural complexity of roadside footage, including uncontrolled viewpoints, illumination and weather variation, occlusion, compression artifacts, dense markings, and heterogeneous road layouts. 
+
+D.2 Category and Fine-Grained Task Bottlenecks 
+
+The scene-level results above establish that benchmark difficulty is not concentrated in a single scene, but they still average over heterogeneous task categories. Fig. 24 therefore shifts the analysis from where errors occur to what kind of traffic understanding breaks down. In the simulated split, Multi-view Localization reaches 90.9%, because 27 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 
+
+Table 8: Per-model scene-level accuracy on simulated and real-world sources (%). Fig. 23 visualizes scene-level trends after averaging over models; this table reports the underlying model-by-scene scores. The final row reports the scene average over the 11 evaluated MLLMs. Simulated scene abbreviations: BH=Beihuan, BS=Beishahe, CJ=Changjianglu, GJ=Gaojiaoyuan, PL=Pinganli, YR=Yongrunlu, CH=Chenghannanlu, GH=Guanghua, MS=Massy, HK=Yau Ma Tei, SG=Songdo, TJ=Zhijingdao. 
+
+Model Simulated scenes Real-world BH BS CJ GJ PL YR CH GH MS HK SG TJ Korea Tianjin 
+
+GPT-4o 55.3 60.5 55.9 56.0 58.8 48.0 55.1 52.1 51.3 55.1 59.7 53.1 54.1 54.9 
+
+GPT-5.2 57.4 62.2 61.8 52.3 58.8 57.8 62.9 55.1 58.9 55.6 59.2 56.1 48.4 48.9 Gemini-2.5-Pro 55.7 57.1 55.0 45.3 54.4 45.5 60.5 50.0 53.8 59.3 44.6 53.5 39.3 33.9 Gemini-3-Pro 75.0 75.2 73.2 73.7 77.2 73.8 74.2 77.5 75.8 79.0 67.8 69.3 60.7 54.5 Claude-4.5 63.1 63.0 62.7 58.4 60.5 61.5 60.2 60.6 53.8 66.3 58.8 59.7 50.8 52.4 Qwen-VL-Max 62.7 67.2 62.3 54.3 57.9 57.8 62.1 57.2 60.2 59.1 57.1 64.9 51.6 49.8 Qwen3-Plus 54.9 63.0 59.1 52.7 53.5 46.7 64.5 46.6 58.1 55.1 59.2 58.3 49.2 41.2 Qwen3-235B 59.0 68.5 63.6 60.1 59.2 59.0 61.3 52.5 53.0 60.1 57.5 64.0 53.3 52.8 Doubao-1.5 52.5 58.4 60.0 48.6 51.3 47.5 52.0 51.7 50.4 61.3 53.7 59.7 54.1 47.2 InternVL 53.7 64.7 58.6 49.0 53.5 44.3 56.2 45.8 48.3 51.9 46.8 57.5 46.7 40.3 Grok-4 57.8 63.9 67.3 61.3 61.8 58.6 62.5 58.9 59.8 61.7 56.7 55.7 54.9 53.7 
+
+Scene avg. 58.8 64.0 61.8 55.6 58.8 54.6 61.0 55.3 56.7 60.4 56.5 59.3 51.2 48.1 
+
+a special vehicle often provides a salient visual anchor. However, View-BEV Mapping drops to 27.5%, showing that successful cross-image matching does not imply geometric understanding of the intersection layout. Temporal Reasoning is also low at 46.7%, indicating that frame ordering and queue evolution remain difficult even when the inputs are generated from controlled simulation metadata. In the real-world split, the supported categories show a different but consistent pattern: Special Vehicle Recognition and Scene Attribute remain relatively high, while Vehicle Counting, Road Infrastructure, and Temporal Reasoning are substantially lower. Thus, the category-level view clarifies the nature of the benchmark difficulty: model failures are not uniform visual degradation across all categories, but selective drops on tasks that require lane-level topology, quantitative traffic-state estimation, or temporal change reasoning. To make the category-level diagnosis more concrete, we further inspect the fine-grained task types under each category. Fig. 25 ranks the lowest-scoring tasks in each source. The lowest simulated tasks concentrate on View-BEV Mapping and Temporal Reasoning, where models must align camera views with a top-down layout or infer traffic evolution across time. The lowest real-world tasks instead emphasize Road Infrastructure and Temporal Reasoning, reflecting the added difficulty of lane-function recognition and temporal judgment under uncontrolled roadside imagery. 
+
+D.3 Input Format and Response Validity 
+
+The task-level analysis points repeatedly to temporal reasoning, but this weakness could still be confounded with input complexity: cross-timestep questions often contain multiple images. Table 9 therefore compares single-image, multi-image, and cross-timestep multi-image questions directly. In the simulated split, multi-image questions average 77.6%, while cross-timestep multi-image questions fall to 38.7%. This gap suggests that the difficulty is not simply the number of images: models can use multiple images when the answer is anchored by a salient object, but they struggle when the images must be ordered or extrapolated over time. The real-world split shows the same pattern. Cross-timestep accuracy is 40.1%, below single-image accuracy at 53.8%, even though real multi-image questions are limited to supported fixed-camera settings. These results strengthen the previous analyses by showing that temporal demand, rather than multi-image input alone, is a central source of difficulty. Table 9: Task-format effects on average MLLM accuracy. The last two columns report the cross-timestep multi-image accuracy minus the corresponding non-temporal format accuracy.                  
+
+> Source Single image Multi image Cross-time ∆vs. single ∆vs. multi
+> Simulated 60.4 77.6 38.7 -21.7 -38.9 Real-world 53.8 87.9 40.1 -13.7 -47.8
+
+28 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 0 20 40 60 80 100 
+
+Avg. accuracy (%) 
+
+> Phase Decision
+> Phase Analysis
+> Temp. Reas.
+> View-BEV Map.
+> Multi-view Loc.
+> Multi-view Comp.
+> Road Infra.
+> Spec. Event Recog.
+> Spec. Veh. Recog.
+> Veh. Count
+> 59.9
+> 75.5
+> 46.7
+> 27.5
+> 90.9
+> 78.9
+> 50.3
+> 73.7
+> 74.7
+> 56.5
+
+(a) Simulated scenarios 
+
+0 20 40 60 80 100 
+
+Avg. accuracy (%) 
+
+> Temp. Reas.
+> Scene Attr.
+> Road Infra.
+> Spec. Veh. Recog.
+> Veh. Count
+> 40.1
+> 81.1
+> 36.0
+> 83.0
+> 32.0
+
+(b) Real-world scenarios 
+
+Figure 24: Category-level analysis on simulated and real-world scenarios. Bars report average accuracy across the 11 evaluated MLLMs. The real-world panel includes only categories supported by fixed roadside footage; multi-view and L3 phase-decision categories are simulation-only. 0 10 20 30 40 50 60 
+
+Avg. accuracy (%) 
+
+> V-BEV: View-BEV
+> Temp.: Interval
+> V-BEV: Diff. view
+> Road: Lane func.
+> Temp.: Predict
+> V-BEV: BEV-view
+> 33.5
+> 32.7
+> 31.3
+> 30.0
+> 23.0
+> 19.4
+
+(a) Simulated scenarios 
+
+0 10 20 30 40 50 60 
+
+Avg. accuracy (%) 
+
+> Veh.: Queue len.
+> Road: Lane count
+> Temp.: Predict
+> Temp.: Interval
+> Road: Lane func.
+> 32.0
+> 25.5
+> 22.2
+> 19.6
+> 16.5
+
+(b) Real-world scenarios 
+
+Figure 25: Lowest-scoring fine-grained tasks in the simulated and real-world splits. Bars report average accuracy across the 11 evaluated MLLMs. 29 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 
+
+We also check whether the preceding failures could be explained by answer-format errors rather than traffic-scene misunderstanding. Table 10 reports the invalid-response rate after the same three-attempt retry protocol used in the main evaluation. Most models have near-zero invalid-response rates, so the low scores on View-BEV Mapping, Road Infrastructure, Vehicle Counting, and Temporal Reasoning are unlikely to be explained primarily by formatting failures. Gemini-2.5-Pro and InternVL are exceptions, with invalid-response rates of 15.8% and 15.6% on simulated scenarios and 33.0% and 23.4% on real-world scenarios. These models expose a second practical failure mode: constrained-answer compliance can degrade independently from traffic-scene understanding. A category-level invalid-response breakdown would further refine this check; here, the overall invalid-response rate serves as a conservative sanity check that the dominant benchmark weaknesses are reasoning-oriented rather than format-only artifacts. Table 10: Overall invalid-response rates after up to three inference attempts. Lower is better.                         
+
+> Model Simulated invalid (%) Real-world invalid (%)
+> GPT-4o 0.0 0.0 GPT-5.2 0.1 0.0 Gemini-2.5-Pro 15.8 33.0 Gemini-3-Pro 0.0 0.0 Claude-Sonnet-4.5 0.0 0.0 Qwen-VL-Max 0.0 0.0 Qwen3-VL-Plus 0.0 0.0 Qwen3-VL-235B 0.0 0.0 Doubao-1.5 0.0 0.0 InternVL 15.6 23.4 Grok-4 0.0 0.0
+
+Summary. Together, these analyses turn the appendix into a validation of the main benchmark interpretation. The scene analysis shows that results are not dominated by a single source; the category analysis identifies the abilities behind the difficulty; the task-level analysis localizes those abilities to concrete traffic operations; the input-format analysis shows that temporal demand is harder than multi-image input alone; and the reliability analysis indicates that these weaknesses are not mainly answer-format artifacts. Across all views, model failures concentrate on topology-grounded perception, cross-view geometric alignment, queue-state estimation, and temporal reasoning. 
+
+## E Detailed Sim-to-Real Transfer Analysis 
+
+E.1 Fine-Tuning Protocol 
+
+This appendix summarizes the sim-to-real experiment behind Table 4. The real-world evaluation covers single-image perception, traffic-light state recognition, and cross-timestep temporal reasoning; synchronized multi-view phase-decision annotations are not available in the real-world footage, so L3 phase-level transfer is left for future evaluation. We use Qwen3-VL-2B-Instruct as the backbone model, first evaluate the base model on the real-world VQA benchmark, and then fine-tune the same model using only simulated OmniTraffic VQA samples. No real-world samples or human-verified benchmark items are used during fine-tuning. For adaptation, we apply LoRA to attention-related modules in both visual and language branches, specifically qkv 
+
+and proj in the vision stack and q_proj , k_proj , and v_proj in the language stack. We do not adapt MLP/FFN blocks, as this design empirically provides a better balance between transfer effectiveness and overfitting risk under limited fine-tuning data. The LoRA hyperparameters are rank r = 16 , α = 32 , and dropout 0.05 . Training uses an AdamW-style optimizer (via the default Hugging Face Trainer setup), with learning rate 2 × 10 −4, weight decay 0.01 ,warmup ratio 0.03 , and a cosine learning-rate schedule. We set the micro-batch size to 1 and the gradient accumulation steps to 16, yielding an effective batch size of 16 samples per optimizer step. The maximum sequence length is set to 4096 to support mixed single-image and multi-image VQA inputs. All runs are conducted on a single A100 GPU. 
+
+E.2 Transfer Results 
+
+We evaluate transfer by comparing the fine-tuned model with the base model under the same real-world VQA protocol and deterministic decoding configuration. As shown in Table 4, simulated-only fine-tuning improves Qwen3-2B from 47.6% to 53.8% overall accuracy on real-world scenes, with a larger gain on Korea (+13.2 points) and a smaller gain on Tianjin (+2.6 points). This indicates that OmniTraffic simulation data provides useful supervision beyond the simulated domain. 30 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT 
+
+Table 11: Category-level effect of fine-tuning on OmniTraffic simulation data. Accuracy is reported before and after fine-tuning Qwen3-2B using only simulated OmniTraffic samples.                             
+
+> Category Coverage Before After ∆
+> Temporal Reasoning Sim./Real 34.0 50.0 +16.0 Special Vehicle Recognition Sim./Real 63.6 90.9 +27.3 Road Infrastructure Sim./Real 43.0 47.7 +4.7 Vehicle Counting Sim./Real 62.7 51.0 -11.8 Scene Attribute Real-only 75.0 65.0 -10.0 Traffic-Light State Real-only 70.6 76.5 +5.9
+
+Table 11 shows that the gains are concentrated in categories whose semantics are shared by simulation and reality. Temporal Reasoning and Special Vehicle Recognition improve most, suggesting that simulated supervision helps the model learn transferable temporal structure and traffic-specific semantic cues. Road Infrastructure also improves moderately, while Vehicle Counting and Scene Attribute drop, indicating that simulated-only fine-tuning can still hurt appearance-sensitive or real-only recognition under occlusion, viewpoint changes, and weather variation. Thus, simulation-only adaptation is useful for traffic-structure reasoning, but broader visual-domain coverage or limited real-world adaptation is still needed for robust perception. 
+
+## F Qualitative Case Studies 
+
+This section presents representative qualitative cases that complement the quantitative results. Rather than exhaustively cataloging all failure modes, we select one case from each cognitive level to illustrate how different models use visual evidence, track traffic states, and ground their answers in intersection structure. 
+
+F.1 L1: Topology-Grounded Perception 
+
+Fig. 26 presents a representative L1 perception case from a real-world intersection. The question asks the model to count the number of incoming driving lanes available for social motor vehicles in the direction facing the camera. Among the three evaluated models, GPT-4o correctly answers four lanes, while Gemini-3-Pro and Qwen3-VL-235B provide incorrect counts. This case illustrates that L1 perception in OmniTraffic requires more than generic road or vehicle recognition. The model must first determine the traffic direction specified by the question, separate social motor-vehicle lanes from other road regions, and count lane availability under real-world camera perspective and visual clutter. The incorrect responses show that even when models describe plausible lane markings and vehicle positions, they may still fail to ground those observations in the correct incoming direction and lane category. This supports the quantitative finding that real-world road-infrastructure perception remains challenging for current MLLMs. 
+
+F.2 L2: Spatiotemporal Reasoning 
+
+Fig. 27 presents a representative temporal reasoning case. Given two consecutive reference frames, the model is asked to infer the next frame from multiple candidates. This example contrasts two different reasoning behaviors: Gemini-3-Pro selects an incorrect option by focusing on the apparent motion of a salient vehicle, while Qwen3-VL-235B correctly identifies the underlying multi-object state transition across lanes. This case illustrates that L2 failures are not merely caused by object-recognition errors. The incorrect answer still reflects plausible local motion tracking, but it misses the structured evolution of the traffic state. Correct temporal reasoning requires models to compare multiple vehicles jointly, track their lane-specific state changes, and infer the next frame from the overall scene dynamics rather than from a single salient object. 
+
+F.3 L3: Decision Support 
+
+Fig. 28 presents a representative L3 decision-support case. The input contains four incoming-direction views from the same intersection, together with a phase definition that maps each phase to all lanes in one image. The model is asked to identify which traffic phase is affected by an accident or obstruction. Gemini-3-Pro, GPT-4o, and Claude-Sonnet-4.5 all correctly locate the fallen-tree obstruction in Image 0 and map it to Phase 2 according to the provided phase definition. 31 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT Options:              
+
+> ... Identify the direction facing the camera: ...Count the lanes: Looking at the road markings and the
+> vehicles on that side: There is a lane on the far right, which has a right -turn arrow painted on the road.
+> A white car and a black SUV are in this lane. To the left of that lane is a through lane (straight arrow).
+> A silver car is driving in this lane. To the left of that is another through lane (straight arrow)... the
+> incoming side consists of standard asphalt lanes. Therefore, ... there are 4 distinct lanes available for
+> general traffic approaching the intersection. Correct Option: C
+> Looking at the intersection in the foreground, … Examining the road section coming toward the
+> camera, I can identify the lanes by the white lane markings: 1.Leftmost lane -regular driving lane. 2.
+> Middle lane -regular driving lane 3. Right lane -regular driving lane. The lane markings clearly show
+> 3 distinct lanes for regular motor vehicle traffic approaching the camera position in the foreground
+> intersection area. Any bus -only lanes, bicycle lanes, or parking areas are excluded from this count. The
+> correct answer is B: 3
+> Google -Gemini -3
+> Qwen3 -VL -235B
+
+Question : Looking at the intersection in the foreground of the image, how many 
+
+incoming driving lanes are available for social motor vehicles in the direction 
+
+facing the camera? 
+
+(C) 
+
+(D) 
+
+(A) 
+
+(B) 3
+
+4
+
+5
+
+2
+
+> GPT -4o
+> C: 4. Four through lanes can be clearly seen on the left side of the image.
+
+Figure 26: Representative L1 topology-grounded perception case. GPT-4o correctly identifies four incoming driving lanes for social motor vehicles, whereas Gemini-3-Pro and Qwen3-VL-235B miscount the lane structure in the real-world foreground intersection. This case shows that current MLLMs can combine local visual grounding with symbolic phase mapping. Unlike the L2 temporal case, the key evidence is spatially salient, and the phase definition explicitly links images to traffic phases. The successful responses suggest that MLLMs can provide reliable decision-support reasoning when the traffic event is visually distinctive and the required mapping is directly specified in the prompt. 
+
+## G Discussion 
+
+The results of OmniTraffic highlight a gap between general-purpose multimodal understanding and deployable traffic intelligence. The main bottleneck is not generic visual recognition, but structure-aware spatiotemporal reasoning. In traffic scenes, objects must be interpreted through the operational geometry of an intersection: vehicles are associated with lanes and queues, camera views must be aligned with BEV layouts, temporal changes must be tracked, and signal phases must be grounded in observed traffic states. Current MLLMs remain weak in these connected capabilities, which limits the reliability of their phase-level decisions and exposes the need for traffic-specific evaluation beyond conventional visual QA. OmniTraffic further shows that simulation-generated supervision can help narrow this gap. Real-world traffic data is difficult to scale because synchronized multi-view footage is rare, topology-level and phase-level annotations are expensive, and safety-critical events are hard to collect repeatedly. By contrast, simulation provides controllable traffic states, precise metadata, synchronized views, and configurable rare events. Our sim-to-real results demonstrate that fine-tuning on simulated OmniTraffic samples improves real-world traffic understanding, indicating that simulation is not merely a data substitute but a practical route for strengthening traffic-specific cognition in MLLMs. Nevertheless, the current transfer study is still limited by simulation realism and by the relatively simple simulated-only supervised fine-tuning recipe; more realistic rendering of weather, illumination, occlusion, and camera artifacts, together with mixed simulated-real adaptation or more carefully tuned SFT strategies, may reduce negative transfer on appearance-sensitive categories. 32 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT Based on the visual cues in the provided image sequence :... Analyze the Movement : Foreground Cars: 
+
+The group of five cars remains stationary waiting at a line . Approaching Car: A light blue SUV is 
+
+driving towards the camera, appearing progressively closer ... Determine the Sequence Logic : The key 
+
+moving element is the approaching light blue SUV, forming a timeline: Image 0 -> Image 1 -> Image 
+
+5 -> Image 2....Ordering by the blue car’s distance: Image 0 (farthest) → Image 1 → Image 5 → Image 
+
+4 → Image 2 (closest )... Image Index 5 (Option A) shows the car advanced further, making it the logical 
+
+next step in continuous motion....In Image 4, a car appears in the right lane unexpectedly, which does 
+
+not follow the established pattern ... Option :A
+
+...Pattern Analysis, We observe two main moving elements: 1.Top Lane Car (Main Lane): Appears at 
+
+the top (e.g., Image 1, Image 4) Moves down to the middle (e.g., Image 2, Image 5) Disappears (e.g., 
+
+Image 3, Image 6) 2. Right Lane Car (Adjacent Lane): Enters from the right (e.g., Image 1, Image 4) 
+
+Moves further right and exits (e.g., Image 5) Disappears (e.g., Image 2, Image 3, Image 6). This forms 
+
+a 3 -image cycle: State 1: Top lane car at top, right lane car entering. State 2: Top lane car in middle, 
+
+right lane car gone. State 3: Both lanes empty. ... Option C ... 
+
+Google -Gemini -3
+
+Qwen3 -VL -235B 
+
+Question : Given two consecutive reference images from timesteps, which of 
+
+the following images would occur next in the sequence? 
+
+𝑡 𝑡 + 1
+
+𝑡 + 2
+
+(B) (C) (D) (A) 
+
+Figure 27: Representative L2 temporal reasoning case. Gemini-3-Pro incorrectly follows the most visually salient vehicle trajectory, whereas Qwen3-VL-235B correctly reasons over the joint temporal pattern of multiple vehicles across lanes. This is why OmniTraffic is designed as an open pipeline rather than a closed dataset. Beyond releasing images and benchmark questions, we release reconstructed 3D intersection assets, traffic metadata, rendering scripts, and the VQA generation pipeline. These resources allow users to customize camera placements, traffic demand profiles, rare events, visual conditions, and scene configurations without rebuilding geometry or annotation logic from scratch. In this sense, OmniTraffic not only identifies current model limitations and validates a simulation-based improvement path, but also provides infrastructure for extending traffic-oriented multimodal intelligence. 33 OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning A P REPRINT ....1. Analyze the images for obstructions:Image Index 0 shows a large fallen tree trunk blocking the 
+
+lanes at the bottom of the image. This is a clear traffic obstruction. Image Index 1, Image Index 2, and 
+
+Image Index 3 show clear roads with vehicles, but no visible accidents or physical obstructions 
+
+blocking the flow of traffic like the tree in the first image.2. Map the obstruction to the phase:...the 
+
+traffic phase affected by the obstruction is Phase 2. Correct Option: C 
+
+The obstruction (a fallen tree) is visible in Image Index 0. Since Phase 2 includes all lanes of Image 0, 
+
+the affected traffic phase is Phase 2. The correct option is: C: Phase 2 
+
+Google -Gemini -3
+
+Question : These images are captured by cameras at an intersection, each 
+
+showing a different incoming direction. The phase information is as follows: 
+
+Phase 0: All lanes of Image 2; Phase 1: All lanes of Image 3; Phase 2: All lanes 
+
+of Image 0; Phase 3: All lanes of Image 1; Which traffic phase is affected by 
+
+traffic accidents or obstructions? Please provide the phase number. 
+
+GPT -4o 
+
+(C) (D) (A) (B) Phase 2 Phase 3 Phase 4Phase 1
+
+Ima ge 0 Image 1 Image 2 Image 3
+
+Claude -4.5 
+
+Looking at each image systematically:Image Index 0: There is clearly a fallen tree/large branch 
+
+obstruction across the road lanes at the bottom of the image. This debris is blocking the roadway 
+
+where vehicles are traveling.Image Index 1: Normal traffic flow with vehicles, no obstructions 
+
+visible.Image Index 2: Normal traffic flow with several vehicles, no obstructions visible.Image Index 3: 
+
+Normal traffic flow with vehicles, no obstructions visible.Now mapping to phases: Phase 0 = Image 2 
+
+(clear) Phase 1 = Image 3 (clear) Phase 2 = Image 0(has fallen tree obstruction)Phase 3 = Image 
+
+1(clear ) Answer : C ... 
+
+Figure 28: Representative L3 decision-support case. All three models correctly identify the obstruction in Image 0 and map it to Phase 2, showing that salient physical obstructions can be grounded in the provided image-to-phase correspondence. 34

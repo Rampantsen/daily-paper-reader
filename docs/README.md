@@ -6,52 +6,52 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-16
-- 运行时间：2026-06-16 22:59:14 UTC
+- 最新运行日期：2026-06-17
+- 运行时间：2026-06-17 22:14:12 UTC
 - 运行状态：成功
 - 本次总论文数：10
 - 精读区：6
 - 速读区：4
 
 ### 今日简报（AI）
-今日解读了6篇顶会论文，包括4D手物重建、人体生成等前沿方向，其中《High-Fidelity 4D Hand-Object Capture》获满分评价。  
-最值得关注的是物理感知高斯溅射在4D手物交互中的高保真重建，以及多视图扩散模型在柔性人体运动生成上的突破。  
-建议读者跟进“物理+神经渲染”这一融合路径，它能显著提升动态场景重建的真实感和稳定性。
-- 详情：[/202606/16/README](/202606/16/README)
+从卫星多视图的几何一致性协议，到单目在线高斯泼溅的全局优化——今日聚焦于3D视觉与特征表示的硬核提升。  
+最值得看：Foundation Model在卫星图像中如何保证多视角特征几何一致，以及只用单目相机就能实时构建稠密高斯场的Sim(3)全局优化。  
+建议读者跟进几何约束与可微渲染融合的新范式，这是高精度重建与定位的下一个突破口。
+- 详情：[/202606/17/README](/202606/17/README)
 
 ### 精读区论文标签
-1. [High-Fidelity 4D Hand-Object Capture via Multi-View Spatiotemporal Tracking and Physics-Aware Gaussians](/202606/16/2606.15908v1-high-fidelity-4d-hand-object-capture-via-multi-view-spatiotemporal-tracking-and-physics-aware-gaussians)  
-   标签：评分：10.0/10、query:d-gen-recon
-   evidence：从同步多视角视频中无模板无标记地三维重建手和物体。
-2. [Flex4DHuman: Flexible Multi-view Video Diffusion for 4D Human Reconstruction](/202606/16/2606.13655v1-flex4dhuman-flexible-multi-view-video-diffusion-for-4d-human-reconstruction)  
+1. [Geometric Consistency Protocol for Foundation Model Features in Multi-View Satellite Imagery](/202606/17/2606.17564v1-geometric-consistency-protocol-for-foundation-model-features-in-multi-view-satellite-imagery)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：多视图视频扩散实现4D人体重建
-3. [S23DR 2026: End-to-End 3D Wireframe Prediction via DETR-Style Set Prediction with Contrastive Denoising](/202606/16/2606.14811v1-s23dr-2026-end-to-end-3d-wireframe-prediction-via-detr-style-set-prediction-with-contrastive-denoising)  
+   evidence：用于多视角卫星三维重建和特征匹配的几何一致性协议
+2. [MoonSplat: Monocular Online Gaussian Splatting with Sim(3) Global Optimization](/202606/17/2606.17935v1-moonsplat-monocular-online-gaussian-splatting-with-sim3-global-optimization)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：从多视角COLMAP点云预测三维建筑线框
-4. [MUSE: Agentic 3D Scene Authoring via Memory-Grounded Incremental Requirement Satisfaction](/202606/16/2606.14168v1-muse-agentic-3d-scene-authoring-via-memory-grounded-incremental-requirement-satisfaction)  
+   evidence：利用全局位姿优化的3D高斯泼溅从单目序列实现在线三维重建
+3. [Future Dynamic 3D Reconstruction: A 3D World Model with Disentangled Ego-Motion](/202606/17/2606.18250v1-future-dynamic-3d-reconstruction-a-3d-world-model-with-disentangled-ego-motion)  
+   标签：评分：9.0/10、query:d-gen-recon
+   evidence：提出了一种通过解耦自运动与场景演进的未来动态三维重建世界模型
+4. [JointEdit3D: Feed-Forward 3D Scene Editing in a Unified Latent Space](/202606/17/2606.13345v1-jointedit3d-feed-forward-3d-scene-editing-in-a-unified-latent-space)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：通过增量需求满足实现文本驱动的三维场景创作
-5. [3D Consistency Optimization for Self-Supervised Monocular Video Depth Estimation](/202606/16/2606.15681v1-3d-consistency-optimization-for-self-supervised-monocular-video-depth-estimation)  
+   evidence：在统一潜在空间中耦合重建与生成的前馈式3D场景编辑
+5. [Track2View: 4D-Consistent Camera-Controlled Video Generation via Paired 3D Point Tracks](/202606/17/2606.15534v1-track2view-4d-consistent-camera-controlled-video-generation-via-paired-3d-point-tracks)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：将单目视频深度估计转化为无约束多视角三维重建
-6. [VEPHand: View-Efficient Photometric Hand Performance Capture at Scale](/202606/16/2606.15966v1-vephand-view-efficient-photometric-hand-performance-capture-at-scale)  
+   evidence：利用配对3D点轨迹为多视图时空对应提供显式链接，实现新视角合成
+6. [SierpinskiCam: Camera-Controlled Video Retaking with Sierpinski Triangle Pattern Cues](/202606/17/2606.17310v1-sierpinskicam-camera-controlled-video-retaking-with-sierpinski-triangle-pattern-cues)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：从有限多视图进行3D手部重建
+   evidence：利用几何引导扩散和谢尔宾斯基地毯纹理线索从单目视频生成新视角
 
 ### 速读区论文标签
-1. [PROSE: Training-Free Egocentric Scene Registration with Vision-Language Models](/202606/16/2606.16569v1-prose-training-free-egocentric-scene-registration-with-vision-language-models)  
+1. [GeneralVLA-2: Geometry-Aware Reconstruction and Governed Memory for Robot Planning](/202606/17/2606.17480v1-generalvla-2-geometry-aware-reconstruction-and-governed-memory-for-robot-planning)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：利用视觉语言模型的无训练自中心场景注册，有效跨扫描匹配特征
-2. [MVM-IOD: An Industrial Object-Centric Benchmark Dataset for the Evaluation of 3D Reconstruction Methods](/202606/16/2606.16638v1-mvm-iod-an-industrial-object-centric-benchmark-dataset-for-the-evaluation-of-3d-reconstruction-methods)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：提供多视角图像与参考相机位姿和三维点云，用于评估三维重建方法。
-3. [Multi-HMR 2: Multi-Person Camera-Centric Human Detection, Mesh Recovery and Tracking](/202606/16/2606.14841v1-multi-hmr-2-multi-person-camera-centric-human-detection-mesh-recovery-and-tracking)  
+   evidence：引入利用标定多视图观测进行几何感知物体重建以支持机器人规划
+2. [Dual-State Slot Attention: Decoupling Appearance and Identity for Video Object-Centric Learning](/202606/17/2606.12601v1-dual-state-slot-attention-decoupling-appearance-and-identity-for-video-object-centric-learning)  
    标签：评分：7.0/10、query:d-gen-recon
-   evidence：从图像中恢复以相机为中心的三维人体网格，属于三维物体生成
-4. [Fully Distributed Multi-View 3D Tracking in Real-Time](/202606/16/2606.13127v2-fully-distributed-multi-view-3d-tracking-in-real-time)  
+   evidence：无监督视频物体中心学习将场景分解为物体，适用于多视图无监督分割
+3. [OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning](/202606/17/2606.15749v1-omnitraffic-a-controllable-generation-pipeline-and-benchmark-for-spatio-temporal-traffic-reasoning)  
    标签：评分：6.0/10、query:d-gen-recon
-   evidence：完全分布式的多视角三维跟踪，采用端到端特征关联与融合
+   evidence：将真实路口重建为可编辑3D环境，用于生成和评估交通场景
+4. [ReAge3D: Re-Aging 3D Faces with View Consistency](/202606/17/2606.18156v1-reage3d-re-aging-3d-faces-with-view-consistency)  
+   标签：评分：6.0/10、query:d-gen-recon
+   evidence：生成具有多视角一致性的三维人脸老化结果，与三维物体生成相关
 
 
 <div class="dpr-home-promo-card">
