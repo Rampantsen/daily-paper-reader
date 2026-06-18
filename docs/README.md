@@ -6,52 +6,43 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-17
-- 运行时间：2026-06-17 22:14:12 UTC
+- 最新运行日期：2026-06-18
+- 运行时间：2026-06-18 22:05:53 UTC
 - 运行状态：成功
-- 本次总论文数：10
+- 本次总论文数：7
 - 精读区：6
-- 速读区：4
+- 速读区：1
 
 ### 今日简报（AI）
-从卫星多视图的几何一致性协议，到单目在线高斯泼溅的全局优化——今日聚焦于3D视觉与特征表示的硬核提升。  
-最值得看：Foundation Model在卫星图像中如何保证多视角特征几何一致，以及只用单目相机就能实时构建稠密高斯场的Sim(3)全局优化。  
-建议读者跟进几何约束与可微渲染融合的新范式，这是高精度重建与定位的下一个突破口。
-- 详情：[/202606/17/README](/202606/17/README)
+今天深入研读了两项9分工作：实时视频世界建模MoVerse与层级冗余精简视觉Transformer RegimeVGGT，并速览了单图3D网格质量评估协议。  
+最值得关注的两个结论：MoVerse用全景高斯脚手架实现了视频到可游走世界的实时重建；RegimeVGGT在保持空间精度的同时高效去除视觉Transformer冗余，证明层级保留优于一刀切。  
+建议普通读者优先看MoVerse，它为视频生成和3D场景实时交互提供了极简且强大的新基线。
+- 详情：[/202606/18/README](/202606/18/README)
 
 ### 精读区论文标签
-1. [Geometric Consistency Protocol for Foundation Model Features in Multi-View Satellite Imagery](/202606/17/2606.17564v1-geometric-consistency-protocol-for-foundation-model-features-in-multi-view-satellite-imagery)  
+1. [MoVerse: Real-Time Video World Modeling with Panoramic Gaussian Scaffold](/202606/18/2606.13376v2-moverse-real-time-video-world-modeling-with-panoramic-gaussian-scaffold)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：用于多视角卫星三维重建和特征匹配的几何一致性协议
-2. [MoonSplat: Monocular Online Gaussian Splatting with Sim(3) Global Optimization](/202606/17/2606.17935v1-moonsplat-monocular-online-gaussian-splatting-with-sim3-global-optimization)  
+   evidence：从单张窄视场图像生成可交互导航3D场景
+2. [RegimeVGGT: Layer-Wise Spatially Preserving Redundancy Removal for Visual Geometry Grounded Transformer](/202606/18/2606.18439v1-regimevggt-layer-wise-spatially-preserving-redundancy-removal-for-visual-geometry-grounded-transformer)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：利用全局位姿优化的3D高斯泼溅从单目序列实现在线三维重建
-3. [Future Dynamic 3D Reconstruction: A 3D World Model with Disentangled Ego-Motion](/202606/17/2606.18250v1-future-dynamic-3d-reconstruction-a-3d-world-model-with-disentangled-ego-motion)  
+   evidence：加速VGGT从多视图图像恢复密集3D场景结构
+3. [Splaxel: Efficient Distributed Training of 3D Gaussian Splatting for Large-scale Scene Reconstruction via Pixel-level Communication](/202606/18/2606.18588v1-splaxel-efficient-distributed-training-of-3d-gaussian-splatting-for-large-scale-scene-reconstruction-via-pixel-level-communication)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：提出了一种通过解耦自运动与场景演进的未来动态三维重建世界模型
-4. [JointEdit3D: Feed-Forward 3D Scene Editing in a Unified Latent Space](/202606/17/2606.13345v1-jointedit3d-feed-forward-3d-scene-editing-in-a-unified-latent-space)  
+   evidence：大规模场景重建的高效分布式3DGS训练
+4. [Intrinsic 4D Gaussian Segmentation from Scene Cues](/202606/18/2606.18623v1-intrinsic-4d-gaussian-segmentation-from-scene-cues)  
+   标签：评分：9.0/10、query:d-gen-recon
+   evidence：无需外部掩码的动态三维高斯场景分割
+5. [FlowObject: Flow Steering for Bridging Generative Priors and Reconstruction Fidelity](/202606/18/2606.19019v1-flowobject-flow-steering-for-bridging-generative-priors-and-reconstruction-fidelity)  
+   标签：评分：9.0/10、query:d-gen-recon
+   evidence：从少量随手拍摄图像恢复完整3D物体，结合流引导
+6. [OneCanvas: 3D Scene Understanding via Panoramic Reprojection](/202606/18/2606.19253v1-onecanvas-3d-scene-understanding-via-panoramic-reprojection)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：在统一潜在空间中耦合重建与生成的前馈式3D场景编辑
-5. [Track2View: 4D-Consistent Camera-Controlled Video Generation via Paired 3D Point Tracks](/202606/17/2606.15534v1-track2view-4d-consistent-camera-controlled-video-generation-via-paired-3d-point-tracks)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：利用配对3D点轨迹为多视图时空对应提供显式链接，实现新视角合成
-6. [SierpinskiCam: Camera-Controlled Video Retaking with Sierpinski Triangle Pattern Cues](/202606/17/2606.17310v1-sierpinskicam-camera-controlled-video-retaking-with-sierpinski-triangle-pattern-cues)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：利用几何引导扩散和谢尔宾斯基地毯纹理线索从单目视频生成新视角
+   evidence：将多视图图像块特征聚合到全景画布上以进行三维场景理解
 
 ### 速读区论文标签
-1. [GeneralVLA-2: Geometry-Aware Reconstruction and Governed Memory for Robot Planning](/202606/17/2606.17480v1-generalvla-2-geometry-aware-reconstruction-and-governed-memory-for-robot-planning)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：引入利用标定多视图观测进行几何感知物体重建以支持机器人规划
-2. [Dual-State Slot Attention: Decoupling Appearance and Identity for Video Object-Centric Learning](/202606/17/2606.12601v1-dual-state-slot-attention-decoupling-appearance-and-identity-for-video-object-centric-learning)  
-   标签：评分：7.0/10、query:d-gen-recon
-   evidence：无监督视频物体中心学习将场景分解为物体，适用于多视图无监督分割
-3. [OmniTraffic: A Controllable Generation Pipeline and Benchmark for Spatio-Temporal Traffic Reasoning](/202606/17/2606.15749v1-omnitraffic-a-controllable-generation-pipeline-and-benchmark-for-spatio-temporal-traffic-reasoning)  
+1. [A Cross-Model VLM-Judge Protocol for Single-Image 3D Mesh Quality (and Why Cheap Proxies Fall Short)](/202606/18/2606.18451v1-a-cross-model-vlm-judge-protocol-for-single-image-3d-mesh-quality-and-why-cheap-proxies-fall-short)  
    标签：评分：6.0/10、query:d-gen-recon
-   evidence：将真实路口重建为可编辑3D环境，用于生成和评估交通场景
-4. [ReAge3D: Re-Aging 3D Faces with View Consistency](/202606/17/2606.18156v1-reage3d-re-aging-3d-faces-with-view-consistency)  
-   标签：评分：6.0/10、query:d-gen-recon
-   evidence：生成具有多视角一致性的三维人脸老化结果，与三维物体生成相关
+   evidence：使用VLM评判员评估单图像3D网格质量的协议。
 
 
 <div class="dpr-home-promo-card">

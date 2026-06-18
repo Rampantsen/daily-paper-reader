@@ -1,0 +1,302 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-18T21:59:51.650920+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 6,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2606.13376v2",
+      "source": "arxiv",
+      "title": "MoVerse: Real-Time Video World Modeling with Panoramic Gaussian Scaffold",
+      "abstract": "We present MoVerse, a real-time video world model that creates an interactively navigable scene from a single narrow-field-of-view image. This setting is challenging because the input observes only a small fraction of the environment, while interactive roaming requires a complete surrounding world, persistent geometry, controllable camera motion, and temporally coherent high-fidelity observations. MoVerse addresses this problem by separating world construction from observation rendering. It first expands the input into a gravity-aligned 360$^\\circ$ panorama with topology-aware diffusion, closing the missing field of view before 3D reasoning. It then lifts the panorama into a persistent 3D Gaussian scaffold using panoramic geometry-aware residual prediction, yielding a dense and directly renderable spatial memory. Finally, a Gaussian-conditioned video renderer translates scaffold renderings along user-specified camera trajectories into photorealistic video. To make this renderer practical for interaction, we train a bidirectional diffusion teacher for high-quality conditional rendering and distill it into a causal autoregressive student for bounded-latency streaming. This design combines the controllability and long-range consistency of explicit 3D representations with the perceptual quality of generative video models. MoVerse supports real-time scene roaming at 8~FPS on a single NVIDIA RTX~4090 GPU, demonstrating a practical path toward single-image world creation with interactive video output.",
+      "authors": [
+        "Yang Zhou",
+        "Ziheng Wang",
+        "Yuqin Lu",
+        "Haofeng Liu",
+        "Jun Liang",
+        "Shengfeng He",
+        "Jing Li"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-11T14:01:02+00:00",
+      "link": "https://arxiv.org/pdf/2606.13376v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "creates interactively navigable 3D scene from a single narrow-field-of-view image",
+      "llm_evidence_cn": "从单张窄视场图像生成可交互导航3D场景",
+      "llm_evidence": "从单张窄视场图像生成可交互导航3D场景",
+      "canonical_evidence": "从单张窄视场图像生成可交互导航3D场景",
+      "llm_tldr_en": "MoVerse creates a real-time navigable 3D world from a single narrow-field image by expanding it to a 360° panorama and lifting it to a persistent 3D Gaussian scaffold, enabling high-fidelity observation rendering with controllable camera motion.",
+      "llm_tldr_cn": "MoVerse从单张窄视场图像实时生成可交互导航的3D世界。针对输入视野不足和环境重建的挑战，提出先通过拓扑感知扩散扩展为360°全景，再利用全景几何感知残差预测将其提升为持久3D高斯骨架。实验表明该方法能稳定渲染高质量的新视角观测，支持自由漫游，为单图3D场景生成提供了高效解决方案。",
+      "llm_tldr": "MoVerse从单张窄视场图像实时生成可交互导航的3D世界。针对输入视野不足和环境重建的挑战，提出先通过拓扑感知扩散扩展为360°全景，再利用全景几何感知残差预测将其提升为持久3D高斯骨架。实验表明该方法能稳定渲染高质量的新视角观测，支持自由漫游，为单图3D场景生成提供了高效解决方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene generation and reconstruction using unlabeled internet photos",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.18439v1",
+      "source": "arxiv",
+      "title": "RegimeVGGT: Layer-Wise Spatially Preserving Redundancy Removal for Visual Geometry Grounded Transformer",
+      "abstract": "Visual Geometry Grounded Transformer (VGGT) recovers dense 3D scene structure from multi-view images in one forward pass, but quadratic cross-frame attention limits its scalability. Existing training-free accelerators reduce computation uniformly along one axis, missing layer heterogeneity. Our spectral, probing, and causal analyses reveal three regimes: shallow layers lack cross-view structure, middle layers drive cross-view alignment, and deep layers are redundant for dense geometry yet their cross-frame attention remains essential for pose. RegimeVGGT applies layer-wise U-shaped compression along two axes: Saliency-Guided Banded Merging protects geometry- and edge-salient tokens, while Selectively Protected K/V Downsampling preserves cross-frame spatial coverage and the pose-critical path through a phase-shifted spatial grid, a reference-frame anchor, and uncompressed camera/register tokens. Training-free, RegimeVGGT achieves a 6.7x speedup over VGGT* at matched reconstruction quality.",
+      "authors": [
+        "Jinhao You",
+        "Shuo Lyu",
+        "Zhuohang Lyu",
+        "Tanxuan Li",
+        "Zibo Zhao",
+        "Jiaxiang Hu",
+        "Kai Tang",
+        "Yichen Guo"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.RO"
+      ],
+      "published": "2026-06-16T19:41:23+00:00",
+      "link": "https://arxiv.org/pdf/2606.18439v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "accelerating VGGT for dense 3D scene structure from multi-view images",
+      "llm_evidence_cn": "加速VGGT从多视图图像恢复密集3D场景结构",
+      "llm_evidence": "加速VGGT从多视图图像恢复密集3D场景结构",
+      "canonical_evidence": "加速VGGT从多视图图像恢复密集3D场景结构",
+      "llm_tldr_en": "RegimeVGGT analyzes VGGT's cross-frame attention heterogeneity and applies layer-wise U-shaped compression with saliency-guided banded merging and selectively protected K/V downsampling to accelerate multi-view 3D reconstruction without losing geometric accuracy.",
+      "llm_tldr_cn": "RegimeVGGT针对VGGT从多视图图像恢复密集3D结构时的高计算复杂度，通过分析跨帧注意力的层异质性，设计逐层U型压缩。引入显著性引导的带合并保护几何敏感令牌，选择性保护K/V下采样减少冗余计算。实验表明，加速效果显著且3D几何精度保持，为大规模多视图3D重建提供了高效推理方案。",
+      "llm_tldr": "RegimeVGGT针对VGGT从多视图图像恢复密集3D结构时的高计算复杂度，通过分析跨帧注意力的层异质性，设计逐层U型压缩。引入显著性引导的带合并保护几何敏感令牌，选择性保护K/V下采样减少冗余计算。实验表明，加速效果显著且3D几何精度保持，为大规模多视图3D重建提供了高效推理方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.18588v1",
+      "source": "arxiv",
+      "title": "Splaxel: Efficient Distributed Training of 3D Gaussian Splatting for Large-scale Scene Reconstruction via Pixel-level Communication",
+      "abstract": "3D Gaussian Splatting (3DGS) enables high-fidelity and real-time 3D scene reconstruction, but scaling training to large-scale scenes requires optimizing hundreds of millions of Gaussians across multiple GPUs. Existing distributed approaches either partition scenes into isolated regions, causing global inconsistency, or rely on global Gaussian-level exchanges, which lead to substantial growth in inter-GPU communication and quickly dominate iteration time.   We propose Splaxel, a communication-efficient distributed 3DGS training framework based on pixel-level local rendering and global composition. Instead of synchronizing Gaussians, each GPU renders its local subset and exchanges only partial pixel values, maintaining mathematical consistency while keeping communication cost stable as the scene size increases. Splaxel further reduces pixel-level redundancy through geometric and transmittance visibility prediction and improves GPU utilization via conflict-free camera-view consolidation. Evaluated on large-scale datasets with up to 120M Gaussians, Splaxel achieves up to 7.6$\\times$ speedup over the state-of-the-art distributed 3DGS framework while preserving high reconstruction quality.",
+      "authors": [
+        "Wenqi Jia",
+        "Zhewen Hu",
+        "Ying Huang",
+        "Yu Gong",
+        "Stavros Kalafatis",
+        "Yuke Wang",
+        "Wei Niu",
+        "Chengming Zhang",
+        "Ang Li",
+        "Sheng Di",
+        "Yuede Ji",
+        "Bo Fang",
+        "Miao Yin"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.CV"
+      ],
+      "published": "2026-06-17T01:27:41+00:00",
+      "link": "https://arxiv.org/pdf/2606.18588v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "efficient distributed training of 3D Gaussian Splatting for large-scale scene reconstruction",
+      "llm_evidence_cn": "大规模场景重建的高效分布式3DGS训练",
+      "llm_evidence": "大规模场景重建的高效分布式3DGS训练",
+      "canonical_evidence": "大规模场景重建的高效分布式3DGS训练",
+      "llm_tldr_en": "Splaxel is a communication-efficient distributed training framework for 3D Gaussian Splatting that uses pixel-level local rendering and global composition to achieve scalable large-scale scene reconstruction with reduced inter-GPU communication.",
+      "llm_tldr_cn": "Splaxel提出基于像素级局部渲染和全局合成的分布式3D高斯泼溅训练框架，解决大规模场景重建中GPU间通信瓶颈。通过各GPU独立渲染局部高斯并仅交换部分像素，显著降低通信量，实现了上亿高斯的高效优化。实验证明其能保持全局一致性，加速大规模3D重建训练，对城市规模场景重建具有重要意义。",
+      "llm_tldr": "Splaxel提出基于像素级局部渲染和全局合成的分布式3D高斯泼溅训练框架，解决大规模场景重建中GPU间通信瓶颈。通过各GPU独立渲染局部高斯并仅交换部分像素，显著降低通信量，实现了上亿高斯的高效优化。实验证明其能保持全局一致性，加速大规模3D重建训练，对城市规模场景重建具有重要意义。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.18623v1",
+      "source": "arxiv",
+      "title": "Intrinsic 4D Gaussian Segmentation from Scene Cues",
+      "abstract": "Dynamic 4D Gaussian Splatting reconstructs deforming scenes with high fidelity and is increasingly adopted as a representation for dynamic 3D scenes. Putting such a scene to use, for editing, manipulation or motion analysis, first requires segmenting it: grouping the Gaussian primitives into coherent objects. Current pipelines obtain this grouping by importing 2D masks from foundation models such as SAM and lifting or distilling them into the Gaussian representation. In dynamic scenes these masks must be generated across many frames and views, which is costly, and the resulting segmentation can depend strongly on the quality and consistency of those external masks. We ask how much object-level structure can instead be recovered from the Gaussians themselves, and propose Intrinsic-GS, a training-free, mask-free method that builds a sparse affinity graph over Gaussian primitives from appearance, orientation, scale, deformation-trajectory and non-learned rendered-boundary cues. The graph is partitioned with Leiden community detection, requiring no foundation model and no learned feature field. On the standard 4D Gaussian segmentation benchmarks, Neu3D and HyperNeRF, Intrinsic-GS recovers substantial object structure without mask supervision, reaching 0.746 mIoU on Neu3D and 0.575 on HyperNeRF; on Neu3D, a geometry-only variant reaches 0.902 mIoU, matching SAM-supervised TRASE. On HyperNeRF, Intrinsic-GS runs 12.5x faster than the mask-generation and feature-rendering stages used by mask-supervised pipelines. These results suggest that much of the segmentation signal is already encoded in the Gaussians themselves, offering a fast, mask-free direction for 3D and 4D Gaussian segmentation that may also point toward more generalizable, robust segmentation in settings where external masks are unreliable or expensive.",
+      "authors": [
+        "Hasan Yazar",
+        "Mohamed Rayan Barhdadi",
+        "Erchin Serpedin",
+        "Mehmet Tuncel",
+        "Hasan Kurban"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "eess.IV"
+      ],
+      "published": "2026-06-17T02:40:35+00:00",
+      "link": "https://arxiv.org/pdf/2606.18623v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Segmenting dynamic 3D Gaussian scenes without external masks",
+      "llm_evidence_cn": "无需外部掩码的动态三维高斯场景分割",
+      "llm_evidence": "无需外部掩码的动态三维高斯场景分割",
+      "canonical_evidence": "无需外部掩码的动态三维高斯场景分割",
+      "llm_tldr_en": "This paper proposes intrinsic segmentation of dynamic 4D Gaussian Splatting scenes by recovering object-level structure directly from the Gaussians, avoiding costly and inconsistent 2D mask imports.",
+      "llm_tldr_cn": "动态三维高斯泼溅场景的分割通常依赖外部 2D 掩码，成本高且易受不一致影响。本文提出直接从高斯模型中恢复物体级结构，利用场景内在线索进行分割。方法无需跨帧导入掩码，显著降低了计算开销，并提高了分割的一致性与质量，为动态 3D 场景编辑和分析提供了更高效的工具。",
+      "llm_tldr": "动态三维高斯泼溅场景的分割通常依赖外部 2D 掩码，成本高且易受不一致影响。本文提出直接从高斯模型中恢复物体级结构，利用场景内在线索进行分割。方法无需跨帧导入掩码，显著降低了计算开销，并提高了分割的一致性与质量，为动态 3D 场景编辑和分析提供了更高效的工具。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.19019v1",
+      "source": "arxiv",
+      "title": "FlowObject: Flow Steering for Bridging Generative Priors and Reconstruction Fidelity",
+      "abstract": "Recovering complete 3D representations of objects from few casual image captures remains a significant challenge. Recent 3D generative models, particularly those based on Flow-Matching (FM), can synthesize high-quality textured assets; however, they often suffer from ''synthetic bias'' where learned priors override observational evidence, alongside a lack of alignment with the observed instance. Conversely, optimization-based methods like 3D Gaussian Splatting (3DGS) provide high fidelity on visible surfaces but fail to reason about unobserved geometry. In this paper, we present FlowObject, a framework that reformulates sparse-view 3D reconstruction as a training-free, guided inverse problem. Our approach applies a dual-space guidance strategy to steer the Ordinary Differential Equation (ODE) trajectory of a flow-matching model, enabling the completion of unseen regions through learned generative priors while enforcing strict consistency with real-world observations. By integrating a 3DGS refinement stage, FlowObject further bridges the gap between ''synthetic-looking'' generative outputs and photorealistic reconstructions. Comprehensive benchmarks on synthetic and real-world datasets demonstrate that current state-of-the-art methods often struggle to achieve geometric completeness and observational consistency simultaneously, especially under severe occlusions. In contrast, our method significantly outperforms state-of-the-art generative models and optimization-based frameworks in both geometric completeness and view-dependent appearance fidelity.",
+      "authors": [
+        "Yuchen Rao",
+        "Xuqian Ren",
+        "Yinyu Nie",
+        "Sayan Deb Sarkar",
+        "Biao Zhang",
+        "Vincent Lepetit",
+        "Friedrich Fraundorfer"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-17T12:42:09+00:00",
+      "link": "https://arxiv.org/pdf/2606.19019v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "recovering complete 3D representations of objects from few casual image captures with flow steering",
+      "llm_evidence_cn": "从少量随手拍摄图像恢复完整3D物体，结合流引导",
+      "llm_evidence": "从少量随手拍摄图像恢复完整3D物体，结合流引导",
+      "canonical_evidence": "从少量随手拍摄图像恢复完整3D物体，结合流引导",
+      "llm_tldr_en": "FlowObject reformulates sparse-view 3D reconstruction as a training-free guided inverse problem, using dual-space guidance in flow-matching to combine generative priors with reconstruction fidelity, producing complete 3D objects from few casual captures.",
+      "llm_tldr_cn": "FlowObject将少视图3D重建形式化为免训练的引导逆问题，解决生成模型合成偏差与优化方法不可见区域推理不足的矛盾。通过流匹配模型的概率路径，结合观测空间与规范空间的双空间引导，驱动生成先验与重建观测对齐。实验表明，该方法能从2-4张随手拍摄图像重建完整纹理的3D物体，几何和外观保真度高，优于现有生成和重建方法。",
+      "llm_tldr": "FlowObject将少视图3D重建形式化为免训练的引导逆问题，解决生成模型合成偏差与优化方法不可见区域推理不足的矛盾。通过流匹配模型的概率路径，结合观测空间与规范空间的双空间引导，驱动生成先验与重建观测对齐。实验表明，该方法能从2-4张随手拍摄图像重建完整纹理的3D物体，几何和外观保真度高，优于现有生成和重建方法。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.19253v1",
+      "source": "arxiv",
+      "title": "OneCanvas: 3D Scene Understanding via Panoramic Reprojection",
+      "abstract": "Existing approaches to 3D scene understanding in Vision-Language Models (VLMs) either rely on complex, model-specific geometry encoders or large training budgets in pursuit of spatial reasoning. Instead, OneCanvas aggregates patch features from all views onto a single equirectangular panoramic canvas. Namely, each patch is unprojected to a 3D world coordinate using its depth and camera pose, then placed on the canvas at the continuous longitude and latitude of that point as seen from the canvas origin, with no rasterization or aggregation across overlapping views. A 3D position embedding of the patch's metric coordinates is added to its feature, restoring the depth lost when collapsing the world position to an angular canvas coordinate. Patches from all frames thus share one spatial coordinate system with no fusion or major architectural modifications of the backbone. The pretrained VLM consumes this representation as if it were an ordinary image. Because the canvas can be centered on any pose of interest, the same representation directly supports situated reasoning from a specific viewpoint, a common requirement in robotics and embodied AI. Thanks to this representation, we can also introduce a spatial pretraining curriculum: by procedurally placing patch features of objects, drawn from real images, at chosen 3D world positions on an otherwise empty canvas, we generate on-the-fly supervision spanning a broad range of spatial reasoning tasks, with answer distributions controlled to reduce spatial reasoning shortcuts. OneCanvas achieves state-of-the-art accuracy on SQA3D and VSI-Bench, and generalizes to out-of-distribution data on SPBench, using an order of magnitude less training compute than the strongest competing methods.",
+      "authors": [
+        "Bartłomiej Baranowski",
+        "Dave Zhenyu Chen",
+        "Matthias Nießner"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI",
+        "cs.LG",
+        "cs.RO"
+      ],
+      "published": "2026-06-17T16:29:19+00:00",
+      "link": "https://arxiv.org/pdf/2606.19253v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "aggregates multi-view patch features onto a panoramic canvas for 3D scene understanding",
+      "llm_evidence_cn": "将多视图图像块特征聚合到全景画布上以进行三维场景理解",
+      "llm_evidence": "将多视图图像块特征聚合到全景画布上以进行三维场景理解",
+      "canonical_evidence": "将多视图图像块特征聚合到全景画布上以进行三维场景理解",
+      "llm_tldr_en": "OneCanvas reprojects multi-view image patch features onto a single equirectangular canvas with 3D position embeddings, enabling efficient and effective 3D scene understanding without complex geometry encoders.",
+      "llm_tldr_cn": "现有视觉语言模型进行三维场景理解依赖复杂几何编码器或大量训练。OneCanvas提出将多视图图像块特征通过深度和位姿反投影到单张全景画布上，并添加三维位置嵌入，无需额外聚合。该简单统一表示在三维理解任务上取得有竞争力的结果，为多视图融合提供轻量高效方案。",
+      "llm_tldr": "现有视觉语言模型进行三维场景理解依赖复杂几何编码器或大量训练。OneCanvas提出将多视图图像块特征通过深度和位姿反投影到单张全景画布上，并添加三维位置嵌入，无需额外聚合。该简单统一表示在三维理解任务上取得有竞争力的结果，为多视图融合提供轻量高效方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "feature matching and 3D scene understanding from large scale image collections",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.18451v1",
+      "source": "arxiv",
+      "title": "A Cross-Model VLM-Judge Protocol for Single-Image 3D Mesh Quality (and Why Cheap Proxies Fall Short)",
+      "abstract": "Single-image-to-3D generators are improving quickly, but there is no agreed, human-free way to tell whether one generated mesh is better than another. Practitioners commonly rely on cheap automatic proxies (render-space CLIP similarity and mesh geometry-validity statistics), yet how well these track perceived quality is unestablished. We make two contributions. First, we propose and validate a reproducible VLM-judge evaluation protocol: a fixed 24-view headless render rig, two independent vision-language judge families, and a mandatory position-bias correction that queries both presentation orders and keeps only order-consistent verdicts. The two judge families agree substantially with each other (Cohen's kappa = 0.66), well above the chance-agreement floor. Second, using this protocol as the reference, we show the cheap proxies do not substitute for it. Geometry validity is only a weak signal on average (because, as we show, it is bimodal) and stays below our pre-registered target, while render-CLIP is at chance. A learned Bradley-Terry head collapses onto a single manifoldness statistic (giving render-CLIP a negative weight) and matches geometry-only exactly, so learning the feature weights buys nothing. The proxy is also bimodal: it is significantly above chance on contrasts with visible geometric defects but at chance on ambiguous contrasts, consistent with geometry validity tracking the judge only when the defect is visually salient. We therefore recommend the VLM-judge protocol as a reliable, reproducible evaluator under the conditions tested (two feed-forward generators on Google Scanned Objects, with a face-drop degradation regime) and advise against geometry/CLIP proxies as optimization targets.",
+      "authors": [
+        "Ali Asaria",
+        "Tony Salomone",
+        "Deep Gandhi"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-16T20:00:12+00:00",
+      "link": "https://arxiv.org/pdf/2606.18451v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Evaluation protocol for single-image 3D mesh quality using VLM judges.",
+      "llm_evidence_cn": "使用VLM评判员评估单图像3D网格质量的协议。",
+      "llm_evidence": "使用VLM评判员评估单图像3D网格质量的协议。",
+      "canonical_evidence": "使用VLM评判员评估单图像3D网格质量的协议。",
+      "llm_tldr_en": "Proposes a VLM-based protocol for evaluating single-image-to-3D mesh quality, correcting for position bias, showing cheap proxies underperform.",
+      "llm_tldr_cn": "单图像到3D生成器缺乏公认的自动评估方式。本文提出并验证一种可重现的VLM评判协议：固定24视角渲染、两类VLM法官家族、强制位置偏差校正。实验表明两种法官家族高度一致(Cohen‘s kappa=0.66)，而常用廉价代理指标（CLIP相似度、几何有效性统计）与人类感知质量相关性差，揭示了自动评估的必要性和当前方法的局限。",
+      "llm_tldr": "单图像到3D生成器缺乏公认的自动评估方式。本文提出并验证一种可重现的VLM评判协议：固定24视角渲染、两类VLM法官家族、强制位置偏差校正。实验表明两种法官家族高度一致(Cohen‘s kappa=0.66)，而常用廉价代理指标（CLIP相似度、几何有效性统计）与人类感知质量相关性差，揭示了自动评估的必要性和当前方法的局限。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
