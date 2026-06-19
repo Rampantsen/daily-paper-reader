@@ -1,0 +1,554 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-19T21:27:47.668729+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 9,
+    "deep_cap": 6,
+    "deep_selected": 8,
+    "quick_candidates": 5,
+    "quick_skim_target": 11,
+    "quick_selected": 5
+  },
+  "deep_dive": [
+    {
+      "id": "2606.20563v1",
+      "source": "arxiv",
+      "title": "JanusMesh: Fast and Zero-Shot 3D Visual Illusion Generation via Cross-Space Denoising",
+      "abstract": "Creating 3D visual illusions, a single 3D mesh that reveals entirely different semantics from various viewing angles, is a fascinating but tough challenge. Existing optimization-based methods are slow and can produce oversaturated colors. In contrast, naive stitching approaches fail to produce geometrically coherent objects. This results in visible unnatural seams and semantic leaks. In this paper, we present a fast and training-free framework for generating text-driven 3D visual illusions. Our approach decouples the generation into two stages. First, we propose a cross-space dual-branch denoising process. This process dynamically decodes 3D latents into voxel space for CLIP-guided orientation alignment and Signed Distance Field (SDF) blending, which ensures seamless geometric fusion. Second, we introduce a view-conditioned texture synthesis module that projects and aggregates view-specific 2D diffusion priors onto the fused geometry. Extensive experiments demonstrate that our method generates highly realistic, dual-semantic 3D illusions in just 3-5 minutes. It significantly outperforms existing methods in geometric integrity, semantic recognizability, and efficiency. Project page: https://siang1105.github.io/JanusMesh.github.io/",
+      "authors": [
+        "Siang-Ling Zhang",
+        "Huai-Hsun Cheng",
+        "Tsung-Ju Yang",
+        "Yu-Lun Liu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-18T17:59:55+00:00",
+      "link": "https://arxiv.org/pdf/2606.20563v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Text-driven generation of 3D objects (visual illusions) from text prompts.",
+      "llm_evidence_cn": "文本驱动从文本提示生成3D物体（视觉错觉）。",
+      "llm_evidence": "文本驱动从文本提示生成3D物体（视觉错觉）。",
+      "canonical_evidence": "文本驱动从文本提示生成3D物体（视觉错觉）。",
+      "llm_tldr_en": "Generates text-driven 3D visual illusions using cross-space denoising and CLIP alignment. Produces fast, training-free, geometrically coherent meshes that appear semantically distinct from different viewpoints.",
+      "llm_tldr_cn": "针对文本驱动3D视觉错觉生成任务，提出快速零样本框架。传统优化方法速度慢且色彩过饱和，简单缝合方法存在接缝和语义泄露。本文提出跨空间双分支去噪过程，动态解码3D latents，利用CLIP引导朝向对齐，并通过SDF融合生成最终网格。实验结果表明该方法快速、零样本，能生成高质量的3D视觉错觉物体，为创意3D设计提供新途径。",
+      "llm_tldr": "针对文本驱动3D视觉错觉生成任务，提出快速零样本框架。传统优化方法速度慢且色彩过饱和，简单缝合方法存在接缝和语义泄露。本文提出跨空间双分支去噪过程，动态解码3D latents，利用CLIP引导朝向对齐，并通过SDF融合生成最终网格。实验结果表明该方法快速、零样本，能生成高质量的3D视觉错觉物体，为创意3D设计提供新途径。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.15328v1",
+      "source": "arxiv",
+      "title": "SGFormer++: Semantic Graph Transformer for Incremental 3D Scene Graph Generation",
+      "abstract": "In this paper, we propose SGFormer++, a novel Semantic Graph Transformer for 3D scene graph generation (SGG), which aims to parse point cloud scenes into semantic structural graphs, where nodes denote detected object instances and edges encode their pairwise relationships, with the core challenge lying in modeling complex global scene structure. While existing graph convolutional network (GCN)-based methods suffer from over-smoothing and limited receptive fields, SGFormer++ leverages Transformer layers as its backbone to enable global message passing. Specifically, we introduce two key components tailored for 3D SGG: (1) a Graph Embedding Layer++ that efficiently integrates edge-aware global context with linear computational complexity, and (2) a Semantic Injection Layer++ that enriches visual features with linguistic priors from large language models (LLMs) and vision-language models (VLMs), boosting semantic representation without introducing extra trainable parameters. To further address the practical challenge of incremental SGG (I-SGG), where new relationship categories arrive sequentially, we equip SGFormer++ with a novel Spatial-guided Feature Adapter, which calibrates predicate features using subject-object spatial geometry to counter scale variation, and a Cascaded Binary Prediction Head that mitigates catastrophic forgetting via task-incremental classifier expansion and logit distillation. Extensive experiments on the 3DSSG benchmark demonstrate that SGFormer++ achieves state-of-the-art performance in both standard and incremental settings: it yields a significant 4.49% absolute improvement in Predicate A@1 under the incremental setting. Code and data are available at: https://github.com/Andy20178/SGFormer.",
+      "authors": [
+        "Mengshi Qi",
+        "Changsheng Lv",
+        "Zijian Fu",
+        "Xianlin Zhang",
+        "Huadong Ma"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-13T14:41:56+00:00",
+      "link": "https://arxiv.org/pdf/2606.15328v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "parses point clouds into semantic scene graphs, performing 3D instance segmentation and relationship inference",
+      "llm_evidence_cn": "将点云解析为语义场景图，执行三维实例分割和关系推理",
+      "llm_evidence": "将点云解析为语义场景图，执行三维实例分割和关系推理",
+      "canonical_evidence": "将点云解析为语义场景图，执行三维实例分割和关系推理",
+      "llm_tldr_en": "SGFormer++ uses a Transformer-based model to generate 3D scene graphs from point clouds, addressing over-smoothing and limited receptive fields of GCNs for global scene structure modeling.",
+      "llm_tldr_cn": "现有的基于图卷积的方法在处理三维场景图生成时存在过度平滑和感受野有限的问题。SGFormer++提出使用语义图Transformer作为骨干，通过图嵌入层和全局消息传递解析点云场景，生成包含物体实例和关系边的语义结构图。该方法有效建模了复杂全局场景结构，提升了三维场景理解的性能。",
+      "llm_tldr": "现有的基于图卷积的方法在处理三维场景图生成时存在过度平滑和感受野有限的问题。SGFormer++提出使用语义图Transformer作为骨干，通过图嵌入层和全局消息传递解析点云场景，生成包含物体实例和关系边的语义结构图。该方法有效建模了复杂全局场景结构，提升了三维场景理解的性能。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.15908v2",
+      "source": "arxiv",
+      "title": "High-Fidelity 4D Hand-Object Capture via Multi-View Spatiotemporal Tracking and Physics-Aware Gaussians",
+      "abstract": "The growing demand for high-fidelity 4D hand-object interaction (HOI) data in embodied AI and spatial computing is currently bottlenecked by the reliance on pre-scanned object templates and physical markers. While recent methods have demonstrated promising results in reconstructing 4D hand-object interaction from videos, they are highly sensitive to initial estimates of hand and object poses. Yet, estimating these poses from images is challenging, in particular under severe occlusion which is inherent in hand-object interaction scenarios. We propose a novel system for the robust and accurate reconstruction of hands and objects from synchronized and calibrated multi-view videos without requiring any templates or markers. Our system consists of two main components with key innovations: (1) a multi-view feed-forward transformer model that aggregates cross-view geometry and temporal cues to provide a reliable, metric-consistent initialization for both poses and dense object geometry, and (2) a hand-object physics-aware Gaussian-based optimization framework to refine the initial estimates, integrating tetrahedral constraints, collision refinement, and appearance decomposition to produce physically plausible and visually accurate reconstruction. Validated on public benchmarks and an extensive internal dataset, our pipeline achieves highly robust, artifact-free reconstruction, providing an efficient foundation for automated 4D asset generation. Our project page are available at https://zyshen021.github.io/HOSTPG/.",
+      "authors": [
+        "Bo Peng",
+        "Xu Chen",
+        "Yi Gu",
+        "Hidenobu Matsuki",
+        "Mingsong Dou",
+        "Jingjing Shen",
+        "Deying Kong",
+        "Juyong Zhang",
+        "Zhengyang Shen"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-14T16:36:49+00:00",
+      "link": "https://arxiv.org/pdf/2606.15908v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "reconstructs hands and objects from synchronized multi-view videos without templates",
+      "llm_evidence_cn": "从同步多视角视频重建手部与物体，无需模板",
+      "llm_evidence": "从同步多视角视频重建手部与物体，无需模板",
+      "canonical_evidence": "从同步多视角视频重建手部与物体，无需模板",
+      "llm_tldr_en": "Proposes a system for robust 4D hand-object capture from multi-view videos, using spatiotemporal tracking and physics-aware Gaussians to handle severe occlusions without pre-scanned templates or markers.",
+      "llm_tldr_cn": "针对高保真4D手物交互重建中依赖预设模板和标记的问题，提出一种从同步多视角视频中鲁棒重建手部和物体的新型系统。该方法结合时空跟踪与物理感知高斯表示，无需预扫描模板或标记即可处理严重遮挡。实验表明能生成准确的手物4D模型，为具身AI和空间计算提供高质量交互数据。",
+      "llm_tldr": "针对高保真4D手物交互重建中依赖预设模板和标记的问题，提出一种从同步多视角视频中鲁棒重建手部和物体的新型系统。该方法结合时空跟踪与物理感知高斯表示，无需预扫描模板或标记即可处理严重遮挡。实验表明能生成准确的手物4D模型，为具身AI和空间计算提供高质量交互数据。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.15966v2",
+      "source": "arxiv",
+      "title": "VEPHand: View-Efficient Photometric Hand Performance Capture at Scale",
+      "abstract": "Robust, high-fidelity 3D hand capture, while fundamental to digital human creation, remains challenging with practical multi-view systems that balance rich photometry with the geometric ambiguities of reconstruction arising from limited viewpoint density. This paper presents an end-to-end pipeline for dynamic hand performance capture and registration, specifically designed for view-efficient setups ($\\sim$20 views). We address key challenges with two primary innovations. First, to overcome reconstruction difficulties like limited view overlap and background clutter, our mask-free neural method robustly extracts detailed hand geometry and appearance from unmasked images using scene parameterization and scenario-specific density regularization. Second, addressing registration challenges such as accurately capturing non-linear skin deformations and ensuring plausible results during severe self-contact, we propose a physics-inspired framework. It aligns reconstructions to a personalized hand model by optimizing intrinsic volumetric offsets within its canonical tetrahedral mesh, alongside pose parameters. This approach, supported by robust losses and optimization, captures fine surface deformations, ensures plausible results under severe articulation and self-contact, and demonstrates strong tolerance to input noise. We demonstrate the scalability and robustness of our automated pipeline on an extensive dataset of over 12,000 sequences, from which we also derive a large-scale, high-quality synthetic 2D/3D hand dataset for training downstream tasks. This showcases its effectiveness for single hands, intricate two-hand interactions, and natural hand-object manipulations. Our method achieves state-of-the-art reconstruction fidelity in view-efficient, unmasked scenarios and highly accurate registration. Our project page are available at https://vephand.github.io/.",
+      "authors": [
+        "Zhengyang Shen",
+        "Kai-Hung Chang",
+        "Erroll Wood",
+        "Deying Kong",
+        "Bo Peng",
+        "Timo Bolkart",
+        "Jinlong Yang",
+        "Bowen Zhao",
+        "Danhang Tang",
+        "Sasa Petrovic",
+        "Emre Aksan",
+        "Jérémy Riviere",
+        "Vassilis Choutas",
+        "Delio Vicini",
+        "Jay Busch",
+        "Shichen Liu",
+        "Zhe Cao",
+        "Hugh Liu",
+        "JingJing Shen",
+        "Jonathan Taylor",
+        "Mingsong Dou"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR"
+      ],
+      "published": "2026-06-14T18:47:44+00:00",
+      "link": "https://arxiv.org/pdf/2606.15966v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "End-to-end multi-view hand reconstruction from about 20 views, addressing 3D object reconstruction from multi-view images.",
+      "llm_evidence_cn": "从约20个视图端到端重建手部，解决了从多视图图像重建3D对象的问题。",
+      "llm_evidence": "从约20个视图端到端重建手部，解决了从多视图图像重建3D对象的问题。",
+      "canonical_evidence": "从约20个视图端到端重建手部，解决了从多视图图像重建3D对象的问题。",
+      "llm_tldr_en": "VEPHand presents a pipeline for high-fidelity hand capture from view-efficient multi-view setups, using mask-free neural reconstruction and appearance modeling for dense geometry.",
+      "llm_tldr_cn": "VEPHand 针对有限视点密度下多视角手部重建的几何模糊问题，提出端到端流水线。通过无掩膜神经方法鲁棒提取手部几何与外观，并采用场景参数化和密度正则化应对背景杂乱。在约20个视点的设置下，实现了高保真动态手部捕捉，为数字人创作提供了实用工具。",
+      "llm_tldr": "VEPHand 针对有限视点密度下多视角手部重建的几何模糊问题，提出端到端流水线。通过无掩膜神经方法鲁棒提取手部几何与外观，并采用场景参数化和密度正则化应对背景杂乱。在约20个视点的设置下，实现了高保真动态手部捕捉，为数字人创作提供了实用工具。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.19451v1",
+      "source": "arxiv",
+      "title": "3D-DLP: Self-Supervised 3D Object-Centric Scene Representation Learning",
+      "abstract": "We introduce 3D-DLP, a self-supervised object-centric representation learning model that decomposes scene-level RGB-D or voxel observations into a set of 3D latent particles. Building on the Deep Latent Particles (DLP) framework, each particle encodes disentangled attributes, including 3D keypoint position, bounding box dimensions, and appearance features, and represents a distinct entity in the scene. The model learns interpretable per-particle segmentation maps through an end-to-end self-supervised reconstruction objective. We demonstrate on both simulated and real-world datasets that the learned latent space is interpretable and controllable: by manipulating particle positions and decoding, we can generate novel scene configurations. Furthermore, we show that leveraging these compact 3D latent particles for downstream robotic manipulation improves performance over baselines that either lack explicit 3D information or rely on memory-intensive dense 3D inputs without object-centric structure. Code and videos are available at https://eubooks3003.github.io/3d-dlp.",
+      "authors": [
+        "Ellina Zhang",
+        "Madhaven Iyengar",
+        "Amir Zadeh",
+        "Chuan Li",
+        "Deepak Pathak",
+        "David Held",
+        "Tal Daniel"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CV",
+        "cs.RO"
+      ],
+      "published": "2026-06-17T18:00:08+00:00",
+      "link": "https://arxiv.org/pdf/2606.19451v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Self-supervised 3D object-centric scene decomposition and novel scene generation, matching unsupervised object generation and segmentation.",
+      "llm_evidence_cn": "自监督的3D对象中心场景分解和新场景生成，符合无监督对象生成与分割要求。",
+      "llm_evidence": "自监督的3D对象中心场景分解和新场景生成，符合无监督对象生成与分割要求。",
+      "canonical_evidence": "自监督的3D对象中心场景分解和新场景生成，符合无监督对象生成与分割要求。",
+      "llm_tldr_en": "3D-DLP learns to decompose RGB-D/voxel observations into 3D latent particles with disentangled attributes, enabling unsupervised 3D object discovery, segmentation, and novel scene generation.",
+      "llm_tldr_cn": "3D-DLP 提出一种自监督的对象中心表示学习模型，将场景级观测分解为一组3D潜在粒子，每个粒子编码位置、尺寸和外观等解耦属性，并输出可解释的逐粒子分割图。通过操作粒子位置并解码，可生成新颖场景配置。在仿真和真实数据集上证明了学习的潜在空间具有可解释性和可控性，为无监督的3D场景理解提供了新途径。",
+      "llm_tldr": "3D-DLP 提出一种自监督的对象中心表示学习模型，将场景级观测分解为一组3D潜在粒子，每个粒子编码位置、尺寸和外观等解耦属性，并输出可解释的逐粒子分割图。通过操作粒子位置并解码，可生成新颖场景配置。在仿真和真实数据集上证明了学习的潜在空间具有可解释性和可控性，为无监督的3D场景理解提供了新途径。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "unsupervised 3D object generation and semantic segmentation from multi view images",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.19874v1",
+      "source": "arxiv",
+      "title": "MMD-SLAM: Structure-Enhanced Multi-Meta Gaussian Distribution-Guided Visual SLAM",
+      "abstract": "3D Gaussian Splatting (3DGS) has significantly boosted novel view synthesis and high-fidelity scene reconstruction, expanding the potential of 3DGS-based Visual Simultaneous Localization and Mapping (SLAM) methods. However, most existing systems fail to fully exploit the underlying structural information, which limits rendering quality and often leads to inconsistent maps. To address these limitations, we propose MMD-SLAM, a structure-enhanced Visual SLAM framework that leverages the Atlanta World (AW) assumption to guide a Multi-Meta Gaussian representation for photorealistic mapping. First, we introduce a point-line fusion strategy for pose optimization, where 3D line segments are incorporated to improve tracking robustness and provide additional constraints for mapping. Second, we design a Multi-Meta Gaussian representation with dominant directions, explicitly encoding structural priors from the AW hypothesis. Finally, we propose a Gaussian evolution strategy that adapts to scene geometry and incorporates structural cues into global optimization. Extensive experiments demonstrate that these innovations enable MMD-SLAM to achieve state-of-the-art performance in both tracking accuracy and mapping quality. e.g., our method achieves a 48.56% reduction in ATE RMSE on ScanNet and a 5.71% improvement in PSNR on Replica, compared with MonoGS.",
+      "authors": [
+        "Fan Zhu",
+        "Ziyu Chen",
+        "Peichen Liu",
+        "Yifan Zhao",
+        "Zhisong Xu",
+        "Hui Zhu",
+        "Hongxing Zhou",
+        "Sixun Liu",
+        "Chunmao Jiang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-06-18T07:33:08+00:00",
+      "link": "https://arxiv.org/pdf/2606.19874v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Multi-view 3D scene reconstruction via Gaussian SLAM with structural constraints",
+      "llm_evidence_cn": "采用结构增强高斯SLAM进行多视图3D场景重建",
+      "llm_evidence": "采用结构增强高斯SLAM进行多视图3D场景重建",
+      "canonical_evidence": "采用结构增强高斯SLAM进行多视图3D场景重建",
+      "llm_tldr_en": "Proposes a visual SLAM system using 3D Gaussian Splatting with structural priors for high-fidelity scene reconstruction from multi-view images.",
+      "llm_tldr_cn": "针对现有3DGS-SLAM未充分利用结构信息导致渲染质量受限的问题，提出MMD-SLAM框架，引入亚特兰大世界假设指导多Meta高斯表示，通过点线融合位姿优化和结构感知映射，实现高保真场景重建。实验表明该方法在跟踪精度和渲染质量上均优于先前方法。",
+      "llm_tldr": "针对现有3DGS-SLAM未充分利用结构信息导致渲染质量受限的问题，提出MMD-SLAM框架，引入亚特兰大世界假设指导多Meta高斯表示，通过点线融合位姿优化和结构感知映射，实现高保真场景重建。实验表明该方法在跟踪精度和渲染质量上均优于先前方法。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.20364v1",
+      "source": "arxiv",
+      "title": "Judging to Improve: A De-biased VLM-as-3D-Judge Protocol for Single-Image 3D Generation",
+      "abstract": "A companion study established a de-biased, cross-model VLM-as-3D-judge that reliably ranks single-image-to-3D mesh quality where cheap geometry and CLIP proxies fall short. This paper asks: can that judge's preferences specialize a strong open generator, TRELLIS, on one asset class (furniture), cheaply and without human labels? Taking the judge from ranking to optimization is where the work lives. Pushing a VLM judge into the training and evaluation loop exposes failure modes ranking never triggered, so our contribution is an optimization-grade hardening of the judge: a training judge (Qwen2.5-VL-7B) held distinct from an evaluation judge (InternVL3-8B) to break circularity; position-bias correction; and fixes for three failure modes (image overload, geometry-hiding splat renders, and reference-free judging that rewards clean-but-wrong outputs), with calibration evidence (clear-gap win-rate 0.83-1.0; base-vs-base ~0.5). Using this protocol as an independent evaluator, and working only from public models and data with lightweight parameter-efficient adaptation, we find our methods match the strong base rather than exceed it. Independent base samples carry essentially no learnable preference (0.94 order-flip rate), so signal must be engineered by quality-contrastive construction. Across six adaptation methods, two input regimes, and a severity sweep, the most targeted - conditioner repair under severe degradation - reaches parity (0.50) with the base, while no method clears the >=65% win-rate target. The result is mechanistic: clean inputs saturate the judge, flow-DIT fine-tuning washes out through the sampler, and conditioning repair is the locus that moves geometry. Win-rates are directional at n=8 objects. Matching a strong public-data base with cheap adaptation is itself informative: exceeding it needs more than lightweight PEFT on public data, and the judge protocol is reusable.",
+      "authors": [
+        "Ali Asaria",
+        "Tony Salomone",
+        "Deep Gandhi"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-18T15:25:57+00:00",
+      "link": "https://arxiv.org/pdf/2606.20364v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "uses VLM judge to specialize single-image-to-3D generator, directly improving 3D object generation from images",
+      "llm_evidence_cn": "利用VLM评判器微调单图像到三维生成器，直接提升从图像生成三维物体的质量",
+      "llm_evidence": "利用VLM评判器微调单图像到三维生成器，直接提升从图像生成三维物体的质量",
+      "canonical_evidence": "利用VLM评判器微调单图像到三维生成器，直接提升从图像生成三维物体的质量",
+      "llm_tldr_en": "The paper hardens a VLM judge for optimization, using its preferences to fine-tune a single-image-to-3D mesh generator without human labels, improving furniture asset generation.",
+      "llm_tldr_cn": "单图像到三维生成缺乏可靠的自动评估指标，廉价代理指标不可靠。本文硬化了一个去偏的VLM评判器，将其从排序扩展到优化，并使用该评判器的偏好反馈来微调开源生成器TRELLIS，无需人工标签即可提升家具类三维资产的生成质量。该方法为从图像生成三维物体提供了一种低成本的优化途径。",
+      "llm_tldr": "单图像到三维生成缺乏可靠的自动评估指标，廉价代理指标不可靠。本文硬化了一个去偏的VLM评判器，将其从排序扩展到优化，并使用该评判器的偏好反馈来微调开源生成器TRELLIS，无需人工标签即可提升家具类三维资产的生成质量。该方法为从图像生成三维物体提供了一种低成本的优化途径。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.20531v1",
+      "source": "arxiv",
+      "title": "VisDom: Sparse Novel View Synthesis with Visible Domain Constraint",
+      "abstract": "Sparse novel view synthesis (NVS) remains challenging due to the ambiguity of recovering 3D geometry from few input views. While NeRF- and Gaussian Splatting (GS)-based methods perform well with dense supervision, they often overfit in sparse settings, producing floating artifacts and inconsistent geometry. Silhouette consistency is commonly used as a regularizer, but it remains insufficient, as silhouette-consistent regions can extend beyond the true object geometry. We introduce VisDom, a learning-free geometric constraint that augments classical carving-based visual hull reconstruction by enforcing a minimum multi-view visibility requirement. Specifically, we define a visible domain as the subset of 3D space observed by at least $K$ views and use it as an additional filtering criterion on top of standard silhouette-based reconstruction. This provides a stronger spatial prior in sparse-view settings. We integrate VisDom into both implicit (NeRF) and explicit (GS) pipelines by restricting volumetric sampling and guiding Gaussian placement during optimization. Experiments on three challenging datasets show consistent improvements in sparse-view NVS, enabling high-quality object-centric reconstruction from as few as four input images. Our method is domain-agnostic, requires only silhouettes, and introduces no learned parameters, making it a simple complement to existing approaches. Applying VisDom on top of GaussianObject further improves performance on Omni3D and MipNeRF360, while matching or surpassing it at 22 $\\times$ lower training cost.",
+      "authors": [
+        "Mariia Gladkova*",
+        "Tarun Yenamandra*",
+        "Edmond Boyer",
+        "Robert Maier",
+        "Tony Tung",
+        "Daniel Cremers"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-18T17:45:37+00:00",
+      "link": "https://arxiv.org/pdf/2606.20531v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Multi-view 3D reconstruction via novel view synthesis with visibility constraints",
+      "llm_evidence_cn": "通过可见性约束的新视角合成进行多视图3D重建",
+      "llm_evidence": "通过可见性约束的新视角合成进行多视图3D重建",
+      "canonical_evidence": "通过可见性约束的新视角合成进行多视图3D重建",
+      "llm_tldr_en": "Introduces a learning-free visible domain constraint for sparse novel view synthesis, improving 3D geometry consistency from few input views.",
+      "llm_tldr_cn": "针对稀疏输入下3D重建的几何歧义性，提出VisDom可见性约束。通过定义至少K个视图观察到的可见域，增强传统视觉壳体的多视图可见性要求，有效抑制稀疏新视角合成中的漂浮伪影和不一致几何。实验表明该方法在多个数据集上提升了重建质量。",
+      "llm_tldr": "针对稀疏输入下3D重建的几何歧义性，提出VisDom可见性约束。通过定义至少K个视图观察到的可见域，增强传统视觉壳体的多视图可见性要求，有效抑制稀疏新视角合成中的漂浮伪影和不一致几何。实验表明该方法在多个数据集上提升了重建质量。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.19776v1",
+      "source": "arxiv",
+      "title": "Occ-VLM: Occupancy Grounded Vision Language Model for Indoor Scene Understanding",
+      "abstract": "Recently, vision-language models (VLMs) have made significant progress in 3D scene understanding, driving advances in applications such as embodied intelligence and robotic vision. However, existing approaches typically either rely directly on explicit 3D inputs (e.g., point clouds or RGB-D sequences), or introduce an additional 3D geometry encoder to derive 3D-aware visual tokens from 2D images. Such designs structurally decouple 3D geometric perception from the rich 2D semantics learned via vision-language pre-training, hindering the development of a unified 3D vision-language representation. In this work, we propose Occ-VLM, a novel framework for 3D scene understanding that operates purely on posed RGB images and employs a single 2D vision encoder. Specifically, Occ-VLM reconstructs 3D scene occupancy as an auxiliary geometric prior, which is utilized to spatially associate foreground 2D tokens with 3D space. These tokens are then decoded by a Large Language Model (LLM) for unified scene understanding. Extensive experiments demonstrate that Occ-VLM achieves both accurate geometric perception and robust vision-language reasoning: it attains state-of-the-art performance on multi-view occupancy prediction, while performing on par with 3D-input VLMs on 3D Visual Question Answering (VQA) and 3D dense captioning benchmarks.",
+      "authors": [
+        "Jianing Li",
+        "Zhou Fang",
+        "Yijiang Liu",
+        "Li Du"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-18T04:24:28+00:00",
+      "link": "https://arxiv.org/pdf/2606.19776v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Occ-VLM performs 3D scene understanding directly from posed RGB images, grounding geometry and semantics.",
+      "llm_evidence_cn": "Occ-VLM直接从姿态RGB图像进行3D场景理解，扎根几何与语义。",
+      "llm_evidence": "Occ-VLM直接从姿态RGB图像进行3D场景理解，扎根几何与语义。",
+      "canonical_evidence": "Occ-VLM直接从姿态RGB图像进行3D场景理解，扎根几何与语义。",
+      "llm_tldr_en": "Unifies 3D geometric perception and 2D semantics by operating on posed RGB images to produce occupancy-grounded 3D scene understanding without explicit 3D inputs.",
+      "llm_tldr_cn": "针对传统方法将3D几何与2D语义编码分离的问题，提出Occ-VLM，仅依赖姿态RGB图像和单一2D视觉骨干，将占用预测融入视觉语言模型，实现端到端的室内场景理解。在基准测试上验证了其统一表示的有效性。该框架简化了3D视觉语言任务，对具身智能具有重要意义。",
+      "llm_tldr": "针对传统方法将3D几何与2D语义编码分离的问题，提出Occ-VLM，仅依赖姿态RGB图像和单一2D视觉骨干，将占用预测融入视觉语言模型，实现端到端的室内场景理解。在基准测试上验证了其统一表示的有效性。该框架简化了3D视觉语言任务，对具身智能具有重要意义。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.13345v1",
+      "source": "arxiv",
+      "title": "JointEdit3D: Feed-Forward 3D Scene Editing in a Unified Latent Space",
+      "abstract": "Existing 3D scene editing methods typically rely on per-scene optimization over explicit 3D representations or cascaded edit-and-reconstruct pipelines, resulting in high test-time cost, limited 3D awareness, and structural inconsistencies. To couple appearance synthesis and geometry prediction during editing, we build on a unified RGB-geometry reconstruction-generation latent space and adapt it to feed-forward 3D scene editing. The resulting framework, \\textbf{JointEdit3D}, performs asymmetric latent inpainting by observing only a single edited RGB reference latent and generating the remaining RGB views and edited geometry latent under source-scene anchoring. JointEdit3D introduces a dedicated SceneAnchor Branch to inject source-scene structure without forcing direct copying, and adopts edit/background-aware losses to balance edited-region fidelity with unedited-content preservation. To address the lack of paired resources for standardized 3D scene editing evaluation, we introduce SceneEdit3D-15K, a dataset with 15K paired editing samples and renderer-provided 3D annotations, together with SceneEdit3D-Bench, a curated 100-sample benchmark. Experiments show that JointEdit3D improves edited-region quality and 3D structural completeness over prior baselines while maintaining competitive background preservation.",
+      "authors": [
+        "Xinnan Zhu",
+        "Ruijie Xu",
+        "Jiayu Ying",
+        "Daoguo Dong",
+        "Jiachen Xu",
+        "Yuan Xie",
+        "Xin Tan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-11T13:35:23+00:00",
+      "link": "https://arxiv.org/pdf/2606.13345v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "3D scene generation from a single edited image via unified latent inpainting",
+      "llm_evidence_cn": "通过统一潜在空间修复从单张编辑图像生成3D场景编辑",
+      "llm_evidence": "通过统一潜在空间修复从单张编辑图像生成3D场景编辑",
+      "canonical_evidence": "通过统一潜在空间修复从单张编辑图像生成3D场景编辑",
+      "llm_tldr_en": "Presents a feed-forward method that edits 3D scenes by inpainting in a unified RGB-geometry latent space, generating consistent novel views from a single edited reference.",
+      "llm_tldr_cn": "针对传统3D场景编辑需逐场景优化或级联编辑重建流程的高测试成本问题，提出JointEdit3D框架，利用统一RGB-几何重建生成潜在空间，通过非对称潜在修复生成完整编辑场景。该方法仅需单张编辑RGB参考图，即可生成一致的多视图和编辑后几何，实现快速前馈编辑。",
+      "llm_tldr": "针对传统3D场景编辑需逐场景优化或级联编辑重建流程的高测试成本问题，提出JointEdit3D框架，利用统一RGB-几何重建生成潜在空间，通过非对称潜在修复生成完整编辑场景。该方法仅需单张编辑RGB参考图，即可生成一致的多视图和编辑后几何，实现快速前馈编辑。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.19383v1",
+      "source": "arxiv",
+      "title": "3D Scene Graphs: Open Challenges and Future Directions",
+      "abstract": "3D Scene Graphs (3DSGs) have emerged as a powerful representation for spatial AI by combining geometric grounding with semantic and relational abstractions of the environment. Their expressiveness has made them relevant to a broad range of problems in robotics and computer vision, including manipulation, navigation, task planning, scene understanding, and many others. However, the field remains fragmented: different communities adopt distinct formulations, construction pipelines, and evaluation protocols, making it difficult to compare methods, identify common assumptions, and assess remaining challenges for robust real-world deployment. This survey provides a unified and critical review of 3DSGs, with particular emphasis on open challenges and future directions. We first formalize 3DSGs under a common definition and analyze the principal modeling choices that characterize existing formulations, including node and edge attributes, hierarchical structure, dynamic scene representations, and affordance-aware extensions. We then review how 3DSGs are built from raw sensory observations, discussing the most common terminologies, conventions, and techniques. Finally, we examine downstream applications and evaluation strategies, from intrinsic graph quality to task-level performance. To support the community, we also provide a dedicated website that organizes and extends the surveyed content, accessible at https://3dscenegraphs.com/.",
+      "authors": [
+        "Dennis Rotondi",
+        "Francesco Argenziano",
+        "Sebastian Koch",
+        "Nathan Hughes",
+        "Martin Buechner",
+        "Johanna Wald",
+        "Lukas Rosenberger Schmid",
+        "Daniele Nardi",
+        "Abhinav Valada",
+        "Liam Paull",
+        "Federico Tombari",
+        "Luca Carlone",
+        "Kai O. Arras"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-06-15T08:14:08+00:00",
+      "link": "https://arxiv.org/pdf/2606.19383v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "survey on 3D scene graphs, covering semantic and geometric scene understanding",
+      "llm_evidence_cn": "综述三维场景图，涵盖语义和几何场景理解",
+      "llm_evidence": "综述三维场景图，涵盖语义和几何场景理解",
+      "canonical_evidence": "综述三维场景图，涵盖语义和几何场景理解",
+      "llm_tldr_en": "This survey provides a unified review of 3D Scene Graphs, highlighting open challenges in construction, representation, and evaluation for spatial AI tasks including semantic segmentation.",
+      "llm_tldr_cn": "三维场景图结合了几何定位与语义关系抽象，是空间AI的强大表示形式，但领域碎片化严重。本综述系统地回顾了三维场景图的构建、表示与评估方法，指出了开放挑战和未来方向，特别强调了在机器人、场景理解等任务中的应用。该综述为相关研究提供了统一视角，对三维语义分割和场景理解有重要参考价值。",
+      "llm_tldr": "三维场景图结合了几何定位与语义关系抽象，是空间AI的强大表示形式，但领域碎片化严重。本综述系统地回顾了三维场景图的构建、表示与评估方法，指出了开放挑战和未来方向，特别强调了在机器人、场景理解等任务中的应用。该综述为相关研究提供了统一视角，对三维语义分割和场景理解有重要参考价值。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.19985v1",
+      "source": "arxiv",
+      "title": "Vision-Reasoning-Guided Occlusion Removal from Light Fields",
+      "abstract": "Occlusion-robust scene recovery remains a major challenge in computational imaging, particularly in natural environments where dense foreground vegetation severely limits visibility. We propose a vision-reasoning-guided light field occlusion removal framework that combines the visibility recovery capability of light field integration (LFI) with the semantic reasoning capacity of vision-language models (VLMs). Multi-view observations are first integrated via LFI to suppress foreground occlusions and produce an initial visibility-enhanced representation. A VLM is then incorporated as a conditional semantic prior to restore degraded structures and recover fine details, guided by the observed measurements. To improve recovery consistency and reduce hallucination artifacts, we introduce a multi-sample fusion strategy that aggregates multiple generated hypotheses into a unified estimate. Experimental results on synthetic and real-world datasets demonstrate state-of-the-art performance, achieving the highest average SSIM across four synthetic light field benchmark scenes (4-Syn) and strong generalization across structured and unstructured acquisition settings. These results highlight the effectiveness of combining physical imaging constraints with vision-language reasoning for robust perception under severe occlusion, with applicability to search-and-rescue and exploratory robotic navigation.",
+      "authors": [
+        "Mohamed Youssef",
+        "Oliver Bimber"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-18T09:24:55+00:00",
+      "link": "https://arxiv.org/pdf/2606.19985v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Occlusion-robust scene recovery from light fields uses multi-view integration and vision-language reasoning.",
+      "llm_evidence_cn": "从光场中鲁棒去除遮挡恢复场景，结合多视图集成与视觉语言推理。",
+      "llm_evidence": "从光场中鲁棒去除遮挡恢复场景，结合多视图集成与视觉语言推理。",
+      "canonical_evidence": "从光场中鲁棒去除遮挡恢复场景，结合多视图集成与视觉语言推理。",
+      "llm_tldr_en": "Combines light field integration with a vision-language model as conditional semantic prior to remove occlusions and recover fine details from multi-view observations.",
+      "llm_tldr_cn": "针对密集遮挡下场景恢复难题，提出光场积分初步抑制前景遮挡，再引入视觉语言模型作为条件语义先验，引导恢复退化结构并减少幻觉。在自然遮挡场景上验证了恢复一致性和细节保持。该方法为融合几何与语义的鲁棒重建开辟新路径。",
+      "llm_tldr": "针对密集遮挡下场景恢复难题，提出光场积分初步抑制前景遮挡，再引入视觉语言模型作为条件语义先验，引导恢复退化结构并减少幻觉。在自然遮挡场景上验证了恢复一致性和细节保持。该方法为融合几何与语义的鲁棒重建开辟新路径。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.19733v1",
+      "source": "arxiv",
+      "title": "QueryGaussian: Scalable and Training-Free Open-Vocabulary 3D Instance Retrieval",
+      "abstract": "Efficiently retrieving specific 3D instances from large-scale scenes via natural language prompts remains a formidable challenge in multimedia analysis. Existing approaches predominantly follow a \"scene-level embedding\" paradigm, which requires distilling high-dimensional semantic features into every 3D primitive. This strategy suffers from a fundamental architectural bottleneck: memory and computational costs scale linearly with scene complexity, inevitably triggering out-of-memory (OOM) failures in city-scale environments. To address this barrier, we propose QueryGaussian, a training-free framework for expeditious and scalable open-vocabulary 3D instance retrieval. Unlike holistic semantic distillation, QueryGaussian employs an instance-level query mechanism that decouples semantic understanding from geometric representation. Specifically, we leverage pre-trained 2D vision models to interpret user prompts and lift segmentation masks into 3D via a concurrent maximum-weight association strategy, ensuring semantic-visual consistency. To mitigate projection ambiguity, we introduce a temporal fusion module with multi-stage adaptive density clustering. Experimental results demonstrate that QueryGaussian not only matches the accuracy of state-of-the-art methods but also delivers a decisive efficiency leap, reducing GPU memory usage by over 70% and accelerating inference by 180x. Crucially, QueryGaussian enables expeditious instance retrieval on city-scale scenes containing tens of millions of Gaussians using consumer-grade hardware.",
+      "authors": [
+        "Xiuyuan Zhu",
+        "Ke Lu",
+        "Zijie Yang",
+        "Chao Yue",
+        "Jian Xue",
+        "Dongming Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-06-18T02:57:35+00:00",
+      "link": "https://arxiv.org/pdf/2606.19733v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Open-vocabulary 3D instance retrieval from large-scale scenes enables 3D scene understanding from image collections.",
+      "llm_evidence_cn": "大规模场景开放词汇3D实例检索实现从图像集合的3D场景理解。",
+      "llm_evidence": "大规模场景开放词汇3D实例检索实现从图像集合的3D场景理解。",
+      "canonical_evidence": "大规模场景开放词汇3D实例检索实现从图像集合的3D场景理解。",
+      "llm_tldr_en": "Addresses scalable 3D instance retrieval from large scenes. Proposes QueryGaussian, a training-free framework using instance-level Gaussians instead of scene-level embeddings, avoiding memory explosion. Achieves fast open-vocabulary retrieval in city-scale scenes.",
+      "llm_tldr_cn": "现有方法因场景级嵌入导致内存随场景复杂度线性增长，难以扩展到城市级场景。QueryGaussian采用实例级高斯表达，每个实例独立编码，检索时快速匹配，无需训练。实验表明该方法在大规模室内外场景中实现了高效、准确的开放词汇检索，为多媒体分析中3D场景理解提供了实用工具。",
+      "llm_tldr": "现有方法因场景级嵌入导致内存随场景复杂度线性增长，难以扩展到城市级场景。QueryGaussian采用实例级高斯表达，每个实例独立编码，检索时快速匹配，无需训练。实验表明该方法在大规模室内外场景中实现了高效、准确的开放词汇检索，为多媒体分析中3D场景理解提供了实用工具。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "feature matching and 3D scene understanding from large scale image collections",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
