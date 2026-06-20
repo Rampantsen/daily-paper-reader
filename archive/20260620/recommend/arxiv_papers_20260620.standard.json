@@ -1,0 +1,182 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-20T20:45:52.589739+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2606.20110v1",
+      "source": "arxiv",
+      "title": "FrozenDrive: Zero-Shot Text-Guided Driving Scene Generation and Data Augmentation with Parameter-Free Frozen Diffusion Model",
+      "abstract": "Synthetic data for autonomous driving is surging, powered by diffusion models that promise scalable scene generation. Yet key obstacles remain, as enforcing multi-view and temporal consistency often relies on backbone fine-tuning or added layers, which erodes pre-trained knowledge and weakens text alignment. Models also stay close to the training distribution, struggling under adverse weather and unseen configurations, and fidelity favors frequent over rare classes. We address these gaps with FrozenDrive, a controllable generative framework that preserves a pretrained diffusion models knowledge while achieving strong consistency. FrozenDrive conditions on rich driving-stack signals and text prompts, and introduces knowledge-preserving spatio-temporal attention to impose cross-view alignment and temporal coherence in a single pass within a parameter-free frozen diffusion backbone. An additional object-focused constraint improves per-object fidelity for rare categories. Without any weather- or scene-specific fine-tuning, our model synthesizes globally coherent multi-view driving scenes from text, particularly under adverse and rare conditions, and surpasses prior baselines. On nuScenes, FrozenDrive augmented data significantly improves AD models performance, especially at night and in rain, demonstrating stronger robustness when trained with our scenario-targeted data.",
+      "authors": [
+        "Yuhwan Jeong",
+        "Hyeonseong Kim",
+        "Daehyun We",
+        "Seonkyu Song",
+        "Jinnyeong Yang",
+        "Hyun-Kurl Jang",
+        "Youngho Yoon",
+        "Kuk-Jin Yoon"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-18T11:34:26+00:00",
+      "link": "https://arxiv.org/pdf/2606.20110v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Zero-shot text-guided generation of multi-view consistent driving scenes using frozen diffusion model.",
+      "llm_evidence_cn": "零样本基于文本生成多视角一致的驾驶场景，使用冻结的扩散模型。",
+      "llm_evidence": "零样本基于文本生成多视角一致的驾驶场景，使用冻结的扩散模型。",
+      "canonical_evidence": "零样本基于文本生成多视角一致的驾驶场景，使用冻结的扩散模型。",
+      "llm_tldr_en": "FrozenDrive enables controllable generation of driving scenes from text prompts, maintaining multi-view and temporal consistency without fine-tuning the base diffusion model, thus preserving its knowledge and alignment.",
+      "llm_tldr_cn": "针对自动驾驶场景生成中多视角一致性和分布外泛化难题，FrozenDrive提出一种冻结扩散模型参数的零样本文本引导生成框架。通过注入驾驶栈信号和文本提示，无需微调即可生成高一致性的多视角驾驶场景，并在恶劣天气和罕见类别上表现出色。该方法使大规模可控场景生成更实用，有助于自动驾驶数据增强。",
+      "llm_tldr": "针对自动驾驶场景生成中多视角一致性和分布外泛化难题，FrozenDrive提出一种冻结扩散模型参数的零样本文本引导生成框架。通过注入驾驶栈信号和文本提示，无需微调即可生成高一致性的多视角驾驶场景，并在恶劣天气和罕见类别上表现出色。该方法使大规模可控场景生成更实用，有助于自动驾驶数据增强。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.17824v1",
+      "source": "arxiv",
+      "title": "Human-in-the-Loop Atlas-Based 3D Asset Segmentation for Interactive Content Workflows",
+      "abstract": "Segmenting 3D assets into meaningful regions remains challenging, especially when segmentation criteria are application-dependent and require user control. We present a human-in-the-loop pipeline for generating a segmented 2D parameterized atlas from a 3D model for interactive media, game, and XR content workflows. Our method first selects a compact set of rendered views using a greedy set cover strategy over sampled surface points, and then supports interactive segmentation of these views with SAM~2 and Label Studio. The resulting masks are back-projected onto the model's UV parameterization to produce a unified segmented atlas that supports downstream production tasks such as segment-wise material assignment, style transfer, and semantic labeling. We assess the pipeline through a demonstration-based technical evaluation on eight cultural heritage objects. The results show that the approach can generate usable segmented atlases across diverse geometries while revealing recurring sources of manual correction, particularly fine structures, cavities, and weak appearance boundaries.",
+      "authors": [
+        "Paul Julius Kühn",
+        "Saptarshi Neil Sinha",
+        "Jakob Hansen",
+        "Robin Horst"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-06-16T11:51:58+00:00",
+      "link": "https://arxiv.org/pdf/2606.17824v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Performs semantic segmentation on 3D assets via multi-view rendering and interactive back-projection, contributing to 3D scene segmentation pipelines.",
+      "llm_evidence_cn": "通过多视图渲染与交互式反投影实现3D资产的语义分割，可应用于3D场景分割工作流。",
+      "llm_evidence": "通过多视图渲染与交互式反投影实现3D资产的语义分割，可应用于3D场景分割工作流。",
+      "canonical_evidence": "通过多视图渲染与交互式反投影实现3D资产的语义分割，可应用于3D场景分割工作流。",
+      "llm_tldr_en": "A human-in-the-loop pipeline segments 3D assets by selecting optimal views, using SAM 2 for interactive segmentation, and back-projecting masks to a unified atlas, supporting downstream tasks like material assignment.",
+      "llm_tldr_cn": "为解决3D资产分割标准不统一且依赖人工的问题，提出人在回路中的2D参数化图集分割管线，先用贪心集合覆盖选取紧凑渲染视图，再借助SAM 2和Label Studio交互式分割，将蒙版反投影至UV参数化形成统一图集，支持材质分配、风格迁移等后续生产任务，提升了交互内容创作的效率与可控性。",
+      "llm_tldr": "为解决3D资产分割标准不统一且依赖人工的问题，提出人在回路中的2D参数化图集分割管线，先用贪心集合覆盖选取紧凑渲染视图，再借助SAM 2和Label Studio交互式分割，将蒙版反投影至UV参数化形成统一图集，支持材质分配、风格迁移等后续生产任务，提升了交互内容创作的效率与可控性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.20131v1",
+      "source": "arxiv",
+      "title": "TriFlow: Generating Artist-Like 3D Mesh Topology via Nearest-Vertex Vector Fields",
+      "abstract": "We present TriFlow, a new generative approach for producing compact 3D meshes with artist-like triangle topology directly from input geometry conditions such as signed distance fields. Our key insight is to represent mesh topology as a nearest-vertex vector field (NVF) defined over the surface, where each point encodes its association to the nearest triangle vertex in the local barycentric frame. We train a latent flow-matching model to synthesize this field, enabling topology generation conditioned on the input geometry. To extract a coherent mesh, we cluster surface regions using the generated NVF and guide a constrained quadric error metric (QEM) mesh simplification with topology-aware optimization. This yields output meshes that closely match the input geometry while exhibiting structured, artist-like connectivity. Experiments demonstrate that TriFlow achieves stronger generalization and significantly improved topology quality compared to state-of-the-art learning-based approaches, alongside 90% lower Chamfer Distance and an 8x speedup.",
+      "authors": [
+        "Haoxuan Li",
+        "Ziya Erkoç",
+        "Daniele Sirigatti",
+        "Vladislav Rosov",
+        "Lei Li",
+        "Angela Dai",
+        "Matthias Nießner"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR"
+      ],
+      "published": "2026-06-18T11:55:00+00:00",
+      "link": "https://arxiv.org/pdf/2606.20131v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Generates 3D mesh topology from geometry conditions using flow matching",
+      "llm_evidence_cn": "利用流匹配从几何条件生成三维网格拓扑",
+      "llm_evidence": "利用流匹配从几何条件生成三维网格拓扑",
+      "canonical_evidence": "利用流匹配从几何条件生成三维网格拓扑",
+      "llm_tldr_en": "TriFlow generates artist-like 3D mesh topology from signed distance fields via latent flow-matching of nearest-vertex vector fields, enabling compact and high-quality mesh generation.",
+      "llm_tldr_cn": "TriFlow通过在有符号距离场等几何条件上学习最近顶点向量场的潜在流匹配模型，生成符合艺术家风格的紧凑三角形网格拓扑，后续结合拓扑感知简化提取网格，为三维物体生成和网格优化提供了新的生成式方法。",
+      "llm_tldr": "TriFlow通过在有符号距离场等几何条件上学习最近顶点向量场的潜在流匹配模型，生成符合艺术家风格的紧凑三角形网格拓扑，后续结合拓扑感知简化提取网格，为三维物体生成和网格优化提供了新的生成式方法。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.19316v1",
+      "source": "arxiv",
+      "title": "NeuMesh++: Towards Versatile and Efficient Volumetric Editing with Disentangled Neural Mesh-based Implicit Field",
+      "abstract": "Recently neural implicit rendering techniques have evolved rapidly and demonstrated significant advantages in novel view synthesis and 3D scene reconstruction. However, existing neural rendering methods for editing purposes offer limited functionalities, e.g., rigid transformation and category-specific editing. In this paper, we present a novel mesh-based representation by encoding the neural radiance field with disentangled geometry, texture, and semantic codes on mesh vertices, which empowers a set of efficient and comprehensive editing functionalities, including mesh-guided geometry editing, designated texture editing with texture swapping, filling and painting operations, and semantic-guided editing. To this end, we develop several techniques including a novel local space parameterization to enhance rendering quality and training stability, a learnable modification color on vertex to improve the fidelity of texture editing, a spatial-aware optimization strategy to realize precise texture editing, and a semantic-aided region selection to ease the laborious annotation of implicit field editing. Extensive experiments and editing examples on both real and synthetic datasets demonstrate the superiority of our method on representation quality and editing ability. Project page: https://zju3dv.github.io/neumeshplusplus/",
+      "authors": [
+        "Chong Bao",
+        "Yuan Li",
+        "Bangbang Yang",
+        "Yujun Shen",
+        "Hujun Bao",
+        "Zhaopeng Cui",
+        "Yinda Zhang",
+        "Guofeng Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-17T17:39:21+00:00",
+      "link": "https://arxiv.org/pdf/2606.19316v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "novel mesh-based neural implicit representation for 3D scene reconstruction and editing",
+      "llm_evidence_cn": "新颖的基于网格的神经隐式表示，用于三维场景重建与编辑",
+      "llm_evidence": "新颖的基于网格的神经隐式表示，用于三维场景重建与编辑",
+      "canonical_evidence": "新颖的基于网格的神经隐式表示，用于三维场景重建与编辑",
+      "llm_tldr_en": "Proposes NeuMesh++, a neural implicit field with disentangled geometry, texture, and semantics on mesh vertices, enabling efficient and versatile editing of 3D scenes reconstructed from images.",
+      "llm_tldr_cn": "现有神经渲染方法在三维场景编辑方面功能有限。本文提出NeuMesh++，一种将神经辐射场编码在网格顶点上并解耦几何、纹理与语义的表示形式。该表示支持网格引导的几何编辑、纹理交换与绘制等操作，同时保持高保真重建。实验表明该方法为重建后的三维场景提供了丰富的编辑功能，推动了神经渲染在内容创作中的应用。",
+      "llm_tldr": "现有神经渲染方法在三维场景编辑方面功能有限。本文提出NeuMesh++，一种将神经辐射场编码在网格顶点上并解耦几何、纹理与语义的表示形式。该表示支持网格引导的几何编辑、纹理交换与绘制等操作，同时保持高保真重建。实验表明该方法为重建后的三维场景提供了丰富的编辑功能，推动了神经渲染在内容创作中的应用。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

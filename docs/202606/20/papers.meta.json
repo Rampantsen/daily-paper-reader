@@ -1,0 +1,69 @@
+{
+  "label": "2026-06-20",
+  "date": "2026-06-20",
+  "generated_at": "2026-06-20T20:50:31",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202606/20/2606.20110v1-frozendrive-zero-shot-text-guided-driving-scene-generation-and-data-augmentation-with-parameter-free-frozen-diffusion-model",
+      "section": "deep",
+      "title_en": "FrozenDrive: Zero-Shot Text-Guided Driving Scene Generation and Data Augmentation with Parameter-Free Frozen Diffusion Model",
+      "authors": "Yuhwan Jeong, Hyeonseong Kim, Daehyun We, Seonkyu Song, Jinnyeong Yang, Hyun-Kurl Jang, Youngho Yoon, Kuk-Jin Yoon",
+      "date": "2026-06-18",
+      "pdf": "https://arxiv.org/pdf/2606.20110v1",
+      "score": "8.0",
+      "evidence": "零样本基于文本生成多视角一致的驾驶场景，使用冻结的扩散模型。",
+      "tldr": "当前扩散模型生成自动驾驶场景常依赖微调，破坏预训练知识且文本对齐弱，在恶劣天气和罕见条件下性能不足。FrozenDrive通过参数冻结的扩散模型和知识保留时空注意力，实现文本驱动的零样本多视角时间一致性生成。该方法在nuScenes上合成恶劣天气全局一致场景，增强数据显著提升夜间和雨天的自动驾驶模型性能。为自动驾驶数据增强提供无需微调的鲁棒场景生成方案。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Synthetic data for autonomous driving is surging, powered by diffusion models that promise scalable scene generation. Yet key obstacles remain, as enforcing multi-view and temporal consistency often relies on backbone fine-tuning or added layers, which erodes pre-trained knowledge and weakens text alignment. Models also stay close to the training distribution, struggling under adverse weather and unseen configurations, and fidelity favors frequent over rare classes. We address these gaps with FrozenDrive, a controllable generative framework that preserves a pretrained diffusion models knowledge while achieving strong consistency. FrozenDrive conditions on rich driving-stack signals and text prompts, and introduces knowledge-preserving spatio-temporal attention to impose cross-view alignment and temporal coherence in a single pass within a parameter-free frozen diffusion backbone. An additional object-focused constraint improves per-object fidelity for rare categories. Without any weather- or scene-specific fine-tuning, our model synthesizes globally coherent multi-view driving scenes from text, particularly under adverse and rare conditions, and surpasses prior baselines. On nuScenes, FrozenDrive augmented data significantly improves AD models performance, especially at night and in rain, demonstrating stronger robustness when trained with our scenario-targeted data.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/20/2606.17824v1-human-in-the-loop-atlas-based-3d-asset-segmentation-for-interactive-content-workflows",
+      "section": "quick",
+      "title_en": "Human-in-the-Loop Atlas-Based 3D Asset Segmentation for Interactive Content Workflows",
+      "authors": "Paul Julius Kühn, Saptarshi Neil Sinha, Jakob Hansen, Robin Horst",
+      "date": "2026-06-16",
+      "pdf": "https://arxiv.org/pdf/2606.17824v1",
+      "score": "7.0",
+      "evidence": "通过多视图渲染与交互式反投影实现3D资产的语义分割，可应用于3D场景分割工作流。",
+      "tldr": "3D资产分割为有意义区域仍具挑战，需根据应用提供用户控制。我们提出人机协同管线，先用贪婪集覆盖选择渲染视图，再用SAM 2和Label Studio交互分割，最后反向投影至UV生成统一分割图集。在八个文化遗产对象上评估，生成图集支持材质分配等任务，但精细结构、空洞需手动校正。该工作为游戏、XR内容制作提供可控的图集分割方案。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Segmenting 3D assets into meaningful regions remains challenging, especially when segmentation criteria are application-dependent and require user control. We present a human-in-the-loop pipeline for generating a segmented 2D parameterized atlas from a 3D model for interactive media, game, and XR content workflows. Our method first selects a compact set of rendered views using a greedy set cover strategy over sampled surface points, and then supports interactive segmentation of these views with SAM~2 and Label Studio. The resulting masks are back-projected onto the model's UV parameterization to produce a unified segmented atlas that supports downstream production tasks such as segment-wise material assignment, style transfer, and semantic labeling. We assess the pipeline through a demonstration-based technical evaluation on eight cultural heritage objects. The results show that the approach can generate usable segmented atlases across diverse geometries while revealing recurring sources of manual correction, particularly fine structures, cavities, and weak appearance boundaries.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/20/2606.19316v1-neumesh-towards-versatile-and-efficient-volumetric-editing-with-disentangled-neural-mesh-based-implicit-field",
+      "section": "quick",
+      "title_en": "NeuMesh++: Towards Versatile and Efficient Volumetric Editing with Disentangled Neural Mesh-based Implicit Field",
+      "authors": "Chong Bao, Yuan Li, Bangbang Yang, Yujun Shen, Hujun Bao, Zhaopeng Cui, Yinda Zhang, Guofeng Zhang",
+      "date": "2026-06-17",
+      "pdf": "https://arxiv.org/pdf/2606.19316v1",
+      "score": "7.0",
+      "evidence": "新颖的基于网格的神经隐式表示，用于三维场景重建与编辑",
+      "tldr": "针对神经隐式渲染中编辑功能受限的问题，现有方法仅支持刚性变换和类别特定编辑。本文提出 NeuMesh++，一种基于网格表示的解耦神经辐射场，通过在网格顶点编码分离的几何、纹理和语义信息，实现多功能体素编辑。为提升质量，我们开发了局部空间参数化技术增强渲染稳定与质量，采用可学习修改颜色提高纹理编辑忠实度，并利用空间感知优化和语义辅助区域选择实现精细操作，从而支持网格引导几何编辑、纹理交换/填充/绘制以及语义引导编辑。在多种真实和合成数据集上，NeuMesh++ 在渲染效果和编辑能力方面均达到最优，显著优于现有方案，为高效通用的三维场景编辑奠定了新基石。该框架大幅拓展了神经隐式表示的编辑维度，推动三维内容创作走向实用。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Recently neural implicit rendering techniques have evolved rapidly and demonstrated significant advantages in novel view synthesis and 3D scene reconstruction. However, existing neural rendering methods for editing purposes offer limited functionalities, e.g., rigid transformation and category-specific editing. In this paper, we present a novel mesh-based representation by encoding the neural radiance field with disentangled geometry, texture, and semantic codes on mesh vertices, which empowers a set of efficient and comprehensive editing functionalities, including mesh-guided geometry editing, designated texture editing with texture swapping, filling and painting operations, and semantic-guided editing. To this end, we develop several techniques including a novel local space parameterization to enhance rendering quality and training stability, a learnable modification color on vertex to improve the fidelity of texture editing, a spatial-aware optimization strategy to realize precise texture editing, and a semantic-aided region selection to ease the laborious annotation of implicit field editing. Extensive experiments and editing examples on both real and synthetic datasets demonstrate the superiority of our method on representation quality and editing ability. Project page: https://zju3dv.github.io/neumeshplusplus/",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/20/2606.20131v1-triflow-generating-artist-like-3d-mesh-topology-via-nearest-vertex-vector-fields",
+      "section": "quick",
+      "title_en": "TriFlow: Generating Artist-Like 3D Mesh Topology via Nearest-Vertex Vector Fields",
+      "authors": "Haoxuan Li, Ziya Erkoç, Daniele Sirigatti, Vladislav Rosov, Lei Li, Angela Dai, Matthias Nießner",
+      "date": "2026-06-18",
+      "pdf": "https://arxiv.org/pdf/2606.20131v1",
+      "score": "6.0",
+      "evidence": "利用流匹配从几何条件生成三维网格拓扑",
+      "tldr": "现有3D网格生成方法常产生不规则拓扑，难以兼顾几何精度与艺术家般的结构化连接。TriFlow通过最近顶点向量场表示拓扑，利用流匹配模型以符号距离场等几何条件为输入，合成拓扑场并引导拓扑感知的网格简化，从而生成紧凑且拓扑优良的网格。实验表明，TriFlow的Chamfer距离比现有方法低90%，速度提升8倍，显著提升了网格拓扑质量和泛化能力。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "We present TriFlow, a new generative approach for producing compact 3D meshes with artist-like triangle topology directly from input geometry conditions such as signed distance fields. Our key insight is to represent mesh topology as a nearest-vertex vector field (NVF) defined over the surface, where each point encodes its association to the nearest triangle vertex in the local barycentric frame. We train a latent flow-matching model to synthesize this field, enabling topology generation conditioned on the input geometry. To extract a coherent mesh, we cluster surface regions using the generated NVF and guide a constrained quadric error metric (QEM) mesh simplification with topology-aware optimization. This yields output meshes that closely match the input geometry while exhibiting structured, artist-like connectivity. Experiments demonstrate that TriFlow achieves stronger generalization and significantly improved topology quality compared to state-of-the-art learning-based approaches, alongside 90% lower Chamfer Distance and an 8x speedup.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
