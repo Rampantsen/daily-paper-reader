@@ -1,0 +1,253 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-21T20:25:40.249997+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2606.16479v1",
+      "source": "arxiv",
+      "title": "Uncertainty Quality of VGGT: An Analysis on the DTU Benchmark Dataset",
+      "abstract": "Visual Geometry Grounded Transformer (VGGT) has already attracted a great deal of attention in a short period of time, not least due to the Best Paper Award at CVPR-2025. Similar to DUSt3R and MASt3R, VGGT aims to bring about a paradigm shift by replacing established methods like bundle adjustment and feature matching with a simple, unified, feed-forward neural network that predicts camera poses, depth maps, and dense 3D structure directly from multiple images of a scene in a few seconds. A key aspect is its ability to process an arbitrary number of views consistently in a single forward pass without any post-processing or iterative optimization. For photogrammetry, this opens new possibilities for real-time, scalable, and accessible 3D reconstruction. In this context, not only high reconstruction accuracy but also high-quality uncertainty estimates are crucial, as they foster trust and enable robust quality assurance. This paper therefore investigates the quality of VGGT's uncertainty predictions. The analysis identifies an effective confidence threshold for filtering VGGT's raw output and demonstrates that enhancing uncertainty quality holds strong potential for improving the accuracy of its 3D reconstructions.",
+      "authors": [
+        "Markus Hillemann",
+        "Robert Langendörfer",
+        "Steven Landgraf",
+        "Markus Ulrich"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-06-15T09:49:00+00:00",
+      "link": "https://arxiv.org/pdf/2606.16479v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "analysis of uncertainty quality of VGGT for multi-view 3D reconstruction on DTU benchmark",
+      "llm_evidence_cn": "在DTU基准上分析VGGT多视图三维重建的不确定性质量",
+      "llm_evidence": "在DTU基准上分析VGGT多视图三维重建的不确定性质量",
+      "canonical_evidence": "在DTU基准上分析VGGT多视图三维重建的不确定性质量",
+      "llm_tldr_en": "This paper analyzes the uncertainty quality of VGGT's multi-view 3D reconstruction on DTU, evaluating its depth and pose predictions to assess reliability for photogrammetry applications.",
+      "llm_tldr_cn": "视觉几何基础变换器(VGGT)可快速从多视图图像重建三维结构，但其预测的不确定性尚待评估。本文在DTU基准数据集上对VGGT输出的深度图和相机位姿进行不确定性质量分析，通过定量实验评估其在不同场景下的可靠性表现，揭示了VGGT在实时三维重建中的潜力与局限，为VGGT在摄影测量等需要可靠几何信息的应用提供了参考依据。",
+      "llm_tldr": "视觉几何基础变换器(VGGT)可快速从多视图图像重建三维结构，但其预测的不确定性尚待评估。本文在DTU基准数据集上对VGGT输出的深度图和相机位姿进行不确定性质量分析，通过定量实验评估其在不同场景下的可靠性表现，揭示了VGGT在实时三维重建中的潜力与局限，为VGGT在摄影测量等需要可靠几何信息的应用提供了参考依据。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.16960v1",
+      "source": "arxiv",
+      "title": "SurroundNEXO: Ego-Centric Metric Bridging for Spatially Consistent Geometry in Autonomous Driving",
+      "abstract": "Modern autonomous driving depends on accurate metric 3D understanding for perception, reconstruction, and planning, which in turn requires reliable multi-camera depth prediction. However, the outward-facing nature of vehicle-mounted surround-view camera rigs inherently limits visual overlap across views, challenging the correspondence-based assumptions that underpin conventional multi-view geometry. To bridge this gap, we present SurroundNEXO, named after the Spanish word nexo for a geometric link, a low-overlap multi-camera metric depth framework that grounds cross-view reasoning in ego-centric geometry rather than dense visual correspondences. Instead of directly enforcing early global fusion, SurroundNEXO first assigns image tokens globally comparable ego-frame viewing directions through Ego-Ray Positional Encoding, then uses sparse LiDAR measurements as metric anchors to propagate absolute scale cues, and finally expands feature interaction progressively from view-local modeling to decomposed spatio-temporal reasoning and global integration. This design enables metric-scale depth prediction with improved spatial consistency across weakly overlapping cameras. Across low-overlap autonomous driving benchmarks, including NuScenes, Waymo and DDAD, SurroundNEXO reduces single-view error by 33.2%, improves cross-view consistency by 10.5%, and enhances metric reconstruction quality by 25.6% compared with SOTA methods. It further remains robust under extremely sparse depth prompts and exhibits strong zero-shot generalization to unseen camera layouts.",
+      "authors": [
+        "Shuai Yuan",
+        "Runxi Tang",
+        "Yuzhou Ji",
+        "Fudong Ge",
+        "Hanshi Wang",
+        "Yifei Wang",
+        "Xianming Zeng",
+        "Jianyun Xu",
+        "Xingliang Liu",
+        "Yanfeng Wang",
+        "Zhipeng Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-15T17:00:32+00:00",
+      "link": "https://arxiv.org/pdf/2606.16960v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "low-overlap multi-camera metric depth framework for consistent 3D scene reconstruction",
+      "llm_evidence_cn": "低重叠多摄像头度量深度框架，用于场景重建的空间一致性几何",
+      "llm_evidence": "低重叠多摄像头度量深度框架，用于场景重建的空间一致性几何",
+      "canonical_evidence": "低重叠多摄像头度量深度框架，用于场景重建的空间一致性几何",
+      "llm_tldr_en": "SurroundNEXO proposes a multi-camera depth framework that bridges cross-view reasoning via ego-centric geometry instead of dense correspondences, enabling spatially consistent 3D reconstruction in autonomous driving with limited overlap.",
+      "llm_tldr_cn": "本文针对自动驾驶中低重叠多视角相机设置下的3D重建难题，提出SurroundNEXO框架，通过自我中心几何推理代替传统视觉对应，实现了跨视图一致的度量深度预测，从而获得空间一致的场景几何，为自动驾驶感知提供可靠基础。",
+      "llm_tldr": "本文针对自动驾驶中低重叠多视角相机设置下的3D重建难题，提出SurroundNEXO框架，通过自我中心几何推理代替传统视觉对应，实现了跨视图一致的度量深度预测，从而获得空间一致的场景几何，为自动驾驶感知提供可靠基础。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.19154v1",
+      "source": "arxiv",
+      "title": "Viking Hill Dataset: A Lidar-Radar-Camera Dataset for Detection and Segmentation in Forest Scenes",
+      "abstract": "Autonomous robots operating under forest canopies need robust perception of trees and surrounding vegetation across varying seasonal conditions. Existing forestry datasets provide lidar or camera data with per-tree annotations, but none include co-registered 4D imaging radar -- a modality of growing interest for its resilience to visual degradation, surface contamination, and vegetation occlusion. We introduce a multi-sensor forest dataset collected by a mobile robot equipped with a high-resolution FMCW imaging radar, lidar, RGB camera, IMU, and RTK-GNSS. The site was recorded in two sessions under contrasting vegetation states, and 3D cuboid annotations -- including per-tree diameter estimates -- provide shared semantic labels across all three perception modalities. Furthermore, we provide baseline results for semantic segmentation of the radar and lidar point clouds using MinkowskiUNet. Radar achieves IoU scores competitive with lidar for dominant classes (ground 91%, canopy 86%) while lagging on geometrically fine structures such as tree trunks (56% vs. 74%). A cross-modality analysis further compares lidar and radar trunk segmentation against an RGB detection model, and a diameter-stratified evaluation reveals how trunk segmentation quality varies with tree size. Beyond segmentation, the co-registered multi-modal data and RTK-GNSS-aided reference positioning support research in mapping, localization, and sensor fusion under canopy. The dataset and annotation tools are publicly available.",
+      "authors": [
+        "Vladimír Kubelka",
+        "Oleksandr Kotlyar",
+        "Unal Artan",
+        "Martin Magnusson"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-06-17T14:58:00+00:00",
+      "link": "https://arxiv.org/pdf/2606.19154v1",
+      "tags": [
+        "keyword:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "The dataset provides multi-modal sensor data and 3D annotations for semantic segmentation of forest scenes, directly supporting 3D scene segmentation.",
+      "llm_evidence_cn": "该数据集提供多模态传感器数据和三维标注，用于森林场景的语义分割，直接支持三维场景分割",
+      "llm_evidence": "该数据集提供多模态传感器数据和三维标注，用于森林场景的语义分割，直接支持三维场景分割",
+      "canonical_evidence": "该数据集提供多模态传感器数据和三维标注，用于森林场景的语义分割，直接支持三维场景分割",
+      "llm_tldr_en": "Viking Hill provides a multi-sensor dataset with lidar, radar, and camera data along with 3D tree-level annotations, enabling robust semantic segmentation and detection in forest environments under varying conditions.",
+      "llm_tldr_cn": "Viking Hill数据集采集了移动机器人配备的高分辨率成像雷达、激光雷达、RGB相机等多传感器数据，并在两种植被状态下记录了森林场景，提供了三维树木边界框及直径估计标注。该数据集填补了森林场景下缺少联合雷达数据的空白，可用于季节性变化条件下的三维检测与语义分割算法研究。实验表明多模态融合能提升植被遮挡下的鲁棒性。",
+      "llm_tldr": "Viking Hill数据集采集了移动机器人配备的高分辨率成像雷达、激光雷达、RGB相机等多传感器数据，并在两种植被状态下记录了森林场景，提供了三维树木边界框及直径估计标注。该数据集填补了森林场景下缺少联合雷达数据的空白，可用于季节性变化条件下的三维检测与语义分割算法研究。实验表明多模态融合能提升植被遮挡下的鲁棒性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.19718v1",
+      "source": "arxiv",
+      "title": "One-Shot Novel View and Pose Human Image Synthesis via 3D Prior Guided Diffusion Model",
+      "abstract": "This paper addresses the challenge of one-shot novel view and pose human image synthesis. The existing methods transfer the reference human image to a target pose using a set of 2D pose keypoints or synthesize human images based on generalizable human NeRF which uses human model priors to extract point-wise features. However, pose transfer based methods can not handle complex human pose using ambiguous 2D pose as the condition, while generalizable human NeRFs may be inaccurate to recover occluded/invisiable human parts without extracted reliable features. To solve these problems, we propose a novel approach for novel view and pose synthesis from a singe human image via conditional denoising diffusion model. Our diffusion model divides the novel view and pose synthesis problem into a sequence of conditional denoising steps. Specifically, to generate humans with complex and arbitrary poses, we introduce 3D human priors, i.e., 3D normal map and color prompt, as geometry and color conditions into the generation process. By transferring the reference human into the target human with a series of diffusion steps, our diffusion model enables high-quality synthesis including the occluded/invisible parts. Further, we propose a self-reconstruction based customized refinement to enhance fine details when tested on novel persons.Experimental results on different public datasets demonstrate that our approach significantly outperforms previous methods and also shows better generalization ability across datasets. The code will be made publicly available at https://github.com/Yankeegsj/3DPGDM.",
+      "authors": [
+        "Shenjian Gong",
+        "Kangkan Wang",
+        "Shanshan Zhang",
+        "Jian Yang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-18T02:34:24+00:00",
+      "link": "https://arxiv.org/pdf/2606.19718v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "one-shot novel view synthesis of humans using 3D prior and diffusion, generating 3D-consistent human images",
+      "llm_evidence_cn": "利用三维先验和扩散模型从单张图像生成三维一致的人体新视角，实现类三维物体生成",
+      "llm_evidence": "利用三维先验和扩散模型从单张图像生成三维一致的人体新视角，实现类三维物体生成",
+      "canonical_evidence": "利用三维先验和扩散模型从单张图像生成三维一致的人体新视角，实现类三维物体生成",
+      "llm_tldr_en": "This paper proposes a conditional diffusion model guided by a 3D human prior to synthesize novel view and pose images from a single human photo, enabling high-quality 3D-consistent human appearance generation.",
+      "llm_tldr_cn": "本文针对单张人体图像的新视角和姿态合成难题，提出一种三维先验引导的条件扩散模型，通过结合人体模型先验和扩散过程，从单视图生成任意视角和姿态的人体图像，实现了三维一致的高质量人体外观生成，在虚拟试穿和数字人等领域有重要应用价值。",
+      "llm_tldr": "本文针对单张人体图像的新视角和姿态合成难题，提出一种三维先验引导的条件扩散模型，通过结合人体模型先验和扩散过程，从单视图生成任意视角和姿态的人体图像，实现了三维一致的高质量人体外观生成，在虚拟试穿和数字人等领域有重要应用价值。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.18429v1",
+      "source": "arxiv",
+      "title": "CAOA -- Completion-Assisted Object-CAD Alignment",
+      "abstract": "Accurately aligning CAD models to their corresponding objects in indoor RGB-D scans is a central challenge in 3D semantic reconstruction. The task requires estimating a 9-Degree-of-Freedom (DoF) pose-position, rotation, and scale along three axes-but is hindered by noisy and incomplete scans, as well as segmentation errors that cause geometric distortions. We present Completion-Assisted Object-CAD Alignment (CAOA), a method that integrates a semantically and contextually aware point cloud completion module with a symmetry-aware relative pose estimation algorithm, enabling precise alignment of CAD models to scanned objects. Existing completion methods are typically trained and evaluated on synthetic datasets, which often fail to generalize to real-world scans. To bridge this gap, we introduce a synthetic data generation strategy tailored to indoor scenes, significantly reducing the synthetic-to-real domain gap-validated through quantitative comparisons with widely used completion datasets. In addition, we release S2C-Completion, an expert-annotated dataset of over 8,500 object-CAD pairs from Scan2CAD, created for real-world indoor single-object completion and intended as a new benchmark for this task. For object-CAD alignment, we incorporate symmetry information via a symmetry-aware loss, improving robustness to symmetric ambiguities. On the Scan2CAD benchmark, CAOA achieves a 17% accuracy improvement over state-of-the-art methods.",
+      "authors": [
+        "Hiranya Garbha Kumar",
+        "Minhas Kamal",
+        "Balakrishnan Prabhakaran"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-06-16T19:23:43+00:00",
+      "link": "https://arxiv.org/pdf/2606.18429v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "object-CAD alignment for 3D semantic reconstruction using point cloud completion",
+      "llm_evidence_cn": "利用点云补全实现三维语义重建中的物体CAD对齐",
+      "llm_evidence": "利用点云补全实现三维语义重建中的物体CAD对齐",
+      "canonical_evidence": "利用点云补全实现三维语义重建中的物体CAD对齐",
+      "llm_tldr_en": "CAOA integrates point cloud completion and symmetry-aware pose estimation to accurately align CAD models to objects in RGB-D scans, enabling detailed 3D semantic reconstruction.",
+      "llm_tldr_cn": "本文针对室內RGB-D扫描中CAD模型对齐问题，提出CAOA方法，结合语义上下文感知的点云补全模块和对称感知的相对姿态估计，实现物体与CAD模型的精确9DoF对齐，从而提升三维语义重建精度和完整性。",
+      "llm_tldr": "本文针对室內RGB-D扫描中CAD模型对齐问题，提出CAOA方法，结合语义上下文感知的点云补全模块和对称感知的相对姿态估计，实现物体与CAD模型的精确9DoF对齐，从而提升三维语义重建精度和完整性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.19340v1",
+      "source": "arxiv",
+      "title": "Zero-Shot Long-Horizon Dexterous Manipulation via Multi-View 3D-Grounded VLM Reasoning",
+      "abstract": "We present a zero-shot framework for long-horizon dexterous manipulation that grounds language instructions into executable 3D task plans from calibrated multi-view RGB images. Rather than training an end-to-end policy, our system uses a vision-language model (VLM) to produce reference-frame task grounding and primitive-level 2D keypoints, then lifts them into 3D via multi-view fusion. This lifting combines triangulation of view-wise VLM groundings with reference-view ray voting, which searches along a semantic camera ray for geometrically consistent candidates across neighboring views. The resulting 3D keypoints support both pick-and-place and tool-use: for tool-use, we retrieve an object-centric atomic action corresponding to the inferred skill category and align its stored 6D tool trajectory to the scene; for dexterous execution, we expand the lifted grasp keypoint into a task-conditioned grasp affordance region and generate feasible grasp-motion pairs with an arm-hand motion generator. Real-world experiments show improved 3D grounding accuracy and execution reliability over single-view RGB-D grounding and fine-tuned VLA baselines. We further demonstrate long-horizon manipulation through closed-loop status verification and replan, enabling zero-shot execution on unseen objects and tool-use tasks in novel scenes.",
+      "authors": [
+        "Jisoo Kim",
+        "Sangwon Baik",
+        "Taeksoo Kim",
+        "Sungjoo Kim",
+        "Junyoung Lee",
+        "Mingi Choi",
+        "Hanbyul Joo"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-06-17T17:59:56+00:00",
+      "link": "https://arxiv.org/pdf/2606.19340v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Lifts 2D VLM keypoints to 3D via multi-view fusion for 3D task grounding",
+      "llm_evidence_cn": "通过多视图融合将2D VLM关键点提升为3D，用于任务grounding",
+      "llm_evidence": "通过多视图融合将2D VLM关键点提升为3D，用于任务grounding",
+      "canonical_evidence": "通过多视图融合将2D VLM关键点提升为3D，用于任务grounding",
+      "llm_tldr_en": "Zero-shot framework for dexterous manipulation that grounds language instructions into 3D task plans from calibrated multi-view images, using VLM to produce 2D keypoints and multi-view fusion for robust 3D lifting.",
+      "llm_tldr_cn": "针对长时程灵巧操作零样本规划问题，提出利用多视角RGB图像的框架。通过视觉语言模型生成2D关键点，结合多视角三角化和射线投票将其提升为3D关键点，用于抓取和工具使用。实验表明该方法在零样本下实现可靠3D任务推理，展示了多视图几何与VLM融合的优势。",
+      "llm_tldr": "针对长时程灵巧操作零样本规划问题，提出利用多视角RGB图像的框架。通过视觉语言模型生成2D关键点，结合多视角三角化和射线投票将其提升为3D关键点，用于抓取和工具使用。实验表明该方法在零样本下实现可靠3D任务推理，展示了多视图几何与VLM融合的优势。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

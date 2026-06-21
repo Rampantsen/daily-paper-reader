@@ -6,34 +6,40 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-20
-- 运行时间：2026-06-20 20:50:24 UTC
+- 最新运行日期：2026-06-21
+- 运行时间：2026-06-21 20:32:51 UTC
 - 运行状态：成功
-- 本次总论文数：4
-- 精读区：1
-- 速读区：3
+- 本次总论文数：6
+- 精读区：4
+- 速读区：2
 
 ### 今日简报（AI）
-今日精读一篇零样本文本生成驾驶场景的创新方法，并速读三篇聚焦3D资产编辑与拓扑生成的前沿工作。  
-最值得关注 FrozenDrive 用冻结扩散模型实现免训练数据增强，以及 NeuMesh++ 基于解耦神经网格的高效体积编辑框架。  
-对生成式3D与自动驾驶感兴趣的读者，可从零样本场景生成与可编辑隐式表示这两条线跟进实操。
-- 详情：[/202606/20/README](/202606/20/README)
+1) 今日精读四篇，重点剖析三维重建模型的不确定性评估与自动驾驶中的空间几何对齐。
+2) 最值得关注的是 VGGT 模型在 DTU 数据集上的不确定性质量分析，以及 SurroundNEXO 如何用自中心度量桥接实现空间一致的场景几何。
+3) 建议动手实践时借鉴不确定性量化来筛选高质量重建结果，同时关注自中心桥接思路，提升自动驾驶建图的空间一致性。
+- 详情：[/202606/21/README](/202606/21/README)
 
 ### 精读区论文标签
-1. [FrozenDrive: Zero-Shot Text-Guided Driving Scene Generation and Data Augmentation with Parameter-Free Frozen Diffusion Model](/202606/20/2606.20110v1-frozendrive-zero-shot-text-guided-driving-scene-generation-and-data-augmentation-with-parameter-free-frozen-diffusion-model)  
+1. [Uncertainty Quality of VGGT: An Analysis on the DTU Benchmark Dataset](/202606/21/2606.16479v1-uncertainty-quality-of-vggt-an-analysis-on-the-dtu-benchmark-dataset)  
+   标签：评分：9.0/10、query:d-gen-recon
+   evidence：在DTU基准上分析VGGT多视图三维重建的不确定性质量
+2. [SurroundNEXO: Ego-Centric Metric Bridging for Spatially Consistent Geometry in Autonomous Driving](/202606/21/2606.16960v1-surroundnexo-ego-centric-metric-bridging-for-spatially-consistent-geometry-in-autonomous-driving)  
+   标签：评分：9.0/10、query:d-gen-recon
+   evidence：低重叠多摄像头度量深度框架，用于场景重建的空间一致性几何
+3. [Viking Hill Dataset: A Lidar-Radar-Camera Dataset for Detection and Segmentation in Forest Scenes](/202606/21/2606.19154v1-viking-hill-dataset-a-lidar-radar-camera-dataset-for-detection-and-segmentation-in-forest-scenes)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：零样本基于文本生成多视角一致的驾驶场景，使用冻结的扩散模型。
+   evidence：该数据集提供多模态传感器数据和三维标注，用于森林场景的语义分割，直接支持三维场景分割
+4. [One-Shot Novel View and Pose Human Image Synthesis via 3D Prior Guided Diffusion Model](/202606/21/2606.19718v1-one-shot-novel-view-and-pose-human-image-synthesis-via-3d-prior-guided-diffusion-model)  
+   标签：评分：8.0/10、query:d-gen-recon
+   evidence：利用三维先验和扩散模型从单张图像生成三维一致的人体新视角，实现类三维物体生成
 
 ### 速读区论文标签
-1. [Human-in-the-Loop Atlas-Based 3D Asset Segmentation for Interactive Content Workflows](/202606/20/2606.17824v1-human-in-the-loop-atlas-based-3d-asset-segmentation-for-interactive-content-workflows)  
+1. [CAOA -- Completion-Assisted Object-CAD Alignment](/202606/21/2606.18429v1-caoa----completion-assisted-object-cad-alignment)  
    标签：评分：7.0/10、query:d-gen-recon
-   evidence：通过多视图渲染与交互式反投影实现3D资产的语义分割，可应用于3D场景分割工作流。
-2. [NeuMesh++: Towards Versatile and Efficient Volumetric Editing with Disentangled Neural Mesh-based Implicit Field](/202606/20/2606.19316v1-neumesh-towards-versatile-and-efficient-volumetric-editing-with-disentangled-neural-mesh-based-implicit-field)  
-   标签：评分：7.0/10、query:d-gen-recon
-   evidence：新颖的基于网格的神经隐式表示，用于三维场景重建与编辑
-3. [TriFlow: Generating Artist-Like 3D Mesh Topology via Nearest-Vertex Vector Fields](/202606/20/2606.20131v1-triflow-generating-artist-like-3d-mesh-topology-via-nearest-vertex-vector-fields)  
+   evidence：利用点云补全实现三维语义重建中的物体CAD对齐
+2. [Zero-Shot Long-Horizon Dexterous Manipulation via Multi-View 3D-Grounded VLM Reasoning](/202606/21/2606.19340v1-zero-shot-long-horizon-dexterous-manipulation-via-multi-view-3d-grounded-vlm-reasoning)  
    标签：评分：6.0/10、query:d-gen-recon
-   evidence：利用流匹配从几何条件生成三维网格拓扑
+   evidence：通过多视图融合将2D VLM关键点提升为3D，用于任务grounding
 
 
 <div class="dpr-home-promo-card">
