@@ -1,0 +1,332 @@
+Title: GASE: Gaussian Splatting-Based Automated System for Reconstructing Embodied-Simulation Environments
+
+URL Source: https://arxiv.org/pdf/2606.17520v1
+
+Published Time: Wed, 17 Jun 2026 00:36:35 GMT
+
+Number of Pages: 17
+
+Markdown Content:
+# GASE: Gaussian Splatting–Based Automated System for Reconstructing Embodied-Simulation Environments 
+
+# Jiawei Zhang 1,2,3 Yiming Yan 1,3 Chao Liang 3,∗ Nuo Xu 3 Seson Sun 1,3
+
+# Qichen Zhang 3 Yuhao Xu 1 Yantai Yang 1 Yingqiao Wang 1 Qin Jin 2,†
+
+# Zhipeng Zhang 1,†
+
+> 1
+
+AutoLab, SAI, Shanghai Jiao Tong University , 2AIM3 Lab, School of Information, Renmin University of China ,
+
+> 3
+
+Research Lab, Anyverse Dynamics 
+
+> ∗
+
+Project Leader , †Corresponding authors 
+
+# Abstract 
+
+Training embodied agents in the real world requires skilled operators and expensive hardware. Simulation environments offer a compelling alternative by enabling large-scale, cost-effective data augmentation. Con-sequently, rapidly constructing high-fidelity simulation scenes with a minimal sim-to-real gap has become a critical objective in robot learning. While reconstruction-based methods provide superior visual quality, current workflows are hindered by inefficient data acquisition and subpar foreground object extraction. We thus propose GASE, a highly automated system for simulation scene construction. GASE leverages multi-view video streams from panoramic camera arrays to enable rapid environment scanning. To ensure high-quality asset generation, our pipeline introduces a camera-pose-based strategy that robustly extracts objects across frames in the 2D domain, followed by high-fidelity scene inpainting. Foreground objects and the static background are then reconstructed independently and seamlessly imported into physics simulators for policy training. Extensive experiments demonstrate that GASE outperforms existing 3D Gaussian-based methods in segmentation accuracy by over 10% while achieving state-of-the-art inpainting quality. Further-more, real-robot deployments across manipulation and navigation tasks maintains a performance gap of less than 10% compared to policies trained purely on real-world data. These results confirm that GASE provides an efficient and highly effective solution for bridging the sim-to-real gap. Code will be released.  
+
+> Project Page:
+
+https://jar7visz.github.io/gase-page/ 
+
+# 1 Introduction 
+
+As embodied artificial intelligence (AI) advances, robots are increasingly expected to execute long-horizon, multi-step tasks across diverse indoor environments. For instance, a household robot may be instructed to navigate to a bedroom, retrieve a book from a bookshelf, and deliver it to a user in the living room. However, collecting real-world demonstration data for such complex behaviors is prohibitively expensive and time-consuming. Consequently, simulation-based training has emerged as a vital paradigm. It is not only more cost-effective but also enables scalable data generation through techniques like domain randomization. This shift underscores the growing necessity of constructing high-quality simulation environments. 1    
+
+> arXiv:2606.17520v1 [cs.RO] 16 Jun 2026 Text/Click Prompt
+> (optional)
+> Mask Extraction
+> Multi-view camera pose mapping
+> SAM Tracking Enhancement
+> Background
+> Foreground
+> Inpainted pictures Scene Reconstruction
+> Object Masks Object Generation
+> Input
+> Multi-view Frame Streams
+> Poses & Point Cloud Figure 1
+
+Pipeline of our GASE system. Given scene images and camera poses and point cloud derived from them, we leverage the pose mapping relationships together with the tracking capability of SAM2 to localize target objects across all frames based on user-provided textual or click prompts, and separate them from the background. Subsequently, we respectively reconstruct the scene and the objects using 3DGS[36] and TRELLIS[77]. 
+
+To fulfill the growing demand for such training environments, existing methods primarily pursue the dual objectives of 
+
+rapid scene construction and minimizing the sim-to-real gap . Generative approaches [ 12 , 63 ] typically prioritize the former by lifting a single image into a 3D scene representation via diffusion models. However, these methods frequently suffer from a substantial sim-to-real gap. Conversely, reconstruction-based methods [ 20 , 29 , 58 , 82 ] focus on bridging this gap, which is also the primary objective of our work. These approaches typically operate as systematic pipelines. They take multi-view images and camera poses as input, reconstruct the scene using 3D Gaussian Splatting (3DGS) [ 36 ], and decouple foreground objects from the static background to facilitate manipulation training. By trading off a marginal amount of construction speed, they achieve superior visual fidelity, depth accuracy, and cross-view consistency compared to generative models. Despite these advantages, current reconstruction workflows are hindered by two critical bottlenecks regarding data acquisition (Inefficiency) and object-scene decomposition (Ineffectiveness) . First, existing systems are predominantly tailored for monocular video streams [ 20 , 29 , 82 ], making the scanning of an expansive scene inherently labor-intensive and time-consuming. They currently lack the capability to leverage camera arrays composed of multiple panoramic cameras, which could otherwise capture entire environments rapidly. Second, these systems struggle to balance quality and efficiency when processing foreground objects. Some approaches [ 29 ] require scanning the background and objects independently. This process becomes prohibitively cumbersome for multi-object tasks. Others [ 20 , 82 ] attempt to segment objects directly within the 3D Gaussian space. Because individual Gaussian ellipsoids often straddle object boundaries, this direct separation leads to poor extraction quality, structural holes in both the objects and the background, and subpar scene inpainting. Furthermore, systems designed purely for navigation [ 15 , 32 ] bypass this issue entirely by making no distinction between foreground and background, rendering them unsuitable for manipulation tasks. To address the aforementioned challenges, we propose GASE, a highly automated simulation scene construction system based on 3D Gaussian Splatting [ 36 , 81 ]. Given multiple video streams captured from a panoramic camera array in a single scan, GASE allows users to specify target objects for decomposition using intuitive text prompts and interactive clicks. To overcome the structural artifacts caused by direct segmentation in 3D space, our pipeline adopts a strategy that first extracts foreground objects and inpaints the background scene within the 2D image domain prior to any 3D reconstruction. Following this 2D processing, we leverage an object generation model to reconstruct the independent foreground assets and employ 3DGS to model the static background. These decoupled components can then be seamlessly imported into a physics simulator for embodied manipulation training. By integrating these steps, GASE establishes an efficient and highly automated workflow that successfully maintains a low sim-to-real gap. To rigorously evaluate GASE, we construct several multi-view datasets by scanning diverse real-world environments with a panoramic camera array, encompassing a wide range of scene scales. We first assess the system’s capabilities in foreground object extraction and background scene inpainting. Empirical results demonstrate that our approach outperforms existing methods operating directly on 3D Gaussians, including Gaussian Grouping [ 80 ], LangSplat [ 57 ], and ObjectGS [ 89 ], by a margin of over 10% in segmentation accuracy. Furthermore, GASE achieves superior visual quality in scene inpainting tasks. Beyond visual metrics, we validate the practical utility of our reconstructed environments through real-robot experiments encompassing both manipulation and navigation tasks. Utilizing a real-to-sim-to-real paradigm (R2S2R), policies trained within our GASE-generated scenes achieve an overall success rate 2exceeding 60%. Notably, this represents a performance gap of less than 10% when compared to a baseline real-to-real pipeline [28] (R2R), firmly validating that our approach effectively minimizes the sim-to-real gap. In summary, the main contributions of this paper are as follows. (1) We propose GASE, a highly automated simulation scene construction system that accepts multiple video streams from panoramic camera arrays and produces decoupled, simulation-ready assets for diverse embodied training tasks. (2) We design a camera-pose-based extraction strategy that operates in the 2D domain. This method robustly identifies and segments objects across multiple frames, significantly improving segmentation quality over existing 3D Gaussian methods and enabling high-fidelity scene inpainting. (3) We validate our pipeline through extensive real-robot experiments in manipulation and navigation. Our results demonstrate a minimal sim-to-real gap, with simulation-trained policies achieving performance within 10% of those trained on real-world data. 
+
+# 2 Related Work 
+
+2.1 Real-to-sim Environment Creation based on 3DGS 
+
+3DGS[ 36 ] is a revolutionary method in the field of 3D reconstruction. Compared with earlier approaches[ 45 , 54 ], it greatly improves efficiency while preserving reconstruction quality, leading to its rapid adoption and spawning many 3DGS-based refinements[ 10 , 23 , 74 , 81 ]. Embodied-intelligence research has begun using 3DGS to reconstruct scenes efficiently and with high visual fidelity[ 1 , 15 – 17 , 20 , 32 , 40 , 58 , 76 , 82 ]. Previous work typically extracts meshes from 3DGS reconstructions, so scenes in simulators have physical collision geometry. After 3DGRUT[ 47 , 75 ] proposed a way to import neural radiance fields into Isaac Sim[ 46 , 53 ], building visually high-quality scenes inside the simulation became possible: researchers can import 3DGS results and the meshes derived from them to obtain simulated training environments that offer both high visual fidelity and physical collision. 
+
+2.2 2D object segmentation, tracking and image inpainting 
+
+In 2D image–based tasks, 2D segmentation, tracking, and inpainting are tightly coupled. After Meta released the influential SAM[ 37 ] model, many follow-up works built on it. MobileSAM[ 86 ] and similar effort focus on making SAM lightweight, and some works use SAM for video tracking[ 14 , 70 , 78 ]. SAM’s successor, SAM2[ 60 ], also supports monocular video tracking with prompts in the form of points, boxes, and masks. There are also systems like Grounded SAM[ 61 ], which combine SAM with Grounding DINO[ 41 ] to enable 2D semantic querying and segmentation. Meta’s recent SAM3[ 8 ] further adds semantic-querying capability on top of its predecessors’ segmentation and video-tracking functions. Following segmentation, downstream inpainting methods[ 38 , 66 , 83 ] can be applied to complete the images. 
+
+2.3 3D Object Generation 
+
+Recent 3D generative models are typically based on diffusion models[ 22 , 65 ] or autoregressive models[ 59 ] and support various representations such as point clouds[ 42 , 52 ], voxel grids[ 25 , 48 , 67 ], triplanes[ 11 , 64 , 71 , 84 ], mesh[ 13 , 49 ] and 3DGS[ 21 , 85 ]. Because we need to reconstruct segmented objects quickly and with as much realism as possible for simulator import, our task requires object-level generation. From the user’s perspective, there are methods that take a convenient single image as input[ 69 ], methods that support more comprehensive multi-view input[ 77 ], and methods that focus on generating articulated objects[6, 7, 72, 79]. 
+
+# 3 Method 
+
+In this section, we describe the GASE workflow in detail. As Fig.1 shows, given scene images and camera poses and point cloud derived from them, we first segment the user-specified objects and perform scene inpainting. To avoid issues such as boundary ambiguity caused by the 3D Gaussian representation, we operate on 2D images. We employ SAM3[ 8] to locate and track the user-specified objects. Since an object may appear intermittently across different frame streams, existing 2D tracking models struggle to recognize it as the same object, leading to extraction failure. To address this, we design a simple yet effective strategy that leverages camera poses to locate and extract objects across all frame streams. Subsequently, we use LAMA[ 38 , 66 ] to perform inpainting on all images, thereby completing the separation of foreground objects and the background scene. For foreground objects, we select the most suitable images and feed them into an object generation model to obtain high-quality object meshes. Since single-image input may cause the unseen 3angles of the object to be inconsistent with reality, we adopt TRELLIS[ 77 ], which supports multi-view input. For the background scene, we first perform a reconstruction using 3DGS and then extract a mesh from it, achieving high-quality visual rendering and physical collision. 
+
+3.1 Mask Extraction and Inpainting 
+
+To extract a chosen object, GASE must obtain the corresponding mask for that object across all frames. Performing mask extraction independently on every frame is time-consuming and prone to inconsistency. To avoid this, GASE lets the user segment the object and pick a mask on a single frame, then maps that selection to all frames using our localization strategy. 
+
+Localization Strategy We propose a novel and concise strategy to solve the problem that 2D tracking models cannot reliably propagate identities across views in multiple frame streams. First, we use SAM3 to extract all masks from a selected image; the user may optionally provide a text prompt. For each frame f , we first transform each point P j
+
+into camera coordinates using extrinsics (R f , t f ), obtaining (xcj, f , ycj, f , zcj, f ), and then project it to image coordinates 
+
+(u j, f , v j, f ) using intrinsics ( f fx , f fy , c fx , c fy ) as: 
+
+
+
+xcj, f
+
+ycj, f
+
+zcj, f
+
+ = R f P j + t f , u j, f = f fx
+
+xcj, f
+
+zcj, f
+
++ c fx , v j, f = f fy
+
+ycj, f
+
+zcj, f
+
++ c fy . (1) Because direct projection ignores inter-object occlusion, we filter projections using depth information from the point cloud. To handle occlusion, let D f (u, v) denote the depth map at pixel (u, v) in frame f , and let τ be a depth tolerance. A projected point is kept if 
+
+zcj, f ≤ D f (u j, f , v j, f ) + τ. (2) For each image, we set a threshold τ: if the number of points projected onto that image exceeds τ, we select the smallest mask that contains the largest number of projected points as the result mask Mres for that image. 
+
+Tracking and Inpainting During scene scanning, the same object may appear at different scales or only partially in different images, so the above procedure can still miss some masks. Since we know the start and end frames for each sequence, we further enhance the results using SAM2’s video propagation. For each frame stream, we take the first image that already contains a result mask Mires and propagate that mask with SAM2, marking all images reached by propagation. We then move on to the next image that contains Mires but has not been marked, and repeat the process. Subsequently, we remove all resulting masks and perform high-resolution inpainting using LAMA[66]. 
+
+3.2 Scene Reconstruction 
+
+Reconstruction based on 3DGS After obtaining the inpainted scene images, we reconstruct the scene using 3DGS[ 36 ]. Because the objects have been removed, we first use the mask–point-cloud mapping to delete the 3D points in the point cloud that correspond to the removed object. Next, we input the scene images together with the COLMAP-format data (camera parameters and the 3D point cloud) into gsplat[ 81 ] for reconstruction. We represent the scene as a set of K 3D Gaussians: 
+
+G =   μk, qk, sk, ok, cSH 
+
+> k
+
+ Kk=1 . (3) Here, μk ∈ R3 is the Gaussian center, qk ∈ R4 is the quaternion, sk ∈ R3 is the log-scale parameter, ok is the logit opacity parameter, and cSH  
+
+> k
+
+denotes SH color coefficients (split as sh0 and shN in implementation). The positive scale and opacity used in the rendering are ˜sk = exp (sk), αk = σ (ok), (4) with σ (·) the sigmoid function. To enable subsequent mesh extraction, we render depth maps ˆD after reconstruction is complete. Finally, we convert the Gaussian point cloud into a format importable into Isaac Sim[ 46 , 53 ] using 3DGRUT[47, 75]. 4Table 1 mIoU and mBIoU results on the LERF dataset(%). figurines ramen teatime mIoU ↑ mBIoU ↑ mIoU ↑ mBIoU ↑ mIoU ↑ mBIoU ↑                        
+
+> LangSplat[57] 54.70 50.20 86.32 75.79 64.06 55.79 Gaussian Grouping[80] 77.76 73.86 61.50 58.71 89.43 86.30 ObjectGS[89] 78.41 77.73 84.89 82.35 68.94 66.43 Ours 93.32 89.59 95.63 94.34 95.91 92.61
+
+Mesh Extraction To give a background physical collision geometry for the simulation, we extract a mesh from the Gaussians. First, we integrate the RGB-D information from each frame into a TSDF voxel grid according to the camera poses, then extract a point cloud and normals from the TSDF and perform a Poisson surface reconstruction[ 34 , 35 ] to minimize surface holes. For small scenes that are less prone to holes but require higher detail, we offer an alternative: extract a triangle mesh from the TSDF zero level set, then apply post-processing such as hole filling, smoothing, and connected-component cleanup. This yields a high-fidelity 3DGS background together with a mesh that provides physical collision properties. 
+
+3.3 Object Generation 
+
+We input the extracted object masks to TRELLIS[ 77 ] for object generation. To save resources while preserving object detail as much as possible, we select the most suitable subset of masks as input. We design a weighting scheme, sort all masks by weight in descending order, and then greedily select masks. To ensure comprehensive coverage of the object, we require that any two consecutively selected masks be at least d frames apart. Weighting scheme details are in App. B. 
+
+# 4 Experiments 
+
+4.1 Setups 
+
+We used several panoramic cameras to create a dataset composed of multiple frame streams, spanning a range of scene scales. It includes 4 tabletop scenes and 5 indoor scenes ranging in size from approximately 10 to 100 square meters. Manuplation tasks are tested on the piper robot arm[ 2] and navigation tasks are tested on the Anyverse Kitt 15 robot. All experiments are tested on a single NVIDIA RTX A800, and the simulation environment used Isaac Sim 5.1[ 53 ]. To validate the reliability of 2D-based mask extraction and inpainting, we conducted experiments comparing them with 3D-based methods. All methods were trained for 30k iterations with 3DGS. 
+
+4.2 Extraction and Inpainting 
+
+Extraction For extraction, we conducted comparative experiments on the LERF dataset against 3DGS-based methods to verify that the 2D-mask-based approach performs semantic segmentation more accurately and with clearer boundaries, as shown in Tab. 1. Same as Gaussian Grouping[ 80 ], for each category ID, we first average IoU (and separately BIoU) over all evaluated images for that category, then report the macro average over categories. Experiments show that GASE’s 2D-based segmentation method achieves over 10% higher performance than LangSplat[ 57 ], Gaussian Grouping[80], and ObjectGS[89]. 
+
+Inpainting For inpainting, we conducted experiments in the sundries scenario of our dataset. The scene images after LaMa inpainting were used as input for 3DGS training, and the resulting inference images were compared with those produced by other methods. The results are shown in the Fig. 2 and Tab. 2. Experimental results show that, compared with methods that perform inpainting directly within Gaussian representations such as Gscream[ 73 ], Gaussian Grouping[ 80 ], and 3DGIC[ 24 ], our approach, which conducts inpainting on 2D images prior to scene reconstruction, achieves state-of-the-art performance in both visual quality and consistency. 5Input                                    
+
+> Gaussian Grouping Ours
+> cups
+> coffee
+> Inpainting Extraction Inpainting Extraction
+> "kettle"
+> "can" Figure 2 Results of extraction and inpainting.
+> Table 2 Rendering and inpainting results in our sundries scene. Scores begin with m- are only calculated within the ground truth inpainting masks. PSNR ↑SSIM ↑LPIPS ↓m-LPIPS ↓FID ↓m-FID ↓
+> GScream[73] 14.08 0.80 0.49 0.14 412.67 434.34 Gaussian Grouping[80] 26.22 0.93 0.15 0.14 180.97 332.86 3DGIC[24] 24.91 0.91 0.16 0.14 168.68 330.23 Ours 27.09 0.94 0.15 0.13 166.14 313.80
+
+4.3 Sim to Real 
+
+To demonstrate that GASE exhibits a sufficiently small sim-to-real gap in practical use, we designed manipulation and navigation experiments both in simulation and on real hardware. 
+
+Manipulation For the manipulation task, we deployed Pi 0.5[ 28 ] on the Piper robotic arm and tested it in the “sundries” scenario of our dataset. As shown in Tab.3 and Fig.3, we designed three tasks that involve objects of different materials: (1) Grasp cola can . Grasp a metal cola can and move it to the area in front of the overhead camera above the cardboard box. (2) Put the bottle into the box . Grasp a plastic bottle and place it in the box. (3) Push the cup over . Pushing over a deformable paper cup. For each task, 50 episodes of data samples were collected in both simulation and real-world settings for training and evaluation. We tested three paradigms, namely sim-to-sim, sim-to-real, and real-to-real. The results show that the sim-to-real success rate exceeds 60%, and the performance gap relative to real-to-real is within 10%, demonstrating that GASE exhibits a small sim-to-real gap. 
+
+Navigation For the navigation task, we deployed Uni-NaVid[ 87 ] on the Kitt 15 robot and tested in the “bar” scenario of our dataset. As shown in Tab.4, we designed three tasks: (1) Find the microwave . Start from the elevator area and locate the microwave. (2) Find a red fire extinguisher box . Start from the right side of the bar and locate the fire             
+
+> Table 3 Success rate(%) of manipulation tasks using GASE in sundries scene. We collected 50 samples in both simulation and real world for training, and performed evaluation on the real robot. sim2sim sim2real real2real grasp cola can 0.67 0.73 0.73 put the bottle into the box 0.60 0.60 0.67 push the cup over 0.67 0.67 0.67
+
+6"Put the bottle into the box"              
+
+> "Grasp cola can"
+> "Push the cup over" Figure 3 Experiment on manipulation tasks.
+> Table 4 Success rate(%) of navigation tasks using GASE in wework scene. We evaluated the same model in the same scenario by comparing its success rates before and after training in the simulation environment. Because physical collisions in simulation are more stringent, the sim-to-sim success rate is lower than the sim-to-real success rate. zero-shot in real sim2sim sim2real find the microwave 75 83.33 100 find a red fire extinguisher box 066.67 100 straight to the wall, then turn left 100 50 100
+
+extinguisher box even though it is not visible in the initial frame. (3) Straight to the wall, then turn left . Start from the right side of the bar, move toward the wall, and then turn left. We evaluated the zero-shot performance of the model in real-world settings, as well as its performance in both simulation and real-world settings after training in simulated data. For each task, 100 samples were collected. As shown by the results, training with simulated data significantly improves the success rate. Fig.4 also demonstrates that the GASE system exhibits a minimal sim-to-real gap: for long-range tasks, the algorithm shows consistent numbers of successful and failed trials in both simulation and real-world settings. 
+
+4.4 Comparison with other systems 
+
+Tab.5 presents a comparison of GASE with other related systems. The comparative results indicate that our system provides greater convenience, a higher level of automation, and a broader applicability across scene scales.  
+
+> Figure 4 Experiment on navigation tasks.
+
+7Table 5 Comparison between GASE and other systems. R2R2R denotes real2render2real[ 82 ]. PLANNING[ 32 ] does not consider foreground objects. The scene-scale categories follow the same classification as in our dataset: small refers to tabletop scenes, medium refers to small indoor scenes, and large refers to large indoor scenes. PolaRiS Re3Sim PLANING R2R2R GASE(Ours) Gaussian representation ✓ ✓ ✓ ✓ ✓           
+
+> No additional object scanning ✗✓✗✓✓
+> Supports multiple frame streams input ✗✗✗✗✓
+> Table 6 Ablation on mask extraction and segmentation(%). We use the percentage of successfully extracted frames relative to the total number of frames that should be extracted as the metric, and test on datasets at three scales (large, medium, and small). OOM means CUDA out of memory.
+
+scene SAM3 on each frame SAM3 tracking Colmap Colmap+SAM3 videogame 59.36 77.43 68.24 79.96 
+
+office 64.67 OOM 74.83 82.43 
+
+bar 49.80 OOM 52.37 67.49 
+
+4.5 Ablation 
+
+In this section, we present ablation studies designed to validate the necessity and feasibility of key components. To validate our cross-view propagation strategy, we measure the difference in the proportion of frames successfully extracted (relative to the total number of frames that should be extracted) under three conditions: SAM3 tracking only, COLMAP mapping only, and COLMAP+SAM3. Additionally, to validate the efficiency of our strategy, we compared it’s performance with that of performing open-vocabulary semantic query on every frame using SAM3. The results are shown in Tab.6. 
+
+# 5 Conclusion 
+
+We propose GASE, a novel 3DGS-based system for constructing embodied simulation environments. It employs a concise and effective strategy to process multiple frame streams, separating objects from the scene and reconstructing both the scene and objects for embodied simulation training. We also used panoramic cameras to build a dataset composed of multiple frame streams and conducted experiments on it to demonstrate GASE’s high level of automation, broad applicability, and strong performance. 
+
+# 6 Limitation 
+
+Our system assumes that point clouds and camera poses are derived from scene images using purely vision-based methods, and that foreground objects and background images are separated in the 2D domain. However, when dealing with scene images composed of multiple frame sequences, purely vision-based approaches are time-consuming, produce relatively sparse point clouds, and are prone to losing camera viewpoints. In addition, separation methods operating in the 2D domain lack real-time capability. Feed-forward reconstruction and semantic segmentation within 3DGS could potentially address these limitations; however, their current accuracy is still insufficient for practical deployment. This remains an important challenge for future research. More details and experiments can be found in App.C and App.D. 
+
+# 7 Acknowledgments 
+
+This work was supported in part by the Natural Science Foundation of China. 8References 
+
+[1] Jad Abou-Chakra, Lingfeng Sun, Krishan Rana, Brandon May, Karl Schmeckpeper, Niko Suenderhauf, Maria Vittoria Minniti, and Laura Herlant. Real-is-sim: Bridging the sim-to-real gap with a dynamic digital twin, 2025. URL https: //arxiv.org/abs/2504.03597 .[2] AgiBot. Piper robotic arm. https://www.agibot.com/ , 2025. Accessed: 2026-05-09. [3] Jonathan T. Barron, Ben Mildenhall, Dor Verbin, Pratul P. Srinivasan, and Peter Hedman. Mip-nerf 360: Unbounded anti-aliased neural radiance fields. CVPR , 2022. [4] Kevin Black, Noah Brown, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, Lachy Groom, Karol Hausman, Brian Ichter, Szymon Jakubczak, Tim Jones, Liyiming Ke, Sergey Levine, Adrian Li-Bell, Mohith Mothukuri, Suraj Nair, Karl Pertsch, Lucy Xiaoyang Shi, James Tanner, Quan Vuong, Anna Walling, Haohuan Wang, and Ury Zhilinsky. π0: A vision-language-action flow model for general robot control, 2026. URL https://arxiv.org/abs/2410.24164 .[5] Anthony Brohan, Noah Brown, Justice Carbajal, Yevgen Chebotar, Joseph Dabis, Chelsea Finn, Keerthana Gopalakrishnan, Karol Hausman, Alex Herzog, Jasmine Hsu, Julian Ibarz, Brian Ichter, Alex Irpan, Tomas Jackson, Sally Jesmonth, NikhilJ Joshi, Ryan Julian, Dmitry Kalashnikov, Yuheng Kuang, Isabel Leal, Kuang-Huei Lee, Sergey Levine, Yao Lu, Utsav Malla, Deeksha Manjunath, Igor Mordatch, Ofir Nachum, Carolina Parada, Jodilyn Peralta, Emily Perez, Karl Pertsch, Jornell Quiambao, Kanishka Rao, Michael Ryoo, Grecia Salazar, Pannag Sanketi, Kevin Sayed, Jaspiar Singh, Sumedh Sontakke, Austin Stone, Clayton Tan, Huong Tran, Vincent Vanhoucke, Steve Vega, Quan Vuong, Fei Xia, Ted Xiao, Peng Xu, Sichun Xu, Tianhe Yu, and Brianna Zitkovich. Rt-1: Robotics transformer for real-world control at scale. Dec 2022. [6] Ziang Cao, Zhaoxi Chen, Liang Pan, and Ziwei Liu. Physx-3d: Physical-grounded 3d asset generation. arXiv preprint arXiv:2507.12465 , 2025. [7] Ziang Cao, Fangzhou Hong, Zhaoxi Chen, Liang Pan, and Ziwei Liu. Physx-anything: Simulation-ready physical 3d assets from single image. arXiv preprint arXiv:2511.13648 , 2025. [8] Nicolas Carion, Laura Gustafson, Yuan-Ting Hu, Shoubhik Debnath, Ronghang Hu, Didac Suris, Chaitanya Ryali, Kalyan Va-sudev Alwala, Haitham Khedr, Andrew Huang, Jie Lei, Tengyu Ma, Baishan Guo, Arpit Kalla, Markus Marks, Joseph Greer, Meng Wang, Peize Sun, Roman Rädle, Triantafyllos Afouras, Effrosyni Mavroudi, Katherine Xu, Tsung-Han Wu, Yu Zhou, Liliane Momeni, Rishi Hazra, Shuangrui Ding, Sagar Vaze, Francois Porcher, Feng Li, Siyuan Li, Aishwarya Kamath, Ho Kei Cheng, Piotr Dollár, Nikhila Ravi, Kate Saenko, Pengchuan Zhang, and Christoph Feichtenhofer. Sam 3: Segment anything with concepts, 2025. URL https://arxiv.org/abs/2511.16719 .[9] Jiazhong Cen, Jiemin Fang, Chen Yang, Lingxi Xie, Xiaopeng Zhang, Wei Shen, and Qi Tian. Segment any 3d gaussians. Dec 2023. [10] Guikun Chen and Wenguan Wang. A survey on 3d gaussian splatting, 2025. URL https://arxiv.org/abs/2401. 03890 .[11] Hansheng Chen, Jiatao Gu, Anpei Chen, Wei Tian, Zhuowen Tu, Lingjie Liu, and Hao Su. Single-stage diffusion nerf: A unified approach to 3d generation and reconstruction. Apr 2023. [12] Luxi Chen, Zihan Zhou, Min Zhao, Yikai Wang, Ge Zhang, Wenhao Huang, Hao Sun, Ji-Rong Wen, and Chongxuan Li. Flexworld: Progressively expanding 3d scenes for flexiable-view synthesis, 2025. URL https://arxiv.org/abs/2503. 13265 .[13] Yiwen Chen, Tong He, Di Huang, Weicai Ye, Sijin Chen, Jiaxiang Tang, Xin Chen, Zhongang Cai, Lei Yang, Gang Yu, Guosheng Lin, and Chi Zhang. Meshanything: Artist-created mesh generation with autoregressive transformers, 2024. [14] Ho Kei Cheng, Seoung Wug Oh, Brian Price, Alexander Schwing, and Joon-Young Lee. Tracking anything with decoupled video segmentation. In ICCV , 2023. [15] Gunjan Chhablani, Xiaomeng Ye, Muhammad Zubair Irshad, and Zsolt Kira. Embodiedsplat: Personalized real-to-sim-to-real navigation with gaussian splats from a mobile device, 2025. URL https://arxiv.org/abs/2509.17430 .[16] Prithwish Dan, Kushal Kedia, Angela Chao, Edward Weiyi Duan, Maximus Adrian Pace, Wei-Chiu Ma, and Sanjiban Choudhury. X-sim: Cross-embodiment learning via real-to-sim-to-real. 2025. URL https://arxiv.org/abs/2505.07096 .[17] Hongwei Fan, Hang Dai, Jiyao Zhang, Jinzhou Li, Qiyang Yan, Yujie Zhao, Mingju Gao, Jinghang Wu, Hao Tang, and Hao Dong. Twinaligner: Visual-dynamic alignment empowers physics-aware real2sim2real for robotic manipulation. 2025. URL 
+
+https://arxiv.org/abs/2512.19390 .
+
+9[18] Zipeng Fu, Tony Z. Zhao, and Chelsea Finn. Mobile aloha: Learning bimanual mobile manipulation with low-cost whole-body teleoperation. In Conference on Robot Learning (CoRL) , 2024. [19] Carl Friedrich Gauss and Charles Henry Davis. Theory of the motion of the heavenly bodies moving about the sun in conic sections. Gauss’s Theoria Motus , 76(1):5–23, 1857. [20] Xiaoshen Han, Junqiu Yu, Minghuan Liu, Yilun Chen, Xiaoyang Lyu, Yang Tian, Bolun Wang, Weinan Zhang, Weinan Zhang, and Jiangmiao Pang. Re 3sim: Generating high-fidelity simulation data via 3d-photorealistic real-to-sim for robotic manipulation. In IEEE International Conference on Robotics and Automation (ICRA) , 2026. [21] Xianglong He, Junyi Chen, Sida Peng, Di Huang, Yangguang Li, Xiaoshui Huang, Chun Yuan, Wanli Ouyang, and Tong He. Gvgen: Text-to-3d generation with volumetric representation. [22] Jonathan Ho, Ajay Jain, Pieter Abbeel, and UC Berkeley. Denoising diffusion probabilistic models. [23] Binbin Huang, Zehao Yu, Anpei Chen, Andreas Geiger, and Shenghua Gao. 2d gaussian splatting for geometrically accurate radiance fields. In SIGGRAPH 2024 Conference Papers . Association for Computing Machinery, 2024. doi: 10.1145/3641519. 3657428. [24] Sheng-Yu Huang, Zi-Ting Chou, and Yu-Chiang Frank Wang. 3d gaussian inpainting with depth-guided cross-view consistency. In Proceedings of the Computer Vision and Pattern Recognition Conference , pages 26704–26713, 2025. [25] Ka-Hei Hui, Ruihui Li, Jingyu Hu, and Chi-Wing Fu. Neural wavelet-domain diffusion for 3d shape generation. Sep 2022. [26] Insta360. Insta360 x5. https://www.insta360.com/ , 2025. Accessed: 2026-05-09. [27] Physical Intelligence, Ali Amin, Raichelle Aniceto, Ashwin Balakrishna, Kevin Black, Ken Conley, Grace Connors, James Darpinian, Karan Dhabalia, Jared DiCarlo, Danny Driess, Michael Equi, Adnan Esmail, Yunhao Fang, Chelsea Finn, Catherine Glossop, Thomas Godden, Ivan Goryachev, Lachy Groom, Hunter Hancock, Karol Hausman, Gashon Hussein, Brian Ichter, Szymon Jakubczak, Rowan Jen, Tim Jones, Ben Katz, Liyiming Ke, Chandra Kuchi, Marinda Lamb, Devin LeBlanc, Sergey Levine, Adrian Li-Bell, Yao Lu, Vishnu Mano, Mohith Mothukuri, Suraj Nair, Karl Pertsch, Allen Z. Ren, Charvi Sharma, Lucy Xiaoyang Shi, Laura Smith, Jost Tobias Springenberg, Kyle Stachowicz, Will Stoeckle, Alex Swerdlow, James Tanner, Marcel Torne, Quan Vuong, Anna Walling, Haohuan Wang, Blake Williams, Sukwon Yoo, Lili Yu, Ury Zhilinsky, and Zhiyuan Zhou. π∗
+
+> 0.6
+
+: a vla that learns from experience, 2025. URL https://arxiv.org/abs/2511.14759 .[28] Physical Intelligence, Kevin Black, Noah Brown, James Darpinian, Karan Dhabalia, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, Manuel Y. Galliker, Dibya Ghosh, Lachy Groom, Karol Hausman, Brian Ichter, Szymon Jakubczak, Tim Jones, Liyiming Ke, Devin LeBlanc, Sergey Levine, Adrian Li-Bell, Mohith Mothukuri, Suraj Nair, Karl Pertsch, Allen Z. Ren, Lucy Xiaoyang Shi, Laura Smith, Jost Tobias Springenberg, Kyle Stachowicz, James Tanner, Quan Vuong, Homer Walke, Anna Walling, Haohuan Wang, Lili Yu, and Ury Zhilinsky. π0.5: a vision-language-action model with open-world generalization, 2025. URL https://arxiv.org/abs/2504.16054 .[29] Arhan Jain, Mingtong Zhang, Kanav Arora, William Chen, Marcel Torne, Muhammad Zubair Irshad, Sergey Zakharov, Yue Wang, Sergey Levine, Chelsea Finn, Wei-Chiu Ma, Dhruv Shah, Abhishek Gupta, and Karl Pertsch. Polaris: Scalable real-to-sim evaluations for generalist robot policies, 2025. URL https://arxiv.org/abs/2512.16881 .[30] Jawset Visual Computing. Postshot. https://www.jawset.com/ , 2025. Accessed: 2026-05-09. [31] Yuzhou Ji, He Zhu, Junshu Tang, Wuyi Liu, Zhizhong Zhang, Xin Tan, and Yuan Xie. Fastlgs: Speeding up language embedded gaussians with feature grid mapping. In Proceedings of the AAAI Conference on Artificial Intelligence , 2025. [32] Changjian Jiang, Kerui Ren, Xudong Li, Kaiwen Song, Linning Xu, Tao Lu, Junting Dong, Yu Zhang, Bo Dai, and Mulin Yu. Planing: A loosely coupled triangle-gaussian framework for streaming 3d reconstruction, 2026. URL https://arxiv. org/abs/2601.22046 .[33] Zhenyu Jiang, Yuqi Xie, Kevin Lin, Zhenjia Xu, Weikang Wan, Ajay Mandlekar, Linxi Fan, and Yuke Zhu. Dexmimicgen: Automated data generation for bimanual dexterous manipulation via imitation learning. In 2025 IEEE International Conference on Robotics and Automation (ICRA) , 2025. [34] M Kazhdan. Poisson surface reconstruction. 2006. [35] Michael Kazhdan and Hugues Hoppe. Screened poisson surface reconstruction. Acm Transactions on Graphics , 32(3):1–13, 2013. 
+
+10 [36] Bernhard Kerbl, Georgios Kopanas, Thomas Leimkühler, and George Drettakis. 3d gaussian splatting for real-time radiance field rendering. ACM Transactions on Graphics , 42(4), July 2023. URL https://repo-sam.inria.fr/fungraph/ 3d-gaussian-splatting/ .[37] Alexander Kirillov, Eric Mintun, Nikhila Ravi, Hanzi Mao, Chloe Rolland, Laura Gustafson, Tete Xiao, Spencer Whitehead, Alexander C. Berg, Wan-Yen Lo, Piotr Dollár, and Ross Girshick. Segment anything. arXiv:2304.02643 , 2023. [38] Prakhar Kulshreshtha, Brian Pugh, and Salma Jiddi. Feature refinement to improve high resolution image inpainting, 2022. URL https://arxiv.org/abs/2206.13644 .[39] Joseph-Louis Lagrange. Mécanique Analytique . Desaint, Paris, 1788. [40] Zeyi Li, Jade Yang, Jingkai Xu, Shangbin Xie, Yuran Wang, Zhenhao Shen, Tianxing Chen, Yan Shen, Wenjun Li, Yukun Zheng, Chaorui Zhang, Ming Chen, Chen Xie, and Ruihai Wu. Lehome: A simulation environment for deformable object manipulation in household scenarios. In IROS 2025 - 5th Workshop on RObotic MAnipulation of Deformable Objects: holistic approaches and challenges forward , 2025. URL https://openreview.net/forum?id=rEDd1HorJl .[41] Shilong Liu, Zhaoyang Zeng, Tianhe Ren, Feng Li, Hao Zhang, Jie Yang, Chunyuan Li, Jianwei Yang, Hang Su, Jun Zhu, et al. Grounding dino: Marrying dino with grounded pre-training for open-set object detection. arXiv preprint arXiv:2303.05499 ,2023. [42] Shitong Luo and Wei Hu. Diffusion probabilistic models for 3d point cloud generation. In 2021 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , Jun 2021. doi: 10.1109/cvpr46437.2021.00286. URL http://dx.doi. org/10.1109/cvpr46437.2021.00286 .[43] Weijie Lyu, Xueting Li, Abhijit Kundu, Yi-Hsuan Tsai, and Ming-Hsuan Yang. Gaga: Group any gaussians via 3d-aware memory bank. Mar 2025. [44] Ajay Mandlekar, Soroush Nasiriany, Bowen Wen, Iretiayo Akinola, Yashraj Narang, Linxi Fan, Yuke Zhu, and Dieter Fox. Mimicgen: A data generation system for scalable robot learning using human demonstrations. In 7th Annual Conference on Robot Learning , 2023. [45] Ben Mildenhall, Pratul P. Srinivasan, Matthew Tancik, Jonathan T. Barron, Ravi Ramamoorthi, and Ren Ng. Nerf: Representing scenes as neural radiance fields for view synthesis. In ECCV , 2020. [46] M. Mittal, P. Roth, J. Tigue, A. Richard, O. Zhang, P. Du, A. Serrano-Muñoz, X. Yao, R. Zurbrügg, N. Rudin, L. Wawrzyniak, M. Rakhsha, A. Denzler, E. Heiden, A. Borovicka, O. Ahmed, I. Akinola, A. Anwar, M. T. Carlson, J. Y. Feng, A. Garg, R. Gasoto, L. Gulich, Y. Guo, M. Gussert, A. Hansen, M. Kulkarni, C. Li, W. Liu, V. Makoviychuk, G. Malczyk, H. Mazhar, M. Moghani, A. Murali, M. Noseworthy, A. Poddubny, N. Ratliff, W. Rehberg, C. Schwarke, R. Singh, J. L. Smith, B. Tang, R. Thaker, M. Trepte, K. Van Wyk, F. Yu, A. Millane, V. Ramasamy, R. Steiner, S. Subramanian, C. Volk, C. Chen, N. Jawale, A. V. Kuruttukulam, M. A. Lin, A. Mandlekar, K. Patzwaldt, J. Welsh, J. Lafleche, N. Moënne-Loccoz, S. Park, R. Stepinski, D. Van Gelder, C. Amevor, J. Carius, J. Chang, A. H. Chen, P. D. H. Ciechomski, G. Daviet, M. Mohajerani, J. von Muralt, V. Reutskyy, M. Sauter, S. Schirm, E. L. Shi, P. Terdiman, K. Vilella, T. Widmer, G. Yeoman, T. Chen, S. Grizan, C. Li, L. Li, C. Smith, R. Wiltz, K. Alexis, Y. Chang, L. Fan, F. Farshidian, A. Handa, S. Huang, M. Hutter, Y. Narang, S. Pouya, S. Sheng, Y. Zhu, M. Macklin, A. Moravanszky, P. Reist, Y. Guo, D. Hoeller, and G. State. Isaac lab: A gpu-accelerated simulation framework for multi-modal robot learning. arXiv preprint arXiv:2511.04831 , 2025. doi: 10.48550/arXiv.2511.04831. [47] Nicolas Moenne-Loccoz, Ashkan Mirzaei, Or Perel, Riccardo de Lutio, Janick Martinez Esturo, Gavriel State, Sanja Fidler, Nicholas Sharp, and Zan Gojcic. 3d gaussian ray tracing: Fast tracing of particle scenes. ACM Transactions on Graphics and SIGGRAPH Asia , 2024. [48] Norman Muller, Yawar Siddiqui, Lorenzo Porzi, SamuelRota Bulò, Peter Kontschieder, and Matthias Nießner. Diffrf: Rendering-guided 3d radiance field diffusion. Cornell University - arXiv,Cornell University - arXiv , Dec 2022. [49] Charlie Nash, Yaroslav Ganin, S.M.Ali Eslami, and PeterW. Battaglia. Polygen: An autoregressive generative model of 3d meshes. Cornell University - arXiv,Cornell University - arXiv , Feb 2020. [50] Soroush Nasiriany, Abhiram Maddukuri, Lance Zhang, Adeet Parikh, Aaron Lo, Abhishek Joshi, Ajay Mandlekar, and Yuke Zhu. Robocasa: Large-scale simulation of everyday tasks for generalist robots. In Robotics: Science and Systems (RSS) , 2024. [51] Soroush Nasiriany, Sepehr Nasiriany, Abhiram Maddukuri, and Yuke Zhu. Robocasa365: A large-scale simulation framework for training and benchmarking generalist robots. In International Conference on Learning Representations (ICLR) , 2026. [52] Alex Nichol, Heewoo Jun, Prafulla Dhariwal, Pamela Mishkin, and Mark Chen. Point-e: A system for generating 3d point clouds from complex prompts. Dec 2022. 
+
+11 [53] NVIDIA Corporation. Isaac Sim. https://github.com/isaac-sim/IsaacSim , 2024. Version 5.1.0. [54] Jeong Joon Park, Peter Florence, Julian Straub, Richard Newcombe, and Steven Lovegrove. Deepsdf: Learning continuous signed distance functions for shape representation. In The IEEE Conference on Computer Vision and Pattern Recognition (CVPR) , June 2019. [55] Karl Pertsch, Kyle Stachowicz, Brian Ichter, Danny Driess, Suraj Nair, Quan Vuong, Oier Mees, Chelsea Finn, and Sergey Levine. Fast: Efficient action tokenization for vision-language-action models, 2025. URL https://arxiv.org/abs/ 2501.09747 .[56] Polycam Inc. Polycam. https://poly.cam , 2024. 3D scanning application. [57] Minghan Qin, Wanhua Li, Jiawei Zhou, Haoqian Wang, and Hanspeter Pfister. Langsplat: 3d language gaussian splatting. Dec 2023. [58] Mohammad Nomaan Qureshi, Sparsh Garg, Francisco Yandun, David Held, George Kantor, and Abhishesh Silwal. Splatsim: Zero-shot sim2real transfer of rgb manipulation policies using gaussian splatting, 2024. URL https://arxiv.org/abs/ 2409.10161 .[59] Alec Radford, Jeff Wu, Rewon Child, David Luan, Dario Amodei, and Ilya Sutskever. Language models are unsupervised multitask learners. 2019. URL https://api.semanticscholar.org/CorpusID:160025533 .[60] Nikhila Ravi, Valentin Gabeur, Yuan-Ting Hu, Ronghang Hu, Chaitanya Ryali, Tengyu Ma, Haitham Khedr, Roman Rädle, Chloe Rolland, Laura Gustafson, Eric Mintun, Junting Pan, Kalyan Vasudev Alwala, Nicolas Carion, Chao-Yuan Wu, Ross Girshick, Piotr Dollár, and Christoph Feichtenhofer. Sam 2: Segment anything in images and videos. arXiv preprint arXiv:2408.00714 ,2024. URL https://arxiv.org/abs/2408.00714 .[61] Tianhe Ren, Shilong Liu, Ailing Zeng, Jing Lin, Kunchang Li, He Cao, Jiayu Chen, Xinyu Huang, Yukang Chen, Feng Yan, Zhaoyang Zeng, Hao Zhang, Feng Li, Jie Yang, Hongyang Li, Qing Jiang, and Lei Zhang. Grounded sam: Assembling open-world models for diverse visual tasks, 2024. [62] Thomas Schöps, Johannes L. Schönberger, Silvano Galliani, Torsten Sattler, Konrad Schindler, Marc Pollefeys, and Andreas Geiger. A multi-view stereo benchmark with high-resolution images and multi-camera videos. In Conference on Computer Vision and Pattern Recognition (CVPR) , 2017. [63] Yukai Shi, Weiyu Li, Zihao Wang, Hongyang Li, Xingyu Chen, Ping Tan, and Lei Zhang. Scenemaker: Open-set 3d scene generation with decoupled de-occlusion and pose estimation model. arXiv preprint arXiv:2512.10957 , 2025. [64] J.Ryan Shue, EricRyan Chan, Ryan Po, Zachary Ankner, Jiajun Wu, and Gordon Wetzstein. 3d neural field generation using triplane diffusion. Nov 2022. [65] Jascha Sohl-Dickstein, EricA. Weiss, Niru Maheswaranathan, and Surya Ganguli. Deep unsupervised learning using nonequi-librium thermodynamics. arXiv: Learning,arXiv: Learning , Mar 2015. [66] Roman Suvorov, Elizaveta Logacheva, Anton Mashikhin, Anastasia Remizova, Arsenii Ashukha, Aleksei Silvestrov, Naejin Kong, Harshith Goka, Kiwoong Park, and Victor Lempitsky. Resolution-robust large mask inpainting with fourier convolutions. 
+
+arXiv preprint arXiv:2109.07161 , 2021. [67] Zhicong Tang, Shuyang Gu, Chunyu Wang, Ting Zhang, Jianmin Bao, Dong Chen, and Baining Guo. Volumediffusion: Flexible text-to-3d generation with efficient volumetric encoder. Apr 2024. [68] ALOHA 2 Team, Jorge Aldaco, Travis Armstrong, Robert Baruch, Jeff Bingham, Sanky Chan, Kenneth Draper, Debidatta Dwibedi, Chelsea Finn, Pete Florence, Spencer Goodrich, Wayne Gramlich, Torr Hage, Alexander Herzog, Jonathan Hoech, Thinh Nguyen, Ian Storz, Baruch Tabanpour, Leila Takayama, Jonathan Tompson, Ayzaan Wahid, Ted Wahrburg, Sichun Xu, Sergey Yaroshenko, Kevin Zakka, and Tony Z. Zhao. Aloha 2: An enhanced low-cost hardware for bimanual teleoperation, 2024. URL https://arxiv.org/abs/2405.02292 .[69] SAM 3D Team, Xingyu Chen, Fu-Jen Chu, Pierre Gleize, Kevin J Liang, Alexander Sax, Hao Tang, Weiyao Wang, Michelle Guo, Thibaut Hardin, Xiang Li, Aohan Lin, Jiawei Liu, Ziqi Ma, Anushka Sagar, Bowen Song, Xiaodong Wang, Jianing Yang, Bowen Zhang, Piotr Dollár, Georgia Gkioxari, Matt Feiszli, and Jitendra Malik. Sam 3d: 3dfy anything in images. 2025. URL 
+
+https://arxiv.org/abs/2511.16624 .[70] Hanshi Wang, Zijian Cai, Jin Gao, Yiwei Zhang, Weiming Hu, Ke Wang, and Zhipeng Zhang. Online segment any 3d thing as instance tracking. In The Thirty-ninth Annual Conference on Neural Information Processing Systems , . 
+
+12 [71] Tengfei Wang, Bo Zhang, Ting Zhang, Shuyang Gu, Jianmin Bao, Tadas Baltrusaitis, Jingjing Shen, Dong Chen, Fang Wen, Qifeng Chen, Baining Guo, and Microsoft Research. Rodin: A generative model for sculpting 3d digital avatars using diffusion. .[72] Xinjie Wang, Liu Liu, Yu Cao, Ruiqi Wu, Wenkang Qin, Dehui Wang, Wei Sui, and Zhizhong Su. Embodiedgen: Towards a generative 3d world engine for embodied intelligence, 2025. URL https://arxiv.org/abs/2506.10600 .[73] Yuxin Wang, Qianyi Wu, Guofeng Zhang, and Dan Xu. Gscream: Learning 3d geometry and feature consistent gaussian splatting for object removal. In ECCV , 2024. [74] Guanjun Wu, Taoran Yi, Jiemin Fang, Lingxi Xie, Xiaopeng Zhang, Wei Wei, Wenyu Liu, Qi Tian, and Xinggang Wang. 4d gaussian splatting for real-time dynamic scene rendering. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , pages 20310–20320, June 2024. [75] Qi Wu, Janick Martinez Esturo, Ashkan Mirzaei, Nicolas Moenne-Loccoz, and Zan Gojcic. 3dgut: Enabling distorted cameras and secondary rays in gaussian splatting. Conference on Computer Vision and Pattern Recognition (CVPR) , 2025. [76] Hongchi Xia, Entong Su, Marius Memmel, Arhan Jain, Raymond Yu, Numfor Mbiziwo-Tiapo, Ali Farhadi, Abhishek Gupta, Shenlong Wang, and Wei-Chiu Ma. Drawer: Digital reconstruction and articulation with environment realism, 2025. URL 
+
+https://arxiv.org/abs/2504.15278 .[77] Jianfeng Xiang, Zelong Lv, Sicheng Xu, Yu Deng, Ruicheng Wang, Bowen Zhang, Dong Chen, Xin Tong, and Jiaolong Yang. Structured 3d latents for scalable and versatile 3d generation. arXiv preprint arXiv:2412.01506 , 2024. [78] Xiuwei Xu, Huangxing Chen, Linqing Zhao, Ziwei Wang, Jie Zhou, and Jiwen Lu. Embodiedsam: Online segment any 3d thing in real time. arXiv preprint arXiv:2408.11811 , 2024. [79] Yunhan Yang, Yufan Zhou, Yuan-Chen Guo, Zi-Xin Zou, Yukun Huang, Ying-Tian Liu, Hao Xu, Ding Liang, Yan-Pei Cao, and Xihui Liu. Omnipart: Part-aware 3d generation with semantic decoupling and structural cohesion. arXiv preprint arXiv:2507.06165 , 2025. [80] Mingqiao Ye, Martin Danelljan, Fisher Yu, and Lei Ke. Gaussian grouping: Segment and edit anything in 3d scenes. Dec 2023. [81] Vickie Ye, Ruilong Li, Justin Kerr, Matias Turkulainen, Brent Yi, Zhuoyang Pan, Otto Seiskari, Jianbo Ye, Jeffrey Hu, Matthew Tancik, and Angjoo Kanazawa. gsplat: An open-source library for gaussian splatting. Journal of Machine Learning Research ,26(34):1–17, 2025. [82] Justin Yu, Letian Fu, Huang Huang, Karim El-Refai, Rares Andrei Ambrus, Richard Cheng, Muhammad Zubair Irshad, and Ken Goldberg. Real2render2real: Scaling robot data without dynamics simulation or robot hardware, 2025. URL 
+
+https://arxiv.org/abs/2505.09601 .[83] Tao Yu, Runseng Feng, Ruoyu Feng, Jinming Liu, Xin Jin, Wenjun Zeng, and Zhibo Chen. Inpaint anything: Segment anything meets image inpainting. arXiv preprint arXiv:2304.06790 , 2023. [84] Bowen Zhang, Yiji Cheng, Chunyu Wang, Ting Zhang, Jiaolong Yang, Yansong Tang, Feng Zhao, Dong Chen, and Baining Guo. Rodinhd: High-fidelity 3d avatar generation with diffusion models. Jul 2024. [85] Bowen Zhang, Yiji Cheng, Jiaolong Yang, Chunyu Wang, Feng Zhao, Yansong Tang, Dong Chen, and Baining Guo. Gaussian-cube: Structuring gaussian splatting using optimal transport for 3d generative modeling. arXiv preprint arXiv:2403.19655 ,2024. [86] Chaoning Zhang, Dongshen Han, Yu Qiao, Jung Uk Kim, Sung-Ho Bae, Seungkyu Lee, and Choong Seon Hong. Faster segment anything: Towards lightweight sam for mobile applications. arXiv preprint arXiv:2306.14289 , 2023. [87] Jiazhao Zhang, Kunyu Wang, Shaoan Wang, Minghan Li, Haoran Liu, Songlin Wei, Zhongyuan Wang, Zhizheng Zhang, and He Wang. Uni-navid: A video-based vision-language-action model for unifying embodied navigation tasks, 2024. [88] Tony Z. Zhao, Vikash Kumar, Sergey Levine, and Chelsea Finn. Learning fine-grained bimanual manipulation with low-cost hardware, 2023. URL https://arxiv.org/abs/2304.13705 .[89] Ruijie Zhu, Mulin Yu, Linning Xu, Lihan Jiang, Yixuan Li, Tianzhu Zhang, Jiangmiao Pang, and Bo Dai. Objectgs: Object-aware scene reconstruction and scene understanding via gaussian splatting. In International Conference on Computer Vision (ICCV), 2025 , 2025. 
+
+13 APPENDIX A 3DGS training 
+
+After mask-guided point-cloud cleaning, we feed inpainted scene images and COLMAP data to gsplat for 3D Gaussian reconstruction. The model representation, training objective, and depth rendering are defined as follows. 
+
+A.1 Training Details 
+
+The reconstruction loss used in gsplat is 
+
+Lgs = ( 1 − λssim ) ˆI − I 1 + λssim 
+
+ 1 − SSIM (ˆI, I) , (5) where I is the ground-truth inpainted image, ˆ I is the rendered image, and λssim is the SSIM weight. 
+
+A.2 Depth Rendering for Mesh Extraction 
+
+After training, we render expected depth (ED) for each camera view: ˆD(r) = ∑k wk(r) zk(r)
+
+∑k wk(r) , (6) where r is a camera ray, wk(r) is the contribution weight of Gaussian k on that ray, and zk(r) is its corresponding depth. The resulting ˆ D is saved as raw depth maps and used for subsequent TSDF/Poisson mesh extraction. 
+
+# B Weighting Scheme 
+
+For each candidate object crop i with a width wi and height hi, we compute a weighted score 
+
+Si = 0.20 ¯ Ai + 0.15 Fi + 0.10 Ci + 0.20 Ei + 0.10 Ri + 0.25 Qi, (7) and rank candidates in descending order of Si.The six terms are defined as follows. 
+
+(1) Normalized object area 
+
+¯Ai = Ai
+
+max j A j
+
+(8) ,where Ai means the number of foreground pixels in candidate i.
+
+(2) Fill ratio Fi = Ai
+
+Bi
+
+, Bi = wihi, (9) where wi, hi are the width and height of the object bounding box. 
+
+(3) Center prior Ci = 11 + di
+
+> Li
+
+, Li = max (Wi, Hi), (10) where di is the Euclidean distance between the object center and image center, and Wi, Hi are image width and height. 
+
+(4) Boundary-cut penalty Ei =
+
+(
+
+1.0, object does not touch image boundary ,
+
+0.5, object touches boundary (potential truncation) . (11) 14 (5) Aspect-ratio regularity Ri = 11 + ln 
+
+ wi
+
+> hi
+
+ . (12) 
+
+(6) Effective-resolution score Qi = min 
+
+
+
+1, ER i
+
+Sout 
+
+
+
+, (13) where ER i = max (wi, hi) is effective object resolution and Sout is the target TRELLIS input size (e.g., 512). 
+
+Selection with viewpoint diversity After scoring, candidates are greedily selected with a minimum frame-gap constraint to avoid near-duplicate views. If the selected set is smaller than the target count, the frame-gap constraint is gradually relaxed to fill the quota. 
+
+# C Limitation Details 
+
+Due to limitations in certain underlying technologies, our system still has aspects that can be further improved. We discuss these from two perspectives: feed-forward 3D reconstruction and semantic segmentation within 3DGS. 
+
+Semantic Segmentation within 3DGS Existing system do not support real-time object segmentation after reconstruction. If users wish to extract new objects from an already reconstructed scene, they must rerun the entire workflow, which is time-consuming. If the issue of unclear object boundaries in semantic segmentation within 3DGS, mentioned in 1 and 2.2, can be solved, it would become possible to build a practical system that supports real-time segmentation. 
+
+Feed-forward 3D Reconstruction Although feed-forward networks offer a highly efficient and lightweight alternative to traditional SfM pipelines (e.g., COLMAP) for 3DGS initialization, they are fundamentally bottlenecked by their capacity to reconstruct high-frequency geometric details. Compared to the sparse yet globally consistent point clouds generated by COLMAP, feed-forward predictions occasionally exhibit discrete approximations, manifesting as layering artifacts and quantization errors. Because the optimization landscape of 3D Gaussian Splatting is highly sensitive to initialization for escaping local minima, these coarse geometric priors can result in over-smoothed textures and a degradation of fine-grained structural fidelity in the final novel views. Comprehensive quantitative evaluations and qualitative visualizations validating these limitations, including experiments evaluated on several representative feed-forward methods, are provided in the supplementary material. Future research will focus on bridging this precision gap—such as through the integration of lightweight refinement modules or stricter multi-view photometric constraints—while preserving inherent efficiency. 
+
+# D Additional Experiments 
+
+D.1 Analysis of Initialization Precision 
+
+As discussed in the App.C, while feed-forward initialization significantly accelerates the pipeline, it currently trails traditional SfM methods like COLMAP in capturing high-frequency geometric features and fine-grained textures. To empirically demonstrate this limitation and ensure reproducibility, we conduct comprehensive evaluations using representative feed-forward networks (VGGT, DA3, and Pi3) on a single NVIDIA A800 GPU. 
+
+Experimental Setup. We evaluate the methods on the Mip-NeRF 360 [ 3] and ETH3D [ 62 ] datasets. Following standard evaluation protocols, images in the Mip-NeRF 360 dataset are downsampled by a factor of 4 for outdoor scenes and 2 for indoor scenes, whereas the ETH3D dataset is evaluated at full resolution. To assess rendering quality, we employ standard novel view synthesis metrics (PSNR, SSIM, and LPIPS). Furthermore, to accurately reflect the efficiency of the initialization and rendering pipeline, our reported FPS indicates the validation rendering speed—calculated as the inverse of the average rasterization time per image—strictly distinguishing it from training or video playback FPS. 15 Results and Discussion. Table 7 presents our quantitative analysis, clearly illustrating the trade-off between efficiency and rendering fidelity. While feed-forward models achieve superior validation rendering speeds, they lag behind COLMAP in reconstruction precision. This precision gap is particularly evident in the LPIPS metric, which is highly sensitive to high-frequency structural loss, quantitatively validating our observation that the coarse priors from current feed-forward networks lead to over-smoothed final renderings. Fundamentally, this performance bottleneck arises because feed-forward architectures rely on generalized training priors and single-pass regression. They inherently lack the rigorous, scene-specific multi-view photometric consistency enforced by iterative bundle adjustment in optimization-based SfM methods. Figure 5 further provides qualitative zoom-in comparisons to directly illustrate the geometric limitations of these feed-forward representations. When compared to the reference input images, the predictions from VGGT, DA3, and Pi3 consistently exhibit noticeable texture blurriness, loss of fine details, and discrete structural approximations (e.g., layering artifacts) in complex local regions. Consequently, to guarantee the highest quality novel view synthesis and provide a mathematically robust geometric prior that prevents 3D Gaussian Splatting from converging to sub-optimal local minima, we ultimately employ COLMAP as the initialization module for our pipeline.  
+
+> Table 7 Quantitative comparison of different methods on Mip-NeRF 360 and ETH3D datasets.
+
+Method Mip-NeRF 360 ETH3D PSNR ↑ SSIM ↑ LPIPS ↓ FPS ↑ PSNR ↑ SSIM ↑ LPIPS ↓ FPS ↑
+
+VGGT 21.8846 0.5954 0.3322 35.7612 16.4594 0.7031 0.5537 6.9671 DA3 20.8818 0.5446 0.3334 45.7707 17.0423 0.6903 0.5109 9.2058 Pi3 21.8899 0.5570 0.2787 42.3389 17.5147 0.6901 0.4838 8.7631 COLMAP 29.2393 0.8878 0.1238 32.2384 19.8355 0.8118 0.4128 6.5092 
+
+# E Dataset Creation 
+
+We scanned the scene using 1 to 3 Insta360 X5[ 26 ] panoramic cameras. Each resulting panoramic video was then split into 2 to 5 viewpoints. We then stitched them together in the order of the high, middle, and low panoramic cameras to obtain the scene image, and fed it into Postshot[30] to recover the camera poses and sparse point cloud. 16 Input Images  VGGT  DA3  Pi3 Figure 5 Qualitative comparison of different initialization methods. Zoom-in patches highlight the texture blurriness and layering artifacts present in feed-forward predictions (VGGT, DA3, Pi3) compared to the input reference. 
+
+17

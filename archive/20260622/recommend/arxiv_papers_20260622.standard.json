@@ -1,0 +1,140 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-22T21:31:59.503578+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2606.17049v1",
+      "source": "arxiv",
+      "title": "BRDFusion: Physics Meets Generation for Urban Scene Inverse Rendering",
+      "abstract": "Inverse rendering of urban scenes from captured videos enables numerous applications, including content creation and autonomous driving simulation. Physically-based rendering methods follow and control lighting physics, but suffer from reconstruction and rendering artifacts. While generative models produce realistic videos, they offer limited consistency and controllability. We present BRDFusion, a unified framework that combines two complementary models for inverse and forward rendering. Specifically, BRDFusion recovers explicit, consistent scene properties with physical modeling and alleviates optimization ambiguity with generative priors. During forward rendering, the physical model provides controllable rendering from the scene configuration, and the generative model denoises and fixes artifacts. Therefore, our method produces high-quality videos while allowing precise control, outperforming baselines in real and synthetic scenes. Moreover, BRDFusion supports novel-view relighting, night simulation, and dynamic object insertion/editing. Project page: https://shigon255.github.io/brdfusion-page/",
+      "authors": [
+        "Yi-Ruei Liu",
+        "Jie-Ying Lee",
+        "Zheng-Hui Huang",
+        "Yu-Lun Liu",
+        "Chih-Hao Lin"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-15T17:58:31+00:00",
+      "link": "https://arxiv.org/pdf/2606.17049v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Inverse rendering of urban scenes from videos for 3D reconstruction",
+      "llm_evidence_cn": "从视频中逆向渲染城市场景以进行3D重建",
+      "llm_evidence": "从视频中逆向渲染城市场景以进行3D重建",
+      "canonical_evidence": "从视频中逆向渲染城市场景以进行3D重建",
+      "llm_tldr_en": "Combines physics-based and generative models for inverse rendering to reconstruct and render urban scenes with high consistency and controllability.",
+      "llm_tldr_cn": "针对物理渲染存在伪影而生成模型缺乏一致性的问题，提出BRDFusion框架，融合物理建模与生成先验，从视频中反求城市场景的显式属性，并在前向渲染中结合物理可控制性与生成增强，实现高质量的城市场景重建与渲染。",
+      "llm_tldr": "针对物理渲染存在伪影而生成模型缺乏一致性的问题，提出BRDFusion框架，融合物理建模与生成先验，从视频中反求城市场景的显式属性，并在前向渲染中结合物理可控制性与生成增强，实现高质量的城市场景重建与渲染。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.17520v1",
+      "source": "arxiv",
+      "title": "GASE: Gaussian Splatting-Based Automated System for Reconstructing Embodied-Simulation Environments",
+      "abstract": "Training embodied agents in the real world requires skilled operators and expensive hardware. Simulation environments offer a compelling alternative by enabling large-scale, cost-effective data augmentation. Consequently, rapidly constructing high-fidelity simulation scenes with a minimal sim-to-real gap has become a critical objective in robot learning. While reconstruction-based methods provide superior visual quality, current workflows are hindered by inefficient data acquisition and subpar foreground object extraction. We thus propose GASE, a highly automated system for simulation scene construction. GASE leverages multi-view video streams from panoramic camera arrays to enable rapid environment scanning. To ensure high-quality asset generation, our pipeline introduces a camera-pose-based strategy that robustly extracts objects across frames in the 2D domain, followed by high-fidelity scene inpainting. Foreground objects and the static background are then reconstructed independently and seamlessly imported into physics simulators for policy training. Extensive experiments demonstrate that GASE outperforms existing 3D Gaussian-based methods in segmentation accuracy by over 10\\% while achieving state-of-the-art inpainting quality. Furthermore, real-robot deployments across manipulation and navigation tasks maintains a performance gap of less than 10\\% compared to policies trained purely on real-world data. These results confirm that GASE provides an efficient and highly effective solution for bridging the sim-to-real gap. Code will be released.",
+      "authors": [
+        "Jiawei Zhang",
+        "Yiming Yan",
+        "Chao Liang",
+        "Nuo Xu",
+        "Seson Sun",
+        "Qichen Zhang",
+        "Yuhao Xu",
+        "Yantai Yang",
+        "Yingqiao Wang",
+        "Qin Jin",
+        "Zhipeng Zhang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-06-16T05:00:42+00:00",
+      "link": "https://arxiv.org/pdf/2606.17520v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Multi-view video stream reconstruction using 3D Gaussian Splatting for simulation environments",
+      "llm_evidence_cn": "利用多视角视频流和3D高斯泼溅重建仿真环境",
+      "llm_evidence": "利用多视角视频流和3D高斯泼溅重建仿真环境",
+      "canonical_evidence": "利用多视角视频流和3D高斯泼溅重建仿真环境",
+      "llm_tldr_en": "GASE automates simulation scene construction by capturing multi-view video streams with panoramic camera arrays and reconstructing high-fidelity environments via 3D Gaussian Splatting.",
+      "llm_tldr_cn": "现有仿真场景构建存在数据采集效率低和前景物体提取差的问题，限制了机器人学习的规模化训练。GASE系统利用全景相机阵列采集多视角视频流，结合3D高斯泼溅实现快速自动化的高保真环境重建。结果表明该系统能高效构建逼真的仿真场景，显著缩小模拟与现实的差距，为具身智能提供高质量的训练数据。",
+      "llm_tldr": "现有仿真场景构建存在数据采集效率低和前景物体提取差的问题，限制了机器人学习的规模化训练。GASE系统利用全景相机阵列采集多视角视频流，结合3D高斯泼溅实现快速自动化的高保真环境重建。结果表明该系统能高效构建逼真的仿真场景，显著缩小模拟与现实的差距，为具身智能提供高质量的训练数据。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.19088v1",
+      "source": "arxiv",
+      "title": "ReSiReg: Towards Spatially Consistent Semantics in Language-Conditioned Robotic Tasks",
+      "abstract": "Vision-Language Models (VLMs) enable robots to follow open-language instructions. However, dense VLM embeddings have shown to be noisy and lack spatial consistency. This is problematic for robotic applications, which require simultaneous reasoning over semantics and 3D space. We examine spatial structure across recent VLMs and propose ReSiReg, a feature reconstruction method that uses spatially consistent VLM intermediates to improve dense language-grounded retrieval. ReSiReg clusters intermediates into visual prototypes, derives their language descriptors, and reconstructs each patch as a soft mixture of prototype-level language embeddings. We evaluate quantitatively on OVSS and 3D mapping across backbones, and qualitatively in real-world manipulation scenes. Quantitative results show improved dense retrieval; manipulation scenes show more spatially consistent target activations. We further provide a compact 25M dense VLM for robotic applications, substantially smaller than and competitive with ViT-B baselines. Available at https://resireg.github.io",
+      "authors": [
+        "Simon Schwaiger",
+        "David Seyser",
+        "Alessandro Scherl",
+        "Wilfried Wöber",
+        "Gerald Steinbauer-Wagner"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-06-17T13:58:06+00:00",
+      "link": "https://arxiv.org/pdf/2606.19088v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Improves spatially consistent semantics for open-vocabulary segmentation and 3D mapping",
+      "llm_evidence_cn": "为开放词汇分割和三维映射改进空间一致的语义信息",
+      "llm_evidence": "为开放词汇分割和三维映射改进空间一致的语义信息",
+      "canonical_evidence": "为开放词汇分割和三维映射改进空间一致的语义信息",
+      "llm_tldr_en": "Presents ReSiReg, which uses spatially consistent VLM intermediates to reconstruct dense language-grounded features for better OVSS and 3D mapping, improving spatial consistency in robotic vision.",
+      "llm_tldr_cn": "针对视觉语言模型密集嵌入缺乏空间一致性的问题，本文提出ReSiReg方法，利用空间一致的VLM中间特征重构语言对齐的密集描述符。通过聚类原型并重建每个图像块为原型语言嵌入的软混合，提升了开放词汇语义分割和三维映射的空间准确性。量化实验表明方法在多骨架和真实场景下有效，为机器人需要语义与3D空间同时推理的任务提供了更鲁棒的感知基础。",
+      "llm_tldr": "针对视觉语言模型密集嵌入缺乏空间一致性的问题，本文提出ReSiReg方法，利用空间一致的VLM中间特征重构语言对齐的密集描述符。通过聚类原型并重建每个图像块为原型语言嵌入的软混合，提升了开放词汇语义分割和三维映射的空间准确性。量化实验表明方法在多骨架和真实场景下有效，为机器人需要语义与3D空间同时推理的任务提供了更鲁棒的感知基础。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

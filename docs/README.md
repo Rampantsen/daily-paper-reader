@@ -6,40 +6,31 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-21
-- 运行时间：2026-06-21 20:32:51 UTC
+- 最新运行日期：2026-06-22
+- 运行时间：2026-06-22 21:35:23 UTC
 - 运行状态：成功
-- 本次总论文数：6
-- 精读区：4
-- 速读区：2
+- 本次总论文数：3
+- 精读区：2
+- 速读区：1
 
 ### 今日简报（AI）
-1) 今日精读四篇，重点剖析三维重建模型的不确定性评估与自动驾驶中的空间几何对齐。
-2) 最值得关注的是 VGGT 模型在 DTU 数据集上的不确定性质量分析，以及 SurroundNEXO 如何用自中心度量桥接实现空间一致的场景几何。
-3) 建议动手实践时借鉴不确定性量化来筛选高质量重建结果，同时关注自中心桥接思路，提升自动驾驶建图的空间一致性。
-- 详情：[/202606/21/README](/202606/21/README)
+今日精读两篇满分研究：BRDFusion用生成式物理模型重塑城市逆渲染，GASE以高斯泼溅自动构建具身仿真环境。
+最值得关注的方向是“物理与生成的融合”及“面向机器人的环境重建自动化”，这两项工作均给出兼具真实感和可操作性的新范式。
+建议读者优先细读GASE，其自动化重建对机器人训练有立竿见影的影响，并可结合速读论文理解语言引导任务中的空间语义对齐挑战。
+- 详情：[/202606/22/README](/202606/22/README)
 
 ### 精读区论文标签
-1. [Uncertainty Quality of VGGT: An Analysis on the DTU Benchmark Dataset](/202606/21/2606.16479v1-uncertainty-quality-of-vggt-an-analysis-on-the-dtu-benchmark-dataset)  
+1. [BRDFusion: Physics Meets Generation for Urban Scene Inverse Rendering](/202606/22/2606.17049v1-brdfusion-physics-meets-generation-for-urban-scene-inverse-rendering)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：在DTU基准上分析VGGT多视图三维重建的不确定性质量
-2. [SurroundNEXO: Ego-Centric Metric Bridging for Spatially Consistent Geometry in Autonomous Driving](/202606/21/2606.16960v1-surroundnexo-ego-centric-metric-bridging-for-spatially-consistent-geometry-in-autonomous-driving)  
+   evidence：从视频中逆向渲染城市场景以进行3D重建
+2. [GASE: Gaussian Splatting-Based Automated System for Reconstructing Embodied-Simulation Environments](/202606/22/2606.17520v1-gase-gaussian-splatting-based-automated-system-for-reconstructing-embodied-simulation-environments)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：低重叠多摄像头度量深度框架，用于场景重建的空间一致性几何
-3. [Viking Hill Dataset: A Lidar-Radar-Camera Dataset for Detection and Segmentation in Forest Scenes](/202606/21/2606.19154v1-viking-hill-dataset-a-lidar-radar-camera-dataset-for-detection-and-segmentation-in-forest-scenes)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：该数据集提供多模态传感器数据和三维标注，用于森林场景的语义分割，直接支持三维场景分割
-4. [One-Shot Novel View and Pose Human Image Synthesis via 3D Prior Guided Diffusion Model](/202606/21/2606.19718v1-one-shot-novel-view-and-pose-human-image-synthesis-via-3d-prior-guided-diffusion-model)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：利用三维先验和扩散模型从单张图像生成三维一致的人体新视角，实现类三维物体生成
+   evidence：利用多视角视频流和3D高斯泼溅重建仿真环境
 
 ### 速读区论文标签
-1. [CAOA -- Completion-Assisted Object-CAD Alignment](/202606/21/2606.18429v1-caoa----completion-assisted-object-cad-alignment)  
-   标签：评分：7.0/10、query:d-gen-recon
-   evidence：利用点云补全实现三维语义重建中的物体CAD对齐
-2. [Zero-Shot Long-Horizon Dexterous Manipulation via Multi-View 3D-Grounded VLM Reasoning](/202606/21/2606.19340v1-zero-shot-long-horizon-dexterous-manipulation-via-multi-view-3d-grounded-vlm-reasoning)  
+1. [ReSiReg: Towards Spatially Consistent Semantics in Language-Conditioned Robotic Tasks](/202606/22/2606.19088v1-resireg-towards-spatially-consistent-semantics-in-language-conditioned-robotic-tasks)  
    标签：评分：6.0/10、query:d-gen-recon
-   evidence：通过多视图融合将2D VLM关键点提升为3D，用于任务grounding
+   evidence：为开放词汇分割和三维映射改进空间一致的语义信息
 
 
 <div class="dpr-home-promo-card">
