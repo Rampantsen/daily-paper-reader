@@ -1,0 +1,489 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-24T21:48:39.107269+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 9,
+    "deep_cap": 6,
+    "deep_selected": 8,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2606.20856v2",
+      "source": "arxiv",
+      "title": "Stochastic Signed Distance Processes",
+      "abstract": "Multi-view surface reconstruction is a core problem in computer vision. One prominent line of work represents the surface implicitly as a signed distance field (SDF), optimizing it based on the photometric loss between rendered and observed pixel colors. These approaches typically employ SDF-based volume rendering to obtain a differentiable relaxation of discontinuous visibility along rays, thereby reducing reliance on silhouette supervision. In this paper, we reformulate SDF-based volume rendering as probabilistic surface rendering, where each pixel color is modeled as a mixture distribution induced by the random first ray-surface intersection. To this end, we introduce Stochastic Signed Distance Processes (SSDP), which model the SDF along each ray as a stochastic process, inducing a first-passage-time distribution for each ray. We then derive the first-passage probability for each sampling interval based on Bayesian filtering, together with its practical approximation for parallel rendering. We further show that NeuS, an existing SDF-based volume rendering method, arises as a special case of our formulation. Experiments on the DTU and MobileBrick datasets demonstrate that our method outperforms baselines in both surface reconstruction and uncertainty quantification, supporting the effectiveness of our first-passage formulation. Our code is available at https://github.com/skmhrk1209/SSDP.",
+      "authors": [
+        "Hiroki Sakuma",
+        "Masatoshi Okutomi"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR",
+        "cs.LG"
+      ],
+      "published": "2026-06-18T18:46:04+00:00",
+      "link": "https://arxiv.org/pdf/2606.20856v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Probabilistic reformulation of SDF-based multi-view surface reconstruction.",
+      "llm_evidence_cn": "基于SDF的多视图表面重建的概率重新表述。",
+      "llm_evidence": "基于SDF的多视图表面重建的概率重新表述。",
+      "canonical_evidence": "基于SDF的多视图表面重建的概率重新表述。",
+      "llm_tldr_en": "Stochastic Signed Distance Processes model the SDF along each ray as a stochastic process for probabilistic multi-view surface reconstruction.",
+      "llm_tldr_cn": "针对多视图表面重建中基于SDF的体渲染方法，本文将SDF沿光线建模为随机过程，提出SSDP框架，将体渲染重新表述为概率表面渲染。该方法减轻了对剪影监督的依赖，并通过概率模型处理可见性，在多视图重建任务中展现出优势。",
+      "llm_tldr": "针对多视图表面重建中基于SDF的体渲染方法，本文将SDF沿光线建模为随机过程，提出SSDP框架，将体渲染重新表述为概率表面渲染。该方法减轻了对剪影监督的依赖，并通过概率模型处理可见性，在多视图重建任务中展现出优势。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.24799v1",
+      "source": "arxiv",
+      "title": "OrbitForge: Text-to-3D Scene Generation via Reconstruction-Anchored Video Synthesis",
+      "abstract": "Generic text-to-video models can be used as rich open-world scene priors. Despite the high quality of today's generated videos, they do not directly yield reliable 3D assets: camera motion is difficult to control, view coverage is partial, and frames often contain inconsistencies across time. We introduce OrbitForge, an adapter built from frozen video priors and per-prompt Gaussian Splatting reconstruction optimization that converts a single text-generated video into a canonical closed-orbit 3D Gaussian Splatting scene. We use 3D reconstruction as an anchor to improve the 3D consistency of the generated video. We obtain a preliminary 3D reconstruction from a first generated video via Deformable Gaussian Splatting with a robust MedianGS proxy. We render views from a prescribed orbit to detect missing viewpoints. OrbitForge uses the text-to-video model to complete only the missing views, and reconstructs the completed orbit into a final Gaussian Splatting scene. This design requires no task-specific video or multiview fine-tuning, avoids per-prompt score-distillation optimization, and does not progressively generate views one step at a time. We further argue that this setting demands coverage-aware evaluation: local smoothness alone rewards methods that never attempt a full orbit. On a frozen 300-prompt T3Bench-derived audit, OrbitForge reconstruction attains a 359.0-degree measured median span, raises originally unsupported-bin Q10 ImageReward from 8.07 to 16.36 relative to MedianGS-only reconstruction, while remaining competitive with VideoMV on the coverage-quality.",
+      "authors": [
+        "Chenrui Fan",
+        "Paolo Favaro"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-06-23T16:50:47+00:00",
+      "link": "https://arxiv.org/pdf/2606.24799v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Text-to-3D scene generation by building 3D Gaussian Splatting from generated video, guided by reconstruction.",
+      "llm_evidence_cn": "通过从生成视频重建3D高斯泼溅实现文本引导的三维场景生成。",
+      "llm_evidence": "通过从生成视频重建3D高斯泼溅实现文本引导的三维场景生成。",
+      "canonical_evidence": "通过从生成视频重建3D高斯泼溅实现文本引导的三维场景生成。",
+      "llm_tldr_en": "OrbitForge converts a text prompt into a 3D Gaussian Splatting scene by first generating a video with a text-to-video model, then reconstructing it with deformable Gaussian Splatting while using the reconstruction to improve video consistency, achieving closed-orbit 3D scenes.",
+      "llm_tldr_cn": "针对文本到视频模型难以直接生成3D一致场景的问题，本文提出OrbitForge。该方法首先利用冻结的视频先验生成一段由文本引导的视频，然后通过可变形高斯泼溅进行初步三维重建，并将重建结果作为锚点来优化视频的3D一致性，最终生成闭环轨道的3D高斯泼溅场景。实验表明，OrbitForge能有效从文本生成具有3D一致性的场景，且无需3D训练数据，为开放世界的文本到3D场景生成提供了一种简单而高效的方案。",
+      "llm_tldr": "针对文本到视频模型难以直接生成3D一致场景的问题，本文提出OrbitForge。该方法首先利用冻结的视频先验生成一段由文本引导的视频，然后通过可变形高斯泼溅进行初步三维重建，并将重建结果作为锚点来优化视频的3D一致性，最终生成闭环轨道的3D高斯泼溅场景。实验表明，OrbitForge能有效从文本生成具有3D一致性的场景，且无需3D训练数据，为开放世界的文本到3D场景生成提供了一种简单而高效的方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.24206v1",
+      "source": "arxiv",
+      "title": "Inclusive Interactive Collisions for Multi-View Consistent Compositional 3D Generation",
+      "abstract": "Recent breakthroughs in 3D generation have advanced notably with the development of text-to-image diffusion model. However, existing methods remain two practical challenges: (1) They primarily generate single 3D object, but struggle to generate multi-object compositional 3D assets due to the lack of the modeling for Gaussian primitives in reasonable interactions. (2) They often suffer from cross-view inconsistency during 3D optimization, as Score Distillation Sampling inherently performs on each single view, inevitably resulting in cross-view hallucinations. To solve above issues, we propose I2C-3D, a novel optimization-based method to generate multi-view consistent compositional 3D assets with reasonable interactions. Specifically, we propose an Inclusive Interactive Collisions strategy to guide Gaussian primitives appearing in reasonable interaction regions naturally, thereby ensuring objects in the compositional scene interact in a physically plausible and visually coherent way. Additionally, to enhance multi-view consistency, Multi-View Adaptive Score Distillation Sampling is devised to distill multi-view consistency prior and layout prior from pre-trained diffusion model by modulating attention map of instance token and spatial token across viewpoints. Benefiting from above elaborate designs, I2C-3D not only generates high-fidelity multi-view consistent compositional 3D assets but also supports 3D editing flexibly, facilitating complex scene generation. Extensive experiments demonstrate our I2C-3D outperforms existing methods in generation quality and multi-view consistency.",
+      "authors": [
+        "Chang Liu",
+        "Mingwen Shao",
+        "Xiang Lv",
+        "Xinyuan Chen",
+        "Lingzhuang Meng",
+        "Qiao Zhang",
+        "Zhengyi Gong",
+        "Jinghao Hu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-06-23T06:48:22+00:00",
+      "link": "https://arxiv.org/pdf/2606.24206v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Generates multi-object compositional 3D assets with interactive collisions and multi-view consistency from text.",
+      "llm_evidence_cn": "从文本生成具有交互碰撞和多视角一致性的组合式3D资产。",
+      "llm_evidence": "从文本生成具有交互碰撞和多视角一致性的组合式3D资产。",
+      "canonical_evidence": "从文本生成具有交互碰撞和多视角一致性的组合式3D资产。",
+      "llm_tldr_en": "Addresses the challenges of generating multi-object 3D scenes with realistic interactions and cross-view consistency by proposing I2C-3D, an optimization method that models Gaussian primitive collisions and uses a multi-view collaborative SDS to achieve consistent compositional generation.",
+      "llm_tldr_cn": "针对现有文本到3D生成方法难以处理多对象组合场景且存在视角不一致问题，本文提出I2C-3D方法，通过建模高斯基元之间的碰撞交互与多视角协同优化，实现了具有合理物理交互和跨视图一致性的组合式3D资产生成，有力推动了复杂场景的自动化建模。",
+      "llm_tldr": "针对现有文本到3D生成方法难以处理多对象组合场景且存在视角不一致问题，本文提出I2C-3D方法，通过建模高斯基元之间的碰撞交互与多视角协同优化，实现了具有合理物理交互和跨视图一致性的组合式3D资产生成，有力推动了复杂场景的自动化建模。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.24232v1",
+      "source": "arxiv",
+      "title": "FiCA: Feed-forward instant Gaussian Codec Avatars from a Single Portrait Image",
+      "abstract": "We introduce FiCA, a Feed-forward, instant Gaussian Codec Avatar generation pipeline that creates lifelike avatars from a single portrait image. Generating a photorealistic and drivable avatar from just a single image is significantly challenging due to the limited visual information available to accurately infer the 3D appearance and geometry of human heads. To address this, we develop a novel system that combines human-centric vision foundation models with a diffusion model. This system is designed to fully exploit partial visual observations to generate lifelike human avatars. Our proposed diffusion model learns a generative mapping from these partial observations to complete and authentic 3D mesh reconstruction. Additionally, we introduce a feed-forward mesh refinement network that enhances the fidelity and identity preservation of the generated avatars, eliminating the need for person-specific test-time optimization. By leveraging a universal prior model that decodes a generated mesh into a set of 3D Gaussians, we generate a photorealistic 3D Gaussian avatar, capable of being driven with novel expressions in real-time. Our experiments demonstrate that the avatars generated by our feed-forward approach faithfully represent diverse identities and surpass the visual quality of avatars produced by recent competing methods.",
+      "authors": [
+        "Kim Youwang",
+        "Zhengyu Yang",
+        "Liuhao Ge",
+        "Yu Rong",
+        "Timur Bagautdinov",
+        "Su Zhaoen",
+        "Nir Sopher",
+        "Jovan Popović",
+        "Teng Deng",
+        "Tae-Hyun Oh",
+        "Chen Cao"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR"
+      ],
+      "published": "2026-06-23T07:22:17+00:00",
+      "link": "https://arxiv.org/pdf/2606.24232v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Generates 3D avatars from a single image, an instance of 3D object generation from images.",
+      "llm_evidence_cn": "从单张图像生成3D虚拟形象，属于从图像生成3D物体的任务。",
+      "llm_evidence": "从单张图像生成3D虚拟形象，属于从图像生成3D物体的任务。",
+      "canonical_evidence": "从单张图像生成3D虚拟形象，属于从图像生成3D物体的任务。",
+      "llm_tldr_en": "FiCA creates photorealistic 3D head avatars from a single portrait using human-centric foundation models and a diffusion model.",
+      "llm_tldr_cn": "FiCA提出从前馈方式借助单张肖像图像生成逼真可驱动的3D头部虚拟形象，融合人体视觉基础模型与扩散模型，从有限观测中补全3D网格几何与外观。方法兼顾生成质量和运行效率，为单图像3D头像创建提供了高效解决方案。",
+      "llm_tldr": "FiCA提出从前馈方式借助单张肖像图像生成逼真可驱动的3D头部虚拟形象，融合人体视觉基础模型与扩散模型，从有限观测中补全3D网格几何与外观。方法兼顾生成质量和运行效率，为单图像3D头像创建提供了高效解决方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.24257v1",
+      "source": "arxiv",
+      "title": "3DCarGen: Scalable 3D Car Generation via 3D-consistent Multi-view Synthesis",
+      "abstract": "High-quality 3D vehicle assets are essential for autonomous driving simulation. Although multi-view diffusion-based paradigms enable controllable single-image reconstruction, they typically produce limited viewpoints and exhibit cross-view geometric inconsistencies, thereby reducing reconstruction fidelity in real-world scenarios. In this work, we introduce 3DCarGen, a scalable single-view 3D car generation framework designed for real-world images by synthesizing an arbitrary number of 3D-consistent multi-view images. Specifically, given a single image as input, we first synthesize a set of images from fixed viewpoints. These images are then fed into a feed-forward reconstruction model, resulting in a coarse 3D representation based on 3D Gaussian Splatting. Conditioned on this explicit 3D prior, our multi-view diffusion model generates 3D-consistent images from arbitrary camera viewpoints. We further extend a fast mesh reconstruction algorithm by incorporating color-normal joint optimization to recover detailed and coherent 3D vehicle models from the synthesized dense views. Extensive experiments on synthetic and real-world datasets demonstrate that our approach achieves robust geometric consistency and reconstruction fidelity compared to existing methods. Code and models will be released.",
+      "authors": [
+        "Hongli Xiao",
+        "Youjian Zhang",
+        "Yaohui Jin",
+        "Xiaoguang Ren",
+        "Wenjing Yang",
+        "Long Lan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-23T07:44:14+00:00",
+      "link": "https://arxiv.org/pdf/2606.24257v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Generates 3D car objects from a single real image by synthesizing 3D-consistent multi-view images and reconstructing.",
+      "llm_evidence_cn": "从单张真实图像合成3D一致的多视角图并重建3D汽车模型。",
+      "llm_evidence": "从单张真实图像合成3D一致的多视角图并重建3D汽车模型。",
+      "canonical_evidence": "从单张真实图像合成3D一致的多视角图并重建3D汽车模型。",
+      "llm_tldr_en": "Proposes 3DCarGen, a scalable single-view 3D car generation framework that first synthesizes an arbitrary number of 3D-consistent multi-view images from a single input, then feeds them into a feed-forward reconstruction model to produce high-fidelity 3D Gaussian car assets for autonomous driving simulation.",
+      "llm_tldr_cn": "针对现有单视图3D汽车重建方法视角有限且存在跨视角不一致导致真实场景重构保真度低的缺陷，本文提出3DCarGen框架，先从单张图像合成任意数量的3D一致性多视图，再利用前馈重建模型生成粗3D高斯表示并细化，实现了可扩展的高质量3D汽车资产生成，对自动驾驶仿真具有重要应用价值。",
+      "llm_tldr": "针对现有单视图3D汽车重建方法视角有限且存在跨视角不一致导致真实场景重构保真度低的缺陷，本文提出3DCarGen框架，先从单张图像合成任意数量的3D一致性多视图，再利用前馈重建模型生成粗3D高斯表示并细化，实现了可扩展的高质量3D汽车资产生成，对自动驾驶仿真具有重要应用价值。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.24301v1",
+      "source": "arxiv",
+      "title": "MM-TRELLIS: Point-Cloud Guided Multi-Modal 3D Vehicle Generation in Autonomous Driving",
+      "abstract": "Recovering realistic 3D vehicle models from autonomous driving scenes is crucial for synthesizing training data and building simulation environment. However, most existing vehicle generation methods fail to fully exploit multimodal sensors i.e. multi-view images and LiDAR point clouds) and rely on neural rendering based reconstruction, leading to low-quality mesh. Recently, native 3D generative models have made significant progress, yet they are not built for arbitrary multi-view inputs and often struggle with in-the-wild driving images. In this work, we present MM-TRELLIS, a multi-modal version of TRELLIS for in-the-wild 3D vehicle generation that integrates LiDAR and image sensors from autonomous driving datasets into native 3D generative models. Specifically, multi-view images are cycled as conditioning inputs, while LiDAR point clouds provide test-time guidance to ensure geometric accuracy and cross-view consistency. During denoising, we first align the guidance point cloud with the model priors, then enforce consistency between the generated geometry and the guidance point cloud. Finally, we introduce a voxel filtering strategy based on the opacity of 3D Gaussian Splatting to suppress floaters and produce clean meshes. Comprehensive experiments on Waymo dataset demonstrate our method outperforms existing methods in high-fidelity 3D vehicle generation. Code is available at https://github.com/HongliXiao/MM-TRELLIS.",
+      "authors": [
+        "Hongli Xiao",
+        "Youjian Zhang",
+        "Yucai Bai",
+        "Chaoyue Wang",
+        "Yaohui Jin",
+        "Xiaoguang Ren",
+        "Wenjing Yang",
+        "Long Lan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-23T08:31:39+00:00",
+      "link": "https://arxiv.org/pdf/2606.24301v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Generates 3D vehicle models from multi-view images and LiDAR, a case of 3D object generation from images.",
+      "llm_evidence_cn": "从多视图图像和LiDAR生成3D车辆模型，属于从图像生成3D物体。",
+      "llm_evidence": "从多视图图像和LiDAR生成3D车辆模型，属于从图像生成3D物体。",
+      "canonical_evidence": "从多视图图像和LiDAR生成3D车辆模型，属于从图像生成3D物体。",
+      "llm_tldr_en": "MM-TRELLIS integrates multi-modal sensor data into a native 3D generative model for high-quality 3D vehicle generation from in-the-wild driving scenes.",
+      "llm_tldr_cn": "MM-TRELLIS将多模态传感器（多视图图像和LiDAR点云）集成到原生3D生成模型TRELLIS中，实现从真实驾驶场景图像生成高质量3D车辆模型。该方法解决了现有生成方法无法利用多模态输入和野外图像的问题，显著提升了网格质量和生成真实感，为自动驾驶仿真提供了有力的数据生成工具。",
+      "llm_tldr": "MM-TRELLIS将多模态传感器（多视图图像和LiDAR点云）集成到原生3D生成模型TRELLIS中，实现从真实驾驶场景图像生成高质量3D车辆模型。该方法解决了现有生成方法无法利用多模态输入和野外图像的问题，显著提升了网格质量和生成真实感，为自动驾驶仿真提供了有力的数据生成工具。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.24353v1",
+      "source": "arxiv",
+      "title": "Open-Vocabulary BEV Segmentation with 3D-Aware Geometric Constraints",
+      "abstract": "Bird's-eye view (BEV) perception fuses multi-camera images into a unified top-down representation for autonomous driving. Despite recent progress, state-of-the-art methods remain confined to closed-set scenarios, making them vulnerable to unpredictable real-world environments. In this work, we introduce open-vocabulary BEV segmentation (OVBS), which leverages vision-language models (VLMs) to recognize categories beyond the training set while maintaining precise BEV perception and real-time efficiency. A key challenge in OVBS lies in the 3D geometric inconsistency inherent in the ill-posed lifting of 2D VLM semantics into BEV. To address this, we propose OVBEVSeg, a geometry-aware OVBS framework that enhances efficient Gaussian splatting (GS)-based unprojection by leveraging robust 3D geometric constraints across three progressive stages: (1) 2D-to-BEV pseudo-labeling via reliable 3D projection for OV generalization; (2) joint 2D-BEV per-scene optimization with BEV structural constraints for 3D geometric consistency; and (3) 3D geometric distillation for online efficiency. On the nuScenes dataset, OVBEVSeg achieves state-of-the-art performance, outperforming closed-set methods by 15.3 mIoU on unseen categories. Remarkably, even with no novel-class ground-truth labels, it remains competitive with self- and semi-supervised baselines trained with up to 40% of ground-truth annotations. Furthermore, it achieves 2.5x faster inference with only 0.22x the memory consumption of projection-based methods. Project page: https://hchoi256.github.io/projects/ovbevseg/.",
+      "authors": [
+        "Hojun Choi",
+        "Seulbin Hwang",
+        "Dae Jung Kim",
+        "Kisung Kim",
+        "Hyunjung Shim",
+        "Jinhan Lee"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-06-23T09:43:12+00:00",
+      "link": "https://arxiv.org/pdf/2606.24353v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Performs open-vocabulary bird's-eye-view semantic segmentation by fusing multi-camera images with 3D geometric constraints.",
+      "llm_evidence_cn": "通过三维几何约束融合多摄像头图像，进行开放词汇的鸟瞰视图语义分割，可在3D场景中识别任意类别。",
+      "llm_evidence": "通过三维几何约束融合多摄像头图像，进行开放词汇的鸟瞰视图语义分割，可在3D场景中识别任意类别。",
+      "canonical_evidence": "通过三维几何约束融合多摄像头图像，进行开放词汇的鸟瞰视图语义分割，可在3D场景中识别任意类别。",
+      "llm_tldr_en": "OVBEVSeg introduces open-vocabulary BEV segmentation by leveraging VLMs and Gaussian splatting with 3D-aware geometric constraints to resolve 2D-to-3D inconsistency, achieving real-time novel category segmentation.",
+      "llm_tldr_cn": "现有BEV感知局限于闭集类别，本文提出开放词汇BEV分割框架，利用视觉语言模型和高效高斯抛雪球方法，通过三维几何约束解决2D语义到BEV的转换不一致问题，实现对训练集外类别的实时分割。该方法为自动驾驶等场景提供了更灵活可扩展的3D场景理解能力。",
+      "llm_tldr": "现有BEV感知局限于闭集类别，本文提出开放词汇BEV分割框架，利用视觉语言模型和高效高斯抛雪球方法，通过三维几何约束解决2D语义到BEV的转换不一致问题，实现对训练集外类别的实时分割。该方法为自动驾驶等场景提供了更灵活可扩展的3D场景理解能力。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.24874v1",
+      "source": "arxiv",
+      "title": "FLUX3D: High-Fidelity 3D Gaussian Generation with Diffusion-Aligned Sparse Representation",
+      "abstract": "Sparse voxel representation has emerged as a scalable foundation for image-to-3D Gaussian Splatting (3DGS) generation, yet current methods struggle to preserve high-frequency visual details of input images due to two structural bottlenecks. First, they adopt discriminative 2D features optimized for semantic abstraction to construct sparse voxel latents, which suppress reconstructive cues and induce a representation bottleneck. Second, in the generation stage, standard diffusion transformers lack effective mechanisms to align dense 2D image tokens with sparse 3D voxel latents, resulting in a cross-modal correspondence bottleneck. To address these issues, we propose FLUX3D, a scalable image-to-3DGS framework that boosts both representation learning and cross-modal alignment during generation. We first revisit 2D feature selection for sparse-voxel-based 3D representation learning, propose Diffusion-Aligned Structured Latents (DA-SLAT) and couple it with a decoder-only architecture to improve 3DGS reconstruction fidelity. We also design a sparse-structure-aware diffusion framework, which integrates the Sparse-structure Multimodal Diffusion Transformer (SMDiT) and Modal-Aware Rotary Positional Embedding (MARoPE) to achieve geometry-agnostic 2D-3D alignment. Extensive benchmark experiments demonstrate that FLUX3D yields substantial improvements in appearance fidelity and significantly outperforms all state-of-the-art (SOTA) methods in generating high-quality 3DGS assets.",
+      "authors": [
+        "Haorui Ji",
+        "Weizhe Liu",
+        "Hongdong Li",
+        "Hengkai Guo"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-06-23T17:52:21+00:00",
+      "link": "https://arxiv.org/pdf/2606.24874v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Image-to-3D Gaussian Splatting generation",
+      "llm_evidence_cn": "从单张图像生成3D高斯泼溅",
+      "llm_evidence": "从单张图像生成3D高斯泼溅",
+      "canonical_evidence": "从单张图像生成3D高斯泼溅",
+      "llm_tldr_en": "FLUX3D proposes a scalable image-to-3DGS framework that addresses representation and cross-modal correspondence bottlenecks by using reconstructively-aligned 2D features and aligning dense image tokens with sparse 3D voxels via a diffusion transformer, achieving high-fidelity 3D generation.",
+      "llm_tldr_cn": "针对现有图像到3D生成方法中特征抑制重建线索和跨模态对齐不足的问题，FLUX3D提出一种可扩展框架，通过重建对齐的二维特征与扩散变换器对齐稀疏三维体素，实现高保真三维高斯泼溅生成。在多个基准上，该方法在几何细节和纹理保真度上显著优于先前工作，为图像到3D生成提供了新的性能标杆。",
+      "llm_tldr": "针对现有图像到3D生成方法中特征抑制重建线索和跨模态对齐不足的问题，FLUX3D提出一种可扩展框架，通过重建对齐的二维特征与扩散变换器对齐稀疏三维体素，实现高保真三维高斯泼溅生成。在多个基准上，该方法在几何细节和纹理保真度上显著优于先前工作，为图像到3D生成提供了新的性能标杆。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.24876v1",
+      "source": "arxiv",
+      "title": "FLAT: Feedforward Latent Triangle Splatting for Geometrically Accurate Scene Generation",
+      "abstract": "Generating explorable 3D scenes from a single image requires strong generative priors and accurate geometric representations suitable for downstream use. Current video diffusion models offer high-quality generation and implicitly encode multi-view geometric structure in latent space. However, existing feedforward latent scene decoders typically output volumetric 3D Gaussians that lack a well-defined surface, limiting their use in simulation or standard graphics pipelines. This motivates decoding surface-aligned primitives that are not only renderable but also closer to explicit geometric assets. We ask whether compressed video diffusion latents can be mapped directly to explicit surface primitives in a single pass. To this end, we introduce FLAT and, for the first time, show that triangle splats can be decoded directly from video diffusion latents. Compared with decoding 3D Gaussians, predicting flat primitives is notoriously more challenging due to high sensitivity to primitive orientations, oftentimes leading to poor gradient flow. FLAT solves with two key ingredients: a ray-centered rotation parameterization for triangle regression and a novel product window function that improves gradient flow during differentiable triangle rendering. On standard benchmarks, FLAT achieves significantly better geometric accuracy while maintaining competitive visual quality compared to state-of-the-art feedforward baselines. We further show that a lightweight test-time refinement step converts the predicted triangle soup into a fully opaque, game-engine-ready representation that supports real-time rendering. By evaluating 3DGS, 2DGS, and triangle splatting variants under an identical training setup, we provide the first systematic analysis of representation tradeoffs in feedforward scene generation. The project page is available at https://flat-splat.github.io",
+      "authors": [
+        "Orest Kupyn",
+        "Goutam Bhat",
+        "Philipp Henzler",
+        "Fabian Manhardt",
+        "Christian Rupprecht",
+        "Federico Tombari"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-23T17:53:41+00:00",
+      "link": "https://arxiv.org/pdf/2606.24876v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Single-image 3D scene generation using video diffusion multi-view priors",
+      "llm_evidence_cn": "利用视频扩散多视图先验的单图像三维场景生成",
+      "llm_evidence": "利用视频扩散多视图先验的单图像三维场景生成",
+      "canonical_evidence": "利用视频扩散多视图先验的单图像三维场景生成",
+      "llm_tldr_en": "FLAT maps compressed video diffusion latents to explicit surface primitives (triangles) in a single feedforward pass, generating explorable 3D scenes from a single image with accurate geometry.",
+      "llm_tldr_cn": "针对当前前馈场景解码器生成体素高斯缺乏明确表面导致无法用于标准图形管线的问题，本文提出FLAT，直接从压缩视频扩散潜变量映射到显式表面三角形基元。该方法保持与原始潜空间的一致性并保留多视图结构，实现了从单张图像生成可探索且几何准确的3D场景，为仿真和图形学应用提供了几何资产。",
+      "llm_tldr": "针对当前前馈场景解码器生成体素高斯缺乏明确表面导致无法用于标准图形管线的问题，本文提出FLAT，直接从压缩视频扩散潜变量映射到显式表面三角形基元。该方法保持与原始潜空间的一致性并保留多视图结构，实现了从单张图像生成可探索且几何准确的3D场景，为仿真和图形学应用提供了几何资产。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.18787v1",
+      "source": "arxiv",
+      "title": "Learned Radius Estimation for UDF-Based Point Cloud Reconstruction",
+      "abstract": "Surface reconstruction from point clouds is important for consumer-grade 3D capture, including AR/VR and indoor scanning. Local-patch Unsigned Distance Field (UDF) methods are lightweight and generalizable, but their accuracy depends on the support radius, traditionally fixed or selected by a one-dimensional curvature heuristic that cannot capture heterogeneous local geometry. We propose a learned per-query radius selector that predicts a continuous support radius and plugs into a frozen LoSF-UDF backbone. The selector is trained using off-grid target radii obtained by parabolic interpolation of cached UDF error curves. Experiments show improved fine-scale reconstruction accuracy.",
+      "authors": [
+        "Eito Ogawa",
+        "Hiroshi Watanabe"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-17T07:59:18+00:00",
+      "link": "https://arxiv.org/pdf/2606.18787v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Point cloud surface reconstruction improvement via learned radius estimation",
+      "llm_evidence_cn": "通过学习半径估计改进点云表面重建",
+      "llm_evidence": "通过学习半径估计改进点云表面重建",
+      "canonical_evidence": "通过学习半径估计改进点云表面重建",
+      "llm_tldr_en": "The paper proposes a learned per-query radius selector for unsigned distance field-based surface reconstruction from point clouds, improving accuracy by adapting support radii to local geometry, which can benefit multi-view stereo pipelines.",
+      "llm_tldr_cn": "针对点云表面重建中支撑半径固定无法捕获局部几何异质性的问题，本文提出一种学习式的逐查询半径选择器。该方法预测连续支撑半径并嵌入冻结的UDF主干网络，在精细化重建上取得更好精度，可改善多视图立体生成的表面重建质量。",
+      "llm_tldr": "针对点云表面重建中支撑半径固定无法捕获局部几何异质性的问题，本文提出一种学习式的逐查询半径选择器。该方法预测连续支撑半径并嵌入冻结的UDF主干网络，在精细化重建上取得更好精度，可改善多视图立体生成的表面重建质量。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "multi-view stereo 3D reconstruction",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.21596v1",
+      "source": "arxiv",
+      "title": "$φ$-Scene: Physically Grounded Image-to-3D Scene Reconstruction",
+      "abstract": "Reconstructing compositional 3D scenes from a single image is a fundamental challenge in 3D world modeling. Recent methods can recover high-fidelity, complete 3D objects and predict plausible scene arrangements, but most still treat scene reconstruction primarily as a visual and geometric prediction problem. Their outputs may therefore contain floating objects, interpenetrations, or unstable-contact artifacts, limiting their physical validity and downstream usability in simulation, robotics, and interactive environments. We present $φ$-Scene, a physically grounded approach to open-vocabulary and compositional image-to-3D scene reconstruction. The key premise is that a reconstructed scene should not be treated merely as a set of objects with predicted poses, but as a stable physical system. Accordingly, $φ$-Scene formulates reconstruction as topology-driven physical assembly: it infers how objects support one another, orders them accordingly, and progressively settles each object against its already stabilized support context. For each object in topological order, SDF-based optimization first resolves penetrations against the pre-settled support context, and rigid-body simulation then settles the object into a stable contact configuration under real-world physical constraints. Experiments on 3D-Front show that $φ$-Scene achieves the strongest overall performance among out-of-domain methods and remains highly competitive with in-domain baselines. Human and VLM evaluations further show strong preference for $φ$-Scene in visual quality, reference alignment, and physical plausibility. Finally, dedicated physical plausibility metrics covering static contact quality and dynamic stability demonstrate that $φ$-Scene substantially reduces penetration artifacts while producing much lower post-simulation drift, indicating more stable and physically grounded 3D scenes.",
+      "authors": [
+        "Haodong Li",
+        "Lulu Shao",
+        "Haolin Lu",
+        "Yu Fu",
+        "Yen-Ru Chen",
+        "Seemandhar Jain",
+        "Manmohan Chandraker"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-19T16:50:48+00:00",
+      "link": "https://arxiv.org/pdf/2606.21596v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Reconstructs 3D scenes from images with physical validity constraints; related to 3D scene reconstruction.",
+      "llm_evidence_cn": "从图像重建3D场景并施加物理有效性约束，与3D场景重建任务相关。",
+      "llm_evidence": "从图像重建3D场景并施加物理有效性约束，与3D场景重建任务相关。",
+      "canonical_evidence": "从图像重建3D场景并施加物理有效性约束，与3D场景重建任务相关。",
+      "llm_tldr_en": "The paper presents φ-Scene, a method for reconstructing physically plausible 3D scenes from a single image, addressing floating and interpenetration artifacts by enforcing physical constraints.",
+      "llm_tldr_cn": "本文提出了φ-Scene，一种从单张图像重建物理合理3D场景的方法，通过引入物理约束解决物体漂浮、穿透等伪影问题。方法将场景重建视为不仅预测几何，还确保物理稳定性，从而提升在模拟和机器人等下游应用中的可用性。实验表明，相比纯视觉几何方法，φ-Scene能生成更可靠的场景布局，为图像到3D重建带来了物理感知。",
+      "llm_tldr": "本文提出了φ-Scene，一种从单张图像重建物理合理3D场景的方法，通过引入物理约束解决物体漂浮、穿透等伪影问题。方法将场景重建视为不仅预测几何，还确保物理稳定性，从而提升在模拟和机器人等下游应用中的可用性。实验表明，相比纯视觉几何方法，φ-Scene能生成更可靠的场景布局，为图像到3D重建带来了物理感知。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.24829v1",
+      "source": "arxiv",
+      "title": "GeoT2V-Bench: Benchmarking 3D Consistency in Text-to-Video Models via 3D Reconstruction",
+      "abstract": "Camera-prompted text-to-video (T2V) models are increasingly used to synthesize virtual camera captures, such as orbiting objects or moving through static scenes. For these outputs, visual plausibility is insufficient: the generated frames should also provide coherent multi-view evidence for a single static 3D scene. We introduce GeoT2V-Bench, a reconstruction-based diagnostic benchmark for evaluating whether camera-prompted T2V clips can support explicit rigid 3D reconstruction. Our pipeline estimates per-frame camera intrinsics and poses with VGGT-style geometry estimation, fits DeformableGS, derives a static MedianGS proxy by temporal-median aggregation, and renders this proxy along the estimated camera path. Instead of producing a pass/fail label or a single scalar score, GeoT2V-Bench reports a continuous reconstruction profile covering apparent image motion, estimated trajectory behavior, MedianGS static rendering error, static-render flow agreement, and the gap between flexible and static fits. On a fair-format four-seed evaluation with 3,840 completed reconstructions from 12 open-weight model configurations and 80 GeCo-Eval static-scene prompts, we find that visible motion, static rendering error, flow agreement, and flexible-vs-static behavior often disagree. GeoT2V-Bench therefore captures complementary failure modes that emerge when generated videos are tested as global static-scene acquisitions.",
+      "authors": [
+        "Chenrui Fan",
+        "Paolo Favaro"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-23T17:12:21+00:00",
+      "link": "https://arxiv.org/pdf/2606.24829v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Diagnostic benchmark for evaluating 3D consistency of text-to-video models via multi-view 3D reconstruction.",
+      "llm_evidence_cn": "通过多视图3D重建评估文生视频模型3D一致性的诊断基准。",
+      "llm_evidence": "通过多视图3D重建评估文生视频模型3D一致性的诊断基准。",
+      "canonical_evidence": "通过多视图3D重建评估文生视频模型3D一致性的诊断基准。",
+      "llm_tldr_en": "GeoT2V-Bench evaluates text-to-video generations via rigid 3D reconstruction and computes consistency metrics.",
+      "llm_tldr_cn": "针对文生视频模型生成的多视角片段是否支持一致性3D重建的问题，本文提出GeoT2V-Bench基准。该基准通过估计相机参数、拟合可变形高斯和聚合中值静态代理，生成重建误差和投影PSNR等指标，定量评估3D一致性。该方法为文生视频模型的3D生成能力提供了可靠的诊断工具。",
+      "llm_tldr": "针对文生视频模型生成的多视角片段是否支持一致性3D重建的问题，本文提出GeoT2V-Bench基准。该基准通过估计相机参数、拟合可变形高斯和聚合中值静态代理，生成重建误差和投影PSNR等指标，定量评估3D一致性。该方法为文生视频模型的3D生成能力提供了可靠的诊断工具。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
