@@ -6,58 +6,46 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-24
-- 运行时间：2026-06-24 21:57:51 UTC
+- 最新运行日期：2026-06-25
+- 运行时间：2026-06-25 21:59:42 UTC
 - 运行状态：成功
-- 本次总论文数：12
-- 精读区：8
-- 速读区：4
+- 本次总论文数：8
+- 精读区：6
+- 速读区：2
 
 ### 今日简报（AI）
-今日精读两篇满分论文，分别用随机符号距离过程构建连续几何场，以及通过重建锚定视频合成实现文本到3D场景生成。
-最值得关注的两条突破：隐式场的随机建模让几何生成更稳健，而视频先验加3D重建则为零样本场景生成提供了新锚点。
-建议读者跟进将概率化隐式表示与多视图先验结合的思路，这是高精度3D内容创作的下一个发力点。
-- 详情：[/202606/24/README](/202606/24/README)
+今日精读两篇Top论文：异构快照蒸馏刷新3D语义分割上限，自回归2D先验驱动高保真车辆生成。
+最值得关注的方向：用蒸馏压缩3D感知模型（10.0分）与2D→3D生成新范式（9.0分），均瞄准真实应用的高效与高质。
+普通读者可先看10.0分蒸馏工作，其异构适配设计对多数3D视觉任务有直接迁移潜力。
+- 详情：[/202606/25/README](/202606/25/README)
 
 ### 精读区论文标签
-1. [Stochastic Signed Distance Processes](/202606/24/2606.20856v2-stochastic-signed-distance-processes)  
+1. [Heterogeneous and Adept Snapshot Distillation for 3D Semantic Segmentation](/202606/25/2606.25278v1-heterogeneous-and-adept-snapshot-distillation-for-3d-semantic-segmentation)  
    标签：评分：10.0/10、query:d-gen-recon
-   evidence：基于SDF的多视图表面重建的概率重新表述。
-2. [OrbitForge: Text-to-3D Scene Generation via Reconstruction-Anchored Video Synthesis](/202606/24/2606.24799v1-orbitforge-text-to-3d-scene-generation-via-reconstruction-anchored-video-synthesis)  
-   标签：评分：10.0/10、query:d-gen-recon
-   evidence：通过从生成视频重建3D高斯泼溅实现文本引导的三维场景生成。
-3. [Inclusive Interactive Collisions for Multi-View Consistent Compositional 3D Generation](/202606/24/2606.24206v1-inclusive-interactive-collisions-for-multi-view-consistent-compositional-3d-generation)  
+   evidence：三维语义分割的知识蒸馏
+2. [HiFiVe: High-Fidelity Vehicle Generation Leveraging Auto-Regressive 2D Generative Priors](/202606/25/2606.25300v1-hifive-high-fidelity-vehicle-generation-leveraging-auto-regressive-2d-generative-priors)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：从文本生成具有交互碰撞和多视角一致性的组合式3D资产。
-4. [FiCA: Feed-forward instant Gaussian Codec Avatars from a Single Portrait Image](/202606/24/2606.24232v1-fica-feed-forward-instant-gaussian-codec-avatars-from-a-single-portrait-image)  
+   evidence：使用二维生成先验生成三维车辆，确保跨视图一致性
+3. [PRISM: Feed-Forward Single-Image 3D Reconstruction via Geometric Warp-Residual Modeling](/202606/25/2606.25430v1-prism-feed-forward-single-image-3d-reconstruction-via-geometric-warp-residual-modeling)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：从单张图像生成3D虚拟形象，属于从图像生成3D物体的任务。
-5. [3DCarGen: Scalable 3D Car Generation via 3D-consistent Multi-view Synthesis](/202606/24/2606.24257v1-3dcargen-scalable-3d-car-generation-via-3d-consistent-multi-view-synthesis)  
+   evidence：前馈单图像三维重建，直接从图像生成3D场景。
+4. [LinStereo: Linear-Complexity Global Attention for Multi-Scale Iterative Stereo Matching](/202606/25/2606.25437v1-linstereo-linear-complexity-global-attention-for-multi-scale-iterative-stereo-matching)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：从单张真实图像合成3D一致的多视角图并重建3D汽车模型。
-6. [MM-TRELLIS: Point-Cloud Guided Multi-Modal 3D Vehicle Generation in Autonomous Driving](/202606/24/2606.24301v1-mm-trellis-point-cloud-guided-multi-modal-3d-vehicle-generation-in-autonomous-driving)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：从多视图图像和LiDAR生成3D车辆模型，属于从图像生成3D物体。
-7. [Open-Vocabulary BEV Segmentation with 3D-Aware Geometric Constraints](/202606/24/2606.24353v1-open-vocabulary-bev-segmentation-with-3d-aware-geometric-constraints)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：通过三维几何约束融合多摄像头图像，进行开放词汇的鸟瞰视图语义分割，可在3D场景中识别任意类别。
-8. [FLUX3D: High-Fidelity 3D Gaussian Generation with Diffusion-Aligned Sparse Representation](/202606/24/2606.24874v1-flux3d-high-fidelity-3d-gaussian-generation-with-diffusion-aligned-sparse-representation)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：从单张图像生成3D高斯泼溅
+   evidence：带全局注意力的立体匹配，用于多视图重建
+5. [Lighting-Consistent Object Transfer Across Radiance Fields](/202606/25/2606.22481v1-lighting-consistent-object-transfer-across-radiance-fields)  
+   标签：评分：8.0/10、query:d-gen-recon
+   evidence：通过扩散模型在3D场景间迁移物体并实现光照协调
+6. [Pose Anything Anywhere:Model-free Object Poses from Arbitrary References](/202606/25/2606.23634v1-pose-anything-anywheremodel-free-object-poses-from-arbitrary-references)  
+   标签：评分：8.0/10、query:d-gen-recon
+   evidence：无模型多视图姿态估计，学习跨视图对齐线索
 
 ### 速读区论文标签
-1. [FLAT: Feedforward Latent Triangle Splatting for Geometrically Accurate Scene Generation](/202606/24/2606.24876v1-flat-feedforward-latent-triangle-splatting-for-geometrically-accurate-scene-generation)  
+1. [From Sparse and Imperfect 2D Anchors to Consistent 3D Gaussian Street Scenes: Support-Aware Appearance](/202606/25/2606.26007v1-from-sparse-and-imperfect-2d-anchors-to-consistent-3d-gaussian-street-scenes-support-aware-appearance)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：利用视频扩散多视图先验的单图像三维场景生成
-2. [Learned Radius Estimation for UDF-Based Point Cloud Reconstruction](/202606/24/2606.18787v1-learned-radius-estimation-for-udf-based-point-cloud-reconstruction)  
+   evidence：多视图3D场景重建
+2. [REDI-Match: Rotation-Equivariant Distillation for Efficient and Robust Dense Matching](/202606/25/2606.24330v1-redi-match-rotation-equivariant-distillation-for-efficient-and-robust-dense-matching)  
    标签：评分：7.0/10、query:d-gen-recon
-   evidence：通过学习半径估计改进点云表面重建
-3. [GeoT2V-Bench: Benchmarking 3D Consistency in Text-to-Video Models via 3D Reconstruction](/202606/24/2606.24829v1-geot2v-bench-benchmarking-3d-consistency-in-text-to-video-models-via-3d-reconstruction)  
-   标签：评分：7.0/10、query:d-gen-recon
-   evidence：通过多视图3D重建评估文生视频模型3D一致性的诊断基准。
-4. [$φ$-Scene: Physically Grounded Image-to-3D Scene Reconstruction](/202606/24/2606.21596v1--scene-physically-grounded-image-to-3d-scene-reconstruction)  
-   标签：评分：6.0/10、query:d-gen-recon
-   evidence：从图像重建3D场景并施加物理有效性约束，与3D场景重建任务相关。
+   evidence：高效的密集特征匹配，对旋转鲁棒，可应用于多视图对应
 
 
 <div class="dpr-home-promo-card">

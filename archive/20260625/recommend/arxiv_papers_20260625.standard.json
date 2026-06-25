@@ -1,0 +1,339 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-25T21:51:20.772540+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 7,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2606.25278v1",
+      "source": "arxiv",
+      "title": "Heterogeneous and Adept Snapshot Distillation for 3D Semantic Segmentation",
+      "abstract": "Multi-modal fusion and multi-model ensembling are prevalent in enhancing the performance of 3D semantic segmentation. Despite the impressive performance, these methods either rely on auxiliary input signals or suffer from costly computational expense. To efficaciously enhance the segmentation performance without introducing intolerable costs, we propose to transfer the rich knowledge from the multi-modal model (i.e., point clouds and images) and multiple model experts to the point-cloudbased network through knowledge distillation. Specifically, we present Information-oriented Heterogeneous Distillation (IHD) to help the uni-modal model absorb the complementary knowledge from the multi-modal teacher. We design the Information-Oriented Filtering (IOF) strategy to select informative images from the continuous image sequence for multi-modal fusion. This practice can boost the performance of the multi-modal teacher, thus benefiting the learning of the student. Besides, as opposed to vanilla model ensembling that requires the separate training of each expert, we propose Adept Snapshot Distillation (ASD). ASD treats the freely available model snapshots generated during the training phase as multiple experts, which significantly reduces the training cost for model ensembling. For each expert teacher, it only provides supervision to the student in the class where it is adept. The resulting Heterogeneous and Adept Snapshot Knowledge Distillation, dubbed HAS-KD, attains state-of-the-art results on ScanNetV2 and S3DIS datasets. HAS-KD can be seamlessly integrated into contemporary 3D segmentation algorithms and bring considerable gains without introducing extra inference burdens. The code will be made publicly available upon publication.",
+      "authors": [
+        "Xiaopei Wu",
+        "Yuenan Hou",
+        "Junkai Xu",
+        "Wenxiao Wang",
+        "Binbin Lin",
+        "Yu Li",
+        "Ping Li",
+        "Haifeng Liu",
+        "Deng Cai",
+        "Wanli Ouyang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-06-24T01:31:22+00:00",
+      "link": "https://arxiv.org/pdf/2606.25278v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Knowledge distillation for 3D semantic segmentation",
+      "llm_evidence_cn": "三维语义分割的知识蒸馏",
+      "llm_evidence": "三维语义分割的知识蒸馏",
+      "canonical_evidence": "三维语义分割的知识蒸馏",
+      "llm_tldr_en": "This paper proposes heterogeneous distillation to transfer multimodal knowledge to a point-cloud-only network for efficient and accurate 3D semantic segmentation.",
+      "llm_tldr_cn": "三维语义分割的多模态融合提升效果但计算昂贵。本文提出异构蒸馏与快照蒸馏，将多模态教师（点云+图像）的知识迁移至纯点云学生网络，在不增加推理负担下大幅提升点云分割性能。实验表明该方法接近多模态模型精度，推断速度明显更快，为高效三维分割提供了可行路径。",
+      "llm_tldr": "三维语义分割的多模态融合提升效果但计算昂贵。本文提出异构蒸馏与快照蒸馏，将多模态教师（点云+图像）的知识迁移至纯点云学生网络，在不增加推理负担下大幅提升点云分割性能。实验表明该方法接近多模态模型精度，推断速度明显更快，为高效三维分割提供了可行路径。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.25300v1",
+      "source": "arxiv",
+      "title": "HiFiVe: High-Fidelity Vehicle Generation Leveraging Auto-Regressive 2D Generative Priors",
+      "abstract": "Existing 3D vehicle generation methods often suffer from low geometric fidelity and blurry textures, hindering their downstream applications. While recent works adopt multi-view diffusion models for high-fidelity texture, they are often constrained by fixed viewpoints, limited resolution, and a reliance on costly fine-tuning to achieve cross-view consistency. In this paper, we propose HiFiVe, a training-free framework for high-fidelity vehicle modeling through joint texture and geometry enhancement by imposing 3D geometric constraints to anchor 2D generative priors. Specifically, we propose an auto-regressive texture refinement pipeline that progressively synthesizes high-resolution textures from arbitrary viewpoints. To ensure cross-view consistency, the coarse geometry serves as a synchronization prior, conditioning each generation step on previously synthesized frames via depth-based warping and multi-view texture fusion. Moreover, the inherent symmetry of vehicles is exploited to mitigate error accumulation. Finally, high-frequency surface details are recovered by refining the mesh geometry using normal maps estimated from the enhanced textures. Extensive experiments on synthetic and real-world vehicle datasets demonstrate that our method significantly improves both geometric detail and texture quality compared to state-of-the-art baselines.",
+      "authors": [
+        "Hongli Xiao",
+        "Youjian Zhang",
+        "Qi Zheng",
+        "Zhaohui Hu",
+        "Yaohui Jin",
+        "Xiaoguang Ren",
+        "Wenjing Yang",
+        "Long Lan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-24T02:00:08+00:00",
+      "link": "https://arxiv.org/pdf/2606.25300v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "3D vehicle generation using 2D generative priors with cross-view consistency",
+      "llm_evidence_cn": "使用二维生成先验生成三维车辆，确保跨视图一致性",
+      "llm_evidence": "使用二维生成先验生成三维车辆，确保跨视图一致性",
+      "canonical_evidence": "使用二维生成先验生成三维车辆，确保跨视图一致性",
+      "llm_tldr_en": "HiFiVe is a training-free framework for high-fidelity 3D vehicle generation, using auto-regressive texture refinement and 3D geometric constraints to anchor 2D generative priors for cross-view consistency.",
+      "llm_tldr_cn": "本文针对三维车辆生成中的低几何真度和模糊纹理问题，提出HiFiVe框架，通过三维几何约束锚定二维生成先验，自回归渐进式合成高分辨率纹理，无需微调即可确保跨视图一致性，实现了高保真车辆建模，为三维物体生成提供了新思路。",
+      "llm_tldr": "本文针对三维车辆生成中的低几何真度和模糊纹理问题，提出HiFiVe框架，通过三维几何约束锚定二维生成先验，自回归渐进式合成高分辨率纹理，无需微调即可确保跨视图一致性，实现了高保真车辆建模，为三维物体生成提供了新思路。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.25430v1",
+      "source": "arxiv",
+      "title": "PRISM: Feed-Forward Single-Image 3D Reconstruction via Geometric Warp-Residual Modeling",
+      "abstract": "Reconstructing 3D scenes from a single image is a fundamental challenge in computer vision, with broad applications in virtual reality, robotics, and content creation. Recent methods achieve outstanding performance by leveraging camera-controlled video diffusion models, but rely on iterative diffusion sampling, which greatly limits their practical deployment. We observe that geometric forward warping alone can cover the majority of a target view directly from the input image, with only a compact residual left for the encoder to correct. Motivated by this observation, we propose PRISM, a feed-forward framework that decomposes multi-view latent prediction into a parameter-free geometric prior and a learned residual correction, with no diffusion sampling required at inference. To enable generalization from purely synthetic training data, we devise a two-stage training strategy combining latents supervised distillation for geometric generalization and perceptual fine-tuning for appearance quality optimization. Extensive experiments on three benchmarks demonstrate that PRISM achieves competitive reconstruction quality compared with diffusion-based methods, while reducing inference time dramatically to only 36 seconds per scene.",
+      "authors": [
+        "Zhijie Zheng",
+        "Xinhao Xiang",
+        "Jiawei Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-24T05:48:20+00:00",
+      "link": "https://arxiv.org/pdf/2606.25430v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Feed-forward single-image 3D reconstruction, directly generating 3D scenes from images.",
+      "llm_evidence_cn": "前馈单图像三维重建，直接从图像生成3D场景。",
+      "llm_evidence": "前馈单图像三维重建，直接从图像生成3D场景。",
+      "canonical_evidence": "前馈单图像三维重建，直接从图像生成3D场景。",
+      "llm_tldr_en": "PRISM decomposes multi-view prediction from a single image into a geometric warp prior and a learned residual correction, achieving efficient feed-forward 3D reconstruction without iterative diffusion.",
+      "llm_tldr_cn": "PRISM针对相机控制扩散模型在单图像3D重建中推理慢的问题，提出前馈框架。将多视图潜在预测分解为无需参数的几何变形先验和可学习的残差校正，避免了迭代采样。实验表明PRISM重建速度快且质量高，在多个基准上达到或超越扩散模型性能，显著提升实用性，为实时3D内容生成开辟了道路。",
+      "llm_tldr": "PRISM针对相机控制扩散模型在单图像3D重建中推理慢的问题，提出前馈框架。将多视图潜在预测分解为无需参数的几何变形先验和可学习的残差校正，避免了迭代采样。实验表明PRISM重建速度快且质量高，在多个基准上达到或超越扩散模型性能，显著提升实用性，为实时3D内容生成开辟了道路。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.25437v1",
+      "source": "arxiv",
+      "title": "LinStereo: Linear-Complexity Global Attention for Multi-Scale Iterative Stereo Matching",
+      "abstract": "Existing Vision Foundation Model (VFM)-based iterative stereo pipelines under-exploit three information pathways: multi-scale backbone features are collapsed into single-level correlations, geometric priors remain untapped at initialization, and context propagates only locally. These gaps widen under degraded photometric cues, making underwater scenes a stringent generalization test. To address this, we propose LinStereo, built upon Depth Anything V3, whose core is a Position-Aware Linear Attention (PALA) module that replaces local recurrence with global aggregation at linear cost, propagating reliable estimates from well-matched regions into degraded areas while preserving disparity structure. PALA is made effective by two enabling components: Hierarchical Semantic Cost Volumes (HSCV), which supply scale-aligned correlations from the VFM feature hierarchy, and a Depth Prior Initialization (DPI) that converts monocular depth into a metrically calibrated warm start. LinStereo achieves state-of-the-art-level accuracy on standard benchmarks and strong cross-domain generalization, particularly on underwater scene where severe photometric degradation makes stereo matching particularly challenging, attaining the best overall accuracy with consistent gains 28% lower AbsRel on TartanAir-UW, 26% on SQUID, a real-world underwater dataset).",
+      "authors": [
+        "Yiran Wang",
+        "Oliver Turner",
+        "Viorela Ila"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-24T05:58:03+00:00",
+      "link": "https://arxiv.org/pdf/2606.25437v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "stereo matching with global attention for multi-view reconstruction",
+      "llm_evidence_cn": "带全局注意力的立体匹配，用于多视图重建",
+      "llm_evidence": "带全局注意力的立体匹配，用于多视图重建",
+      "canonical_evidence": "带全局注意力的立体匹配，用于多视图重建",
+      "llm_tldr_en": "LinStereo introduces a position-aware linear attention module into iterative stereo matching, enabling global context aggregation at linear cost, improving stereo accuracy especially in challenging underwater scenes.",
+      "llm_tldr_cn": "本文针对迭代立体匹配中多尺度特征塌缩、几何先验未利用及局部上下文传播不充分的问题，提出LinStereo，基于位置感知线性注意力模块以线性复杂度实现全局聚合，将可靠区域的估计传播到退化区域，在水下等挑战性场景下提升了立体匹配精度和泛化性。",
+      "llm_tldr": "本文针对迭代立体匹配中多尺度特征塌缩、几何先验未利用及局部上下文传播不充分的问题，提出LinStereo，基于位置感知线性注意力模块以线性复杂度实现全局聚合，将可靠区域的估计传播到退化区域，在水下等挑战性场景下提升了立体匹配精度和泛化性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "multi-view stereo 3D reconstruction",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.22481v1",
+      "source": "arxiv",
+      "title": "Lighting-Consistent Object Transfer Across Radiance Fields",
+      "abstract": "3D Gaussian Splatting (3DGS) is widely used to capture and render real scenes. Compositing objects from one capture into another has applications in many domains, such as VFX, architecture and interior design, or marketing. However, extracting an object from a source scene and naively pasting it into a target scene will fail to produce realistic results due to the different lighting conditions between the two scenes. To address this problem, we introduce a diffusion model that harmonizes naively composited images with inconsistent lighting. The model is trained with a heterogeneous dataset of image pairs (inconsistent composite input, consistent output), combining synthetic, generated, and real data. Our complete 3D solution allows a user to extract an object from the source scene and composite it into the target scene. From this, the (inconsistent) views of the target scene with the composite object are rendered. Our diffusion model harmonizes each one of these views, which are finally consolidated in a 3DGS representation with a post-optimization step. Our method provides visually compelling results, making object transfer between 3DGS easy to use and significantly improving quality compared to previous methods.",
+      "authors": [
+        "Nicolás Violante",
+        "George Kopanas",
+        "Linus Franke",
+        "Julien Philip",
+        "George Drettakis"
+      ],
+      "primary_category": "cs.GR",
+      "categories": [
+        "cs.GR",
+        "cs.CV"
+      ],
+      "published": "2026-06-21T12:50:07+00:00",
+      "link": "https://arxiv.org/pdf/2606.22481v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "transfers objects between 3D scenes with lighting harmonization via diffusion model",
+      "llm_evidence_cn": "通过扩散模型在3D场景间迁移物体并实现光照协调",
+      "llm_evidence": "通过扩散模型在3D场景间迁移物体并实现光照协调",
+      "canonical_evidence": "通过扩散模型在3D场景间迁移物体并实现光照协调",
+      "llm_tldr_en": "This paper presents a diffusion-based method to harmonize lighting when transferring objects across 3D Gaussian Splatting scenes, enabling realistic 3D composition for VFX and design.",
+      "llm_tldr_cn": "该工作解决从源3D场景中提取物体并粘贴到目标场景时存在的光照不一致问题。通过训练一个扩散模型，输入不一致的合成图像，输出光照协调后的图像，从而在3D高斯泼溅框架中实现跨场景的光照一致性物体迁移，为特效制作和室内设计等应用提供了逼真的3D合成工具。",
+      "llm_tldr": "该工作解决从源3D场景中提取物体并粘贴到目标场景时存在的光照不一致问题。通过训练一个扩散模型，输入不一致的合成图像，输出光照协调后的图像，从而在3D高斯泼溅框架中实现跨场景的光照一致性物体迁移，为特效制作和室内设计等应用提供了逼真的3D合成工具。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.23634v1",
+      "source": "arxiv",
+      "title": "Pose Anything Anywhere:Model-free Object Poses from Arbitrary References",
+      "abstract": "Estimating the 6D pose of unseen objects is a fundamental yet challenging problem for open-world robotics and embodied perception. Model-based methods are accurate but depend on CAD assets or heavy onboarding, while most model-free approaches are still limited to pairwise single-anchor matching and thus fail under occlusion and large viewpoint changes with low query-reference overlap. Therefore, we present PANY, a unified model-free framework that seamlessly supports both RGB and RGB-D inputs, operates on one or sparse pose-free reference views, and generalizes effectively to novel objects. Built on a multi-view transformer geometry backbone, PANY moves beyond pairwise matching by learning view-consistent geometry and cross-view alignment cues that remain stable under wide baselines and limited overlap. When additional unposed assist views are available, PANY aggregates them via pose-graph canonical registration to increase geometric coverage and reinforce the final pose. Extensive experiments show that PANY achieves state-of-the-art performance across multiple benchmarks, substantially outperforming existing model-free methods, improving pose accuracy by +12% on YCB-V and over +20% on LM-O. Furthermore, PANY consistently performs well under both single-reference and sparse-reference settings, demonstrating strong robustness in real-world environments.",
+      "authors": [
+        "Hongli Xu",
+        "Jiaqi Hu",
+        "Junwen Huang",
+        "Boyang Zhong",
+        "Peter KT Yu",
+        "Nassir Navab",
+        "Benjamin Busam",
+        "Slobodan Ilic"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-22T17:23:57+00:00",
+      "link": "https://arxiv.org/pdf/2606.23634v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "model-free multi-view pose estimation with cross-view alignment cues",
+      "llm_evidence_cn": "无模型多视图姿态估计，学习跨视图对齐线索",
+      "llm_evidence": "无模型多视图姿态估计，学习跨视图对齐线索",
+      "canonical_evidence": "无模型多视图姿态估计，学习跨视图对齐线索",
+      "llm_tldr_en": "PANY is a model-free framework for 6D pose estimation from sparse reference views, using a multi-view transformer to learn cross-view alignment, handling occlusion and large viewpoint changes effectively.",
+      "llm_tldr_cn": "本文针对无模型物体姿态估计在遮挡和大视点变化下成对匹配失效的问题，提出PANY框架，利用多视图Transformer学习视点一致几何和跨视图对齐，支持稀疏参考视图和RGB/RGB-D输入，有效泛化到新物体，在开放世界感知中实现了鲁棒姿态估计。",
+      "llm_tldr": "本文针对无模型物体姿态估计在遮挡和大视点变化下成对匹配失效的问题，提出PANY框架，利用多视图Transformer学习视点一致几何和跨视图对齐，支持稀疏参考视图和RGB/RGB-D输入，有效泛化到新物体，在开放世界感知中实现了鲁棒姿态估计。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.26007v1",
+      "source": "arxiv",
+      "title": "From Sparse and Imperfect 2D Anchors to Consistent 3D Gaussian Street Scenes: Support-Aware Appearance",
+      "abstract": "Image priors can synthesize target conditions for 3D Gaussian street scenes, but independently edited views do not define a coherent 3D target. Direct fitting can propagate view-specific noise, while existing pipelines do not jointly handle imperfect sparse anchors and standard-rasterizer deployment. To address this gap, teacher-relative appearance residual distillation is introduced for appearance baking. A structured space for frequency decomposition, confidence estimation, and primitive-level lifting is formed by residuals between teacher anchors and original renders. The direct optimization signal is supplied by renderer-space matching, while primitive assignment is regularized by support-aware Gaussian-space aggregation. Supported detail is admitted and unsupported noise is suppressed through confidence-gated coarse-to-fine optimization, after which all residuals are baked into fixed-geometry spherical-harmonic coefficients. The teacher and auxiliary training modules are discarded at inference. Evaluation across Waymo street assets, Tanks and Temples scenes, and multiple target conditions shows a favorable overall balance of target alignment, content preservation, artifact suppression, and cross-view consistency over editing-based baselines. Ablations confirm the effectiveness of the main components. Code will be released at https://github.com/Cagares/Baking-for-3D-Gaussian.",
+      "authors": [
+        "Long Cao",
+        "Zhongquan Wang",
+        "Jie Li",
+        "Yuhan Chen",
+        "Kefei Qian",
+        "Xiangfei Huang",
+        "Guofa Li"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR"
+      ],
+      "published": "2026-06-24T16:26:53+00:00",
+      "link": "https://arxiv.org/pdf/2606.26007v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "3D scene reconstruction from multi-view images",
+      "llm_evidence_cn": "多视图3D场景重建",
+      "llm_evidence": "多视图3D场景重建",
+      "canonical_evidence": "多视图3D场景重建",
+      "llm_tldr_en": "Proposes a method to build consistent 3D Gaussian street scenes from sparse and imperfect 2D anchors using teacher-relative appearance residual distillation and support-aware aggregation.",
+      "llm_tldr_cn": "针对图像编辑独立应用于多视图导致3D场景不一致的问题，本文提出一种从稀疏且不完美的2D锚点重构一致3D高斯街景的方法。通过教师模型渲染残差构建结构化空间，进行频率分解、置信度估计和高斯原语提升，并利用支持感知聚合正则化优化。实验表明，该方法能有效抑制视角特异性噪声，生成外观一致、几何连贯的3D街景，提升了基于2D锚点的3D场景编辑和重建的实用性。",
+      "llm_tldr": "针对图像编辑独立应用于多视图导致3D场景不一致的问题，本文提出一种从稀疏且不完美的2D锚点重构一致3D高斯街景的方法。通过教师模型渲染残差构建结构化空间，进行频率分解、置信度估计和高斯原语提升，并利用支持感知聚合正则化优化。实验表明，该方法能有效抑制视角特异性噪声，生成外观一致、几何连贯的3D街景，提升了基于2D锚点的3D场景编辑和重建的实用性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.24330v1",
+      "source": "arxiv",
+      "title": "REDI-Match: Rotation-Equivariant Distillation for Efficient and Robust Dense Matching",
+      "abstract": "Vision Foundation Models (VFMs) have significantly advanced dense feature matching, yet severe in-plane rotation remains a critical challenge. Existing solutions face a fundamental dilemma: data-driven methods require inefficient parameter scaling to implicitly learn rotations, whereas strictly equivariant networks lack the semantic capacity of modern VFMs. Consequently, current frameworks typically freeze VFMs and shift the entire burden of rotation generalization to the downstream decoder. To break this architectural bottleneck, we propose REDI-Match, an efficient framework driven by a novel Rotation-Equivariant Distillation (REDI) paradigm. Instead of relying on rotation data augmentation to establish rotational correspondences, REDI distills the non-equivariant semantic representations of a VFM into a lightweight, strictly rotation-equivariant encoder, leveraging an equivariant geometric architecture to constrain robust high-dimensional semantics. To fully exploit these features, we equip the decoder with an entropy-driven spatial alignment module. By evaluating discrete rotation hypotheses, this mechanism explicitly locks onto the canonical coordinate system, eliminating global ambiguity before continuous refinement. Extensive experiments demonstrate that REDI-Match establishes a new state-of-the-art (SOTA) across multiple benchmarks. Notably, it achieves a 13.89% absolute pose accuracy improvement on the highly challenging SatAst dataset while operating 1.9x faster than the current SOTA (RoMa v2), enabling real-time inference (~41 FPS) on a single RTX 4090 GPU. Code: https://github.com/YinjiGe/REDI-Match.",
+      "authors": [
+        "Yinji Ge",
+        "Guixu Zheng",
+        "Wulong Guo",
+        "Qian Feng",
+        "Xu Wu",
+        "Kai Zhou",
+        "Xinyuan Liu",
+        "Fei Xing"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-23T09:05:20+00:00",
+      "link": "https://arxiv.org/pdf/2606.24330v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "efficient dense feature matching robust to rotation, applicable to multi-view correspondence",
+      "llm_evidence_cn": "高效的密集特征匹配，对旋转鲁棒，可应用于多视图对应",
+      "llm_evidence": "高效的密集特征匹配，对旋转鲁棒，可应用于多视图对应",
+      "canonical_evidence": "高效的密集特征匹配，对旋转鲁棒，可应用于多视图对应",
+      "llm_tldr_en": "Introduces REDI-Match, which distills rotation-equivariant features from a foundation model into an efficient dense matcher, overcoming rotation challenges in 2D matching useful for 3D tasks.",
+      "llm_tldr_cn": "针对视觉基础模型在密集特征匹配中旋转不变性差的难题，提出REDI-Match框架。通过旋转等变蒸馏(REDI)范式，将大模型的旋转知识蒸馏到轻量级匹配器中，无需大量数据增强即可实现高效且旋转鲁棒的匹配。实验证明该方法在多种旋转场景下匹配精度高，为多视图三维重建等任务提供了关键预处理技术。",
+      "llm_tldr": "针对视觉基础模型在密集特征匹配中旋转不变性差的难题，提出REDI-Match框架。通过旋转等变蒸馏(REDI)范式，将大模型的旋转知识蒸馏到轻量级匹配器中，无需大量数据增强即可实现高效且旋转鲁棒的匹配。实验证明该方法在多种旋转场景下匹配精度高，为多视图三维重建等任务提供了关键预处理技术。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
