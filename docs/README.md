@@ -6,46 +6,43 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-25
-- 运行时间：2026-06-25 21:59:42 UTC
+- 最新运行日期：2026-06-26
+- 运行时间：2026-06-26 22:04:54 UTC
 - 运行状态：成功
-- 本次总论文数：8
+- 本次总论文数：7
 - 精读区：6
-- 速读区：2
+- 速读区：1
 
 ### 今日简报（AI）
-今日精读两篇Top论文：异构快照蒸馏刷新3D语义分割上限，自回归2D先验驱动高保真车辆生成。
-最值得关注的方向：用蒸馏压缩3D感知模型（10.0分）与2D→3D生成新范式（9.0分），均瞄准真实应用的高效与高质。
-普通读者可先看10.0分蒸馏工作，其异构适配设计对多数3D视觉任务有直接迁移潜力。
-- 详情：[/202606/25/README](/202606/25/README)
+今日精读6篇3D视觉前沿，重点关注稳定世界建模与轻量化SLAM新突破。  
+稳定规范世界让新视角合成更泛化，口袋SLAM则用渲染感知剪枝大幅节省内存。  
+若想落地，不妨从“规范世界动态扩展”和“移动端即时建图”两个切口深入。
+- 详情：[/202606/26/README](/202606/26/README)
 
 ### 精读区论文标签
-1. [Heterogeneous and Adept Snapshot Distillation for 3D Semantic Segmentation](/202606/25/2606.25278v1-heterogeneous-and-adept-snapshot-distillation-for-3d-semantic-segmentation)  
-   标签：评分：10.0/10、query:d-gen-recon
-   evidence：三维语义分割的知识蒸馏
-2. [HiFiVe: High-Fidelity Vehicle Generation Leveraging Auto-Regressive 2D Generative Priors](/202606/25/2606.25300v1-hifive-high-fidelity-vehicle-generation-leveraging-auto-regressive-2d-generative-priors)  
+1. [Learning Stable Canonical Worlds for Novel View Synthesis and Beyond](/202606/26/2606.23027v2-learning-stable-canonical-worlds-for-novel-view-synthesis-and-beyond)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：使用二维生成先验生成三维车辆，确保跨视图一致性
-3. [PRISM: Feed-Forward Single-Image 3D Reconstruction via Geometric Warp-Residual Modeling](/202606/25/2606.25430v1-prism-feed-forward-single-image-3d-reconstruction-via-geometric-warp-residual-modeling)  
+   evidence：前馈流水线将多视图图像映射到稳定的三维场景表示
+2. [Pocket-SLAM: Rendering-Area-Aware Pruning for Memory-Efficient 3DGS-SLAM](/202606/26/2606.24796v1-pocket-slam-rendering-area-aware-pruning-for-memory-efficient-3dgs-slam)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：前馈单图像三维重建，直接从图像生成3D场景。
-4. [LinStereo: Linear-Complexity Global Attention for Multi-Scale Iterative Stereo Matching](/202606/25/2606.25437v1-linstereo-linear-complexity-global-attention-for-multi-scale-iterative-stereo-matching)  
+   evidence：提出面向三维场景重建的高效剪枝SLAM系统
+3. [PanoImager: Geometry-Guided Novel View Synthesis and Reconstruction from Sparse Panoramic Views](/202606/26/2606.27071v1-panoimager-geometry-guided-novel-view-synthesis-and-reconstruction-from-sparse-panoramic-views)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：带全局注意力的立体匹配，用于多视图重建
-5. [Lighting-Consistent Object Transfer Across Radiance Fields](/202606/25/2606.22481v1-lighting-consistent-object-transfer-across-radiance-fields)  
+   evidence：从稀疏全景多视图图像重建3D场景，采用几何引导优化
+4. [Sculpting NeRF Geometry: Human-Preference Fine-Tuning of a 3D-Aware Face GAN](/202606/26/2606.27305v1-sculpting-nerf-geometry-human-preference-fine-tuning-of-a-3d-aware-face-gan)  
+   标签：评分：9.0/10、query:d-gen-recon
+   evidence：基于人类偏好的微调三维感知人脸GAN以优化三维几何
+5. [Learning Cross-View Semantic Priors for Single-Reference Unseen Object Pose Estimation](/202606/26/2606.22076v2-learning-cross-view-semantic-priors-for-single-reference-unseen-object-pose-estimation)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：通过扩散模型在3D场景间迁移物体并实现光照协调
-6. [Pose Anything Anywhere:Model-free Object Poses from Arbitrary References](/202606/25/2606.23634v1-pose-anything-anywheremodel-free-object-poses-from-arbitrary-references)  
+   evidence：学习跨视图语义先验进行跨视图特征匹配，用于未见物体姿态估计
+6. [MVTrack4Gen: Multi-View Point Tracking as Geometric Supervision for 4D Video Generation](/202606/26/2606.26087v1-mvtrack4gen-multi-view-point-tracking-as-geometric-supervision-for-4d-video-generation)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：无模型多视图姿态估计，学习跨视图对齐线索
+   evidence：利用多视角点跟踪在新视角生成中增强几何一致性，类似多视图三维重建。
 
 ### 速读区论文标签
-1. [From Sparse and Imperfect 2D Anchors to Consistent 3D Gaussian Street Scenes: Support-Aware Appearance](/202606/25/2606.26007v1-from-sparse-and-imperfect-2d-anchors-to-consistent-3d-gaussian-street-scenes-support-aware-appearance)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：多视图3D场景重建
-2. [REDI-Match: Rotation-Equivariant Distillation for Efficient and Robust Dense Matching](/202606/25/2606.24330v1-redi-match-rotation-equivariant-distillation-for-efficient-and-robust-dense-matching)  
-   标签：评分：7.0/10、query:d-gen-recon
-   evidence：高效的密集特征匹配，对旋转鲁棒，可应用于多视图对应
+1. [Vis4GS: A Visual Analytic Tool for 3D Gaussian Splatting Reconstruction](/202606/26/2606.26985v1-vis4gs-a-visual-analytic-tool-for-3d-gaussian-splatting-reconstruction)  
+   标签：评分：6.0/10、query:d-gen-recon
+   evidence：面向3D高斯泼溅重建的诊断工具，分析伪影以改进多视图三维重建。
 
 
 <div class="dpr-home-promo-card">

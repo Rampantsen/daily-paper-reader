@@ -1,0 +1,285 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-26T21:59:30.781110+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 6,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2606.23027v2",
+      "source": "arxiv",
+      "title": "Learning Stable Canonical Worlds for Novel View Synthesis and Beyond",
+      "abstract": "Feed-forward Gaussian splatting (FFGS) facilitates real-time novel view synthesis, yet current methods often remain tied to view-dependent predictions. As more input views are added, they may accumulate noisy or redundant evidence instead of converging to a stable scene representation. In this paper, we introduce CanonicalGS, a feed-forward pipeline that maps cluttered multi-view observations into a stable, scene-centric representation. CanonicalGS first extracts view-centric evidence from depth, semantic features, and uncertainty estimates, and then aggregates this evidence in a canonical latent world using uncertainty-aware fusion. By emphasizing reliable observations while suppressing uncertain or redundant ones, CanonicalGS produces representations that scale more effectively for novel view synthesis and transfer to downstream visual perception tasks. Experiments show up to a $2.5$ dB improvement in peak signal-to-noise ratio for synthesizing novel views and an $11\\%$ gain in semantic segmentation accuracy.",
+      "authors": [
+        "Xiaoyu Xu",
+        "Jian Zou",
+        "Sheyang Tang",
+        "Zhihua Wang",
+        "Jing Liao",
+        "Kede Ma"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-22T08:38:39+00:00",
+      "link": "https://arxiv.org/pdf/2606.23027v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Feed-forward pipeline mapping multi-view images to stable 3D scene representation",
+      "llm_evidence_cn": "前馈流水线将多视图图像映射到稳定的三维场景表示",
+      "llm_evidence": "前馈流水线将多视图图像映射到稳定的三维场景表示",
+      "canonical_evidence": "前馈流水线将多视图图像映射到稳定的三维场景表示",
+      "llm_tldr_en": "CanonicalGS learns a stable scene-centric representation from multiple views by uncertainty-aware fusion of depth, semantics, and uncertainty, improving novel view synthesis.",
+      "llm_tldr_cn": "现有前馈高斯泼溅方法在多视图输入增多时易产生噪声积累，难以收敛到稳定场景表示。本文提出CanonicalGS，通过从多视图观察中提取深度、语义和不确定性证据，并在规范空间中进行不确定性感知融合，生成稳定的场景中心表示。该表示适用于新视角合成等下游任务，实验证明在图像质量和几何一致性方面优于基线方法。",
+      "llm_tldr": "现有前馈高斯泼溅方法在多视图输入增多时易产生噪声积累，难以收敛到稳定场景表示。本文提出CanonicalGS，通过从多视图观察中提取深度、语义和不确定性证据，并在规范空间中进行不确定性感知融合，生成稳定的场景中心表示。该表示适用于新视角合成等下游任务，实验证明在图像质量和几何一致性方面优于基线方法。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.24796v1",
+      "source": "arxiv",
+      "title": "Pocket-SLAM: Rendering-Area-Aware Pruning for Memory-Efficient 3DGS-SLAM",
+      "abstract": "3D Gaussian Splatting (3DGS) has garnered significant attention in Simultaneous Localization and Mapping (SLAM) due to its advances in capturing fine-grained geometry features and synthesizing novel views. For SLAM in large-scale scenes, such as autonomous driving, 3DGS-SLAM faces a critical limitation: memory consumption increases continuously over time as Gaussian points accumulate, leading to poor memory efficiency and limiting its applicability. In this work, we propose a rendering-area-aware pruning strategy that selectively removes Gaussians based on their contribution to the effective rendering area, rather than solely relying on Gaussian-level heuristics such as opacity or gradient magnitude. This perspective directly targets the sources of memory redundancy, effectively reducing the peak memory footprint of 3DGS-SLAM during runtime. Evaluations on the EuRoC and KITTI datasets demonstrate that our method consistently outperforms existing pruning approaches in large-scale outdoor scenes, achieving over 60% memory reduction and more than 2 times FPS improvement while preserving localization and mapping accuracy. These results highlight rendering-area-aware pruning as a promising direction for scaling 3DGS-SLAM to real-world autonomous driving scenarios. Our code is publicly available at https://github.com/UMN-ZhaoLab/Pocket-SLAM.git.",
+      "authors": [
+        "Leshu Li",
+        "Jie Peng",
+        "Yang Zhao"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-23T16:48:58+00:00",
+      "link": "https://arxiv.org/pdf/2606.24796v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "proposes memory-efficient pruning for 3DGS-SLAM, enabling scalable 3D scene reconstruction from multi-view images",
+      "llm_evidence_cn": "提出面向三维场景重建的高效剪枝SLAM系统",
+      "llm_evidence": "提出面向三维场景重建的高效剪枝SLAM系统",
+      "canonical_evidence": "提出面向三维场景重建的高效剪枝SLAM系统",
+      "llm_tldr_en": "The paper addresses memory inefficiency in 3DGS-SLAM for large-scale scene reconstruction, proposing rendering-area-aware pruning to remove Gaussians with low rendering contribution, enabling scalable multi-view 3D mapping.",
+      "llm_tldr_cn": "三维高斯SLAM在大规模场景重建中面临内存持续增长问题，限制其应用。本文提出渲染区域感知剪枝策略，根据高斯对有效渲染区域的贡献而非不透明度等启发式指标进行选择性移除，实现内存高效的三维重建。实验表明该方法在不影响精度的情况下大幅降低内存消耗。",
+      "llm_tldr": "三维高斯SLAM在大规模场景重建中面临内存持续增长问题，限制其应用。本文提出渲染区域感知剪枝策略，根据高斯对有效渲染区域的贡献而非不透明度等启发式指标进行选择性移除，实现内存高效的三维重建。实验表明该方法在不影响精度的情况下大幅降低内存消耗。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.27071v1",
+      "source": "arxiv",
+      "title": "PanoImager: Geometry-Guided Novel View Synthesis and Reconstruction from Sparse Panoramic Views",
+      "abstract": "Panoramic sensing offers wide field-of-view coverage, yet 3D reconstruction from sparse panoramas remains challenging under rotation-dominant, weak-parallax motion. In such regimes, SfM/SLAM initialization is often ill-conditioned and unreliable. We present PanoImager, an SfM-free framework that combines feed-forward pose/depth priors, geometry-conditioned diffusion view completion, and depth-guided 3DGS optimization. Given only a few panoramic images, PanoImager decomposes them into local perspective views, synthesizes auxiliary observations to enrich sparse evidence, and stabilizes Gaussian optimization for improved cross-view consistency. Experiments on multiple benchmarks show improved stability under extreme sparsity, suggesting PanoImager as an offline/background component for map refinement when SfM/SLAM fails to initialize.",
+      "authors": [
+        "Zhisong Xu",
+        "Takeshi Oishi"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-25T14:15:09+00:00",
+      "link": "https://arxiv.org/pdf/2606.27071v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "reconstructs 3D scenes from sparse panoramic multi-view images with geometry-guided optimization",
+      "llm_evidence_cn": "从稀疏全景多视图图像重建3D场景，采用几何引导优化",
+      "llm_evidence": "从稀疏全景多视图图像重建3D场景，采用几何引导优化",
+      "canonical_evidence": "从稀疏全景多视图图像重建3D场景，采用几何引导优化",
+      "llm_tldr_en": "An SfM-free framework for 3D reconstruction from sparse panoramas, using pose/depth priors and diffusion view completion to stabilize 3DGS optimization.",
+      "llm_tldr_cn": "提出无SfM框架，从稀疏全景图像进行3D重建，利用姿态/深度先验和扩散视图补全来稳定3DGS优化。该方法解决了弱视差下初始化不可靠的问题，通过分解全景图、合成辅助观测增强证据，实验表明在极端稀疏下稳定性提升。",
+      "llm_tldr": "提出无SfM框架，从稀疏全景图像进行3D重建，利用姿态/深度先验和扩散视图补全来稳定3DGS优化。该方法解决了弱视差下初始化不可靠的问题，通过分解全景图、合成辅助观测增强证据，实验表明在极端稀疏下稳定性提升。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.27305v1",
+      "source": "arxiv",
+      "title": "Sculpting NeRF Geometry: Human-Preference Fine-Tuning of a 3D-Aware Face GAN",
+      "abstract": "Reinforcement learning from human feedback (RLHF) for 3D generation is now established across a number of works, but most existing pipelines optimise explicit surface representations, often by converting radiance fields into meshes and training heavily on surface-supervised data. We instead fine-tune a pretrained 3D-aware generative model directly from a learned reward over radiance-field density ($σ$) values, with no externally supplied mesh or shape prior. The reward model requires no pretraining, trains easily on a small set of preference samples, and yields robust improvement in 3D geometry. Working on an unconditional 3D-aware face GAN (EG3D), our reward reads the continuous 3D density field of the neural radiance field (NeRF) directly and supplies a geometry-only learning signal, requiring neither text conditioning, mesh extraction, nor multi-view rendering. A density-consistency constraint keeps the 2D appearance qualitatively similar while the geometry is reshaped, at a measurable but bounded distributional cost (FID-50k rises from 4.09 to 6.66): the fine-tuned generator, trained from the preferences of a single annotator as a proof of concept, produces face geometries preferred by users in 74.4% of pairwise comparisons.",
+      "authors": [
+        "Archer Moore",
+        "Mingming Gong",
+        "Liam Hodgkinson"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-25T17:26:06+00:00",
+      "link": "https://arxiv.org/pdf/2606.27305v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Human-preference fine-tuning of 3D-aware face GAN for 3D geometry",
+      "llm_evidence_cn": "基于人类偏好的微调三维感知人脸GAN以优化三维几何",
+      "llm_evidence": "基于人类偏好的微调三维感知人脸GAN以优化三维几何",
+      "canonical_evidence": "基于人类偏好的微调三维感知人脸GAN以优化三维几何",
+      "llm_tldr_en": "Improves 3D face generation by fine-tuning a pretrained 3D-aware GAN with RLHF directly on density fields, without mesh supervision.",
+      "llm_tldr_cn": "现有使用人类反馈强化学习进行3D生成的工作多依赖显式表面表示，并需要网格监督。本文直接在预训练3D感知GAN的辐射场密度值上进行奖励微调，无需外部几何先验。奖励模型在小量偏好样本上训练即可稳健改进3D几何质量。在EG3D上实验表明，该方法显著提升了人脸几何的合理性，为隐式3D生成任务提供了新的优化范式。",
+      "llm_tldr": "现有使用人类反馈强化学习进行3D生成的工作多依赖显式表面表示，并需要网格监督。本文直接在预训练3D感知GAN的辐射场密度值上进行奖励微调，无需外部几何先验。奖励模型在小量偏好样本上训练即可稳健改进3D几何质量。在EG3D上实验表明，该方法显著提升了人脸几何的合理性，为隐式3D生成任务提供了新的优化范式。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.22076v2",
+      "source": "arxiv",
+      "title": "Learning Cross-View Semantic Priors for Single-Reference Unseen Object Pose Estimation",
+      "abstract": "Single-reference unseen object 6D pose estimation reduces object onboarding by estimating poses of arbitrary novel objects from only one reference view. Recent correspondence-based pipelines have achieved robust performance with vision foundation model (VFM) features. However, they typically treat these features as intra-view descriptors, leaving dense visual-semantic cues, including appearance, structure, and context, insufficiently exchanged across views before geometric decoding. Consequently, the decoded point features may lack joint semantic and geometric discriminability, making correspondence estimation still difficult in challenging cases. Instead of processing features independently, we build the correspondence pipeline around an early cross-view semantic prior. Specifically, cross-view semantic interaction (CVSI) enables dense query and reference VFM tokens to exchange semantic context and form a cross-view prior. Nevertheless, direct CVSI may disturb the VFM token structure, while the resulting semantic prior still needs 3D representation consistency for rigid correspondence. To make this CVSI prior reliable for 3D correspondence learning, we introduce two complementary training-time constraints: the intra-view structure preservation (IVSP) loss preserves the original intra-view token affinity structure during interaction, while the reference-anchored geometric consistency (RAGC) loss enforces spatial representation consistency of decoded point features. The final pose is recovered from learned correspondences through weighted SVD. We further construct a challenging view-pair protocol from the BOP Challenge datasets YCB-V and TUD-L to evaluate robustness in difficult matching scenarios. Extensive experiments on six benchmarks under different view-pair settings show that our method achieves state-of-the-art performance while maintaining comparable inference speed.",
+      "authors": [
+        "Jiahong Chen",
+        "Jinghao Wang",
+        "Ziwen Wang",
+        "Zi Wang",
+        "Banglei Guan",
+        "Qifeng Yu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-20T14:50:51+00:00",
+      "link": "https://arxiv.org/pdf/2606.22076v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Learning cross-view semantic priors for unseen object pose estimation via feature matching across views",
+      "llm_evidence_cn": "学习跨视图语义先验进行跨视图特征匹配，用于未见物体姿态估计",
+      "llm_evidence": "学习跨视图语义先验进行跨视图特征匹配，用于未见物体姿态估计",
+      "canonical_evidence": "学习跨视图语义先验进行跨视图特征匹配，用于未见物体姿态估计",
+      "llm_tldr_en": "Improves single-reference unseen object pose estimation by introducing cross-view semantic prior exchange via correspondence pipeline, enhancing feature discriminability across views for more accurate matching.",
+      "llm_tldr_cn": "针对单参考未见物体姿态估计中跨视图特征交互不足导致匹配困难的问题，本文提出在对应管道中引入跨视图语义先验交换模块，增强点特征的空间与语义辨别力。实验表明，该方法在挑战性场景下显著提升对应精度，推进了少样本物体姿态估计。",
+      "llm_tldr": "针对单参考未见物体姿态估计中跨视图特征交互不足导致匹配困难的问题，本文提出在对应管道中引入跨视图语义先验交换模块，增强点特征的空间与语义辨别力。实验表明，该方法在挑战性场景下显著提升对应精度，推进了少样本物体姿态估计。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.26087v1",
+      "source": "arxiv",
+      "title": "MVTrack4Gen: Multi-View Point Tracking as Geometric Supervision for 4D Video Generation",
+      "abstract": "Synthesizing a novel-view video from a monocular reference video along a target camera trajectory requires both geometric consistency and motion fidelity with respect to the reference video. Existing methods based on explicit 3D representations are limited by the accuracy of off-the-shelf reconstruction modules, which often produce inaccurate geometry for dynamic objects in monocular videos. In contrast, camera-conditioning-only methods can achieve high visual quality but often struggle to preserve geometric and motion consistency. In this work, we introduce MVTrack4Gen (Multi-View point Tracking for Novel-View Generation), a motion-aware training framework that leverages multi-view point tracking as an additional geometric and motion supervision signal for camera-conditioning-only novel-view video diffusion models. Our key finding is that specific attention layers encode strong correspondence cues, where query features attend to key features at geometrically corresponding locations across views and over time, and the misalignment of these correspondences causes motion inconsistency. Based on this observation, we route these features into an auxiliary multi-view tracking head and jointly train the diffusion model with a point-tracking objective. By explicitly strengthening these motion-aware correspondences, MVTrack4Gen improves existing models to better follow the motion in the reference view and maintain cross-view geometric consistency. Across diverse benchmarks, our method achieves state-of-the-art geometric consistency and competitive camera accuracy.",
+      "authors": [
+        "JoungBin Lee",
+        "Jaewoo Jung",
+        "Jongmin Lee",
+        "Tongmin Kim",
+        "Hyunsung Kim",
+        "Takuya Narihira",
+        "Kazumi Fukuda",
+        "Jahyeok Koo",
+        "Jisang Han",
+        "Yuki Mitsufuji",
+        "Seungryong Kim"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-24T17:56:33+00:00",
+      "link": "https://arxiv.org/pdf/2606.26087v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Leverages multi-view point tracking to enforce geometric consistency in novel-view generation, akin to multi-view 3D reconstruction.",
+      "llm_evidence_cn": "利用多视角点跟踪在新视角生成中增强几何一致性，类似多视图三维重建。",
+      "llm_evidence": "利用多视角点跟踪在新视角生成中增强几何一致性，类似多视图三维重建。",
+      "canonical_evidence": "利用多视角点跟踪在新视角生成中增强几何一致性，类似多视图三维重建。",
+      "llm_tldr_en": "MVTrack4Gen proposes a motion-aware training framework that uses multi-view point tracking as geometric and motion supervision for generating novel-view videos from monocular references, improving geometric consistency and motion fidelity.",
+      "llm_tldr_cn": "MVTrack4Gen 提出了一种运动感知训练框架，利用多视角点跟踪作为几何与运动监督，从单目参考视频生成时空一致的新视角视频。该方法通过跟踪点约束，显著提升了动态场景下几何保真度和运动连贯性，为4D内容生成提供了有效监督手段，推进了单目到多视角视频合成技术。",
+      "llm_tldr": "MVTrack4Gen 提出了一种运动感知训练框架，利用多视角点跟踪作为几何与运动监督，从单目参考视频生成时空一致的新视角视频。该方法通过跟踪点约束，显著提升了动态场景下几何保真度和运动连贯性，为4D内容生成提供了有效监督手段，推进了单目到多视角视频合成技术。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.26985v1",
+      "source": "arxiv",
+      "title": "Vis4GS: A Visual Analytic Tool for 3D Gaussian Splatting Reconstruction",
+      "abstract": "3D Gaussian Splatting (3DGS) supports fast training and real-time rendering, but its optimization process remains difficult to interpret. Existing viewers mainly expose the final reconstructed scene and offer limited support for explaining how Gaussian properties contribute to visible artifacts or evolve during training. We present Vis4GS, a multi-view visual analytics tool for primitive-level diagnosis of 3DGS reconstruction artifacts. Built on the original 3DGS viewer and training framework, Vis4GS links rendered artifacts to Gaussian properties, View Coverage, training progress, and Gaussian genealogy through four linked views: an interactive Gaussian analysis view, a property timeline view, a Gaussian densification tree view, and a log and control panel. The system supports Gaussian selection, blur and needle-like artifact scoring, View Coverage analysis, and multiscale genealogy exploration of clone, split, prune, and clone-split events. By connecting scene-level artifacts with primitive-level evidence and optimization history, Vis4GS enables a structured workflow for diagnosing reconstruction failures beyond final-image inspection and global metrics. A user study also shows that Vis4GS provides stronger support for usability and artifact understanding than the original 3DGS viewer.",
+      "authors": [
+        "Kai-Yuan Lin",
+        "Aryabima Mandala Putra",
+        "Jui-Chi Lee",
+        "Shih-Hsuan Hung"
+      ],
+      "primary_category": "cs.GR",
+      "categories": [
+        "cs.GR"
+      ],
+      "published": "2026-06-25T12:59:02+00:00",
+      "link": "https://arxiv.org/pdf/2606.26985v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "A diagnostic tool for 3D Gaussian Splatting reconstruction, analyzing artifacts to improve multi-view 3D reconstruction.",
+      "llm_evidence_cn": "面向3D高斯泼溅重建的诊断工具，分析伪影以改进多视图三维重建。",
+      "llm_evidence": "面向3D高斯泼溅重建的诊断工具，分析伪影以改进多视图三维重建。",
+      "canonical_evidence": "面向3D高斯泼溅重建的诊断工具，分析伪影以改进多视图三维重建。",
+      "llm_tldr_en": "Vis4GS is a visual analytics tool that links rendering artifacts to Gaussian properties during 3DGS optimization, helping practitioners diagnose and improve multi-view 3D reconstruction quality by inspecting primitives.",
+      "llm_tldr_cn": "Vis4GS 是一款面向3D高斯泼溅重建的可视化分析工具，通过关联渲染伪影与高斯属性、训练进度和生成树等，提供多视图联动视图，支持对重建过程中图元级伪影进行诊断。该工具帮助研究人员快速定位问题，优化重建参数，提升了3DGS重建的可解释性和质量。",
+      "llm_tldr": "Vis4GS 是一款面向3D高斯泼溅重建的可视化分析工具，通过关联渲染伪影与高斯属性、训练进度和生成树等，提供多视图联动视图，支持对重建过程中图元级伪影进行诊断。该工具帮助研究人员快速定位问题，优化重建参数，提升了3DGS重建的可解释性和质量。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
