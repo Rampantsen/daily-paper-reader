@@ -1,0 +1,39 @@
+{
+  "label": "2026-06-27",
+  "date": "2026-06-27",
+  "generated_at": "2026-06-27T21:21:42",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202606/27/2606.21244v1-ace-gs-acing-the-trade-off-with-accurate-compact-and-efficient-3d-gaussian-splatting",
+      "section": "deep",
+      "title_en": "ACE-GS: Acing the Trade-off with Accurate, Compact and Efficient 3D Gaussian Splatting",
+      "authors": "Jijian Zhao",
+      "date": "2026-06-19",
+      "pdf": "https://arxiv.org/pdf/2606.21244v1",
+      "score": "9.0",
+      "evidence": "用于精确、压缩和高效3D高斯场景表示与重建的渐进式优化框架",
+      "tldr": "3D高斯泼溅实时渲染出色，但高计算与存储开销阻碍部署，现有加速方法常过度剪枝导致高频细节缺失。ACE-GS提出渐进式优化框架，通过动量一致性致密化约束基元生长于几何流形，统计敏感度稀疏化精确剔除冗余，并利用跨维残差频率补偿回注高频误差以恢复细节。在紧凑场景表示下，训练仅需3-5分钟，相比Speedy-Splat加速3.7倍，PSNR最高提升0.89dB，为超快高保真新视角合成确立新基准。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "3D Gaussian Splatting achieves exceptional real-time rendering, but its substantial computational and storage demands hinder widespread deployment. Existing accelerated paradigms often aggressively prune primitives for rapid convergence, causing severe loss of high-frequency details. To address this, we tackle the fundamental problem of achieving both exceptional rendering quality and ultra-fast reconstruction speed. In this paper, we propose ACE-GS, a progressive optimization framework tailored for accurate, compressed, and efficient scene representation. We realize that precise primitive management is the key to breaking this trade-off. Therefore, we first design a momentum consistency-guided densification strategy, strictly constraining primitive growth onto authentic geometric manifolds to avoid computational waste while significantly accelerating convergence. Building upon this efficient initialization, we deploy a statistical sensitivity-driven sparsification mechanism to precisely prune redundant primitives, yielding a further compressed footprint. Finally, to thoroughly compensate for the risk of micro-structure loss caused by the aforementioned strict primitive control, we introduce a cross-dimensional residual frequency compensation scheme that explicitly back-injects high-frequency error energy into primitive attributes, perfectly restoring sharp geometric details. Extensive experiments validate our superiority. While maintaining a highly compact scene representation, our system achieves up to 3.7 times training acceleration against the rapid framework Speedy-Splat. Requiring only 3 to 5 minutes to converge, ACE-GS secures the highest structural similarity and achieves a peak PSNR improvement of up to 0.89 dB over the original 3DGS, establishing a new benchmark for ultra-fast and high-fidelity novel view synthesis.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/27/2606.24814v1-vision-language-model-reasoning-for-contextual-semantic-mapping-in-intralogistics",
+      "section": "deep",
+      "title_en": "Vision-Language Model Reasoning for Contextual Semantic Mapping in Intralogistics",
+      "authors": "Marvin Rüdt, Hao Pang, Constantin Enke, Zäzilia Seibold, Kai Furmans",
+      "date": "2026-06-23",
+      "pdf": "https://arxiv.org/pdf/2606.24814v1",
+      "score": "8.0",
+      "evidence": "结合SLAM、基于SAM的实例分割和VLM多视图推理的上下文语义映射流水线",
+      "tldr": "自主移动机器人在内部物流环境中依赖几何地图，缺乏对物体及其上下文属性的语义理解。本文提出一种上下文语义映射管道，结合SLAM几何建图、SAM实例分割、实例聚类及VLM多视角推理，生成包含几何结构、物体类别与可移动性的语义地图。在零样本开放词汇设定下，管道分类mIoU达98.93%，可移动性估计mAcc达89.17%。该语义地图支持动态环境中的上下文感知过滤与鲁棒导航。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Autonomous mobile robots operating in intralogistics environments rely on geometric maps for localization and navigation, but lack semantic understanding of objects and their contextual properties. We present a contextual semantic mapping pipeline that combines SLAM-based geometric mapping, SAM-based instance segmentation, instance clustering, and VLM multi-view reasoning to produce a contextual semantic map representation encoding geometric structure, object class, and object movability. By aggregating observations across multiple viewpoints and querying a VLM in a zero-shot, open-vocabulary setting, the pipeline infers contextual object properties--here demonstrated through movability--without requiring task-specific training or predefined object categories. We evaluate three VLMs under two prompting strategies and conduct a component-wise analysis of the pipeline. The proposed pipeline achieves 98.93 % mIoU for semantic classification and 89.17 % mAcc for object movability estimation. Component analysis identifies VLM reasoning as the primary bottleneck for contextual understanding and instance clustering as the main limitation for panoptic performance. The resulting semantic map supports context-aware filtering and robust navigation in dynamic intralogistics environments.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
