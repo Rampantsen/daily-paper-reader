@@ -1,0 +1,54 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-28T20:48:31.618398+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 0,
+    "quick_skim_target": 11,
+    "quick_selected": 0
+  },
+  "deep_dive": [
+    {
+      "id": "2606.22931v1",
+      "source": "arxiv",
+      "title": "BEV-Denoise: Learning Intrinsic Noise for Accurate Bird's-Eye-View Semantic Segmentation",
+      "abstract": "In this paper, we present a framework dubbed \\textbf{BEV-Denoise} that estimates and removes intrinsic noise from learned Bird's-Eye-View (BEV) features to achieve accurate BEV semantic segmentation. Inspired by the noise estimation capability of Denoising Diffusion Probabilistic Models (DDPM), we design a UNet-based noise estimation module that learns to estimate the noise from the learned BEV features. The estimated noise is then subtracted from the BEV features and fed to BEV map decoders for the final prediction results. To facilitate supervision for the noise estimation module, we follow a sequential learning paradigm called Task Decomposition (TD) where a pre-trained BEV map autoencoder is employed to train a view transformation (VT) encoder. We share three key insights learned from our intensive experiments that are critical for improved performance. We apply our framework to four existing models, encompassing the three major VT paradigms. Experimental results on a large-scale real-world dataset, nuScenes, demonstrate the effectiveness of our framework.",
+      "authors": [
+        "Dooseop Choi",
+        "Kyounghwan An",
+        "Kyoung-Wook Min"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-06-22T07:06:46+00:00",
+      "link": "https://arxiv.org/pdf/2606.22931v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Performs semantic segmentation on Bird's-Eye-View representations derived from 3D scenes, directly addressing 3D scene segmentation.",
+      "llm_evidence_cn": "对从3D场景导出的鸟瞰图表示进行语义分割，直接处理3D场景分割。",
+      "llm_evidence": "对从3D场景导出的鸟瞰图表示进行语义分割，直接处理3D场景分割。",
+      "canonical_evidence": "对从3D场景导出的鸟瞰图表示进行语义分割，直接处理3D场景分割。",
+      "llm_tldr_en": "BEV-Denoise introduces a denoising diffusion-inspired module to estimate and remove noise from learned BEV features, improving BEV semantic segmentation accuracy for autonomous driving, and uses a sequential task decomposition learning paradigm to supervise noise estimation.",
+      "llm_tldr_cn": "BEV-Denoise提出一种基于去噪扩散思想的噪声估计模块，从学习的BEV特征中去除内在噪声，以提升自动驾驶中鸟瞰图语义分割的精度。该方法采用任务分解的顺序学习范式，利用预训练的BEV自动编码器训练视图变换，为噪声估计模块提供监督。实验表明，去除噪声后BEV分割准确性显著提高，为3D场景理解提供了更稳健的特征表示。",
+      "llm_tldr": "BEV-Denoise提出一种基于去噪扩散思想的噪声估计模块，从学习的BEV特征中去除内在噪声，以提升自动驾驶中鸟瞰图语义分割的精度。该方法采用任务分解的顺序学习范式，利用预训练的BEV自动编码器训练视图变换，为噪声估计模块提供监督。实验表明，去除噪声后BEV分割准确性显著提高，为3D场景理解提供了更稳健的特征表示。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": []
+}

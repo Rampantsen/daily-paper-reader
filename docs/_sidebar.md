@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-06-28 <!--dpr-date:20260628-->
+    * 精读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/28/2606.22931v1-bev-denoise-learning-intrinsic-noise-for-accurate-birds-eye-view-semantic-segmentation" data-sidebar-item="{&quot;title&quot;: &quot;BEV-Denoise: Learning Intrinsic Noise for Accurate Bird&#x27;s-Eye-View Semantic Segmentation&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.22931v1-bev-denoise-learning-intrinsic-noise-for-accurate-birds-eye-view-semantic-segmentation&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;d-gen-recon&quot;}], &quot;evidence&quot;: &quot;对从3D场景导出的鸟瞰图表示进行语义分割，直接处理3D场景分割。&quot;}">BEV-Denoise: Learning Intrinsic Noise for Accurate Bird&#x27;s-Eye-View Semantic Segmentation</a>
   * 2026-06-27 <!--dpr-date:20260627-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202606/27/2606.21244v1-ace-gs-acing-the-trade-off-with-accurate-compact-and-efficient-3d-gaussian-splatting" data-sidebar-item="{&quot;title&quot;: &quot;ACE-GS: Acing the Trade-off with Accurate, Compact and Efficient 3D Gaussian Splatting&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.21244v1-ace-gs-acing-the-trade-off-with-accurate-compact-and-efficient-3d-gaussian-splatting&quot;, &quot;score&quot;: &quot;9.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;d-gen-recon&quot;}], &quot;evidence&quot;: &quot;用于精确、压缩和高效3D高斯场景表示与重建的渐进式优化框架&quot;}">ACE-GS: Acing the Trade-off with Accurate, Compact and Efficient 3D Gaussian Splatting</a>
