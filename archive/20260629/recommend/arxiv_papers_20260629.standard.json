@@ -1,0 +1,460 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-29T21:13:23.396709+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 7,
+    "deep_cap": 6,
+    "deep_selected": 7,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2606.27923v1",
+      "source": "arxiv",
+      "title": "Home3D 1.0: A High-Fidelity Image-to-3D Asset Generation System for Interior Design",
+      "abstract": "We present Home3D 1.0, a modular image-to-3D generation system that produces high-quality 3D assets from a single reference image, targeting interior design and e-commerce applications. Given a photograph of a furniture or decor item, the system outputs a mesh with physically-based rendering (PBR) materials, and the mesh can be decomposed into material-specific components. The pipeline is organized into four tightly coupled modules: Geometry reconstructs a watertight mesh through latent SDF modelling with a geometry VAE and a coarse-to-fine flow-matching DiT; Texture predicts multiview albedo observations, reprojects them onto the mesh, and completes unseen surface regions with a 3D texture field; Material uses MatWeaver to obtain component masks through video-based segmentation and UV-space voting, then retrieves and bakes PBR maps from a curated material library through hierarchical multi-modal matching; and Parts generates material-editable semantic part meshes with a PartVAE and PartDiT, decoding multi-head part-specific SDF fields in one pass. Each module is evaluated independently with dedicated metrics, highlighting both the current system capability and the remaining gaps toward broader deployment.",
+      "authors": [
+        "Yiyun Fei",
+        "Guoqiu Li",
+        "Jin Song",
+        "Chuqiao Wu",
+        "Delong Wu",
+        "Hong Wu",
+        "Ziru Zeng",
+        "Haohui Chen",
+        "YinDong Kong",
+        "Jing Li",
+        "Qi Wu",
+        "Feng Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-06-26T10:15:47+00:00",
+      "link": "https://arxiv.org/pdf/2606.27923v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "high-fidelity image-to-3D asset generation from a single image for interior design",
+      "llm_evidence_cn": "从单张图像生成高保真三维资产，用于室内设计",
+      "llm_evidence": "从单张图像生成高保真三维资产，用于室内设计",
+      "canonical_evidence": "从单张图像生成高保真三维资产，用于室内设计",
+      "llm_tldr_en": "Home3D 1.0 is a modular image-to-3D generation system that produces high-quality 3D meshes with PBR materials from a single furniture photograph, utilizing geometry reconstruction with latent SDF, multiview texture completion, and material decomposition, significantly advancing asset creation for interior design and e-commerce.",
+      "llm_tldr_cn": "Home3D 1.0是一个模块化的图像到三维生成系统，针对室内设计和电商应用，从单张家具照片生成带物理渲染材质的高质量三维网格。系统通过几何重建（潜在SDF建模）、多视图纹理补全和材质分解四个模块紧密协作，解决了从单图生成完整三维资产的难题。实验表明该系统能生成精细的家具模型，大幅提升了三维内容创建的效率和质量。",
+      "llm_tldr": "Home3D 1.0是一个模块化的图像到三维生成系统，针对室内设计和电商应用，从单张家具照片生成带物理渲染材质的高质量三维网格。系统通过几何重建（潜在SDF建模）、多视图纹理补全和材质分解四个模块紧密协作，解决了从单图生成完整三维资产的难题。实验表明该系统能生成精细的家具模型，大幅提升了三维内容创建的效率和质量。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.28060v1",
+      "source": "arxiv",
+      "title": "ReScene: Structured Indoor Scene Reconstruction from Multi-View Captures",
+      "abstract": "Constructing simulation-ready 3D scenes from multi-view captures is a key bottleneck for Embodied Artificial Intelligence, as downstream tasks require object-level structure, explicit inter-object relations, and physical plausibility. Existing approaches either rely on specialized capture hardware, suffer from single-view bias in object reconstruction, or yield layouts that are geometrically reasonable but physically inconsistent. We identify that the problem is not single-object reconstruction but cross-view relation fusion and physically plausible scene assembly. To address this challenge, we present ReScene, a framework that threads multi-view geometry throughout the pipeline as a unifying prior. Our method consists of two main components: HierView prioritizes reconstruction views based on semantic consistency and 3D coverage completeness, replacing the largest-mask heuristic that conflates image occupancy with object coverage; and Relation-Aware Assembly fuses multi-frame relation predictions from a vision-language model with geometric and room-shell priors into a confidence-weighted scene graph, enabling physically consistent scene assembly. ReScene sets a new state of the art across geometry, rendering, and perceptual quality on a set of ScanNet scenes, achieving a 17% reduction in Chamfer Distance and 26% in LPIPS over the strongest prior baseline, while running up to 10x faster than prior multi-view methods. Based on the reconstructed scenes, we also generate an embodied visual question answering dataset, on which fine-tuned Qwen-VL approaches the performance of strong closed-source models on several spatial reasoning tasks.",
+      "authors": [
+        "Haoran Xu",
+        "Lechao Zhang",
+        "Daoguo Dong",
+        "Yan Gao",
+        "Xin Tan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-26T13:08:40+00:00",
+      "link": "https://arxiv.org/pdf/2606.28060v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "structured indoor scene reconstruction from multi-view captures with cross-view relation fusion",
+      "llm_evidence_cn": "从多视角捕获图像中融合跨视角关系重建结构化室内场景",
+      "llm_evidence": "从多视角捕获图像中融合跨视角关系重建结构化室内场景",
+      "canonical_evidence": "从多视角捕获图像中融合跨视角关系重建结构化室内场景",
+      "llm_tldr_en": "ReScene reconstructs simulation-ready 3D indoor scenes from multi-view captures by fusing cross-view relations and ensuring physically plausible scene assembly.",
+      "llm_tldr_cn": "ReScene针对从多视角捕获图像构建仿真就绪的室内场景，解决了单目标重建偏差和物理不一致问题。通过将多视图几何贯穿整个流程，融合跨视角关系并引入分层视图聚合和物理合理装配，实现了目标级结构、显式对象关系和物理一致的重建，为具身智能场景构建提供了关键支持。",
+      "llm_tldr": "ReScene针对从多视角捕获图像构建仿真就绪的室内场景，解决了单目标重建偏差和物理不一致问题。通过将多视图几何贯穿整个流程，融合跨视角关系并引入分层视图聚合和物理合理装配，实现了目标级结构、显式对象关系和物理一致的重建，为具身智能场景构建提供了关键支持。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.28321v1",
+      "source": "arxiv",
+      "title": "StructSplat: Generalizable 3D Gaussian Splatting from Uncalibrated Sparse Views",
+      "abstract": "We present StructSplat, a feed-forward and generalizable 3D Gaussian reconstruction framework that operates directly on uncalibrated images without requiring camera parameters. Existing methods either rely on per-scene optimization or assume known camera poses, and often entangle geometry and appearance within a unified backbone, limiting reconstruction fidelity and generalization. Our key idea is to adopt a structured representation that organizes geometry, semantic, and texture cues with explicit roles in the reconstruction process. Specifically, we introduce a pixel-aligned feature injection mechanism to enable accurate texture modeling from 2D observations, incorporate semantic-aware priors to improve global consistency, and design a camera alignment strategy to prevent information leakage and improve generalization. Experiments show that our method significantly outperforms prior approaches on challenging benchmarks. On DL3DV, our method achieves 28.045 PSNR, surpassing AnySplat (22.377) by +5.67 dB. In cross-dataset evaluation, our method achieves +1.94 dB over AnySplat on ACID and +1.72 dB on RealEstate10K. Project page: https://structsplat.github.io Code: https://github.com/J-C-Zhao/StructSplat",
+      "authors": [
+        "Jia-Chen Zhao",
+        "Beiqi Chen",
+        "Xinyang Chen",
+        "Guangcong Wang",
+        "Liqiang Nie"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-26T17:59:06+00:00",
+      "link": "https://arxiv.org/pdf/2606.28321v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "feed-forward 3D Gaussian reconstruction from uncalibrated sparse views",
+      "llm_evidence_cn": "从无标定稀疏视图进行前馈3D高斯重建",
+      "llm_evidence": "从无标定稀疏视图进行前馈3D高斯重建",
+      "canonical_evidence": "从无标定稀疏视图进行前馈3D高斯重建",
+      "llm_tldr_en": "StructSplat is a generalizable 3D reconstruction method from uncalibrated sparse-view images, using structured representation with pixel-aligned features, semantic priors, and camera estimation.",
+      "llm_tldr_cn": "StructSplat提出了一种从无标定稀疏视图图像进行前馈3D重建的通用框架，通过结构化表示组织几何、语义和纹理线索，引入像素对齐特征注入、语义感知先验和相机嵌入设计，在不需要相机参数的情况下实现高保真重建。该方法解决了现有方法依赖逐场景优化或已知位姿的局限。",
+      "llm_tldr": "StructSplat提出了一种从无标定稀疏视图图像进行前馈3D重建的通用框架，通过结构化表示组织几何、语义和纹理线索，引入像素对齐特征注入、语义感知先验和相机嵌入设计，在不需要相机参数的情况下实现高保真重建。该方法解决了现有方法依赖逐场景优化或已知位姿的局限。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.26557v2",
+      "source": "arxiv",
+      "title": "Coarse-to-Fine: A Hybrid Self-Supervised Method for Non-rigid 3D Shape Matching",
+      "abstract": "Non-rigid 3D shape matching is a fundamental task in computer vision and graphics. In this paper, we propose a hybrid self-supervised method based on a coarse-to-fine strategy, which ensures consistency between the coarse mapping and the refined correspondence produced by our refinement module. The architecture features a dual-branch design, consisting of two symmetric functional map learning streams: one based on the Laplacian basis and the other utilizing the elastic basis. Extensive experiments show that our approach not only maintains computational efficiency, but also achieves state-of-the-art performance across a variety of challenging scenarios, including non-isometric deformations and topological noise. Finally, we rigorously demonstrate that contrastive energies promote feature discrimination. Furthermore, integrating these energies with existing methods yields consistent improvements, validating the overall efficacy of our approach. Our code is available at https://github.com/LuoFeifan77/Coarse-to-Fine-Hybrid-Self-Supervised-Matching.",
+      "authors": [
+        "Feifan Luo",
+        "Ting Li",
+        "Zhao Li",
+        "Hongyang Chen"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-25T03:08:41+00:00",
+      "link": "https://arxiv.org/pdf/2606.26557v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "hybrid self-supervised method for non-rigid 3D shape matching",
+      "llm_evidence_cn": "面向非刚性3D形状匹配的混合自监督方法",
+      "llm_evidence": "面向非刚性3D形状匹配的混合自监督方法",
+      "canonical_evidence": "面向非刚性3D形状匹配的混合自监督方法",
+      "llm_tldr_en": "Proposes a coarse-to-fine hybrid self-supervised method for non-rigid 3D shape matching using dual-branch functional map learning with Laplacian and elastic bases.",
+      "llm_tldr_cn": "该论文针对非刚性3D形状匹配，提出一种由粗到精的混合自监督方法，采用双分支函数映射学习，分别基于拉普拉斯基和弹性基。通过确保粗映射与精化对应的一致性，在非等距变形和拓扑噪声等挑战性场景下取得了领先性能，为3D形状对应提供了高效且鲁棒的解决方案。",
+      "llm_tldr": "该论文针对非刚性3D形状匹配，提出一种由粗到精的混合自监督方法，采用双分支函数映射学习，分别基于拉普拉斯基和弹性基。通过确保粗映射与精化对应的一致性，在非等距变形和拓扑噪声等挑战性场景下取得了领先性能，为3D形状对应提供了高效且鲁棒的解决方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.27659v1",
+      "source": "arxiv",
+      "title": "GeoFace: Consistent Multi-View Face Generation with Geometry-Constrained Diffusion",
+      "abstract": "We present GeoFace, a geometry-constrained multi-view diffusion framework for consistent face generation from a single input. % While recent multi-view diffusion models achieve photorealistic synthesis at the per-view level, they lack an explicit mechanism to enforce a shared 3D structure across views, often leading to inconsistent geometry across viewpoints. To address this, GeoFace proposes a unified dual-stream framework for joint generation of multi-view RGB images and 3D face geometry, where the appearance and geometry streams interact through shared attention layers. To encourage the two streams to mutually constrain each other, we introduce a geometry-guided attention alignment loss that supervises the cross-attention between appearance and geometry tokens with 3D-consistent correspondences, enabling the appearance stream to correctly reference pose-invariant geometric cues for robust alignment across viewpoints. Geometry is represented as a canonical UV position map, derived from a FLAME mesh fitted to multi-view observations, serving as a view-invariant shared constraint across all generated views. Experiments on RenderMe-360 and NeRSemble demonstrate that GeoFace consistently outperforms existing methods in both visual quality and cross-view geometric consistency, facilitating more efficient 3D reconstruction.",
+      "authors": [
+        "Yeji Choi",
+        "Jinhyeok Choi",
+        "Jaewon Min",
+        "Minkyung Kwon",
+        "Jin Hyeon Kim",
+        "Seungryong Kim"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-26T02:31:06+00:00",
+      "link": "https://arxiv.org/pdf/2606.27659v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "generates consistent multi-view face images and 3D geometry from a single input",
+      "llm_evidence_cn": "从单张输入生成一致的多视角人脸图像和3D几何",
+      "llm_evidence": "从单张输入生成一致的多视角人脸图像和3D几何",
+      "canonical_evidence": "从单张输入生成一致的多视角人脸图像和3D几何",
+      "llm_tldr_en": "GeoFace proposes a dual-stream diffusion framework jointly generating multi-view RGB and 3D face geometry, enforcing geometric consistency across views for high-quality 3D face generation.",
+      "llm_tldr_cn": "多视图扩散模型在逐视图合成上表现良好，但缺乏跨视图的共享3D结构约束。GeoFace提出一个几何约束的双流扩散框架，联合生成多视角RGB图像和3D面部几何，并通过几何引导的注意力对齐损失强制外观与几何流相互约束，从而从单张输入生成一致的多视角人脸和3D模型。",
+      "llm_tldr": "多视图扩散模型在逐视图合成上表现良好，但缺乏跨视图的共享3D结构约束。GeoFace提出一个几何约束的双流扩散框架，联合生成多视角RGB图像和3D面部几何，并通过几何引导的注意力对齐损失强制外观与几何流相互约束，从而从单张输入生成一致的多视角人脸和3D模型。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.27738v1",
+      "source": "arxiv",
+      "title": "HandMade: Spatial Prompting for Generative 3D Creation with Part-Labeled VR Sketches",
+      "abstract": "Text-to-3D generation lowers the barrier to 3D content creation, but text alone is a weak interface for specifying spatial intent: where parts should be placed, how they relate, and how an object should be organized in 3D. We present HandMade, a workflow that combines VR 3D sketching and language for open-domain 3D asset generation. HandMade treats coarse, part-labeled 3D sketches not as incomplete geometry to reconstruct directly, but as spatial prompts for existing generative models. It converts segmented VR strokes into multi-view part guidance and structured prompts, allowing users to specify object layout and part relationships through 3D sketching while using language for identity, material, style, and local details. A technical evaluation shows that HandMade better preserves user-authored spatial scaffolds than text-only and sketch-based baselines on 20 varied examples. A user study with eight participants characterizes how users make use of 3D sketching for spatial layout and language for identity, materials, and details across initial authoring and subsequent revision. HandMade contributes an interaction paradigm and interface-to-generation pipeline for spatially guided 3D creation.",
+      "authors": [
+        "Jialin Huang",
+        "Rana Hanocka",
+        "Ariel Shamir",
+        "Yotam Gingold"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC"
+      ],
+      "published": "2026-06-26T05:37:56+00:00",
+      "link": "https://arxiv.org/pdf/2606.27738v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "generates 3D assets from part-labeled sketches and language, enabling controllable 3D object creation",
+      "llm_evidence_cn": "从部件标注的草图和语言生成3D资产，实现可控的3D对象创建",
+      "llm_evidence": "从部件标注的草图和语言生成3D资产，实现可控的3D对象创建",
+      "canonical_evidence": "从部件标注的草图和语言生成3D资产，实现可控的3D对象创建",
+      "llm_tldr_en": "HandMade combines VR 3D sketching and language prompts for open-domain 3D asset generation, treating sketches as spatial constraints to guide generative models.",
+      "llm_tldr_cn": "文本到3D生成缺乏空间详细规格的能力。HandMade提出一种结合VR手绘和语言的工作流，将粗略的部件标注3D草图转化为多视图部件引导和结构化提示，作为空间约束驱动现有生成模型，实现可控的开放域3D资产创建，在可控性和生成质量上取得平衡。",
+      "llm_tldr": "文本到3D生成缺乏空间详细规格的能力。HandMade提出一种结合VR手绘和语言的工作流，将粗略的部件标注3D草图转化为多视图部件引导和结构化提示，作为空间约束驱动现有生成模型，实现可控的开放域3D资产创建，在可控性和生成质量上取得平衡。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.28144v1",
+      "source": "arxiv",
+      "title": "Monocular Avatar Reconstruction via Cascaded Diffusion Priors and UV-Space Differentiable Shading",
+      "abstract": "Reconstructing high-fidelity, relightable 3D avatars from a single in-the-wild image is a challenging ill-posed problem, primarily hindered by the scarcity of high-quality PBR data and the complexity of disentangling illumination from intrinsic materials. In this paper, we present a data-efficient framework that leverages the robust priors of a unified pre-trained diffusion backbone to sequentially address texture completion, delighting, and material decomposition. Unlike existing methods that rely on fragmented pipelines or extensive proprietary datasets, we utilize cascaded Low-Rank Adaptations (LoRAs) to adapt the strong generative prior of the diffusion model for each sub-task in UV space. Specifically, we first employ an Inpainting LoRA to complete missing UV textures caused by occlusion, leveraging the model's semantic understanding to generate semantically and photometrically coherent details. Subsequently, a Light-Homogenization LoRA and a novel Cross-Intrinsic Attention mechanism are introduced to remove baked-in lighting and collaboratively synthesize pixel-aligned PBR maps (Albedo, Normal, Roughness, Specular, and Displacement). To ensure physical plausibility, we impose a UV-space differentiable BRDF shading loss during the decomposition stage, forcing the generative process to adhere to the rendering equation without the artifacts typical of rasterization-based supervision. Extensive experiments demonstrate that our method, trained on fewer than 100 real 3D scans, generates comprehensive, 4K-resolution PBR assets with superior realism and generalization compared to state-of-the-art methods, and all training code and model weights will be released upon acceptance.",
+      "authors": [
+        "Hong Li",
+        "Minqi Meng",
+        "Yanjun Liang",
+        "Chongjie Ye",
+        "Houyuan Chen",
+        "Weiqing Xiao",
+        "Xianda Guo",
+        "Guojun Lei",
+        "Xuhui Liu",
+        "Chaojie Yang",
+        "Yanlun Peng",
+        "Hao Zhao",
+        "Baochang Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-26T14:41:13+00:00",
+      "link": "https://arxiv.org/pdf/2606.28144v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Reconstructing 3D avatars from a single image",
+      "llm_evidence_cn": "从单张图像重建三维头像",
+      "llm_evidence": "从单张图像重建三维头像",
+      "canonical_evidence": "从单张图像重建三维头像",
+      "llm_tldr_en": "This paper reconstructs relightable 3D avatars from a single in-the-wild image by cascading diffusion priors for texture, delighting, and material decomposition in UV space, achieving data-efficient results.",
+      "llm_tldr_cn": "从单张自然图像重建高质量、可重光照的三维头像是一个病态问题，主要受制于 PBR 数据稀缺和材质与光照的纠缠。本文提出一种数据高效框架，利用统一扩散模型先验，通过级联低秩适配（LoRA）在 UV 空间依次完成纹理补全、去光照和材质分解，避免了碎片化管线和大规模专有数据集的需求。实验表明，该方法在保持高保真度的同时，实现了高效的重光照头像生成，为三维内容创建提供了新途径。",
+      "llm_tldr": "从单张自然图像重建高质量、可重光照的三维头像是一个病态问题，主要受制于 PBR 数据稀缺和材质与光照的纠缠。本文提出一种数据高效框架，利用统一扩散模型先验，通过级联低秩适配（LoRA）在 UV 空间依次完成纹理补全、去光照和材质分解，避免了碎片化管线和大规模专有数据集的需求。实验表明，该方法在保持高保真度的同时，实现了高效的重光照头像生成，为三维内容创建提供了新途径。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.27584v1",
+      "source": "arxiv",
+      "title": "CoIn: Comprehensive 2D-3D Inpainting with Gaussian Splatting Guidance",
+      "abstract": "3D scene inpainting is essential for reconstructing areas corrupted by occlusions or limited viewpoints. While recent methods leverage Gaussian Splatting (GS) for efficient 3D editing, they often depend on precise multi-view segmentation masks and are inherently constrained to object removal tasks. We propose CoIn, a novel framework that bridges 2D inpainting models and 3DGS through a multi-stage consistency pipeline. Our approach first generates initial inpainted images using a diffusion model, enabling the use of arbitrary-shaped masks and diverse tasks like object insertion. We then introduce Reference Adaptive GS with Feature Attention to reconstruct a coarse 3D scene by adaptively weighing towards a reference view (2D -> 3D). This 3D representation provides geometric guidance to the diffusion process via GS-based Reference Feature Warping, ensuring multi-view consistency (3D -> 2D). Finally, a Texture-Enhancing Discriminator refines the 3D scene to achieve high photometric realism (2D -> 3D). Experiments show that CoIn, effectively leveraging bidirectional information flow, achieves state-of-the-art performance and effectively handles both object removal and object insertion with flexible mask input.",
+      "authors": [
+        "Hana Kim",
+        "Minje Kim",
+        "Tae-Kyun Kim"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-06-25T22:24:27+00:00",
+      "link": "https://arxiv.org/pdf/2606.27584v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "3D scene inpainting from multi-view images using diffusion and 3DGS",
+      "llm_evidence_cn": "利用扩散和3DGS从多视图图像进行三维场景修复",
+      "llm_evidence": "利用扩散和3DGS从多视图图像进行三维场景修复",
+      "canonical_evidence": "利用扩散和3DGS从多视图图像进行三维场景修复",
+      "llm_tldr_en": "CoIn bridges 2D inpainting and 3DGS to inpaint 3D scenes from multi-view, enabling object removal/insertion without precise masks, and refines via feature attention for consistency.",
+      "llm_tldr_cn": "CoIn通过多阶段一致性管线桥接二维修复模型与3D高斯溅射，从多视图图像重建缺失区域，无需精确分割掩码即可完成物体移除或插入等任务。",
+      "llm_tldr": "CoIn通过多阶段一致性管线桥接二维修复模型与3D高斯溅射，从多视图图像重建缺失区域，无需精确分割掩码即可完成物体移除或插入等任务。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.22631v1",
+      "source": "arxiv",
+      "title": "4DVLT: Dynamic Scene Understanding with Worldline-Centered Vision-Language Tracking",
+      "abstract": "4D dynamic scene understanding requires grounding language to a persistent worldline that binds identity, metric 3D motion, and synchronized multi-view 2D projections. Existing paradigms capture only part of this structure: large multimodal models reason over rich visual evidence but rarely preserve metric topology, while vision-language tracking remains tied to fragmented 2D or 3D outputs and local continuation. We therefore introduce \\textbf{4DVLT}, a worldline-centered task for instruction-conditioned 4D dynamic scene understanding in fully observed multi-view video, and \\textbf{Instruct-4D}, a benchmark with 129.4K question-answer pairs, 64.7K target entities, 851 scenes, and 9 reasoning-oriented query types. To address this setting, we present \\textbf{4DTrack}, which casts instruction-conditioned tracking as graph-conditioned worldline inference through an object-centric 4D state graph, metric-guided routing, bidirectional decoding, and kinematic calibration. On Instruct-4D, 4DTrack-Qwen3.5-9B reaches 62.68 $\\mathrm{TGA}_{\\mathrm{Top1}}$ and surpasses the best adapted VLT baseline by 19.62 points. These results show that worldline-centered modeling improves both target grounding and recovered worldline quality. The project page is available at https://github.com/mikubaka88/4DVLT.",
+      "authors": [
+        "Chaoyue Li",
+        "Boxue Yang",
+        "Shengyao Zhou",
+        "Haoyang Wu",
+        "Rui Qian",
+        "Linfeng Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-21T18:33:15+00:00",
+      "link": "https://arxiv.org/pdf/2606.22631v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "worldline-centered task for 4D dynamic scene understanding in multi-view video",
+      "llm_evidence_cn": "以世界线为中心的多视图视频4D动态场景理解任务",
+      "llm_evidence": "以世界线为中心的多视图视频4D动态场景理解任务",
+      "canonical_evidence": "以世界线为中心的多视图视频4D动态场景理解任务",
+      "llm_tldr_en": "Introduces 4DVLT, a task for instruction-conditioned 4D dynamic scene understanding in fully observed multi-view video, with a benchmark Instruct-4D, and a method to bind language to persistent worldlines.",
+      "llm_tldr_cn": "该论文针对4D动态场景理解，提出以世界线为中心的任务4DVLT，要求将语言与绑定身份、3D运动和同步多视图投影的持久世界线对齐。同时发布大规模基准Instruct-4D，包含多种推理型查询，为解决多视图视频中的语言条件场景理解提供了新范式。",
+      "llm_tldr": "该论文针对4D动态场景理解，提出以世界线为中心的任务4DVLT，要求将语言与绑定身份、3D运动和同步多视图投影的持久世界线对齐。同时发布大规模基准Instruct-4D，包含多种推理型查询，为解决多视图视频中的语言条件场景理解提供了新范式。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "feature matching and 3D scene understanding from large scale image collections",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.27720v1",
+      "source": "arxiv",
+      "title": "Scene and Human in One World: Reconstruction in a Feedforward Pass",
+      "abstract": "Reconstructing humans in dynamic scenes from moving monocular cameras remains challenging due to scale ambiguity, human-scene misalignment, and occlusion interference. Rather than treating human mesh recovery and scene reconstruction as separate tasks, we believe that accurate human-scene reconstruction requires the two tasks to mutually inform each other: parametric human models offer semantic structure and metric-scale priors, while scene geometry provides spatial context for human localization and alignment. Built on this insight, we introduce SHOW, a mask-promptable human mesh recovery framework that couples feed-forward 3D scene reconstruction with Human Mesh Recovery in a unified metric space. SHOW injects human semantics and scale priors from parametric human models into normalized point-map prediction, enabling metric-scale scene reconstruction from inherently scale-ambiguous monocular input. In turn, the recovered scene geometry constrains human mesh estimation, encouraging spatially consistent human placement and improved human-scene alignment. To handle complex multi-person and cluttered scenes, SHOW further incorporates a promptable masking mechanism that enables flexible target-human selection while suppressing background distractions and occlusion interference. Through joint training, the model learns both human-aware geometric features and geometry-constrained human features, producing aligned metric-scale reconstructions from monocular human-centric videos. Extensive experiments demonstrate that SHOW improves metric-scale consistency, human-scene alignment, and reconstruction accuracy under challenging camera motion, occlusion, and cluttered backgrounds.",
+      "authors": [
+        "Boao Shi",
+        "Qiao Feng",
+        "Yiming Huang",
+        "Lingjie Liu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-26T05:08:55+00:00",
+      "link": "https://arxiv.org/pdf/2606.27720v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "feed-forward 3D scene reconstruction with human mesh recovery from moving monocular cameras",
+      "llm_evidence_cn": "从移动单目相机前馈式重建三维场景并恢复人体网格",
+      "llm_evidence": "从移动单目相机前馈式重建三维场景并恢复人体网格",
+      "canonical_evidence": "从移动单目相机前馈式重建三维场景并恢复人体网格",
+      "llm_tldr_en": "SHOW is a feedforward framework that jointly reconstructs 3D scenes and recovers human meshes from monocular video, leveraging human parametric models for scale and semantics and scene geometry for human localization, achieving metric-scale, aligned human-scene reconstruction in a single pass.",
+      "llm_tldr_cn": "本文提出SHOW，一个从前馈传递中联合重建三维场景和恢复人体网格的框架。该方法解决了单目动态场景中人-场景错位、遮挡和尺度模糊问题，通过参数化人体模型注入语义和尺度先验，同时利用场景几何提供空间上下文，实现了度量尺度上的精确人-场景对齐重建。实验表明，SHOW在处理复杂动态场景时优于分离重建的方法。",
+      "llm_tldr": "本文提出SHOW，一个从前馈传递中联合重建三维场景和恢复人体网格的框架。该方法解决了单目动态场景中人-场景错位、遮挡和尺度模糊问题，通过参数化人体模型注入语义和尺度先验，同时利用场景几何提供空间上下文，实现了度量尺度上的精确人-场景对齐重建。实验表明，SHOW在处理复杂动态场景时优于分离重建的方法。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.24767v1",
+      "source": "arxiv",
+      "title": "Compact Object-Level Representations with Open-Vocabulary Understanding for Indoor Visual Relocalization",
+      "abstract": "Indoor visual relocalization plays a critical role in emerging spatial and embodied AI applications. However, prior research was predominantly devoted to low-level vision schemes, struggling to perceive scene semantics and compositions, which limits both interpretability and applicability. In this paper, we explore the issue of how to organize rich object information in a scene, including semantics, layout, and geometry, into a structured map representation, thereby utilizing object units exclusively to drive the camera relocalization task. To this end, we propose OpenReLoc, a camera relocalization system designed to provide scene understanding and accurate pose estimation capabilities. Leveraging recent foundation models, we first introduce a multi-modal mechanism to integrate open-vocabulary semantic knowledge for effective 2D-3D object matching. Additionally, we design object-oriented reference frames as position priors, paired with a reference frame selection strategy based on the Distance-IoU (DIOU), enabling extension to scalable scenes. Moreover, to ensure stable and accurate pose optimization, we also propose a dual-path 2D Iterative Closest Pixel loss guided by object shape. Experimental results demonstrate that OpenReLoc achieves superior relocalization recall and accuracy across various datasets. Our source code will be released upon acceptance.",
+      "authors": [
+        "Zhaopeng Cui",
+        "Jiarui Hu",
+        "Jingbo Liu",
+        "Boming Zhao",
+        "Xiyue Guo",
+        "Boyin Feng",
+        "Haocheng Peng",
+        "Yujun Shen",
+        "Hujun Bao",
+        "Guofeng Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.RO"
+      ],
+      "published": "2026-06-23T16:27:04+00:00",
+      "link": "https://arxiv.org/pdf/2606.24767v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "object-level 3D map with semantics for relocalization",
+      "llm_evidence_cn": "基于物体级语义的三维地图用于重定位",
+      "llm_evidence": "基于物体级语义的三维地图用于重定位",
+      "canonical_evidence": "基于物体级语义的三维地图用于重定位",
+      "llm_tldr_en": "Proposes OpenReLoc, a relocalization system using object-level 3D maps with open-vocabulary semantics, enabling scene understanding and accurate pose estimation.",
+      "llm_tldr_cn": "针对室内视觉重定位忽略场景语义的问题，提出OpenReLoc，构建物体级三维地图融合语义、布局与几何，仅利用物体单元实现相机重定位，实验证明其在重定位精度与可解释性方面的优势。",
+      "llm_tldr": "针对室内视觉重定位忽略场景语义的问题，提出OpenReLoc，构建物体级三维地图融合语义、布局与几何，仅利用物体单元实现相机重定位，实验证明其在重定位精度与可解释性方面的优势。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
