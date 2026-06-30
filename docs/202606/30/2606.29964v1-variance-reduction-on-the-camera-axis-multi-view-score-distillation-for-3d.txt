@@ -1,0 +1,1012 @@
+Title: Variance Reduction on the Camera Axis: Multi-View Score Distillation for 3D
+
+URL Source: https://arxiv.org/pdf/2606.29964v1
+
+Published Time: Tue, 30 Jun 2026 01:56:37 GMT
+
+Number of Pages: 30
+
+Markdown Content:
+# Variance Reduction on the Camera Axis: Multi-View Score Distillation for 3D 
+
+## Marian Lupas ¸cu 1,2
+
+lupascu@adobe.com 
+
+## Mihai-Sorin Stupariu 1
+
+stupariu@fmi.unibuc.ro 
+
+## Ionut ¸ Mironic˘ a2
+
+mironica@adobe.com 
+
+1Department of Computer Science, University of Bucharest, Romania 2Adobe Research A DSLR        
+
+> photo of a
+> freshly baked
+> round loaf of
+> sourdough
+> bread
+> A 3D model of
+> an adorable
+> cottage with a
+> thatched roof
+> A baby bunny
+> sitting on top
+> of a stack of
+> pancakes
+> A tarantula,
+> highly
+> detailed
+> A DSLR
+> photograph of
+> a hamburger
+> RGB
+> 0°90 °180 °270 °
+> surface normals
+> 0°90 °180 °270 °
+
+Figure 1. Multi-View Aggregated Score Distillation (MV-SDI) yields sharp, view-consistent 3D assets in half the optimization steps. 
+
+MV-SDI aggregates score-distillation gradients from K cameras drawn as antithetic (antipodal) pairs each step, replacing the single-camera estimate of SDI [22] at an identical UNet-call budget. Each K=2 result is shown as RGB and surface normals at 0◦/90 ◦/180 ◦ and 270 ◦.
+
+## Abstract 
+
+Score distillation turns a pretrained 2D diffusion model into a 3D generator, but the per-step gradient is estimated from a single randomly chosen view: it is high-variance and blind to global shape consistency. Prior work addresses this by retraining the diffusion prior on multi-view data; this im-proves consistency but makes the sampling contribution in-separable from prior quality. We instead isolate the sam-pling axis. The per-step gradient is one noisy sample of an expectation over views; aggregating K samples per step at a fixed total UNet budget reduces variance without touching the prior. We introduce Multi-View Aggregated Score Distil-lation (MV-SDI), which aggregates gradients from K views per step via gradient accumulation, keeping peak mem-ory unchanged and the 2D prior frozen, and draws views as antithetic antipodal pairs, a prior-independent geomet-ric property, for balanced angular coverage. At a fixed 
+
+10 ,000 -UNet-call budget, K=2 raises CLIP R-Precision from 74 .8% to 83 .8% and CLIP score from 0.297 to 0.312 ,with consistent gains on HPSv2 and ImageReward and a 
+
+0.0% divergence rate on the 43-prompt benchmark; opti-mization steps halve as a consequence. K=4 gives a four-fold step reduction at R-Precision 86 .9% and CLIP 0.307 ,still well above the single-view baseline on every alignment metric. MV-SDI is compatible with gradient-based score-distillation pipelines, including Score Distillation via In-version, and requires no retraining and no multi-view data. Code is available at: MV-SDI repository .
+
+> arXiv:2606.29964v1 [cs.CV] 29 Jun 2026
+
+## 1. Introduction 
+
+Score Distillation Sampling (SDS) [28] and its variants, including Variational Score Distillation (VSD) [43] and Score Distillation via reparametrized Denoising Diffusion Implicit Models (DDIM [33]), or Score Distillation via In-version (SDI) [22], use a frozen 2D diffusion prior to opti-mize a 3D representation, typically a Neural Radiance Field (NeRF) [25], from text. Two obstacles limit their practi-cal use. Optimization is slow: producing a single asset re-quires 10 K or more iterations, each invoking a costly UNet pass on Stable Diffusion [30]. Geometry is often view-inconsistent: the 2D prior’s frontal bias is never corrected because each step supervises the model from a single cam-era, and one view cannot reveal that views disagree about global structure, leaving the Janus problem [28] unchecked. Slow convergence traces to this design choice. The per-step distillation gradient is a one-sample Monte Carlo es-timate of an expectation over views; its variance, not the capacity of the prior, is the binding constraint on conver-gence rate [6, 8]. Recent score-distillation work reduces this variance along the noise and timestep axes of the estima-tor [2, 42], leaving the camera axis, which dominates in op-timization when views disagree most, untouched. The same single-camera choice exacerbates the Janus problem: views never jointly penalize an inconsistent geometry. Existing multi-view approaches [32, 40] address this by retraining the prior on multi-view data, which is costly and makes the contribution of sampling inseparable from the contribution of a better prior. We instead ask: how much is recoverable by smarter sampling alone, with the prior unchanged? We propose Multi-View Aggregated Score Distillation 
+
+(MV-SDI), a training-free framework that reduces this camera-axis variance by aggregating distillation gradients from K views per step at a fixed total UNet budget. UNet evaluations dominate the compute cost of score-distillation pipelines [22, 28], making the UNet budget the natural unit of efficiency. Averaging K estimates shrinks the view-induced variance to roughly 1/K of its single-view value. We structure the K views as antithetic antipodal pairs ,drawing each view’s camera together with its 180 ◦-rotated twin to guarantee balanced hemispheric coverage and re-move same-hemisphere clustering. A negative correlation between antipodes would push the variance below 1/K ;we measure this correlation, induced by the shared NeRF state, to be ≈ 0 in our setting (Sec. 4), so the pairing helps through stratification rather than further variance reduction. Within this framework, we study antithetic structure along one, two, and three orthogonal planes, with progressively larger elevation ranges to probe where the 2D prior de-grades. UNet-step memory is unchanged: gradient accu-mulation across the K views replaces the single-view up-date without increasing per-step peak memory. Our main contributions are: (i) a training-free frame-work (MV-SDI) that replaces the per-step single-view gra-dient with an average over K antithetic views; (ii) an eval-uation on the 43 -prompt SDI benchmark showing that the image-quality cost is intrinsic to the 2D prior and that MV-SDI places above existing score-distillation baselines on alignment and preference metrics;(iii) a front-back view-consistency score that provides the first numeric handle on the Janus problem, enabling systematic diagnosis of geom-etry failures without 3D supervision; and (iv) Consensus-Weighted MV-SDI , a self-supervised extension that learns a scalar weight per view, down-weighting views that disagree with the multi-view consensus. 
+
+## 2. Related Work 
+
+Score distillation for text-to-3D. DreamFusion [28] in-troduced SDS, distilling a frozen 2D diffusion prior [30] into a NeRF [25] by matching the noise prediction on ran-domly noised renderings; Score Jacobian Chaining [38] de-rived the same lifting independently, and Magic3D [18] and Fantasia3D [4] scaled it to higher resolution and dis-entangled geometry from appearance. A long line then reduces the noise and over-smoothing of the SDS gradi-ent by changing the distillation loss: ProlificDreamer’s VSD [43] replaces score matching with a per-scene LoRA [10]; SDI [22], our base, inverts the rendering through DDIM [33] to recover a lower-variance gradi-ent; NFSD [12] and CSD [49] isolate the classifier-free-guidance term and drop the large guidance scale SDS re-quires; LucidDreamer [17] matches DDIM intervals, Con-sistent3D [45] uses a deterministic ODE prior, HiFA [51] refines the guidance, and ESD [41] restores the varia-tional entropy term to curb mode collapse. A parallel thread reschedules the diffusion timestep instead of the loss [11, 24]. Every one of these produces a single-view 
+
+stochastic gradient, so all of them stand to benefit from the variance reduction we propose; we build on SDI, the strongest of the family, but the recipe is loss-agnostic. 
+
+Variance reduction in stochastic optimization. Reduc-ing the variance of Monte Carlo gradient estimators is clas-sical [8, 27]: antithetic sampling draws inputs in negatively correlated pairs, while control variates and common random numbers are staples of differentiable rendering [50] and re-inforcement learning [37], and antithetic timestep sampling stabilizes diffusion training [14]. Closest to us, a recent line reduces score-distillation variance along axes orthog-onal to ours: SteinDreamer [42] adds a Stein control vari-ate, CARV [2] importance-samples the timestep and noise, and RewardSDS [3] reweights noise samples by a reward. All act on the noise, timestep, or reward term of the same estimator, whereas we act on the camera term, so they are complementary and composable rather than competing. To our knowledge we are the first to apply antithetic sampling NeRF          
+
+> 𝜃
+> 𝑐 !
+> 0°180 °
+> 𝑧 "
+> antithetic sampler
+> Π!:𝑝𝑎𝑖𝑟𝑠 𝑐 ,𝑐 #
+> render
+> ℛ𝜃 ,𝑐 !→𝑥 !
+
+𝜖 !         
+
+> SD (frozen)
+> 𝑆𝐷𝐼 7𝐶𝐹𝐺 ±7.5
+> aggregate
+> ∇$ℒ%
+> A=1
+> 𝐾 D∇$ℒ𝑐 !
+> !
+> ∇$ℒ%
+
+𝜃                 
+
+> update
+> 𝜃 ←𝜃 −𝜂 ∇$ℒ%
+> A
+> iterate ~ 5K steps
+> updated 𝜃 →next optimization step
+> fixed 10K UNet -call budget ⇒aggregating 𝐾 views/step =𝐾 ×fewer optimization steps teal = MV -SDI additions to single -view SDI
+> view -consistent
+> 3D asset
+> norm  RGB
+> 0°90 °180 °
+
+Figure 2. MV-SDI in one optimization step. The NeRF θ is rendered from K cameras drawn in antithetic pairs (c, c†) that share one noised timestep (t, ϵ ); each rendering passes through the frozen SD-2.1 prior under the SDI loss, and the per-view gradients are averaged and applied by gradient accumulation, leaving peak memory at the single-view footprint. Teal marks the only two additions to single-view SDI: the antithetic K-view sampler ΠK and the 1/K aggregation. Right: a converged asset (RGB and surface normals at 0◦/90 ◦/180 ◦). 
+
+to the camera distribution of score distillation, and to study how the choice of antithetic axes interacts with the angular reliability of the 2D prior. 
+
+Multi-view priors and the Janus problem. A separate line replaces the 2D prior itself with a 3D-aware one: MVDream [32] fine-tunes Stable Diffusion to emit consis-tent view sets, ImageDream [40] adds image conditioning, and a family of pose-conditioned and multi-view diffusion models learns novel-view or consistent multi-view synthe-sis [16, 19–21, 31, 36]. These priors are strong but need multi-view training data and a retrained backbone, which conflates a better prior with better sampling. Consistent Flow Distillation [47] keeps the prior frozen and instead makes the injected noise consistent across views, and the Janus problem has been attacked with no new prior at all through view-dependent negative prompting [1]. MV-SDI is orthogonal to all of these and needs no retraining: it sits on top of any such prior, and we show that smarter sam-pling alone, with the stock SD 2.1 prior, recovers much of the quality and consistency usually credited to specialized 3D-aware priors. 
+
+3D representations and feed-forward generation. 
+
+Score distillation is agnostic to the underlying 3D represen-tation. While we optimize a NeRF, a parallel line distills into 3D Gaussian Splatting [13] for faster and sharper assets (DreamGaussian [35], GaussianDreamer [48]), and our camera-aggregated sampler transfers to either without change. A different paradigm sidesteps per-scene optimization altogether: feed-forward models map text or a single image to 3D in one pass, predicting a triplane NeRF (LRM [9], Instant3D [15]) or Gaussians (LGM [34]). These are fast but require large 3D training corpora and inherit their training distribution, whereas MV-SDI keeps the appeal of optimization-based methods, no 3D supervision and an open-vocabulary 2D prior, while removing much of their per-asset cost. 
+
+## 3. Approach 
+
+Figure 2 summarizes the method: MV-SDI leaves the single-view SDI pipeline unchanged except for two com-ponents: it draws K cameras per step in antithetic pairs and averages their gradients under a fixed UNet-call budget. 
+
+3.1. Score Distillation via Reparametrized DDIM 
+
+Let θ parametrize a 3D representation (we use Instant-NGP NeRF [26] throughout) and R(θ, c) denote a differentiable rendering at camera pose c. Let ϵϕ(zt, t, y ) be a frozen 2D diffusion UNet conditioned on text prompt y. Score Distil-lation Sampling [28] updates θ by minimizing 
+
+LSDS (θ) = Et, c,ϵ 
+
+w(t) ∥ϵϕ(zt, t, y ) − ϵ∥22
+
+, (1) where zt = αtE(R(θ, c)) + σtϵ, E is the SD encoder, and 
+
+w(t) is a weighting function. The parameter gradient is 
+
+∇θ LSDS = w(t)  ϵϕ(zt, t, y ) − ϵ ∂zt
+
+∂θ . (2) SDI [22] replaces the random noise ϵ with a reparametrized 
+
+target obtained by DDIM-inverting the current rendering and re-denoising it under the prompt-conditioned UNet: 
+
+∇θ LSDI = w(t)  ϵϕ(zt, t, y ) − ˆϵSDI 
+
+ ∂zt
+
+∂θ . (3) In both cases the only stochasticity in a step is (t, c, ϵ ), and the gradient is computed from one camera c.
+
+3.2. Multi-view aggregation reduces variance 
+
+The single-view estimator in Eq. (2)–(3) has variance σ2 := Var c[∇θ L | t, ϵ ] dominated by: different views of the same incomplete 3D representation produce very different gradi-ents. We estimate ∇θ L from K cameras per step, 
+
+d∇θ LK = 1
+
+K
+
+> K
+
+X
+
+> k=1
+
+∇θ L(ck), (4) which for independently sampled cameras gives 
+
+Var[ d∇θ LK ] = σ2/K , the 1/K variance reduction. 
+
+Antithetic camera pairs. Beyond independent draws, we sample cameras in antithetic pairs (c, c†), where c† rotates 
+
+c by 180 ◦ about a chosen axis; for K=2 this is one base view and its azimuth-flipped twin ( ϕ → ϕ + 180 ◦, same elevation and radius). The motivation is negative correla-tion: if the gradient were a strongly odd function of view-ing direction, antipodal draws would push variance below Azimuth · K=2               
+
+> azimuth-flipped pair ( mid )
+> Azim + elev ·K=4
+> + elevation extremes ( max ,min )
+> Octahedral ·K=6
+> ±X, ± Y(= 0), ± Z(± max )
+> = 180
+> camera (faces object) object
+> antipodal pair camera behind sphere
+
+Figure 3. Antithetic camera-sampling strategies on the view sphere. Pairs along 1 (azimuth), 2 (azim+elev), and 3 (octahe-dral/octa) orthogonal great circles. Each pair is rendered simulta-neously and contributes to a single aggregated gradient. 
+
+σ2/K [8]. Whether the SDI gradient is that odd is an em-pirical question, and we measure the antipodal correlation to be ≈ 0 (Sec. 4, App. G), so the pair attains the 1/K rate rather than beating it. Its value is as a stratified sampler: every step is guaranteed a view and its antipode, removing unlucky same-hemisphere draws that independent sampling produces. As Sec. 4 shows, it is this coverage, not extra variance reduction, that eliminates the residual divergences and steadies quality at unchanged mean alignment. 
+
+3.3. Multi-axis antithetic sampling 
+
+The azimuthal ( 1-plane) variant enforces consensus only about the front/back axis. To probe consensus on more axes, we extend antithetic structure to several orthogonal great circles of the camera sphere (Fig. 3): • Mixed (K=4 , 2 planes): one azimuth-flipped pair plus one elevation pair at the extremes of the elevation range, 
+
+i.e. (ϕa, ϵ mid ), (ϕa+180 ◦, ϵ mid ), (ϕb, ϵ max ), (ϕb, ϵ min ).• Octahedral (K=6 , 3 planes): three axis-aligned pairs 
+
+±X, ±Y , ±Z relative to a base azimuth, with the ver-tical pair at ϵ = ±ϵmax and the horizontal pairs at ϵ=0 ◦.Each strategy preserves the K-view aggregation of Eq. (4); only the joint distribution of the K cameras changes. 
+
+3.4. Memory-neutral implementation via gradient accumulation 
+
+Rendering K views in a single pass scales NeRF memory linearly in K, which becomes the bottleneck as K grows. We instead use gradient accumulation : we render and back-propagate the K views sequentially, scaling each per-view loss by 1/K , and step the optimizer only after all K views accumulate (Algorithm 1). Peak memory then matches single-view training, while the update equals multi-view av-eraging. Because we hold the total UNet budget fixed (e.g. 
+
+10 K calls), K-view aggregation cuts the number of opti-mization steps by K×, the speedup we report in Sec. 4. 
+
+Compatibility. MV-SDI is a drop-in modification of the training loop, compatible with any SDS, VSD, or SDI loss and leaving the underlying prior unchanged; we instantiate it on SDI and ablate K and the antithetic axes. 
+
+Algorithm 1 MV-SDI optimization 
+
+Require: NeRF θ, prompt y, camera sampler ΠK (one of: random, azimuth, mixed, octa), UNet-call budget N 
+
+> 1:
+
+for step = 1 , . . . , N/K do  ▷ K× fewer steps at fixed budget  
+
+> 2:
+
+{ck}Kk=1 ← ΠK ()  ▷ sample K views  
+
+> 3:
+
+sample shared timestep t and noise ϵ 
+
+> 4:
+
+for k = 1 , . . . , K do  
+
+> 5:
+
+xk ← R (θ, ck) 
+
+> 6:
+
+∇θ Lk ← SDI-gradient (Eq. 3) for xk, t, ϵ  
+
+> 7:
+
+θ. grad += 1 
+
+> K
+
+∇θ Lk ▷ accumulate  
+
+> 8:
+
+end for  
+
+> 9:
+
+optimizer.step ()  ▷ single update  
+
+> 10:
+
+end for 
+
+## 4. Experiments 
+
+4.1. Experimental setup 
+
+We build on threestudio [7] with an Instant-NGP NeRF [26] and a frozen Stable Diffusion 2.1 prior, and evaluate on the exact 43 -prompt set released with SDI [22] so our numbers are directly comparable to their Tab. 1. Every configuration shares the same NeRF and optimizer and spends the same 
+
+10 K UNet calls per asset, so MV-SDI with K views per step trains for 10 K/K steps; the only changes are the cam-era sampler ΠK and the step count (forward CFG 7.5, inver-sion CFG −7.5, matching SDI; full settings in Appendix A, CFG and t-schedule sensitivity in Appendix D). We report six metrics: CLIP score [29], CLIP R-Precision (top-1 over the 42 distractors), HPSv2 [44], ImageReward [46], the no-reference CLIP IQA [39] quality estimator from SDI’s Tab. 1, and a divergence rate (share of prompts collapsing to an empty or uniform volume; SDI report 4.7% , plain SDS 
+
+18 .6% ). Divergence is reported separately; the other five are our primary ranking metrics, each averaged over 50 views per asset as in SDI. 
+
+Calibration. Our baseline SDI reaches a mean CLIP score of 0.297 (29 .7 on the ×100 scale of SDI’s Tab. 1) at 0.0% divergence, whereas SDI report 33 .47 ± 2.49 and 
+
+4.7% for the same baseline. We attribute the ∼ 10% relative gap to seed and CLIP-backbone differences, and since the offset is not uniform across metrics we calibrate only on the CLIP axis, the one the transitive comparison below uses. Every configuration here shares the same backbone, seed, and scoring stack, so all reported deltas are valid within our build; we claim direction-of-effect, not absolute parity with SDI’s printed numbers. 
+
+4.2. Main results 
+
+Table 1 reports every configuration; we begin with its pri-mary block, comparing baseline SDI against K=2 uniform, 
+
+K ∈ { 1, 2} antithetic. Eight findings (F1) -(F8) stand out. Table 1. MV-SDI configurations and the sampling ablation vs. baseline SDI on the 43 -prompt SDI benchmark [22], all at the same 10 K-UNet-call budget. Bold = best per metric, averaged over 50 views per prompt. Speedup = optimization-step reduction ( 10 K/K ), not wall-clock; Planes = orthogonal antithetic planes; Elev. = camera elevation range; Div% = prompts collapsing to an empty or uniform volume; IR = ImageReward; CLIP IQA is SDI’s quality anchor (more in Appendix B). Top block: primary azimuthal configurations (shaded K=2 antithetic = recommended default); bottom block: the sweep over more planes and higher K.                                                                                                                    
+
+> Strategy Planes KSpeedup Elev. CLIP ↑R-Prec ↑HPSv2 ↑CLIP IQA ↑IR ↑Div% ↓
+> Baseline SDI (single-view) 011.0 ×[−10 ,45] 0.297 74.8% 0.199 0.560 -0.47 0.0%
+> Antithetic azimuthal sampling (primary configurations)
+> Uniform ( K=2 )022.0 ×[−10 ,45] 0.312 83.7% 0.219 0.407 -0.15 2.3% Antithetic ( K=2 )122.0 ×[−10 ,45] 0.312 83.8% 0.221 0.431 -0.07 0.0% Antithetic ( K=4 )144.0 ×[−10 ,45] 0.307 86.9% 0.215 0.407 -0.36 0.0%
+> Extended sampling: more planes / higher K
+> Mixed (azim+elev) 244.0 ×[−10 ,45] 0.309 90.4% 0.210 0.406 -0.45 0.0% Octahedral (moderate) 366.0 ×[−30 ,60] 0.303 81.3% 0.201 0.396 -0.59 0.0% Octahedral (aggressive) 366.0 ×[−60 ,80] 0.301 78.6% 0.199 0.399 -0.66 0.0% Octahedral (full sphere) 366.0 ×[−89 ,89] 0.301 78.4% 0.200 0.398 -0.67 4.7% Antithetic ( K=8 )188.0 ×[−10 ,45] 0.304 81.7% 0.205 0.410 -0.55 0.0%
+
+(F1) Antithetic sampling helps stability and quality, not mean alignment. At equal K=2 , switching from uniform to antithetic pairs leaves alignment unchanged (CLIP 0.312 vs. 0.312 , R-Precision 83 .7% vs. 83 .8% ) but improves the quality and preference metrics (CLIP IQA 
+
+0.407 → 0.431 , ImageReward −0.15 → − 0.07 , HPSv2 
+
+0.219 → 0.221 ) and removes the one divergence uniform sampling shows ( 2.3% → 0.0% ). Antithetic and uniform target the same expected gradient, so neither moves the mean; the gains come from stratification, not lower vari-ance (we measure antipodal correlation ρ ≈ 0; App. G, Fig. 11), since pairing every view with its antipode guar-antees front/back coverage and removes the under-covered runs that collapse. 
+
+(F2) Multi-view aggregation beats the baseline at fewer steps. Every MV-SDI variant beats baseline SDI on CLIP, R-Precision, and HPSv2 at 2–4× fewer steps, and the azimuthal variants also improve ImageReward. The strongest, K=2 antithetic, lifts CLIP by +5 .1% rel. (0.297 → 0.312 ), R-Precision by +9 .0pp ( 74 .8% → 83 .8% ), HPSv2 by +11 .1% rel. ( 0.199 → 0.221 ), and ImageReward by +0 .40 (−0.47 → − 0.07 ), all at 2× speedup. 
+
+(F3) Higher K trades a little CLIP for stronger re-trieval and fewer steps. K=4 antithetic loses a little CLIP versus K=2 (0.307 vs. 0.312 ) but improves R-Precision (86 .9% vs. 83 .8% , +12 .1pp over baseline) and still beats the baseline on HPSv2 ( 0.215 ), at 4× fewer steps. Since every variant spends the same 10 K UNet calls, this is a step-count reduction, not a wall-clock one: K=4 is the op-erating point when optimizer updates, not total compute, are the constraint. 
+
+(F4) Divergence is non-increasing under antithetic sampling. Baseline SDI and both antithetic variants sit at 
+
+0.0% divergence; only K=2 uniform adds back a single di-vergence ( 2.3% ) that antithetic removes, reinforcing (F1). 
+
+(F5) Pareto trade-off: CLIP IQA drops ∼ 25% across all MV-SDI variants. Against these gains, CLIP IQA drops 
+
+23 .0–29 .3% relative on every MV-SDI configuration ( 0.560 
+
+baseline vs. 0.396 –0.431 across Tab. 1; SDI’s sharpness and real anchors agree, Appendix Tab. 13). The drop is a real Pareto displacement, not a sampler artefact: it is unan-imous across K ∈ { 2, 4, 6}, uniform and antithetic, 1/2/3
+
+planes, and elevation ranges [±30 ◦, ±89 ◦], and its magni-tude tracks aggregation strength ( 23 .0% at K=2 , ∼ 27% 
+
+at K=4 , ∼ 29% at K=6 ). Variance-reduced gradients converge to sharper, higher-frequency surfaces that fit the prompt better but that the CLIP IQA prior, tuned on natural photographs, reads as less natural. Our headline trade-off is therefore 2× speedup, +5 .1% CLIP, +9 .0pp R-Precision, 
+
++11% HPSv2, +0 .40 ImageReward, and 0% divergence, at 
+
+−23 .0% CLIP IQA. 
+
+(F6) Mitigation pilot: a TV regularizer. To ask whether the (F5) drop is recoverable, we add a Total-Variation (TV) penalty on the rendered RGB and sweep its weight on a 10 -prompt subset 1 (Tab. 2). The result is clear-cut: no weight recovers CLIP IQA , which stays at or below the no-TV reference ( 0.455 vs. 0.431 –0.444 )rather than climbing toward baseline SDI’s subset value of 
+
+0.521 . What TV does do is modestly improve alignment (at 
+
+λ=10 −1 CLIP 0.311 → 0.320 ; at λ=10 −2 ImageReward 
+
+−0.48 → − 0.23 ) at negligible IQA cost. We read this as evidence that the (F5) trade-off is intrinsic to the SDI prior ,not a smoothness artefact a single penalty can undo. 
+
+(F7) Stability across seeds. Re-running MV-SDI K=2 
+
+antithetic with three seeds (Tab. 3), the seed-induced stan-dard deviation on every metric is well below the gaps in Tab. 1, so the advantage is not a seed artefact.      
+
+> 1All subset-level pilots use the same fixed 10 -prompt subset and seed, and because NeRF score-distillation is not reproducible bit-for-bit across launches we compare only within each table, never across pilots or against the 43 -prompt main results; in particular, R-Precision over the nine subset distractors is not comparable to the 42 -distractor main-table value.
+
+Table 2. Pareto-mitigation: adding a Total-Variation regularizer 
+
+LTV (RGB ) to MV-SDI K=2 antithetic. Sweep over three weights on a 10-prompt subset of the SDI benchmark. We seek a weight that recovers IQA (CLIP IQA) without erasing the alignment. Config CLIP ↑ R-Prec ↑ HPSv2 ↑ IQA ↑ IR ↑
+
+K=2 anti (no TV) 0.311 97.4% 0.211 0.455 -0.48 K=2 anti + TV( λ=10 −3) 0.316 100.0% 0.215 0.442 -0.40 K=2 anti + TV( λ=10 −2) 0.317 98.0% 0.216 0.431 -0.23 
+
+K=2 anti + TV( λ=10 −1) 0.320 97.7% 0.213 0.444 -0.34 Table 3. Seed stability for MV-SDI ( K=2 , antithetic) on a 10-prompt SDI subset. Values are mean ± std over seeds {0, 1, 2};SDI is deterministic. The +5 .1% CLIP improvement reported in Tab. 1 is well beyond the observed seed variation.               
+
+> Method CLIP ↑R-Prec ↑HPSv2 ↑IQA ↑IR ↑
+> SDI 0.297 88.6% 0.191 0.521 −0.69
+> MV-SDI 0.315 ±0.005 99.0 ±0.7% 0.212 ±0.005 0.442 ±0.016 −0.44 ±0.11
+
+(F8) Consensus-weighted aggregation, a learnable parameter intrinsic to MV-SDI. Uniform 1/K averag-ing is itself a choice that exists only because MV-SDI holds K views at once; a single-view method cannot de-fine it. We therefore introduce Consensus-Weighted MV-SDI (CW-MV-SDI), which replaces uniform weights with 
+
+wk = softmax k(s a k), where ak is the agreement of view 
+
+k’s gradient with the multi-view consensus and s is a single learnable sharpness scalar. Agreement is measured in gradi-ent space, so it does not penalise antithetic partners, and s is trained self-supervised at no extra diffusion cost; since s=0 
+
+recovers MV-SDI exactly, the mechanism cannot regress our numbers. It is the camera-axis counterpart to timestep-axis variance reduction (DreamTime [11], CARV [2]) and noise reweighting (RewardSDS [3]). On a 4-config pilot (Tab. 4) the scalar learns a non-trivial sharpness ( s=1 .00 
+
+at K=2 , 0.86 at K=6 ). At K=2 it is a net gain (Im-ageReward −0.86 → − 0.37 , HPSv2 0.203 → 0.211 , CLIP 
+
+0.313 → 0.316 , at a small CLIP-IQA cost 0.435 → 0.418 
+
+and unchanged 0.0% divergence). At K=6 octahedral it re-covers some off-equator quality (CLIP IQA 0.394 → 0.409 ,Janus 0.925 → 0.920 ) but leaves alignment and the 40% 
+
+divergence unchanged. We find that re-weighting views recovers part of the lost naturalness but cannot rescue the alignment failure, which sharpens (F5) by tracing the oc-tahedral degradation to a prior-coverage limit rather than a fixable weighting choice. 
+
+Positioning against prior score-distillation methods. 
+
+We do not re-run SDS, SJC, VSD, ESD, or HiFA: each is reported under the identical protocol in Tab. 1 of [22], re-produced in Tab. 5 (on the ×100 CLIP axis: SDS 29 .8, SJC 
+
+30 .4, VSD 33 .3, ESD 32 .8, HiFA 32 .8, SDI 33 .5). Our SDI reads 29 .7 on that axis, a uniform ∼ 10% offset; this 
+
+Table 4. Consensus-weighted aggregation (CW-MV-SDI). The learned-weight variant of MV-SDI: uniform 1/K averaging is re-placed by per-view weights from each view’s agreement with the multi-view consensus. 10 -prompt SDI subset, all metrics plus Janus; each consensus row is paired with its own uniform refer-ence, so only the aggregation rule changes. Janus = front-back CLIP-image cosine ( ↓ less Janus). Config CLIP ↑ R-Prec ↑ HPSv2 ↑ IQA ↑ IR ↑ Janus ↓ Div% ↓ s                                     
+
+> K=2 anti (uniform) 0.313 98.2% 0.203 0.435 -0.86 0.907 0.0% –
+> +consensus 0.316 98.2% 0.211 0.418 -0.37 0.915 0.0% 1.00 K=6 octa (uniform) 0.300 88.7% 0.185 0.394 -0.96 0.925 40.0% –
+> +consensus 0.299 88.3% 0.184 0.409 -0.94 0.920 40.0% 0.86 A DSLR
+> photo of a
+> decorated
+> cupcake with
+> sparkling
+> sugar on top
+> A DSLR
+> photo of
+> Cthulhu
+> A ceramic lion
+> A blue tulip
+> Pumpkin
+> head zombie,
+> skinny, highly
+> detailed,
+> photorealistic
+> A DSLR
+> photo of a
+> dew -covered
+> peach sitting
+> in soft
+> morning light
+> MV -SDI K=2 antithetic
+> 5K steps
+> front 90 °side 90 °side front
+> 10K steps
+> Baseline SDI
+
+Figure 4. Qualitative comparison. For each prompt (rows), the leftmost two columns show baseline SDI ( 10 K steps); the right-most two columns show MV-SDI K=2 antithetic ( 5K steps). Within each method we show a front and a 90 ◦ side view. 
+
+constant shift cancels in every pairwise comparison, so rel-ative rankings among all listed methods are unaffected by the choice of evaluation stack. Our MV-SDI K=2 anti-thetic improves on our SDI by +5 .1% (29 .7 → 31 .2), so compounding with the calibration places it at an effective 
+
+∼ 35 .2, above every external baseline. The two efficiency axes stay distinct: against our SDI, MV-SDI is a 2–4×
+
+step reduction at fixed budget and equal wall-clock; against the external baselines it inherits SDI’s 119 m runtime and so runs ∼ 2–2.8× faster than VSD ( 334 m), ESD ( 331 m), and HiFA ( 235 m). This is the same transitive construction SDI uses for its own Magic3D [18], Fantasia3D [4], and NFSD [12] comparisons. 2K 4K 6K 8K 10K 
+
+> UNet calls (cumulative)
+> 0.20
+> 0.25
+> 0.30
+> 0.35
+> baseline
+> collapses
+
+CLIP score ( )    
+
+> 2K 4K 6K 8K 10K
+> UNet calls (cumulative)
+> 0.05
+> 0.10
+> 0.15
+> 0.20
+
+HPSv2 ( )    
+
+> 2K 4K 6K 8K 10K
+> UNet calls (cumulative)
+> 2
+> 1
+> 0
+> 1
+
+ImageReward ( )          
+
+> Baseline SDI ( K= 1) MV-SDI K= 2 uniform MV-SDI K= 2 antithetic MV-SDI K= 4 antithetic
+
+Figure 5. Convergence under matched UNet budget. CLIP, HPSv2, and ImageReward on the front-view validation frame written every 
+
+50 steps, aligned on the cumulative UNet-call axis so every config reaches the 10 K equal-budget point (dotted line; e.g. K=2 at step 5000 
+
+coincides with the baseline at 10000 ); single seed, mean over a 10 -prompt subset. The pattern is stability, not a higher peak: baseline SDI rises to a plateau and then collapses over the final ∼2K calls (CLIP 0.354 → 0.287 , with matching drops on HPSv2 and ImageReward), whereas every MV-SDI variant holds its quality. K=4 converges more slowly but is likewise stable. The two K=2 schemes track each other: the small transient CLIP gap near 1.5–2K is within single-seed noise and collapses to within ±0.006 from ∼2.5K onward. Consistent with (F1), the antithetic benefit is stability and coverage, not faster CLIP convergence; per-milestone values are in Tab. 10. Table 5. External baselines reproduced verbatim from Tab. 1 of [22]. Same protocol as our Tab. 1. Absolute values differ due to implementation and backbone differences (Sec. 4.1); comparisons rely on the published relative ordering. The MV-SDI rows ( †) are placed on this scale by transitivity through the shared SDI baseline. Method Steps CLIP ↑ IQA-Q ↑ IQA-S ↑ IQA-R ↑ IR ↑ Time / VRAM SDS [28] 10K 29 .81 ±2.49 76 ±6.6 99 ±1.2 98 ±2.4 −1.51 ±0.83 66 m / 6.2GSJC [38] 10K 30 .39 ±1.98 76 ±6.4 99 ±0.1 98 ±1.1 −1.76 ±0.51 13 m / 13 .1GVSD [43] 25K 33 .31 ±2.39 77 ±6.7 98 ±1.3 96 ±4.4 −1.17 ±0.58 334 m / 47 .9GESD [41] 25K 32 .79 ±2.15 77 ±7.2 98 ±1.2 97 ±2.7 −1.20 ±0.64 331 m / 46 .8GHiFA [51] 25K 32 .80 ±2.35 81 ±6.5 98 ±1.5 97 ±1.2 −1.16 ±0.69 235 m / 46 .4GSDI [22] 10K 33 .47 ±2.49 82 ±6.3 98 ±1.3 97 ±1.2 −1.18 ±0.59 119 m / 39 .2G                  
+
+> Ours (K=2 anti) †5K 35 .16 ±2.62 63 .1±4.881 .7±1.173 .0±0.9−0.78 ±0.59 119 m / 39 .2G
+> Ours (K=4 anti) †2.5K 34 .60 ±2.57 59 .6±4.675 .0±1.068 .7±0.9−1.07 ±0.59 119 m / 39 .2G
+
+4.3. Ablation: how many antithetic axes? 
+
+We next ask whether extending antithetic structure beyond the azimuthal plane helps. The extended block of Ta-ble 1 adds K=4 mixed (azimuth + elevation pair, 2 planes) and three K=6 octahedral variants ( 3 planes) over pro-gressively wider elevation ranges ( ±30 ◦/60 ◦, ±60 ◦/80 ◦,
+
+±89 ◦), all at the same budget and 43 -prompt set. 
+
+One plane wins four of five metrics; two planes win R-Precision. The 1-plane azimuth-only configuration ( K=2 
+
+antithetic) is the best MV-SDI variant on four of five pri-mary metrics (CLIP 0.312 , HPSv2 0.221 , CLIP IQA 0.431 ,IR −0.07 ). The gain survives a randomly rotated pairing axis (Appendix E). The 2-plane mixed variant wins on R-Precision ( 90 .4% vs. 83 .8% , the best in the study) at small cost on the rest (CLIP 0.309 , HPSv2 0.210 , IQA 0.406 , IR 
+
+−0.45 , nearly back to the baseline’s −0.47 ): the elevation pair disambiguates object identity but slightly blurs align-ment and erases the ImageReward gain. We recommend 
+
+K=4 mixed when retrieval matters most, K=2 azimuth-only otherwise. 
+
+Pushing antithetic axes off-equator breaks the 2D prior. 
+
+The three octahedral K=6 variants fail three ways. They collapse onto a much weaker plateau (CLIP 0.301 –0.303 ,R-Precision 78 .4–81 .3% , HPSv2 0.199 –0.201 , IQA 0.396 –
+
+0.399 ), barely matching the baseline on HPSv2; they are the only configurations worse than the baseline on ImageRe-ward ( −0.59 to −0.67 vs. −0.47 ); and the full-sphere vari-ant ( ±89 ◦) diverges on 4.7% of prompts (two of 43 , both rendered correctly with one or two planes) while the nar-rower ranges stay at 0.0% . This matches a known Sta-ble Diffusion limitation: its training distribution is dom-inated by near-horizontal views, so near-polar renderings carry high prior error that, aggregated over three axes, con-taminates the gradient. We treat this as a contribution: it separates the regime where smarter sampling helps (one or two near-equatorial planes) from the regime where the prior is the bottleneck (three planes over the full sphere). 
+
+Scaling to K=8 . Pushing to K=8 (four antithetic pairs, 
+
+1250 steps) still completes at 0% divergence but under-performs K=2 on every metric (CLIP 0.304 , R-Precision 
+
+81 .7% , HPSv2 0.205 , ImageReward −0.55 , the last below even the baseline’s −0.47 ): at a fixed budget, eight views in 
+
+1250 steps over-aggregate and starve geometry refinement, the same effect we see at K=6 . K=2 antithetic remains the sweet spot, with K=4 preferred for more step speedup (it leads on R-Precision at 86 .9% ). 
+
+4.4. Convergence analysis 
+
+Figure 5 traces quality over the cumulative UNet budget and shows the gain is not an artefact of where we stop: baseline SDI plateaus then collapses over the final ∼2K calls (front-view CLIP 0.354 → 0.287 ) while every MV-SDI variant holds its quality. The two K=2 schemes converge to the same CLIP trajectory, so, consistent with (F1), the antithetic advantage surfaces as stability and higher converged CLIP IQA, ImageReward, and HPSv2 rather than faster CLIP convergence. Per-milestone numbers are in Appendix F. Renaissance            
+
+> -style oil
+> painting of a
+> queen
+> A photograph
+> of a knight
+> A photograph
+> of a ninja
+> A Viking
+> panda with
+> an axe
+> 90 °RGB
+> Baseline SDI
+> normals 0°RGB normals 180 °RGB normals 90 °RGB
+> MV -SDI K=2 antithetic
+> normals 0°RGB normals 180 °RGB normals 90 °RGB
+> MV -SDI K=4 antithetic
+> normals 0°RGB normals 180 °RGB normals
+> Photograph
+> of a black
+> leather
+> backpack
+> An astronaut
+
+Figure 6. Qualitative comparison. For each prompt (rows) we show our baseline SDI reproduction and the two antithetic MV-SDI variants (K=2 and K=4 ), each rendered as RGB and surface normals at three orbit views ( 0◦/90 ◦/180 ◦). Relative to the single-view baseline, the antithetic variants are sharper, more detailed, and follow the prompt more faithfully, at 2–4× fewer optimization steps. 
+
+4.5. Qualitative comparison 
+
+Figure 4 contrasts baseline SDI with MV-SDI K=2 an-tithetic on representative prompts, showing a front and a 
+
+90 ◦ side view per method; MV-SDI yields stronger prompt alignment and no front-back inconsistencies across shown examples. 
+
+Multi-view qualitative comparison. Fig. 6 compares our baseline SDI reproduction with the antithetic MV-SDI vari-ants ( K=2 and K=4 ), each shown as RGB and surface nor-mals at three orbit views ( 0◦, 90 ◦, 180 ◦). It is the qual-itative counterpart of Tab. 1: across viewpoints the anti-thetic variants are sharper and more detailed than the single-view baseline, at 2–4× fewer optimization steps. See Ap-pendix H for more comparisons. 
+
+4.6. Discussion and limitations 
+
+When does MV-SDI help most? Variance reduction mat-ters most where the per-view gradient is most heavy-tailed, early in training when the NeRF is poorly initialised and views disagree; MV-SDI converges faster in the first 1K
+
+steps, and all methods reach similar plateaus beyond 20 K
+
+UNet calls, so the advantage is largest under the 10 K-call budget of practical interest. 
+
+Limitations. MV-SDI inherits the weaknesses of its un-derlying loss and does not fix artefacts of the 2D prior, such as the polar-view failures above. The caveat is the (F5) CLIP-IQA trade-off: every variant gains on CLIP, R-Precision, HPSv2, and ImageReward while losing 23 .0–
+
+29 .3% on CLIP IQA, a cost we read as a genuine tension between prompt-faithful detail and low-frequency natural-ness; a principled fix would add an IQA-aware regular-izer that lets a user dial along the frontier. A 30 -prompt DreamFusion subset (Appendix I) reproduces the direction-of-effect on the three alignment metrics, and extending MV-SDI to a DiT-based rectified-flow prior (FLUX.1-dev) hits a prior-side obstacle documented in Appendix J. 
+
+## 5. Conclusion 
+
+This work reduces the gradient variance of score distilla-tion by averaging the per-step gradient over K antithetic antipodal views rather than one, without model retraining, an auxiliary network, or extra memory. The method, MV-SDI, starts from the observation that a single-view gradient is one Monte Carlo sample over the camera distribution, so the convergence and consistency problems of SDS and SDI are partly a sampling problem rather than a prior limitation. Averaging K views gives the standard 1/K variance reduc-tion at single-view cost through gradient accumulation, and the antipodal pairing covers front and back, removing the divergences single-view training leaves behind. On the 43 -prompt SDI benchmark at a matched UNet budget, K=2 
+
+antithetic improves every alignment and preference metric over single-view SDI (CLIP +5 .1% , R-Precision +9 points, HPSv2 +11% ) at half the optimization steps, with a sin-gle cost: a CLIP-IQA trade-off that a Total-Variation pilot traces to the prior rather than to the sampler. An ablation over the sampling axes locates where the effect holds: one or two near-equatorial antithetic planes are sufficient, while aggregating over polar views on the full sphere is bounded by the prior, the same one that sets the CLIP-IQA cost. Two further contributions build on the same multi-view state. A front-back consistency score quantifies the Janus problem without 3D supervision, and Consensus-Weighted MV-SDI, a self-supervised exten-sion that learns a per-view weight from agreement with the multi-view consensus, recovers part of the quality cost while reducing to MV-SDI at initialization. Two extensions follow naturally. Because the gains come from the sampler and not the prior, the same antithetic aggregation should apply to stronger or 3D-aware priors, where a better sampler and a better prior should be comple-mentary. A quality-aware regularizer would let a user trade alignment against naturalness along the CLIP-IQA frontier rather than accept a fixed operating point. References 
+
+[1] Mohammadreza Armandpour, Ali Sadeghian, Huangjie Zheng, Amir Sadeghian, and Mingyuan Zhou. Re-imagine the negative prompt algorithm: Transform 2d diffusion into 3d, alleviate janus problem and beyond. arXiv preprint arXiv:2304.04968 , 2023. 3 [2] Jesse Bettencourt, Xindi Wu, Matan Atzmon, James Lucas, and Jonathan Lorraine. Variance reduction for expectations with diffusion teachers, 2026. SPIGM Workshop, ICML 2026. 2, 6 [3] Itay Chachy, Guy Yariv, and Sagie Benaim. Rewardsds: Aligning score distillation via reward-weighted sampling, 2025. 2, 6 [4] Rui Chen, Yongwei Chen, Ningxin Jiao, and Kui Jia. Fan-tasia3d: Disentangling geometry and appearance for high-quality text-to-3d content creation. In IEEE/CVF Interna-tional Conference on Computer Vision, ICCV 2023, Paris, France, October 1-6, 2023 , pages 22189–22199. IEEE, 2023. 2, 6 [5] Nicki Skafte Detlefsen, Jiri Borovec, Justus Schock, Ananya Harsh Jha, Teddy Koker, Luca Di Liello, Daniel Stancl, Changsheng Quan, Maxim Grechkin, and William Falcon. TorchMetrics – measuring reproducibility in Py-Torch. https://github.com/Lightning- AI/ torchmetrics , 2022. 12 [6] Peter W. Glynn and Roberto Szechtman. Some new perspec-tives on the method of control variates. Monte Carlo and Quasi-Monte Carlo Methods , 2002. 2 [7] Yuan-Chen Guo, Ying-Tian Liu, Ruizhi Shao, Christian Laforte, Vikram Voleti, Guan Luo, Chia-Hao Chen, Zi-Xin Zou, Chen Wang, Yan-Pei Cao, and Song-Hai Zhang. threestudio: A unified framework for 3d content generation. 
+
+https://github.com/threestudio- project/ threestudio , 2023. 4, 12 [8] John M. Hammersley and David C. Handscomb. Monte Carlo methods . Methuen, 1964. 2, 4 [9] Yicong Hong, Kai Zhang, Jiuxiang Gu, Sai Bi, Yang Zhou, Difan Liu, Feng Liu, Kalyan Sunkavalli, Trung Bui, and Hao Tan. LRM: large reconstruction model for single image to 3d. In The Twelfth International Conference on Learn-ing Representations, ICLR 2024, Vienna, Austria, May 7-11, 2024 . OpenReview.net, 2024. 3 [10] Edward J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, and Weizhu Chen. Lora: Low-rank adaptation of large language models. In 
+
+The Tenth International Conference on Learning Represen-tations, ICLR 2022, Virtual Event, April 25-29, 2022 . Open-Review.net, 2022. 2 [11] Yukun Huang, Jianan Wang, Yukai Shi, Boshi Tang, Xian-biao Qi, and Lei Zhang. Dreamtime: An improved opti-mization strategy for diffusion-guided 3d generation. In The Twelfth International Conference on Learning Representa-tions, ICLR 2024, Vienna, Austria, May 7-11, 2024 . Open-Review.net, 2024. 2, 6 [12] Oren Katzir, Or Patashnik, Daniel Cohen-Or, and Dani Lischinski. Noise-free score distillation. In The Twelfth In-ternational Conference on Learning Representations, ICLR 2024, Vienna, Austria, May 7-11, 2024 . OpenReview.net, 2024. 2, 6 [13] Bernhard Kerbl, Georgios Kopanas, Thomas Leimk¨ uhler, and George Drettakis. 3d gaussian splatting for real-time radiance field rendering. ACM Trans. Graph. , 42(4):139:1– 139:14, 2023. 3 [14] Diederik Kingma and Tim Salimans. Variational diffusion models. In Advances in Neural Information Processing Sys-tems , pages 21696–21707, 2021. 2 [15] Jiahao Li, Hao Tan, Kai Zhang, Zexiang Xu, Fujun Luan, Yinghao Xu, Yicong Hong, Kalyan Sunkavalli, Greg Shakhnarovich, and Sai Bi. Instant3d: Fast text-to-3d with sparse-view generation and large reconstruction model. In 
+
+The Twelfth International Conference on Learning Represen-tations, ICLR 2024, Vienna, Austria, May 7-11, 2024 . Open-Review.net, 2024. 3 [16] Peng Li, Yuan Liu, Xiaoxiao Long, Feihu Zhang, Cheng Lin, Mengfei Li, Xingqun Qi, Shanghang Zhang, Wei Xue, Wen-han Luo, Ping Tan, Wenping Wang, Qifeng Liu, and Yike Guo. Era3d: High-resolution multiview diffusion using effi-cient row-wise attention. In Advances in Neural Information Processing Systems 37: Annual Conference on Neural Infor-mation Processing Systems 2024, NeurIPS 2024, Vancouver, BC, Canada, December 10 - 15, 2024 , 2024. 3 [17] Yixun Liang, Xin Yang, Jiantao Lin, Haodong Li, Xiao-gang Xu, and Yingcong Chen. Luciddreamer: Towards high-fidelity text-to-3d generation via interval score match-ing. In IEEE/CVF Conference on Computer Vision and Pat-tern Recognition, CVPR 2024, Seattle, WA, USA, June 16-22, 2024 , pages 6517–6526. IEEE, 2024. 2 [18] Chen-Hsuan Lin, Jun Gao, Luming Tang, Towaki Takikawa, Xiaohui Zeng, Xun Huang, Karsten Kreis, Sanja Fidler, Ming-Yu Liu, and Tsung-Yi Lin. Magic3d: High-resolution text-to-3d content creation. In IEEE/CVF Conference on Computer Vision and Pattern Recognition, CVPR 2023, Van-couver, BC, Canada, June 17-24, 2023 , pages 300–309. IEEE, 2023. 2, 6 [19] Ruoshi Liu, Rundi Wu, Basile Van Hoorick, Pavel Tok-makov, Sergey Zakharov, and Carl Vondrick. Zero-1-to-3: Zero-shot one image to 3d object. In IEEE/CVF Interna-tional Conference on Computer Vision, ICCV 2023, Paris, France, October 1-6, 2023 , pages 9264–9275. IEEE, 2023. 3[20] Yuan Liu, Cheng Lin, Zijiao Zeng, Xiaoxiao Long, Lingjie Liu, Taku Komura, and Wenping Wang. Syncdreamer: Gen-erating multiview-consistent images from a single-view im-age. In The Twelfth International Conference on Learn-ing Representations, ICLR 2024, Vienna, Austria, May 7-11, 2024 . OpenReview.net, 2024. [21] Xiaoxiao Long, Yuan-Chen Guo, Cheng Lin, Yuan Liu, Zhiyang Dou, Lingjie Liu, Yuexin Ma, Song-Hai Zhang, Marc Habermann, Christian Theobalt, and Wenping Wang. Wonder3d: Single image to 3d using cross-domain diffu-sion. In IEEE/CVF Conference on Computer Vision and Pat-tern Recognition, CVPR 2024, Seattle, WA, USA, June 16-22, 2024 , pages 9970–9980. IEEE, 2024. 3 [22] Artem Lukoianov, Haitz S´ aez de Oc´ ariz Borde, Kristjan H. Greenewald, Vitor Guizilini, Timur M. Bagautdinov, Vin-cent Sitzmann, and Justin M. Solomon. Score distillation via reparametrized DDIM. 2024. 1, 2, 3, 4, 5, 6, 7, 12, 16 [23] Marian Lupascu and Mihai-Sorin Stupariu. Optimal trans-port for rectified flow image editing: Unifying inversion-based and direct methods. In IEEE/CVF Winter Conference on Applications of Computer Vision, WACV 2026, Tucson, AZ, USA, March 6-10, 2026 , pages 6764–6774. IEEE, 2026. 19 [24] Zhiyuan Ma, Yuxiang Wei, Yabin Zhang, Xiangyu Zhu, Zhen Lei, and Lei Zhang. Scaledreamer: Scalable text-to-3d synthesis with asynchronous score distillation. In Com-puter Vision - ECCV 2024 - 18th European Conference, Mi-lan, Italy, September 29-October 4, 2024, Proceedings, Part VII , pages 1–19. Springer, 2024. 2 [25] Ben Mildenhall, Pratul P. Srinivasan, Matthew Tancik, Jonathan T. Barron, Ravi Ramamoorthi, and Ren Ng. Nerf: Representing scenes as neural radiance fields for view syn-thesis. In Computer Vision - ECCV 2020 - 16th European Conference, Glasgow, UK, August 23-28, 2020, Proceed-ings, Part I , pages 405–421. Springer, 2020. 2 [26] Thomas M¨ uller, Alex Evans, Christoph Schied, and Alexan-der Keller. Instant neural graphics primitives with a multires-olution hash encoding. ACM Trans. Graph. , 41(4):102:1– 102:15, 2022. 3, 4 [27] Art B. Owen. Monte Carlo theory, methods and examples .Self-published / Stanford University, 2013. 2 [28] Ben Poole, Ajay Jain, Jonathan T. Barron, and Ben Milden-hall. Dreamfusion: Text-to-3d using 2d diffusion. In The Eleventh International Conference on Learning Representa-tions, ICLR 2023, Kigali, Rwanda, May 1-5, 2023 . OpenRe-view.net, 2023. 2, 3, 7, 16 [29] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, Gretchen Krueger, and Ilya Sutskever. Learning transferable visual models from natural language supervision. In Proceedings of the 38th International Conference on Machine Learning, ICML 2021, 18-24 July 2021, Virtual Event , pages 8748– 8763. PMLR, 2021. 4 [30] Robin Rombach, Andreas Blattmann, Dominik Lorenz, Patrick Esser, and Bj¨ orn Ommer. High-resolution image syn-thesis with latent diffusion models. In IEEE/CVF Conference on Computer Vision and Pattern Recognition, CVPR 2022, New Orleans, LA, USA, June 18-24, 2022 , pages 10674– 10685. IEEE, 2022. 2, 12 [31] Ruoxi Shi, Hansheng Chen, Zhuoyang Zhang, Minghua Liu, Chao Xu, Xinyue Wei, Linghao Chen, Chong Zeng, and Hao Su. Zero123++: a single image to consistent multi-view dif-fusion base model. arXiv preprint arXiv:2310.15110 , 2023. 3[32] Yichun Shi, Peng Wang, Jianglong Ye, Long Mai, Kejie Li, and Xiao Yang. Mvdream: Multi-view diffusion for 3d gen-eration. In The Twelfth International Conference on Learn-ing Representations, ICLR 2024, Vienna, Austria, May 7-11, 2024 . OpenReview.net, 2024. 2, 3 [33] Jiaming Song, Chenlin Meng, and Stefano Ermon. Denois-ing diffusion implicit models. In 9th International Con-ference on Learning Representations, ICLR 2021, Virtual Event, Austria, May 3-7, 2021 . OpenReview.net, 2021. 2 [34] Jiaxiang Tang, Zhaoxi Chen, Xiaokang Chen, Tengfei Wang, Gang Zeng, and Ziwei Liu. LGM: large multi-view gaussian model for high-resolution 3d content creation. In Computer Vision - ECCV 2024 - 18th European Conference, Milan, Italy, September 29-October 4, 2024, Proceedings, Part IV ,pages 1–18. Springer, 2024. 3 [35] Jiaxiang Tang, Jiawei Ren, Hang Zhou, Ziwei Liu, and Gang Zeng. Dreamgaussian: Generative gaussian splatting for effi-cient 3d content creation. In The Twelfth International Con-ference on Learning Representations, ICLR 2024, Vienna, Austria, May 7-11, 2024 . OpenReview.net, 2024. 3 [36] Shitao Tang, Fuyang Zhang, Jiacheng Chen, Peng Wang, and Yasutaka Furukawa. Mvdiffusion: Enabling holistic multi-view image generation with correspondence-aware diffusion. In Advances in Neural Information Processing Systems 36: Annual Conference on Neural Information Processing Sys-tems 2023, NeurIPS 2023, New Orleans, LA, USA, Decem-ber 10 - 16, 2023 , 2023. 3 [37] George Tucker, Surya Bhupatiraju, Shixiang Gu, Richard E. Turner, Zoubin Ghahramani, and Sergey Levine. The mirage of action-dependent baselines in reinforcement learning. In 
+
+6th International Conference on Learning Representations, ICLR 2018, Vancouver, BC, Canada, April 30 - May 3, 2018, Workshop Track Proceedings . OpenReview.net, 2018. 2 [38] Haochen Wang, Xiaodan Du, Jiahao Li, Raymond A. Yeh, and Greg Shakhnarovich. Score jacobian chaining: Lift-ing pretrained 2d diffusion models for 3d generation. In 
+
+IEEE/CVF Conference on Computer Vision and Pattern Recognition, CVPR 2023, Vancouver, BC, Canada, June 17-24, 2023 , pages 12619–12629. IEEE, 2023. 2, 7 [39] Jianyi Wang, Kelvin C. K. Chan, and Chen Change Loy. Ex-ploring CLIP for assessing the look and feel of images. In 
+
+Thirty-Seventh AAAI Conference on Artificial Intelligence, AAAI 2023, Thirty-Fifth Conference on Innovative Applica-tions of Artificial Intelligence, IAAI 2023, Thirteenth Sym-posium on Educational Advances in Artificial Intelligence, EAAI 2023, Washington, DC, USA, February 7-14, 2023 ,pages 2555–2563. AAAI Press, 2023. 4, 12 [40] Peng Wang and Yichun Shi. Imagedream: Image-prompt multi-view diffusion for 3d generation. arXiv preprint arXiv:2312.02201 , 2023. 2, 3 [41] Peihao Wang, Dejia Xu, Zhiwen Fan, Dilin Wang, Sreyas Mohan, Forrest N. Iandola, Rakesh Ranjan, Yilei Li, Qiang Liu, Zhangyang Wang, and Vikas Chandra. Taming mode collapse in score distillation for text-to-3d generation. In 
+
+IEEE/CVF Conference on Computer Vision and Pattern Recognition, CVPR 2024, Seattle, WA, USA, June 16-22, 2024 , pages 9037–9047. IEEE, 2024. 2, 7 [42] Peihao Wang, Zhiwen Fan, Dejia Xu, Dilin Wang, Sreyas Mohan, Forrest N. Iandola, Rakesh Ranjan, Yilei Li, Qiang Liu, Zhangyang Wang, and Vikas Chandra. Steindreamer: Variance reduction for text-to-3d score distillation via stein identity. In International Conference on Artificial Intelli-gence and Statistics, AISTATS 2025, Mai Khao, Thailand, 3-5 May 2025 , pages 4024–4032. PMLR, 2025. 2 [43] Zhengyi Wang, Cheng Lu, Yikai Wang, Fan Bao, Chongxuan Li, Hang Su, and Jun Zhu. Prolificdreamer: High-fidelity and diverse text-to-3d generation with variational score distilla-tion. In Advances in Neural Information Processing Systems 36: Annual Conference on Neural Information Processing Systems 2023, NeurIPS 2023, New Orleans, LA, USA, De-cember 10 - 16, 2023 , 2023. 2, 7, 19 [44] Xiaoshi Wu, Yiming Hao, Keqiang Sun, Yixiong Chen, Feng Zhu, Rui Zhao, and Hongsheng Li. Human prefer-ence score v2: A solid benchmark for evaluating human preferences of text-to-image synthesis. In arXiv preprint arXiv:2306.09341 , 2023. 4, 12 [45] Zike Wu, Pan Zhou, Xuanyu Yi, Xiaoding Yuan, and Han-wang Zhang. Consistent3d: Towards consistent high-fidelity text-to-3d generation with deterministic sampling prior. In 
+
+IEEE/CVF Conference on Computer Vision and Pattern Recognition, CVPR 2024, Seattle, WA, USA, June 16-22, 2024 , pages 9892–9902. IEEE, 2024. 2 [46] Jiazheng Xu, Xiao Liu, Yuchen Wu, Yuxuan Tong, Qinkai Li, Ming Ding, Jie Tang, and Yuxiao Dong. Imagere-ward: Learning and evaluating human preferences for text-to-image generation. In Advances in Neural Information Processing Systems 36: Annual Conference on Neural Infor-mation Processing Systems 2023, NeurIPS 2023, New Or-leans, LA, USA, December 10 - 16, 2023 , 2023. 4, 12 [47] Runjie Yan, Yinbo Chen, and Xiaolong Wang. Consis-tent flow distillation for text-to-3d generation. In The Thir-teenth International Conference on Learning Representa-tions, ICLR 2025, Singapore, April 24-28, 2025 . OpenRe-view.net, 2025. 3, 19 [48] Taoran Yi, Jiemin Fang, Junjie Wang, Guanjun Wu, Lingxi Xie, Xiaopeng Zhang, Wenyu Liu, Qi Tian, and Xing-gang Wang. Gaussiandreamer: Fast generation from text to 3d gaussians by bridging 2d and 3d diffusion models. In IEEE/CVF Conference on Computer Vision and Pattern Recognition, CVPR 2024, Seattle, WA, USA, June 16-22, 2024 , pages 6796–6807. IEEE, 2024. 3 [49] Xin Yu, Yuan-Chen Guo, Yangguang Li, Ding Liang, Song-Hai Zhang, and Xiaojuan Qi. Text-to-3d with classifier score distillation. In The Twelfth International Conference on Learning Representations, ICLR 2024, Vienna, Austria, May 7-11, 2024 . OpenReview.net, 2024. 2 [50] Tizian Zeltner, S´ ebastien Speierer, Iliyan Georgiev, and Wenzel Jakob. Monte carlo estimators for differential light transport. ACM Trans. Graph. , 40(4):78:1–78:16, 2021. 2 [51] Junzhe Zhu, Peiye Zhuang, and Sanmi Koyejo. HIFA: high-fidelity text-to-3d generation with advanced diffusion guid-ance. In The Twelfth International Conference on Learn-ing Representations, ICLR 2024, Vienna, Austria, May 7-11, 2024 . OpenReview.net, 2024. 2, 7 A. Implementation Details 
+
+Hardware and software. All experiments run on a sin-gle NVIDIA H100 ( 80 GB); the full benchmark and abla-tion sweeps use four such GPUs in parallel, one config-uration per GPU. The pipeline is built in threestudio [7] with a frozen Stable Diffusion 2.1 prior [30]; rendering uses nvdiffrast and nerfacc, and the hash-grid encoder uses tiny-cuda-nn. 
+
+NeRF parametrization and optimizer. We use the de-fault SDI configuration: an Instant-NGP hash grid with 16 
+
+levels (resolution 16 to 2048 ), two-layer SDF and color MLPs, and Adam with learning rate 10 −2 for the encod-ing and 10 −3 for the MLPs, warmed up exponentially over the first 5% of steps. The forward CFG scale is 7.5.
+
+Schedule scaling. When MV-SDI reduces the number of optimization steps by a factor K (from 10 K to 10 K/K ), every step-indexed schedule is divided by K: a milestone at step s in the K=1 baseline moves to s/K . This covers the ambient-only warmup, the hash-grid activation and update steps, and the sparsity and convexity loss warmups. 
+
+Antithetic samplers. Camera batches are drawn by the four sampling modes of Sec. 3.3: independent, azimuthal pair, mixed azimuth-elevation, and octahedral. 
+
+Evaluation protocol. For each trained asset we render 50 
+
+test views (uniform azimuth, fixed elevation 15 ◦), match-ing the protocol of SDI’s Tab. 1 [22]. Each composite RGB, normal, and depth rendering is cropped to its left-most 512 ×512 RGB panel before scoring. CLIP scores use a ViT-B/32 backbone [5], CLIP IQA uses the “quality” tex-tual anchor [39], and HPSv2 [44] and ImageReward [46] use their released scorers. 
+
+Divergence classification. A prompt is flagged as diver-gent for a configuration when any of three conditions holds: (a) training crashed before saving any render; (b) fewer than 
+
+5 test views are available; or (c) more than 50% of the views are empty or uniform. A view counts as empty when its mean pixel value (on [0 , 1] ) falls below 0.02 , indicating a black background and an empty NeRF volume, and as uni-form when its standard deviation falls below 0.012 , indicat-ing a flat color with no structure. Divergent prompts are ex-cluded from the CLIP, IQA, ImageReward, HPSv2, and R-Precision means but still contribute to the per-configuration 
+
+divergence rate reported in Tables 1–4. The per-prompt classifications are released alongside the metrics. 
+
+## B. Per-anchor CLIP IQA and Janus-rate Breakdown 
+
+Table 6 reports the three CLIP IQA textual anchors used by SDI [22] ( quality , sharpness , real ) and our Janus-rate quantification (mean cosine similarity between front and ∆azim =180 ◦ back CLIP image embeddings; lower = better view consistency) for the baseline and the seven MV-SDI configurations of Tables 1–4 (the K=8 scaling run aside, whose quality anchor is reported in the main ta-ble). The main paper’s CLIP IQA column shows only the 
+
+quality anchor; this table gives the full anchor break-down plus the Janus metric, neither of which we crowd into the main table due to width budget. 
+
+Per-anchor IQA breakdown. The three CLIP IQA an-chors agree in direction with the quality anchor used in the main paper: sharpness drops from 0.799 (baseline) to 0.574 –0.663 across the seven MV-SDI variants ( −17 to 
+
+−28% rel.), and real from 0.609 to 0.424 –0.463 (−24 to 
+
+−30% rel.). The smallest drop is consistently K=2 anti-thetic ( quality −23 .0% , sharpness −17 .0% , real 
+
+−24 .0% ), and the largest is consistently a wide-elevation octahedral configuration ( quality −29 .3% at moderate elevation; sharpness −28 .2% and real −30 .4% at the full sphere). The unanimous direction across all three an-chors is stronger evidence than the single-anchor F5 read-ing: the trade-off is a robust feature of the CLIP IQA prior, not a quirk of the quality anchor. 
+
+Janus rate is high and weakly discriminating; reading it as an upper bound. All seven MV-SDI variants and base-line SDI sit in the narrow range 0.888 –0.910 on front-back CLIP cosine. Two observations follow. First, every config-uration, baseline SDI at 0.904 included, is well above the 
+
+≈ 0.85 “Janus-affected” threshold from the metric descrip-tion, so the benchmark is dominated by Janus failures and K-view aggregation does not by itself solve the Janus prob-lem on the SDI prompt set. Second, within that range there is a small but consistent structural signal: off-equator con-figurations (the three octahedral variants, 0.888 –0.899 , and 
+
+K=4 azimuth-only, 0.892 ) sit at the lower end, the equator-only configurations ( K=2 uniform 0.906 , K=2 antithetic 
+
+0.910 ) at the higher end. The direction is mechanistically expected: off-equator views force the renderer to commit to a unique back-of-object texture, which a CLIP image en-coder reads as “less front-like”. The magnitudes ( ±0.02 )are below what we consider conclusive, so we do not read the per-row deltas as “method X reduces the Janus rate”; we report them as an upper bound and as a reference point for more discriminating future Janus metrics (e.g. multi-pair-mean cosine over a sweep of azimuth offsets, or learned 3D-consistency critics). The headline is conservative: MV-SDI neither worsens nor measurably improves the Janus rate on the SDI prompt set under this metric. 
+
+## C. Per-prompt Results 
+
+Figure 7 summarizes, per metric, the gain of each multi-view configuration over baseline SDI at the matched bud-Table 6. Per-anchor CLIP IQA breakdown (matching SDI Tab. 1’s three textual anchors) and Janus-rate quantification for the baseline and the seven MV-SDI configurations of Tabs. 1–4. Janus = mean cosine similarity between front and back ( ∆ azim = 180 ◦) CLIP image embeddings; lower is better (a Janus-failure asset has near-identical front and back views). Bold = best per column. Method IQA-quality ↑ IQA-sharpness ↑ IQA-real ↑ Janus ↓                                  
+
+> Baseline SDI 0.560 0.799 0.609 0.904 MV-SDI K=2 uniform 0.407 0.638 0.454 0.906 MV-SDI K=2 antithetic 0.431 0.663 0.463 0.910 MV-SDI K=4 antithetic 0.407 0.595 0.433 0.892 MV-SDI K=4 mixed (azim+elev) 0.406 0.594 0.434 0.897 MV-SDI K=6 octa (elev ±30,60) 0.396 0.581 0.432 0.890 MV-SDI K=6 octa (elev ±60,80) 0.399 0.591 0.434 0.899 MV-SDI K=6 octa (full sphere) 0.398 0.574 0.424 0.888
+
+get: K=2 antithetic improves all four metrics, while K=4 
+
+antithetic trades a little CLIP and ImageReward for the largest R-Precision gain at 4× fewer steps. The per-prompt detail behind these aggregates follows. Figure 8 shows the same comparison as a per-metric profile: both MV-SDI variants fully envelope baseline SDI on every axis, with 
+
+K=2 antithetic leading the perceptual metrics and K=4 
+
+antithetic reaching the best R-Precision and the highest speedup. Tables 13–16 report per-prompt CLIP, R-Precision, HPSv2, and ImageReward for the baseline and the seven MV-SDI configurations on every prompt of the SDI 43 -prompt benchmark (the K=8 scaling run aside), computed from the same evaluation outputs as Tables 1–4. Per-prompt divergence flags and prompt-level CLIP IQA and Janus breakdowns are released alongside the metrics. 
+
+## D. Sensitivity to CFG and t-Schedule 
+
+Two of MV-SDI’s hyperparameters are inherited unchanged from SDI: the forward classifier-free guidance scale CFG fwd 
+
+and the timestep-sampling schedule. We rerun MV-SDI 
+
+K=2 antithetic on the 10-prompt subset while varying each in isolation and report results in Tables 7–8. 
+
+CFG sensitivity (Tab. 7). The default CFG fwd =7 .5 inher-ited from SDI wins on four of five primary metrics (CLIP 
+
+0.324 , R-Prec 99 .4% , HPSv2 0.213 , IR −0.38 ). Reducing the guidance scale to CFG =5 .0 recovers part of the CLIP-IQA drop on this subset (IQA 0.479 vs. 0.436 at the default) at the cost of −1.9% rel. CLIP and a notable −0.46 IR drop. Increasing the guidance to CFG =15 .0 is uniformly worse across every metric, mirroring SDI’s own Fig. 3 finding that high forward CFG over-saturates the diffusion prior. This identifies CFG fwd as a second, simpler knob (alongside the TV regularizer of Sec. 4.2) for navigating the alignment / naturalness Pareto trade-off. 
+
+t-schedule sensitivity (Tab. 8). Replacing SDI’s linear 
+
+t-annealing schedule with a uniform t-sampler degrades every primary metric ( −6.5% rel. CLIP, −0.6pp R-Prec, 
+
+−8.9% rel. HPSv2, −8.5% rel. IQA), with the largest drop on ImageReward ( −1.35 vs. −0.38 , a −0.97 swing). This validates SDI’s annealing choice: progressively narrowing the noise window over the course of training is essential to the gains, not an incidental defaulting decision. MV-SDI inherits this dependency unchanged. 
+
+## E. Random-rotated Antithetic Axes 
+
+To test whether MV-SDI’s gain depends on the antithetic pair being placed along an object-aligned cardinal axis (az-imuth ϕ vs. ϕ + 180 ◦ at sampled elevation), we add a random-axis sampler that draws a fresh great-circle direc-tion on the unit sphere each step and places the pair at an-tipodal points along it. The pair stays inside the configured camera ranges by construction. Tab. 9 compares the default azimuth-axis pair to the random-rotated pair on the same 10-prompt subset. 
+
+Robustness verdict. The random-rotated axis loses only 
+
+−2.5% rel. CLIP ( 0.324 → 0.316 ), −0.8pp R-Precision (99 .4% → 98 .6% ), −1.9% rel. HPSv2 ( 0.213 → 0.209 ), and −0.03 IR ( −0.38 → − 0.41 ) versus the default azimuth axis, while slightly improving CLIP IQA ( +0 .007 , 0.436 →
+
+0.443 ). All deltas are within roughly twice the seed-induced standard deviation reported in Tab. 3. The headline K=2 -antithetic gain is therefore a property of the antithetic-pair construction itself, not of the object-aligned cardinal-axis choice: it survives a fully randomised pairing direction, rul-ing out any hidden tuning to azimuth-symmetric prompts. 
+
+## F. Convergence-gap Timeline 
+
+Figure 5 traces the CLIP / HPSv2 / IR curves visually; Tab. 10 gives the corresponding front-view CLIP at five fixed UNet-call milestones {1K, 2K, 5K, 8K, 10 K} for the 
+
+K=2 -antithetic vs K=2 -uniform pair, on the same N =10 
+
+subset and single seed as the figure. Two points matter for reading it. First, these are single-frame front-view scores logged every 50 steps; a single view is largely blind to the cross-view consistency that antithetic pairing targets, so the table is a partial probe, not the multi-view evidence (final multi-view numbers and seed variability are in Tables 1 Baseline SDI   
+
+> K=2 uniform
+> K=2 antithetic
+> K=4 antithetic
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 1.2
+> 1.4
+> Δ vs. baseline
+> +0.00
+> +1.5 +1.5
+> +1.0
+> CLIP
+> Baseline SDI
+> K=2 uniform
+> K=2 antithetic
+> K=4 antithetic
+> 0
+> 2
+> 4
+> 6
+> 8
+> 10
+> 12
+> Δ vs. baseline
+> +0.00
+> +8.9 +9.0
+> +12.1
+> R-Precision
+> Baseline SDI
+> K=2 uniform
+> K=2 antithetic
+> K=4 antithetic
+> 0.0
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> Δ vs. baseline
+> +0.00
+> +2.0
+> +2.2
+> +1.6
+> HPSv2
+> Baseline SDI
+> K=2 uniform
+> K=2 antithetic
+> K=4 antithetic
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> Δ vs. baseline
+> +0.00
+> +0.32
+> +0.40
+> +0.11
+> ImageReward
+> Per-metric improvement over Baseline SDI (all con fi gs at matched 10K-UNet budget)
+
+Figure 7. Per-metric improvement over baseline SDI at a matched 10 K-UNet-call budget. Absolute gain ( ∆ vs. baseline) on CLIP (×100 ), R-Precision, HPSv2 ( ×100 ), and ImageReward for the three multi-view configurations. K=2 antithetic improves every metric (CLIP +1 .5, R-Precision +9 .0, HPSv2 +2 .2, ImageReward +0 .40 ); K=4 antithetic trades a little CLIP and ImageReward for the largest R-Precision gain ( +12 .1) at 4× fewer steps. Table 7. Sensitivity to forward classifier-free guidance scale CFG fwd on a 10-prompt subset of the SDI benchmark. Inversion CFG is mirrored (CFG inv = −CFG fwd ). The default CFG =7 .5 row is the MV-SDI K=2 antithetic reference evaluated on the 10-prompt subset (shared with the t-schedule and random-axis pilots, Tabs. 8–9); as on all subset pilots, R-Precision is top-1 over the 10-prompt universe and absolute values are not comparable to the 43-prompt Tab. 1. Bold = best per column. Config CLIP ↑ R-Prec ↑ HPSv2 ↑ CLIP IQA ↑ IR ↑
+
+K=2 anti, CFG = 5 .0 0.318 97.6% 0.201 0.479 -0.84 
+
+K=2 anti, CFG = 7 .5 (default) 0.324 99.4% 0.213 0.436 -0.38 
+
+K=2 anti, CFG = 15 .0 0.306 91.6% 0.205 0.390 -0.58 CLIP 
+
+> R-Precision
+> HPSv2 ImageReward
+> Speedup
+> Baseline SDI
+> MV-SDI K=2 antithetic
+> MV-SDI K=4 antithetic
+
+Figure 8. MV-SDI envelopes baseline SDI across all axes. Per-metric profile (min–max normalized) for baseline SDI vs. MV-SDI 
+
+K=2 and K=4 antithetic. Both variants envelope the baseline on every axis; K=2 leads on perceptual quality (CLIP, HPSv2, Im-ageReward) while K=4 trades a little quality for 4× speedup and the best R-Precision. Speedup is the step-count reduction relative to baseline SDI, not wall-clock time. 
+
+and 3). Second, with a single seed there are no error bars, so the milestone-to-milestone swings (e.g. the uniform dip at 2K) are within run-to-run noise. Read this way, the two 
+
+K=2 schemes track each other to within ∼0.006 CLIP at every milestone except a transient +0 .033 bump for anti-thetic at 2K that does not persist: it is gone by 2.5K and reverses on ImageReward. We therefore do not claim a CLIP convergence-speed advantage for antithetic over uni-form; the antithetic benefit we document elsewhere is in multi-view consistency, divergence, and seed stability, not in single-view CLIP against uniform sampling. Figure 9 summarizes the quality/speed operating points behind these trajectories: K=2 antithetic lies on the Pareto frontier at 2× fewer steps and K=4 antithetic at 4×, while 
+
+K=2 uniform is dominated by K=2 antithetic at the same speedup. 
+
+## G. Variance Reduction Analysis 
+
+G.1. Antithetic estimator variance 
+
+Let f (c) denote the per-view component of the score-distillation gradient (Eq. 2) at a fixed timestep and noise. The independent K-view estimator bf iid 
+
+K = 1
+
+K
+
+PKk=1 f (ck)
+
+with ck
+
+iid 
+
+∼ π has variance Var[ bf iid 
+
+K ] = σ2/K where 
+
+σ2 = Var π [f ].For an antithetic pair (c, c†) with c† = R180 ◦ c and c ∼
+
+π,
+
+Var  12 (f (c) + f (c†))  = 12 σ2 + 12 Cov( f (c), f (c†)) . (5) Decomposing f into even and odd parts under the antipodal Table 8. Effect of the t-sampling schedule on MV-SDI K=2 antithetic (10-prompt subset). Linear t-annealing follows SDI’s default ([0 .25 , 0.98] → [0 .02 , 0.50] over 5K steps); uniform t sampling fixes the range to [0 .02 , 0.98] . Bold = best per column. Config CLIP ↑ R-Prec ↑ HPSv2 ↑ CLIP IQA ↑ IR ↑                                                                                           
+
+> K=2 anti, linear t-annealing (default) 0.324 99.4% 0.213 0.436 -0.38
+> K=2 anti, uniform t-sampling 0.303 98.8% 0.194 0.399 -1.35 Table 9. Robustness of MV-SDI K=2 antithetic to the choice of antithetic axis (10-prompt subset). Default: pair placed at azimuth ϕ
+> and ϕ+ 180 ◦at sampled elevation. Random-rotated: each step samples a great-circle pole (ϕa, θ a)uniformly over the configured camera ranges and places the pair at (ϕa, θ a)and (ϕa+180 ◦,−θa). A small gap supports the claim that the gain is not an artifact of object-aligned cardinal axes. Bold = best per column. Config CLIP ↑R-Prec ↑HPSv2 ↑CLIP IQA ↑IR ↑
+> K=2 anti, azimuth axis (default) 0.324 99.4% 0.213 0.436 -0.38
+> K=2 anti, random-rotated axis 0.316 98.6% 0.209 0.443 -0.41 Table 10. Convergence-gap quantification: front-view CLIP of MV-SDI K=2 antithetic vs K=2 uniform at matched UNet-call budgets, mean over the same N=10 subset and single seed as Fig. 5. The gap (anti −unif, in CLIP units) shows the two schemes track each other to within ∼0.006 at every milestone except a tran-sient bump at 2K, which does not persist. Bold = best per column (both bolded at ties). UNet calls 1K 2K 5K 8K 10K
+> K=2 anti 0.345 0.361 0.356 0.363 0.365
+> K=2 unif 0.343 0.328 0.356 0.357 0.360 Gap (anti −unif) +0 .002 +0 .033 0.000 +0 .006 +0 .005
+
+flip, f = fe+fo with fo(c†) = −fo(c) and fe(c†) = fe(c),gives Cov( f (c), f (c†)) = Var[ fe] − Var[ fo], so the anti-thetic variance equals Var[ fe]. Since σ2/2 = 12 (Var[ fe] + Var[ fo]) , the pair beats the iid two-sample estimator 
+
+Var[ fe] < 12
+
+ Var[ fe] + Var[ fo]
+
+⇐⇒ Var[ fo] > Var[ fe]
+
+⇐⇒ Cov( f (c), f (c†)) < 0.
+
+(6) i.e. only when the odd component dominates the even one. Equivalently, with ρ := Corr( f (c), f (c†)) =  Var[ fe] −
+
+Var[ fo]/ Var[ fe] + Var[ fo], antithetic helps iff ρ < 0
+
+and is neutral at ρ = 0 . The sufficient condition is thus 
+
+Var[ fo] > Var[ fe], not merely Var[ fo] > 0.
+
+What we measure. Whether Eq. (6) holds for the SDI gradient is empirical. We log the parameter-space gradients of antipodal partners along the azimuth axis every 50 steps and track their cosine similarity ρ and the normalised ag-gregate variance Var[ bfK ]/σ 2 over training (Fig. 11). Two things are visible. (i) Accumulation attains the 1/K ideal: 
+
+uniform K=2 and K=4 sit on the σ2/K lines, confirming the independent-views analysis above. (ii) Antipodal part-ners are essentially uncorrelated: ρ ≈ 0 (mildly positive) throughout, so Var[ fo] ≈ Var[ fe] and the antithetic K=2 
+
+variance coincides with the σ2/2 line rather than falling be-low it. The classical antithetic gain therefore does not ma-terialise here: the camera-gradient is not odd enough under 
+
+180 ◦ flips. What antithetic sampling still buys, and what the experiments attribute its 0% divergence and its edge over uniform sampling on IQA, IR, and HPSv2 to (F1), is strati-fication . Forcing one view and its antipode every step guar-antees balanced front/back coverage and removes the heavy left tail of under-covered runs, an effect on the distribution of outcomes , not on the per-step gradient variance. Figure 10 makes the stability benefit concrete: at K=2 ,antithetic sampling matches the quality of uniform sam-pling while diverging on 0% of prompts versus 2.3% for uniform, and baseline SDI reaches 0% divergence only at much lower quality. The axis-randomisation control (Tab. 9) is consistent with this reading: a randomly rotated antithetic axis matches the azimuth axis within noise, exactly as expected if the operative mechanism is guaranteed coverage and not a privileged “odd” direction. 
+
+G.2. Multi-axis aggregation 
+
+For octahedral sampling with three orthogonal antithetic pairs (c1, c†
+
+> 1
+
+), (c2, c†
+
+> 2
+
+), (c3, c†
+
+> 3
+
+), the cross-pair covariances are zero by construction (the three rotation axes are orthog-onal), so the aggregated variance is 13 E[Var[ f (j)e ]] , where 
+
+f (j)e is the even component along axis j. This equals the iid σ2/6 when the odd and even parts are balanced ( ρ=0 )and is strictly below it only when the odd component dom-inates along at least one axis (the per-axis form of Eq. (6)). The measurement above ( ρ ≈ 0 on the azimuth axis) al-ready indicates this margin is negligible; consistent with that, the octahedral variants yield no quality gain and in-stead degrade off-equator, which Sec. 4 attributes to a prior-coverage limit (F5) rather than to a variance effect. 1 2 3 4
+
+> Speedup (step-count reduction vs. baseline)
+
+29.5 
+
+30.0 
+
+30.5 
+
+31.0 
+
+> CLIP  ↑
+
+CLIP vs. Speedup 
+
+1 2 3 4
+
+> Speedup (step-count reduction vs. baseline)
+
+20.0 
+
+20.5 
+
+21.0 
+
+21.5 
+
+22.0 
+
+> HPSv2  ↑
+
+HPSv2 vs. Speedup     
+
+> Quality –Speed tradeo ff (matched 10K-UNet-call budget)
+> Baseline SDI K=2 uniform K=2 antithetic K=4 antithetic
+
+Figure 9. Quality versus step-count speedup at a matched 10 K-UNet-call budget. CLIP (left) and HPSv2 (right) against the optimization-step reduction relative to baseline SDI. K=2 antithetic lies on the quality/speed Pareto frontier at 2× fewer steps; K=4 
+
+antithetic retains most of the quality at 4×; K=2 uniform is dominated by K=2 antithetic at the same speedup. Speedup is the step-count reduction relative to baseline SDI, not wall-clock time. −0.5 0.0 0.5 1.0 1.5 2.0 2.5 3.0  
+
+> Divergence rate (Div %) ↓
+
+29.5 
+
+30.0 
+
+30.5 
+
+31.0 
+
+31.5 
+
+> CLIP  ↑
+> 0% divergence (ideal)
+
+CLIP vs. Divergence 
+
+−0.5 0.0 0.5 1.0 1.5 2.0 2.5 3.0  
+
+> Divergence rate (Div %) ↓
+
+−0.5 
+
+−0.4 
+
+−0.3 
+
+−0.2 
+
+−0.1 
+
+0.0 
+
+> ImageReward  ↑
+> 0% divergence (ideal)
+
+ImageReward vs. Divergence      
+
+> Quality vs. Divergence rate —antithetic sampling eliminates divergence
+> Baseline SDI K=2 uniform K=2 antithetic K=4 antithetic
+
+Figure 10. Quality versus divergence rate on the 43 -prompt benchmark. CLIP (left) and ImageReward (right) against the per-configuration divergence rate. At K=2 , antithetic sampling matches uniform on CLIP and improves ImageReward ( −0.07 vs. −0.15 )while diverging on 0% of prompts versus 2.3% for uniform; baseline SDI also reaches 0% divergence but at substantially lower quality. This is the visual form of findings (F1) and (F4). 
+
+## H. Additional Qualitative Results 
+
+To enable a direct visual comparison with SDI [22], we run our methods on the prompts used throughout the figures of their paper. For the prompts appearing in their appendix gal-leries (Figs. 24–30 in [22]) we show baseline SDI and our flagship MV-SDI K=2 antithetic, one seed each, at three orbit views ( 0◦, 90 ◦, 180 ◦). Prompts that overlap SDI’s 
+
+43 -prompt quantitative set reuse the renders evaluated in Sec. 4.2; the remaining prompts are generated with the iden-tical protocol. 
+
+## I. Agreement Check on Independent Prompt Subset 
+
+To verify that the gains reported in Sec. 4.2 are not an arte-fact of the specific 43 -prompt list released with SDI [22], we reproduce the experiment on a separate subset of 30 
+
+prompts drawn from the broader DreamFusion gallery [28]. Two prompts coincide with the 43 -prompt set (“A DSLR photo of a hamburger” / “A car made out of sushi”). We re-port over the full 30 and verified offline that excluding these two overlapping prompts shifts every metric by less than 1000 2000 3000 4000 5000               
+
+> optimization step
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Var[ ̂ gK] /  σ2
+> K-view accumulation reaches the 1/ Kideal
+> single view ( σ2)
+> 1/ Kideal
+> uniform K= 2
+> antithetic K= 2
+> uniform K= 4
+> antithetic K= 4
+> 1000 2000 3000 4000 5000
+> optimization step
+> −0.02
+> 0.00
+> 0.02
+> 0.04
+> 0.06
+> 0.08
+> ρ = cos( g(c),  g(c † ))
+> Antithetic partners are uncorrelated ( ρ≈0)
+
+Figure 11. Multi-view aggregation reaches the 1/K variance ideal; antithetic pairs are uncorrelated. Left: K-view accumulation drives the normalised gradient variance to the σ2/K lines; antithetic K=2 coincides with the 12 ideal rather than beating it. Right: the correlation between antipodal partners is ρ ≈ 0 (mildly positive), so by Eq. (6) antithetic sampling attains, but does not beat, the 1/K rate. Its measured benefit (F1) comes from guaranteed angular coverage, not from extra per-step variance reduction. 
+
+0.4% , well within prompt-level noise, so the small overlap does not drive the agreement. 
+
+Setup. Same architecture, optimizer, NeRF parametriza-tion, schedule scaling, and antithetic samplers as the 43 -prompt run (Appendix A). Per-asset evaluation uses 16 
+
+views (the SDI 50 -view protocol was added when we aligned the main benchmark; we did not re-render the 30 -prompt set at 50 views as the goal here is only direction-of-effect confirmation). 
+
+Conclusion of the agreement check. Across both tables, the central findings transfer to the separate prompt set: anti-thetic sampling beats uniform at K=2 (F1), and every non-octahedral multi-view configuration ( K=2 and K=4 anti-thetic, uniform random, and the mixed two-plane variant) beats the baseline on all three shared metrics (F2), with the 
+
+K=2 azimuth pair the sweet spot and the equatorial one-to-two-plane configurations dominating the wide-elevation oc-tahedral ones. The octahedral variants remain the weakest family here, exactly as on the 43 -prompt set: on this subset they trail the baseline on HPSv2, and the two wide-elevation ones also sit just below it on CLIP, within prompt-level noise. Two fine R-Precision orderings are set-specific: the 
+
+K=4 mixed variant’s lead and, more broadly, the higher-
+
+K retrieval gain of (F3), both of which hold on the 43 -prompt set but not here, where the K=2 azimuth pair leads R-Precision. We therefore conclude that the headline gains are properties of the proposed sampler family rather than artefacts of the particular SDI prompt list. 
+
+## J. Limitations: Extension to DiT-Based Rectified-Flow Priors 
+
+A natural question is whether the MV-SDI recipe trans-fers from UNet/ ϵ-prediction priors to transformer-based 
+
+rectified-flow priors. We port the full pipeline to FLUX.1-dev 2, a 12 B-parameter DiT trained with flow matching and distilled classifier-free guidance, and report a clean negative result with attribution. We release the full implementation (math derivation, guidance module, prompt processor, four-stage diagnostic) so future work on DiT-based score distil-lation can assess whether the same obstacle applies to other distilled priors. 
+
+J.1. Flow-matching reformulation of SDI 
+
+The SDI surrogate, 12 ∥R (θ) − xdenoised  
+
+> 0
+
+∥2, was originally derived for variance-preserving DDPMs with ϵ-prediction. For FLUX’s rectified-flow forward process zσ = (1 −
+
+σ) x0 + σ ϵ and velocity prediction v = ϵ − x0, the cor-responding algebraic identities are 
+
+x0 = zσ − σ v pred , ϵ = zσ + (1 − σ) vpred . (7) The DDIM-inversion loop is replaced by a forward-Euler integration of the velocity field, zσ+dσ = zσ + dσ v pred , dis-cretized on the model’s own shifted-sigma grid. The surro-gate loss is unchanged ; only the inversion and the x0 recov-ery are reformulated, so the rest of MV-SDI (gradient accu-mulation, antithetic camera sampling, surrogate loss) car-ries over without modification. The full derivation is given in the released code. 
+
+J.2. Implementation 
+
+Our port covers the full FLUX-dev stack: the 16 -channel VAE, the dual text encoders (T5-XXL and CLIP-L), the DiT’s 2×2 latent packing with separate rotary position encodings for image and text tokens, and bf16 precision throughout. To fit the model alongside the NeRF, we of-fload the T5 encoder after caching its embeddings, freeing                                                                                                                  
+
+> 2https://blackforestlabs.ai/ Table 11. Agreement check on a 30 -prompt DreamFusion subset, 16 rendered views per asset. We report the three alignment metrics shared with the 43 -prompt main result (CLIP, R-Precision, HPSv2); CLIP IQA, ImageReward, and divergence rate are not reported here. Method Steps CLIP ↑R-Prec ↑HPSv2 ↑Speedup Baseline SDI 10000 0.303 74 .8% 0.202 1.0×
+> MV-SDI K=2 uniform 5000 0.315 86 .9% 0.220 2.0×
+> MV-SDI K=2 antithetic 5000 0.320 90 .2%0.224 2.0×
+> MV-SDI K=4 antithetic 2500 0.310 86 .2% 0.212 4.0×
+> Table 12. Multi-axis antithetic ablation on the same separate 30 -prompt DreamFusion subset. Mirror of Tab. 1 but on the 30 -prompt set. The coarse ordering is preserved (one-to-two equatorial planes beat the wide-elevation octahedral variants and K=2 azimuth is the sweet spot), but the exact R-Precision ranking of the K=4 mixed variant differs between sets: mixed leads R-Precision on the 43 -prompt set (Tab. 1), whereas the azimuth pair leads it here. Strategy Planes KElev. range CLIP ↑R-Prec ↑HPSv2 ↑
+> Random (baseline) 01[−10 ,45] 0.303 74 .8% 0.202
+> Uniform random 02[−10 ,45] 0.315 86 .9% 0.220
+> Azimuth pair 12[−10 ,45] 0.320 90 .2%0.224
+> Azimuth pairs ×214[−10 ,45] 0.310 86 .2% 0.212
+> Mixed (azim+elev) 24[−10 ,45] 0.311 85 .8% 0.210
+> Octahedral (moderate) 36[−30 ,60] 0.308 82 .1% 0.199
+> Octahedral (aggressive) 36[−60 ,80] 0.302 83 .5% 0.192
+> Octahedral (full sphere) 36[−89 ,89] 0.301 79 .8% 0.195
+
+roughly 5 GB before the distillation loop. The guidance module exposes both forms of guidance the model admits: 
+
+distilled guidance, a single scalar restricted by the model’s training distribution to [1 , 10] , and classical CFG, a two-pass forward on conditional and unconditional embeddings combined as v = vuncond + s (vcond − vuncond ). The latter is required because, as shown below, distilled guidance alone is insufficient. 
+
+J.3. Four-stage diagnostic ladder 
+
+Initial runs ( 1500 NeRF steps on a single red apple prompt) produced unrecognizable, mostly grey or coloured-blob renders. To isolate the failure we ran four checks, each re-moving one dependency. 1. Stand-alone guidance. Running the guidance mod-ule alone on a flat-grey input and sweeping σ ∈{0.3, 0.5, 0.7, 0.9}, the decoded x0 targets at high σ are grey noise with no prompt content, suggesting the de-noising prediction ignores the conditioning. 2. Cache vs. fresh-encode parity. Generating with the off-the-shelf pipeline from our cached embeddings and from freshly encoded ones gives byte-identical results ( cos -sim = 1 .000 , absolute difference 0), and both produce a recognizable apple. The encoder is therefore correct. 3. Forward-call parity. For the same input zσ , our trans-former wrapper and the reference implementation agree to cos -sim = 1 .000000 on the velocity prediction, so the wrapper is exact. The decoded x0 estimates from this shared prediction nonetheless look like grey noise. 4. Classical CFG sweep. With the verified for-ward call, sweeping the classical CFG scale s ∈{1, 3.5, 7.5, 15 , 30 , 50 } at fixed distilled guidance moves the target from grey ( s ≤ 15 ) to uniformly pink ( s =50 ); structural prompt content never materializes. Together, the second and third checks rule out both the encoder and the transformer call; the fourth narrows the fail-ure to the guidance-amplification regime. 
+
+J.4. Empirical findings on the full training loop 
+
+Beyond the diagnostic, we ran a three-way sweep on a sin-gle prompt for 1500 NeRF steps each, with classical CFG enabled and three pairs of forward and inversion scales (s ∈ { 15 , 30 , 60 } with sinv ∈ {− 3.5, −7.5, −15 }). All three converge to the same outcome: a well-formed 3D blob geometry, visible in the normal and opacity renders, cou-pled to a uniformly pink-magenta colour in the RGB render and a matching pink-magenta x0 target. The loss saturates after about 500 steps, and further iterations do not move the colour toward the prompt’s red apple .
+
+J.5. Attribution: distilled guidance is the bottleneck 
+
+Two architectural properties of FLUX-dev explain the ob-served mode collapse: 
+
+(P1) Non-negative, bounded distilled guidance. FLUX-dev was trained with distilled CFG values in approx-imately [1 , 10] and is non-negative by construction (it enters the model as a non-negative embedding). Our SD 2.1 SDI recipe instead uses forward CFG Figure 12. Qualitative gallery on SDI’s prompt suite (part 1/6). For each prompt (rows) we show baseline SDI (left) and MV-SDI K=2 
+
+> antithetic (right), each at three orbit views ( 0◦/90 ◦/180 ◦). Best viewed zoomed-in.
+
++7 .5 during prediction and a negative CFG −7.5
+
+during the DDIM-inversion step, the anti-prompt move at the heart of SDI. The forward +7 .5 lies inside FLUX-dev’s distilled range, but the negative inversion guidance cannot be expressed through a non-negative 
+
+[1 , 10] embedding; reproducing it requires the classical two-pass CFG path, which (P2) is too weak to drive structure on this model. 
+
+(P2) High-dim. text conditioning dilutes external CFG. 
+
+FLUX-dev’s text branch comprises a 256 -token T5 sequence (R256 ×4096 ) plus a single 768 -d pooled CLIP embedding. Classical CFG amplifies the dif-ference (vcond − vuncond ) uniformly. Empirically the pooled CLIP signal (low-dimensional, dominant in colour cues) does amplify with CFG; this is what produces the pink colour trajectory at higher s. The T5 structural signal (high-dimensional, distributed across 256 tokens) is averaged across heads in the DiT’s joint attention and is dominated by the input’s structure once the NeRF has reached a stable blob shape; further CFG amplification saturates without re-allocating mass toward the prompt’s structural information. We measured the conditional-to-unconditional separa-tion at σ = 0 .9: ∥vcond − vuncond ∥ / ∥vcond ∥ ≈ 3% , versus typical values of 20 –40% for SD 2.1 at the same noise level. The prompt signal is simply too weak at the velocity level to overcome the input’s structural attractor. 
+
+J.6. Pathways for future work 
+
+Three concrete paths could circumvent (P1) and (P2) :• Multi-step x0 estimation. Replace the single-step x0 =
+
+zσ − σ v pred with K Euler denoising steps from σ down to 0. This trades a K× compute slowdown per train-ing iteration for a much sharper x0 target (closer to the 
+
+20 -step generation that produces prompt-aligned outputs from pure noise with the same model). Recent work adapting score distillation to rectified-flow priors [23, 47] attributes the residual over-smoothing to the distillation target rather than the prior; a multi-step x0 estimate is a direct way to sharpen that target. • VSD-style online critic. Train a small LoRA on the DiT online, conditioned on the current NeRF render, to pro-vide a prompt-aware gradient that does not rely on aggres-sive CFG amplification. This is the ProlificDreamer [43] recipe adapted to flow matching, and trivially compatible with our multi-view antithetic sampling. • Non-distilled FLUX backbones. A future FLUX re-lease without the distilled-guidance bottleneck (e.g., the research-only FLUX.1-dev-non-distilled variant) would directly unlock the SD-style aggressive-CFG regime. None of the above invalidates our main MV-SDI findings on SD 2.1: the multi-view aggregation logic is unchanged in all three paths. Our finding is that the prior-side prereq-uisites for single-step SDS (broad-range, possibly-negative CFG) are not met by the current crop of distilled rectified-flow models, not that the aggregation principle itself fails. 
+
+Released artifacts. To support further work, we re-lease the flow-matching SDI derivation, the guidance and prompt-processor modules, three reference configurations (baseline and K=2 /K=4 antithetic), and the four diagnos-tic scripts, together with implementation notes. Figure 13. Qualitative gallery on SDI’s prompt suite (part 2/6). Layout as in Fig. 12. Figure 14. Qualitative gallery on SDI’s prompt suite (part 3/6). Layout as in Fig. 12. Figure 15. Qualitative gallery on SDI’s prompt suite (part 4/6). Layout as in Fig. 12. Figure 16. Qualitative gallery on SDI’s prompt suite (part 5/6). Layout as in Fig. 12. Figure 17. Qualitative gallery on SDI’s prompt suite (part 6/6). Layout as in Fig. 12. Figure 18. Full variant comparison on selected prompts (part 1/2). For each prompt (rows) we show baseline SDI (left), MV-SDI K=2 
+
+antithetic (center), and MV-SDI K=4 antithetic (right), each at three orbit views ( 0◦/90 ◦/180 ◦). Best viewed zoomed-in. Figure 19. Full variant comparison on selected prompts (part 2/2). Layout as in Fig. 18. Table 13. Per-prompt CLIP score on the 43 SDI prompts. base = our reproduction of baseline SDI; column headings are short tags for MV-SDI variants (Tab. 1 K2u = MV-SDI K=2 uniform, K2a = MV-SDI K=2 antithetic, K4a = MV-SDI K=4 antithetic, Mix4 = MV-SDI K=4 mixed (azim+elev), Oct.m = MV-SDI K=6 octa (elev ±30,60), Oct.a = MV-SDI K=6 octa (elev ±60,80), Oct.f = MV-SDI K=6 octa (full sphere)). — indicates the prompt diverged for that config (see Div% in main tables). 
+
+Prompt base K2u K2a K4a Mix4 Oct.m Oct.a Oct.f A 3D model of an adorable cottage with ... 0.315 0.359 0.366 0.347 0.334 0.341 0.332 0.321 A baby bunny sitting on top of a stack ... 0.299 0.321 0.301 0.343 0.327 0.325 0.328 0.325 A blue tulip 0.288 0.335 0.327 0.343 0.334 0.344 0.341 0.304 A car made out of sushi 0.290 0.274 0.281 0.286 0.279 0.279 0.322 0.263 A cauldron full of gold coins 0.271 0.286 0.345 0.342 0.319 0.340 0.342 0.343 A ceramic lion 0.308 0.327 0.316 0.303 0.304 0.296 0.295 0.305 A delicious croissant 0.325 0.317 0.319 0.301 0.289 0.304 0.273 0.311 A DSLR photo of a an old man 0.217 — 0.294 0.283 0.288 0.226 0.240 —A DSLR photo of a decorated cupcake wit... 0.314 0.329 0.319 0.333 0.321 0.340 0.321 0.321 A DSLR photo of a dew-covered peach sit... 0.298 0.323 0.335 0.270 0.328 0.310 0.314 0.301 A DSLR photo of a freshly baked round l... 0.194 0.275 0.288 0.245 0.266 0.257 0.284 0.286 A DSLR photo of a soccer ball 0.304 0.316 0.318 0.308 0.309 0.309 0.304 0.298 A DSLR photo of a white fluffy cat 0.302 0.305 0.292 0.300 0.300 0.295 0.294 0.292 A DSLR photo of Cthulhu 0.280 0.285 0.292 0.285 0.289 0.285 0.290 0.288 A DSLR photograph of a hamburger 0.318 0.319 0.314 0.318 0.316 0.324 0.318 0.319 A marble bust of a mouse 0.331 0.314 0.313 0.279 0.305 0.313 0.293 0.302 A photograph of a firefighter 0.333 0.338 0.335 0.333 0.337 0.325 0.326 0.313 A photograph of a knight 0.299 0.308 0.310 0.304 0.311 0.276 0.284 0.303 A photograph of a ninja 0.279 0.301 0.292 0.280 0.299 0.285 0.294 0.281 A photograph of a policeman 0.295 0.265 0.288 0.293 0.291 0.293 0.290 0.295 A plate piled high with chocolate chip ... 0.306 0.319 0.315 0.301 0.283 0.285 0.280 0.287 A plush dragon toy 0.268 0.286 0.277 0.285 0.282 0.296 0.278 0.287 A pomeranian dog 0.283 0.296 0.297 0.287 0.290 0.284 0.286 0.283 A rabbit, animated movie character, hig... 0.375 0.376 0.382 0.368 0.373 0.378 0.363 0.366 A ripe strawberry 0.325 0.337 0.338 0.325 0.330 0.323 0.333 0.335 A sea turtle 0.306 0.309 0.313 0.310 0.315 0.307 0.311 0.309 A shell 0.322 0.334 0.334 0.332 0.323 0.328 0.311 0.323 A small saguaro cactus planted in a cla... 0.341 0.321 0.329 0.320 0.313 0.316 0.295 0.302 A stack of pancakes covered in maple sy... 0.198 0.315 0.323 0.311 0.308 0.302 0.297 0.309 A tarantula, highly detailed 0.298 0.283 0.295 0.281 0.300 0.287 0.285 0.281 A Viking panda with an axe 0.326 0.337 0.316 0.322 0.314 0.292 0.319 0.301 An astronaut 0.303 0.303 0.306 0.303 0.301 0.310 0.303 0.299 An astronaut is riding a horse 0.315 0.304 0.310 0.308 0.309 0.298 0.300 0.301 An ice cream sundae 0.292 0.292 0.291 0.295 0.291 0.305 0.301 0.298 An iguana holding a balloon 0.348 0.330 0.324 0.337 0.313 0.245 0.279 0.270 Baby dragon hatching out of a stone egg 0.344 0.340 0.318 0.311 0.302 0.289 0.298 0.283 Bagel filled with cream cheese and lox 0.312 0.295 0.298 0.286 0.288 0.275 0.277 0.275 DSLR photograph of a baby racoon holdin... 0.277 0.351 0.354 0.336 0.352 0.330 0.328 0.311 Photograph of a black leather backpack 0.230 0.285 0.232 0.295 0.308 0.287 0.294 —Pumpkin head zombie, skinny, highly det... 0.346 0.336 0.353 0.320 0.298 0.318 0.318 0.301 Renaissance-style oil painting of a que... 0.299 0.210 0.319 0.291 0.298 0.305 0.260 0.249 Robotic bee, high detail 0.323 0.334 0.325 0.328 0.323 0.316 0.308 0.320 Tower Bridge made out of gingerbread an... 0.297 0.305 0.294 0.281 0.295 0.291 0.257 0.279 Table 14. Per-prompt R-Precision on the 43 SDI prompts. base = our reproduction of baseline SDI; column headings are short tags for MV-SDI variants (Tab. 1: K2u = MV-SDI K=2 uniform, K2a = MV-SDI K=2 antithetic, K4a = MV-SDI K=4 antithetic, Mix4 = MV-SDI K=4 mixed (azim+elev), Oct.m = MV-SDI K=6 octa (elev ±30,60), Oct.a = MV-SDI K=6 octa (elev ±60,80), Oct.f = MV-SDI K=6 octa (full sphere)). — indicates the prompt diverged for that config (see Div% in main tables). 
+
+Prompt base K2u K2a K4a Mix4 Oct.m Oct.a Oct.f A 3D model of an adorable cottage with ... 96.00 100.00 100.00 100.00 100.00 100.00 98.00 96.00 A baby bunny sitting on top of a stack ... 40.00 6.00 8.00 76.00 48.00 34.00 16.00 14.00 A blue tulip 86.00 100.00 100.00 100.00 100.00 100.00 100.00 100.00 A car made out of sushi 68.00 74.00 80.00 80.00 72.00 76.00 100.00 62.00 A cauldron full of gold coins 28.00 64.00 100.00 100.00 100.00 100.00 100.00 100.00 A ceramic lion 88.00 100.00 100.00 100.00 98.00 92.00 96.00 100.00 A delicious croissant 96.00 80.00 58.00 18.00 6.00 60.00 62.00 64.00 A DSLR photo of a an old man 0.00 — 100.00 96.00 100.00 0.00 16.00 —A DSLR photo of a decorated cupcake wit... 80.00 100.00 100.00 100.00 100.00 100.00 100.00 100.00 A DSLR photo of a dew-covered peach sit... 100.00 100.00 100.00 34.00 100.00 94.00 96.00 90.00 A DSLR photo of a freshly baked round l... 0.00 14.00 28.00 0.00 0.00 0.00 4.00 6.00 A DSLR photo of a soccer ball 90.00 100.00 100.00 100.00 100.00 100.00 100.00 100.00 A DSLR photo of a white fluffy cat 74.00 74.00 46.00 54.00 62.00 70.00 46.00 38.00 A DSLR photo of Cthulhu 62.00 100.00 100.00 100.00 100.00 100.00 100.00 100.00 A DSLR photograph of a hamburger 100.00 100.00 100.00 100.00 100.00 100.00 100.00 100.00 A marble bust of a mouse 74.00 52.00 86.00 72.00 96.00 96.00 70.00 92.00 A photograph of a firefighter 100.00 100.00 100.00 100.00 100.00 100.00 100.00 100.00 A photograph of a knight 94.00 100.00 100.00 100.00 100.00 82.00 68.00 100.00 A photograph of a ninja 78.00 100.00 98.00 96.00 100.00 88.00 76.00 82.00 A photograph of a policeman 88.00 52.00 32.00 64.00 94.00 96.00 80.00 94.00 A plate piled high with chocolate chip ... 90.00 100.00 100.00 86.00 52.00 72.00 66.00 76.00 A plush dragon toy 30.00 86.00 54.00 90.00 100.00 92.00 50.00 72.00 A pomeranian dog 52.00 98.00 76.00 56.00 78.00 68.00 54.00 62.00 A rabbit, animated movie character, hig... 100.00 100.00 100.00 100.00 100.00 100.00 100.00 100.00 A ripe strawberry 100.00 100.00 100.00 100.00 100.00 96.00 100.00 100.00 A sea turtle 100.00 92.00 100.00 100.00 100.00 100.00 100.00 100.00 A shell 100.00 100.00 100.00 100.00 100.00 100.00 100.00 100.00 A small saguaro cactus planted in a cla... 100.00 100.00 100.00 100.00 100.00 100.00 96.00 100.00 A stack of pancakes covered in maple sy... 0.00 100.00 100.00 82.00 100.00 88.00 98.00 86.00 A tarantula, highly detailed 100.00 36.00 100.00 92.00 100.00 80.00 70.00 62.00 A Viking panda with an axe 98.00 100.00 100.00 100.00 100.00 100.00 98.00 94.00 An astronaut 100.00 100.00 100.00 94.00 100.00 100.00 98.00 84.00 An astronaut is riding a horse 82.00 100.00 100.00 94.00 98.00 84.00 84.00 94.00 An ice cream sundae 100.00 100.00 100.00 100.00 100.00 100.00 100.00 98.00 An iguana holding a balloon 100.00 100.00 100.00 100.00 98.00 8.00 72.00 36.00 Baby dragon hatching out of a stone egg 100.00 100.00 90.00 100.00 100.00 80.00 90.00 56.00 Bagel filled with cream cheese and lox 82.00 30.00 56.00 50.00 40.00 6.00 46.00 16.00 DSLR photograph of a baby racoon holdin... 36.00 100.00 100.00 94.00 100.00 94.00 96.00 98.00 Photograph of a black leather backpack 2.00 68.00 2.00 100.00 98.00 80.00 94.00 —Pumpkin head zombie, skinny, highly det... 100.00 100.00 100.00 100.00 100.00 98.00 86.00 80.00 Renaissance-style oil painting of a que... 96.00 0.00 100.00 82.00 100.00 98.00 44.00 24.00 Robotic bee, high detail 100.00 98.00 96.00 100.00 100.00 100.00 92.00 100.00 Tower Bridge made out of gingerbread an... 60.00 100.00 94.00 90.00 100.00 96.00 44.00 82.00 Table 15. Per-prompt HPSv2 on the 43 SDI prompts. base = our reproduction of baseline SDI; column headings are short tags for MV-SDI variants (Tab. 1: K2u = MV-SDI K=2 uniform, K2a = MV-SDI K=2 antithetic, K4a = MV-SDI K=4 antithetic, Mix4 = MV-SDI K=4 mixed (azim+elev), Oct.m = MV-SDI K=6 octa (elev ±30,60), Oct.a = MV-SDI K=6 octa (elev ±60,80), Oct.f = MV-SDI K=6 octa (full sphere)). 
+
+— indicates the prompt diverged for that config (see Div% in main tables). 
+
+Prompt base K2u K2a K4a Mix4 Oct.m Oct.a Oct.f A 3D model of an adorable cottage with ... 0.191 0.219 0.219 0.195 0.193 0.182 0.177 0.177 A baby bunny sitting on top of a stack ... 0.225 0.234 0.229 0.235 0.224 0.225 0.221 0.232 A blue tulip 0.215 0.262 0.262 0.278 0.263 0.270 0.265 0.262 A car made out of sushi 0.155 0.164 0.167 0.176 0.168 0.170 0.179 0.171 A cauldron full of gold coins 0.165 0.220 0.240 0.250 0.209 0.227 0.227 0.232 A ceramic lion 0.233 0.247 0.240 0.229 0.232 0.233 0.220 0.219 A delicious croissant 0.209 0.198 0.207 0.183 0.175 0.177 0.154 0.178 A DSLR photo of a an old man 0.122 — 0.206 0.199 0.211 0.116 0.109 —A DSLR photo of a decorated cupcake wit... 0.185 0.217 0.217 0.213 0.221 0.210 0.206 0.194 A DSLR photo of a dew-covered peach sit... 0.165 0.196 0.198 0.175 0.179 0.166 0.175 0.173 A DSLR photo of a freshly baked round l... 0.099 0.186 0.198 0.172 0.154 0.144 0.170 0.162 A DSLR photo of a soccer ball 0.198 0.242 0.234 0.239 0.238 0.230 0.229 0.233 A DSLR photo of a white fluffy cat 0.194 0.199 0.206 0.197 0.189 0.190 0.186 0.185 A DSLR photo of Cthulhu 0.194 0.230 0.220 0.227 0.223 0.217 0.212 0.218 A DSLR photograph of a hamburger 0.225 0.233 0.228 0.233 0.232 0.234 0.232 0.239 A marble bust of a mouse 0.240 0.240 0.235 0.223 0.226 0.207 0.186 0.189 A photograph of a firefighter 0.232 0.275 0.260 0.250 0.251 0.244 0.231 0.215 A photograph of a knight 0.177 0.203 0.230 0.195 0.210 0.158 0.155 0.196 A photograph of a ninja 0.191 0.209 0.204 0.179 0.222 0.173 0.197 0.194 A photograph of a policeman 0.189 0.164 0.167 0.213 0.206 0.219 0.195 0.209 A plate piled high with chocolate chip ... 0.183 0.205 0.188 0.184 0.174 0.159 0.161 0.164 A plush dragon toy 0.208 0.223 0.238 0.232 0.198 0.216 0.201 0.207 A pomeranian dog 0.194 0.202 0.194 0.186 0.189 0.176 0.178 0.175 A rabbit, animated movie character, hig... 0.234 0.259 0.266 0.259 0.244 0.238 0.227 0.234 A ripe strawberry 0.215 0.232 0.246 0.214 0.216 0.214 0.231 0.225 A sea turtle 0.214 0.231 0.231 0.247 0.242 0.245 0.224 0.221 A shell 0.243 0.259 0.252 0.257 0.247 0.251 0.245 0.246 A small saguaro cactus planted in a cla... 0.222 0.260 0.221 0.233 0.238 0.233 0.208 0.236 A stack of pancakes covered in maple sy... 0.114 0.200 0.184 0.183 0.191 0.177 0.183 0.180 A tarantula, highly detailed 0.206 0.226 0.215 0.210 0.216 0.222 0.207 0.194 A Viking panda with an axe 0.233 0.236 0.222 0.222 0.227 0.201 0.209 0.210 An astronaut 0.214 0.216 0.236 0.235 0.228 0.225 0.198 0.183 An astronaut is riding a horse 0.195 0.182 0.206 0.193 0.210 0.178 0.201 0.177 An ice cream sundae 0.214 0.236 0.232 0.223 0.220 0.222 0.222 0.208 An iguana holding a balloon 0.275 0.269 0.272 0.261 0.248 0.197 0.228 0.214 Baby dragon hatching out of a stone egg 0.267 0.255 0.267 0.249 0.231 0.215 0.218 0.216 Bagel filled with cream cheese and lox 0.199 0.208 0.214 0.207 0.179 0.181 0.186 0.181 DSLR photograph of a baby racoon holdin... 0.206 0.239 0.250 0.225 0.211 0.200 0.185 0.190 Photograph of a black leather backpack 0.203 0.210 0.118 0.192 0.154 0.185 0.214 —Pumpkin head zombie, skinny, highly det... 0.210 0.218 0.237 0.221 0.204 0.201 0.206 0.190 Renaissance-style oil painting of a que... 0.181 0.066 0.207 0.167 0.159 0.153 0.141 0.111 Robotic bee, high detail 0.191 0.227 0.221 0.225 0.209 0.205 0.177 0.207 Tower Bridge made out of gingerbread an... 0.184 0.208 0.197 0.189 0.184 0.179 0.152 0.166 Table 16. Per-prompt ImageReward on the 43 SDI prompts. base = our reproduction of baseline SDI; column headings are short tags for MV-SDI variants (Tab. 1: K2u = MV-SDI K=2 uniform, K2a = MV-SDI K=2 antithetic, K4a = MV-SDI K=4 antithetic, Mix4 = MV-SDI K=4 mixed (azim+elev), Oct.m = MV-SDI K=6 octa (elev ±30,60), Oct.a = MV-SDI K=6 octa (elev ±60,80), Oct.f = MV-SDI K=6 octa (full sphere)). — indicates the prompt diverged for that config (see Div% in main tables). 
+
+Prompt base K2u K2a K4a Mix4 Oct.m Oct.a Oct.f A 3D model of an adorable cottage with ... -0.13 +0.80 +0.75 +0.34 +0.43 +0.14 +0.01 -0.36 A baby bunny sitting on top of a stack ... +0.16 -0.21 -0.00 -0.08 -0.87 +0.52 -0.15 +0.99 A blue tulip -1.05 +0.31 +0.05 +0.85 +0.33 +1.03 +0.85 +0.38 A car made out of sushi -1.96 -1.65 -1.50 -1.24 -2.00 -0.50 -0.55 -1.39 A cauldron full of gold coins -2.28 -0.39 +1.22 +1.34 -0.08 +0.75 +0.66 +1.18 A ceramic lion -0.26 -0.08 +0.01 -0.86 -0.53 -0.63 -0.83 -1.38 A delicious croissant -1.01 -1.84 -1.96 -1.87 -2.01 -1.73 -2.17 -1.82 A DSLR photo of a an old man -2.28 — +0.42 +0.30 +0.33 -2.28 -2.15 —A DSLR photo of a decorated cupcake wit... -0.78 -0.29 -0.59 -0.71 -0.22 -0.12 -1.27 -0.42 A DSLR photo of a dew-covered peach sit... -0.13 +0.22 +0.57 -1.87 -1.34 -1.32 -1.77 -1.73 A DSLR photo of a freshly baked round l... -2.28 -0.66 -0.34 -1.43 -1.89 -2.11 -1.47 -1.22 A DSLR photo of a soccer ball -0.03 +0.33 +0.28 +0.25 +0.15 -0.15 -0.13 +0.09 A DSLR photo of a white fluffy cat -1.44 -1.65 -1.47 -1.69 -1.63 -1.66 -1.58 -1.86 A DSLR photo of Cthulhu -0.96 -0.52 -0.61 -0.64 -0.61 -0.68 -0.90 -0.87 A DSLR photograph of a hamburger -0.02 +0.10 -0.07 +0.02 +0.20 +0.09 +0.17 +0.19 A marble bust of a mouse +1.06 +1.04 +0.20 -0.77 -0.02 -1.05 -1.66 -1.20 A photograph of a firefighter -0.22 +0.80 +0.56 +0.45 +0.51 +0.33 +0.17 -0.44 A photograph of a knight -0.41 -0.29 -0.17 -0.83 -0.38 -2.16 -1.47 -0.30 A photograph of a ninja -0.81 -0.17 -0.95 -1.01 -0.15 -0.92 -0.63 -0.98 A photograph of a policeman -0.13 -0.85 -0.52 +0.23 -0.06 +0.00 -0.56 -0.17 A plate piled high with chocolate chip ... -1.03 -0.39 -0.52 -1.03 -1.92 -1.70 -2.14 -1.84 A plush dragon toy -1.09 -0.54 -0.43 -0.85 -1.45 -0.91 -1.43 -1.23 A pomeranian dog -1.53 -1.21 -1.25 -1.41 -1.32 -1.45 -1.69 -1.89 A rabbit, animated movie character, hig... -0.38 -0.13 -0.05 -0.30 -0.38 -0.52 -0.70 -0.51 A ripe strawberry -0.56 -0.31 +0.06 -0.71 -0.68 -0.41 +0.27 -0.13 A sea turtle -0.30 -0.06 +0.10 +0.69 +0.62 +0.72 -0.10 -0.58 A shell +0.84 +1.35 +1.29 +1.27 +1.02 +1.19 +0.66 +0.90 A small saguaro cactus planted in a cla... +1.19 +0.96 -0.90 +0.31 +0.52 +0.19 -0.47 +0.19 A stack of pancakes covered in maple sy... -2.27 -0.32 -0.94 -0.86 -0.91 -1.10 -1.04 -0.52 A tarantula, highly detailed +0.13 +0.66 +0.52 +0.43 +0.48 +0.43 +0.35 +0.24 A Viking panda with an axe +0.33 +0.06 -1.05 -0.32 -0.48 -1.90 -0.79 -1.52 An astronaut +0.01 -0.06 -0.08 -0.01 -0.05 -0.12 -0.69 -1.39 An astronaut is riding a horse +0.19 -1.15 -0.23 -0.96 -0.75 -0.97 -0.54 -0.81 An ice cream sundae +0.19 +0.26 +0.18 +0.27 -0.16 +0.32 +0.24 -0.38 An iguana holding a balloon +1.93 +1.83 +1.89 +1.77 +1.39 -1.53 +1.42 +0.89 Baby dragon hatching out of a stone egg +0.95 +0.12 +0.06 -0.51 -0.73 -1.25 -0.77 -1.18 Bagel filled with cream cheese and lox +0.75 +0.78 +1.28 +0.71 -0.22 +0.07 -0.33 -0.99 DSLR photograph of a baby racoon holdin... +0.35 +1.21 +1.32 +0.70 +0.31 +0.16 -0.57 -0.25 Photograph of a black leather backpack -2.21 -1.57 -2.28 -2.10 -1.91 -0.98 -0.77 —Pumpkin head zombie, skinny, highly det... +0.37 +0.73 +1.56 +0.79 +0.43 +0.09 -0.65 -1.41 Renaissance-style oil painting of a que... +0.15 -2.25 +0.47 -0.00 -0.30 -0.46 -0.58 -1.28 Robotic bee, high detail -0.46 +0.45 +0.15 +0.29 -0.24 -0.25 -0.61 -0.09 Tower Bridge made out of gingerbread an... -0.96 -1.00 -1.49 -1.82 -1.57 -1.68 -2.11 -2.04

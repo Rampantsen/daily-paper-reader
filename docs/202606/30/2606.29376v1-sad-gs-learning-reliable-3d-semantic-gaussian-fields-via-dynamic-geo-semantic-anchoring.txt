@@ -1,0 +1,851 @@
+Title: SAD-GS: Learning Reliable 3D Semantic Gaussian Fields via Dynamic Geo-Semantic Anchoring
+
+URL Source: https://arxiv.org/pdf/2606.29376v1
+
+Published Time: Tue, 30 Jun 2026 01:23:30 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+# SAD-GS: Learning Reliable 3D Semantic Gaussian Fields via Dynamic Geo-Semantic Anchoring 
+
+Yufei Zhang 1, Chenlu Zhan 1, Gaoang Wang 1, and Hongwei Wang* 11Zhejiang University 
+
+Abstract —Open-vocabulary 3D semantic Gaussian field learn-ing relies on multi-view 2D supervision, whose semantic targets and spatial assignments are often unreliable. Across varying viewpoints, view-dependent features cause semantic identity drift, while propagated tracker masks introduce boundary leakage and identity switches. Directly optimizing against these unreliable 2D targets forces the 3D representation to absorb multi-view con-tradictions, leading to severe error accumulation. To resolve this limitation, we propose SAD-GS, a framework for learning reliable 3D semantic Gaussian fields via dynamic geo-semantic anchoring. Specifically, Semantic Anchor Distillation (SAD) distills per-view visual embeddings into consensus text anchors to establish a viewpoint-invariant semantic identity. Concurrently, the Geo-Semantic Feedback Loop (GSFL) leverages the evolving 3D field to actively filter tracker anomalies and refine spatial mask assignments via a conservative three-gate update rule. Extensive evaluations on LERF-OVS, 3D-OVS, and Mip-NeRF360 show that SAD-GS consistently achieves the best overall performance in both open-vocabulary localization and semantic segmentation. These comprehensive improvements validate the effectiveness and robustness of dynamic geo-semantic anchoring for reliable 3D semantic Gaussian field learning. 
+
+I. I NTRODUCTION 
+
+Open-vocabulary 3D scene understanding—recognizing and localizing arbitrary objects in reconstructed scenes without predefined categories—is important for robotics, augmented reality, and language-guided embodied AI. In these settings, the key requirement is not only queryability, but reliability: a queried object should remain semantically consistent across viewpoints, clutter, and occlusion. 3D Gaussian Splatting (3DGS) [20] has become a strong substrate for high-fidelity real-time reconstruction, and recent work has extended it with open-vocabulary semantics for queryable 3D percep-tion [33, 19, 47, 32]. Some methods further specialize this direction to query-conditioned target resolution [17, 22]. The common recipe is to extract 2D semantic cues with foundation models and distill them into a 3D field. The central challenge is therefore no longer semantic availability, but supervision reliability under multi-view supervision. However, existing open-vocabulary 3D pipelines are pri-marily bottlenecked by supervision reliability rather than the capacity of 3D representations. Standard frameworks typically utilize multi-view render-and-supervise optimization to back-project 2D signals—including SAM-driven masks [23, 36, 48, 52], CLIP-based region semantics [35], and self-supervised dense vision priors [4, 13]—into the 3D field. While suf-ficient for simplistic environments, this paradigm becomes exceedingly brittle in cluttered settings, where inconsistent 2D supervision is consolidated into the 3D representation and fun-damentally degrades downstream localization, segmentation, and query-time reasoning. This trend exposes a core scientific challenge: how to learn a reliable 3D semantic field from inherently view-variant and noisy 2D semantic supervision? 
+
+This supervision-reliability problem stems from two cou-pled sources. First, visual anchor drift : CLIP image embed-dings prioritize global alignment over region-level consistency, causing the same object to produce disparate features across views [35, 33, 18]. Second, tracker label noise : tracking masks inevitably accumulate identity switches and boundary leakage under occlusions [50, 30, 10]. Crucially, these errors compound: feature drift renders semantic identities unidenti-fiable, while noisy spatial boundaries corrupt the multi-view geometric evidence required to aggregate them. Consequently, standard optimization reinforces rather than averages out these errors across the 3D field. Our key insight is that resolving this failure requires treating semantic identity and spatial assignment as two decoupled reliability problems in lifted 2D supervision. The former must be stabilized across views, while the latter must be selectively trusted during 3D optimization. When both signals are treated as fixed pseudo-labels, the 3D field is forced to fit conflicting supervision across views, which accumulates errors in the learned representation. To this end, we propose SAD-GS , a framework for learn-ing reliable 3D semantic Gaussian fields via dynamic geo-semantic anchoring. Specifically, Semantic Anchor Distil-lation (SAD) distills fluctuating per-view visual embeddings into consensus text anchors to establish a viewpoint-invariant semantic identity in language space. Concurrently, the Geo-Semantic Feedback Loop (GSFL) leverages the evolving 3D field as a geometric-semantic validator, cross-referencing rendered features, consensus anchors, and local depth con-sistency to filter tracker anomalies and refine spatial mask assignments via a conservative three-gate update rule. SAD-GS instantiates dynamic geo-semantic anchoring, concurrently stabilizing semantic identities and spatial boundaries during 3D optimization. Our contributions are:  
+
+> •
+
+Reliability perspective: We formulate open-vocabulary 3D semantic learning as a supervision-reliability problem under multi-view supervision and identify visual anchor drift and tracker label noise as its two structural failure modes.  
+
+> •
+
+Supervision-stabilized framework: We introduce SAD-
+
+> arXiv:2606.29376v1 [cs.CV] 28 Jun 2026
+
+GS, which stabilizes semantic identity in language space and regulates pseudo-label refinement through geometry-aware feedback.  
+
+> •
+
+Mechanistic characterization: We show that semantic anchor stabilization is the primary source of improve-ment, while geometry-guided feedback provides addi-tional gains but remains bounded by severe overlap and anchor ambiguity.  
+
+> •
+
+Validation: We validate SAD-GS across multiple tasks and benchmarks, showing that it consistently improves open-vocabulary 3D localization and segmentation under diverse scene conditions. II. R ELATED WORK 
+
+A. 2D supervision for 3D semantics 
+
+The extraction of open-vocabulary 3D semantics heavily leverages 2D vision-language foundations as the primary supervisory source. Early paradigms typically distill region-level features from CLIP encoders [35], often augmented by dense visual priors such as DINO [4], DINOv2 [31], OpenSeg [14], or language-driven 2D segmentation [24, 45], into underlying 3D representations [33, 27, 57]. To further enhance semantic expressiveness, contemporary approaches incorporate descriptive contextual priors generated by modern multi-modal large language models (MLLMs) [2, 9, 8, 56, 44] or dense captioning pipelines [46]. While these methods sig-nificantly enrich the textual-visual alignment within 3D neural fields, they fundamentally treat supervision as an observation-conditioned proxy. Because the training targets remain an-chored to isolated 2D crops, frames, or regional proposals, the resultant supervisory signals inevitably suffer from view-dependent volatility. A parallel limitation persists regarding geometry-guided mask generation and propagation. Foundation models such as the SAM [23, 36], Grounded-SAM [37], and VLPart [41] provide high-recall spatial proposals, while multi-object track-ing frameworks [10] establish cross-frame identity associa-tion. Open-world pipelines subsequently associate these 2D masks with 3D representations to generate dense pseudo-labels [42, 30, 48, 52, 53]. Although effective for dense scene mapping, existing workflows predominantly optimize the 3D field against these propagated masks as static ground truth, inherently overlooking the tracking drift and accumulated cross-frame errors. In contrast, our work shifts the intervention point upstream: SAD stabilizes the core semantic anchors in the language space to reduce view-dependent semantic drift, while GSFL dynamically evaluates the trustworthiness of propagated labels to selectively filter out observation noise. 
+
+B. Open-Vocabulary 3D Scene Understanding 
+
+3D semantic fields. LERF [21] pioneered open-vocabulary 3D querying by lifting language embeddings into volumet-ric spaces, though its performance remains susceptible to viewpoint-dependent semantic drift. While subsequent non-Gaussian methodologies extended open-world reasoning to point clouds and hierarchical tokens [11, 49, 12, 39, 40, 38, 16], they rarely address the supervision instability in-herent in dense, splatting-based pipelines. To fill this gap, LangSplat [33] adapted this paradigm to 3D Gaussian Splat-ting (3DGS) by anchoring CLIP semantics within explicit feature fields. Follow-up 3DGS variants primarily focus on optimizing representation capacity—leveraging contextual rea-soning [47], open-vocabulary transfer [19], foundation-model priors [57], or structured topological fields [27, 18, 43, 25]. Broader 3DGS research has also improved reconstruction, editing, feed-forward generation, and view-consistent pri-ors [29, 6, 51, 7, 55]. Despite these structural advancements, existing workflows overwhelmingly optimize representation scale while naively assuming that the 2D supervision is inherently reliable. 
+
+Contrast with Referring 3D Segmentation. A cognate yet orthogonal line studies referring 3D segmentation. For in-stance, ReferSplat [17] specializes in query-conditioned target resolution to untangle complex spatial expressions at inference time. While effective for single-shot expression isolation, such frameworks treat 3D semantics as a transient, instance-centric decoding process tied to specific prompts. In contrast, our framework prioritizes the structural stability and global con-sistency of the underlying 3D semantic substrate itself prior to 
+
+the application of any query. By shifting from query-dependent decoding to upstream supervision rectification, we establish a persistent, task-agnostic foundation that inherently supports generalized downstream localization and segmentation. 
+
+Contrast with Open-Vocabulary Segmentation. 
+
+Concurrently, open-vocabulary 3D segmentation frameworks, such as 3D-OVS [28], Open3DIS [30], OpenSplat3D [32], OmniSeg3D [53], and SAM-driven 3D segmentation pipelines [48, 52], push boundaries by aggregating high-recall 2D proposals via multi-view fusion or Gaussian mapping. However, their optimization emphasis rests predominantly on downstream proposal quality, geometric fusion, or feature decoding. In contrast, our work shifts the intervention upstream. Rather than mitigating multi-view noise during 3D amalgamation, we selectively regulate the trustworthiness of individual 2D supervisory labels prior to back-propagation. III. M ETHODOLOGY 
+
+SAD-GS learns open-vocabulary 3D semantic Gaussian fields through dynamic geo-semantic anchoring. As shown in Fig. 1, SAD establishes consensus semantic anchors from multi-view object descriptions, while GSFL uses the evolving 3D field to refine unreliable propagated labels during semantic optimization. 
+
+A. Semantic Gaussian Splatting 
+
+Our goal is to learn a reliable 3D semantic field from unreliable multi-view supervision. We build on 3D Gaussian Splatting (3DGS), which represents a scene with anisotropic Gaussian primitives parameterized by position μi ∈ R3,covariance Σi, opacity αi, color coefficients ci, and a semantic feature vector fi ∈ Rd (d = 16 in practice). Projecting these primitives onto the image plane yields both color C and Update semantic 
+
+anchors(EMA) 
+
+Validate & 
+
+selectively 
+
+refine noise 
+
+2D labels 
+
+Tracked-mask-guided 
+
+anchor EMA update 
+
+Geo-semantic 
+
+feedback 
+
+Low-confidence 
+
+pixel detection 
+
+Geo-Semantic Feedback Loop (GSFL) 
+
+Multi-view images 
+
+Tracked object crops 
+
+View 3 
+
+View 2 
+
+View 1 
+
+Semantic Anchor Distillation (SAD) Open-vocabulary 3D 
+
+Understanding 
+
+Stable 
+
+consensus 
+
+text anchors    
+
+> MLLM Text
+> Encoder Fieltering &
+> Aggregation
+> Text
+> embeddings Multi-view textual
+> descriptions
+> Per-class
+> consensus
+> anchor Ak
+> Semantic
+> feature map
+> Tracked masks
+> Noisy regions
+> Feature-anchor
+> similarity heatmap
+> Depth
+> edge map
+> Fused consistency
+> map C(u,v)
+
+Geo-Semantic Consistency Estimation 
+
+3D Semantic Gaussian Field 
+
+Semantic training 
+
+Text query 
+
+bowl napkin 
+
+eggs 
+
+3D scene 
+
+understanding 
+
+Three-Gate Pseudo-Label Refinement 
+
++
+
+query sapce 
+
+(� < �conf)
+
+Acceptance Gate Margin Gate         
+
+> cos (Fu,v,ak
+> ∗) ≥ �acc
+> sk
+> ∗−sk
+> (2)≥�
+> Gate 1: Confidence threshol d
+> �<�conf
+> Gate 2 : Geo-Semantic acceptance
+> Gate 3 : Margin threshold
+> Filter
+> noise
+> Verify
+> plausibility
+> Resolve
+> ambiguity
+> “Bright yellow bowl filled
+> with ramen noodles on... ”
+> “A smooth yellow round
+> object filled with food ... ”
+> ...
+
+... 
+
+ID= 3 
+
+sake cups 
+
+> PCA
+
+Fig. 1: Overview of SAD-GS. SAD-GS learns open-vocabulary 3D semantic fields from multi-view supervision by stabilizing its semantic target and refining its propagated labels. SAD converts multi-view semantic descriptions into stable consensus anchors, and GSFL uses geo-semantic feedback to refine unreliable tracked labels during training. semantic features S through the same differentiable rendering weights: 
+
+C =
+
+> M
+
+X
+
+> i=1
+
+ciTiα′
+
+> i
+
+, S =
+
+> M
+
+X
+
+> i=1
+
+fiTiα′
+
+> i
+
+, Ti =
+
+> i−1
+
+Y
+
+> j=1
+
+(1 − α′ 
+
+> j
+
+) (1) 
+
+where α′ 
+
+> i
+
+denotes the effective 2D opacity and Ti is the accumulated transmittance. Conventional open-vocabulary 3D pipelines optimize the rendered semantic map S against 2D pseudo-labels S2D from foundation models via 
+
+Lsem = D(S, S 2D ), (2) where D(·, ·) is the discrepancy function, typically instantiated as an L1 distance[33] or cosine similarity[34]. While SAD-GS inherits this foundational formulation, it departs from prior practices by substituting these volatile 2D targets with consensus text anchors and dynamically refining noisy spatial assignments during optimization. 
+
+B. Semantic Anchor Distillation (SAD) 
+
+Directly distilling 2D crop features into 3D makes the supervision target viewpoint-dependent: the same object can produce different features under pose, lighting, and occlusion changes. SAD replaces these volatile visual targets with a stable language-space identity target. Concretely, it builds a per-class consensus anchor ak from multi-view object descrip-tions, projects rendered 3D semantic features into CLIP space, and aligns them to the corresponding anchor. 
+
+Consensus Anchor Generation. For each tracked object 
+
+k, we sample representative views Vk, extract object crops 
+
+Ik,j , and use Qwen3-VL [1] to generate descriptions dk,j .These descriptions are mapped to CLIP text embeddings 
+
+zk,j = Etext (dk,j ) and aggregated into a Semantic Consensus Anchor ak:
+
+ak = Normalize 
+
+
+
+> n
+
+X
+
+> j=1
+
+wk,j zk,j 
+
+ , (3) where wk,j filters out description outliers according to the cosine similarity to the initial mean ¯zk = 1
+
+> n
+
+Pnj=1 zk,j :
+
+wk,j = I (cos( zk,j , ¯zk) > τ ) , (4) where I(·) is the indicator function and τ is a robustness threshold. This yields a stable anchor that summarizes the shared identity across views. 
+
+Projection Layer. Because 3DGS stores a compact d=16 -dimensional semantic feature per Gaussian, we use a learned projection head ϕ : R16 → R512 (16 → 128 → 512 with ReLU) to map rendered features F ∈ R16 ×H×W into the CLIP space shared by the anchors. 
+
+Distillation Loss. During training, the projected rendered feature ˆFu,v = ϕ(Fu,v ) ∈ R512 for each pixel (u, v ) is aligned with the anchor aM2D (u,v ) of its assigned class via a combined distillation loss: 
+
+Lsad = 1
+
+|Ω|
+
+X
+
+> (u,v )∈Ω
+
+
+
+ˆFu,v − aM2D (u,v ) 2
+
++ 12
+
+ 1 − cos   ˆFu,v , aM2D (u,v )
+
+ 
+
+,
+
+(5) Multi-View Object Crops CLIP Encoding & Consensus Anchor MLLM Semantic Description SAD Distillation 
+
+> A pale oval slice with soft pink
+> spiral on its surface.
+> Smooth surface; distinct pink
+> spiral at its center.
+> A dark brown, irregularly
+> shaped fragment.
+
+dk,1 
+
+dk,2 
+
+dk,3 
+
+> Per-view descriptions { dk,j }
+
+zk,1  
+
+> CLIP Text Encoder Etext
+
+zk,2 zk,3                              
+
+> ��=Norm (
+> j
+> ��,���,�) ∈ ℝ512
+> Consensus Anchor Ak
+> ��,�=1(cos (��,�,��))
+> Accept Filtered
+> Consensus Anchor Ak
+> ����= || �(��,�)−��||2+1
+> 2(1-
+> cos( �(��,�),��))
+> Viewpoint-stable ▪Drift-free
+> 3D Gaussian Semantic Field
+> ��∈ℝ16via �:ℝ16→ℝ512
+> Crops Ik,j ▪Track k
+> DEVA
+> tracking  ️
+> Track ID k
+
+Fig. 2: Semantic Anchor Distillation (SAD). Multi-view tracked object crops are described by Qwen3-VL, filtered in CLIP space, and aggregated into a consensus anchor for each object. The resulting viewpoint-stable anchors supervise the 3D Gaussian semantic features through Lsad .where Ω is the set of foreground pixels and M2D (u, v ) is the tracker-assigned class ID. The L2 term enforces absolute feature alignment, while the cosine term enforces directional alignment in CLIP space. In the full SAD-GS model, Lsad uses uniform pixel weights; the consistency score C(u, v ) is used only for pseudo-label refinement and anchor updates. 
+
+C. Geo-Semantic Feedback Loop (GSFL) 
+
+SAD stabilizes semantic identity, but it does not guarantee that the tracked 2D masks are correct. We therefore introduce the Geo-Semantic Feedback Loop (GSFL) to address noisy propagated masks. We use DEVA [10] to obtain initial tracked masks. Although temporally coherent, these masks can still suffer from boundary leakage and ID drift. By contrast, the evolving 3D Gaussian field aggregates evidence across views and becomes geometrically more reliable. GSFL uses this complementary signal as a geometric validator: it identifies pixels whose tracked labels conflict with the current 3D field and refines only these low-confidence regions. 
+
+Mechanistic Failures of Naive Self-Refinement. A naive alternative is to directly overwrite ambiguous 2D labels with rendered predictions. In practice, this unconstrained self-refinement fails for two reasons:  
+
+> •
+
+Spatial overlap: In nested or co-located regions, aggres-sive relabeling allows dominant classes to absorb nearby pixels and trigger semantic collapse.  
+
+> •
+
+Fine-grained ambiguity: In scenes with visually similar instances, multiple anchors can satisfy the same confi-dence threshold, so naive relabeling accepts many wrong replacements. These failure modes motivate the three-gate design of GSFL. Rather than relabeling whenever a new prediction looks plau-sible, GSFL verifies when relabeling is needed, whether the candidate label is reliable, and whether it is clearly better than its nearest competitor. 
+
+Geo-Semantic Consistency Score. At each training step, we render the per-pixel raw feature map F ∈ R16 ×H×W and the depth map D ∈ RH×W from the current 3D Gaussian field. We apply the projection head ϕ (Sec. III-B) to obtain CLIP-space features ˆFu,v = ϕ(Fu,v ) ∈ R512 . Let aM2D (u,v ) ∈ R512 
+
+be the semantic anchor of the class assigned to pixel (u, v )
+
+by the 2D tracker mask M2D . The geo-semantic consistency score C(u, v ) combines feature-anchor agreement with local geometric smoothness: 
+
+C(u, v ) = 1 + cos 
+
+ ˆFu,v , aM2D (u,v )
+
+
+
+2| {z }
+
+> semantic term
+
+· exp( −λ |∇ D|u,v )
+
+| {z }
+
+> geometric term
+
+,
+
+(6) where |∇ D|u,v is the local depth gradient magnitude (approxi-mated via finite differences) and λ=0 .1 controls the penalty for depth discontinuities. This single-view depth gradient serves as an efficient proxy for multi-view geometric uncertainty: depth edges in a rasterized Gaussian field co-occur with ambiguous surface ownership, making them reliable indicators of label noise. The semantic term is high when the rendered feature agrees with the tracker’s class anchor; the geometric term is low at depth edges, where 3D boundaries are uncertain. 
+
+Consistency-Guided Label Quality. The consistency score 
+
+C(u, v ) is the entry criterion for GSFL. Pixels with C(u, v ) <τconf are treated as low-confidence and passed to pseudo-label refinement, while high-confidence pixels keep their tracked la-bels. GSFL activates only after the semantic field has warmed up: it starts after Twarmup = 5 ,000 semantic iterations (i.e., iteration 35,000 in total training), and τconf is linearly ramped from τ0 = 0 .50 to τ1 = 0 .65 over 10,000 iterations to favor safe correction early and stricter filtering once the semantic field becomes more reliable. 
+
+Three-Gate Pseudo-Label Refinement. GSFL refines labels conservatively. For each low-confidence foreground pixel, it first checks whether the pixel should even be considered for relabeling (Gate 1: low consistency). It then queries the anchor space for the best alternative label k∗ =arg max k cos( ˆFu,v , ak). This candidate is accepted only if it passes two additional tests: 
+
+cos( ˆFu,v , ak∗ ) ≥ τacc 
+
+| {z }
+
+> Gate 2: acceptance
+
+∧ sk∗ − sk(2) ≥ δ
+
+| {z }
+
+> Gate 3: margin
+
+, (7) where sk(2) is the second-highest anchor similarity. We set 
+
+τacc =0 .60 and δ=0 .05 as conservative thresholds to favor safe relabeling. The three gates address three different failure sources in pseudo-label correction. Gate 1 restricts the correction scope by selecting only pixels with tracking noise (low consistency), which avoids rewriting correctly labeled pixels. Gate 2 pre-vents weak-evidence errors; a new label is accepted only when its anchor similarity passes an absolute threshold, avoiding forced corrections under occlusion or unstable views. Gate 3 resolves fine-grained semantic ambiguity; when multiple an-chors are plausible, the new label is accepted only if the top candidate is clearly separated from the runner-up, preventing ambiguous relabeling among similar classes. Algorithm 1summarizes the decision. 
+
+Algorithm 1 Three-Gate Pseudo-Label Refinement (per train-ing view, GSFL-active phase)                                                                                
+
+> Require: Rendered features ˆF, consistency map C, tracker mask
+> M2D , anchors {ak}Kk=1
+> Require: Thresholds: τconf ∈[0 .50 ,0.65] (linearly ramped),
+> τacc =0 .60 ,δ=0 .05
+> Ensure: Refined mask M′▷called only when iter ≥Twarmup
+> 1: M′←M2D ▷initialise from tracker labels
+> 2: for each foreground pixel (u, v )do
+> 3: if C(u, v )< τ conf then ▷Gate 1: pixel is low-confidence
+> 4: s←cos( ˆFu,v ,ak)Kk=1
+> 5: k∗←arg max ksk;s(2) ←second-largest (s)
+> 6: if sk∗≥τacc then ▷Gate 2: absolute acceptance
+> 7: if sk∗−s(2) ≥δthen ▷Gate 3: margin gate
+> 8: M′(u, v )←k∗▷accept refined label
+> 9: end if
+> 10: end if
+> 11: end if
+> 12: end for
+> 13: return M′
+
+Tracked-Mask-Guided Anchor Update. To keep the seman-tic anchors aligned with the evolving 3D feature distribution, we update them every ∆anc = 500 iterations using an EMA driven by the tracked masks rather than model predictions: 
+
+ak ← norm  m ak + (1 − m) ¯Fmask 
+
+> k
+
+ , (8) 
+
+¯Fmask  
+
+> k
+
+= norm 
+
+ 1
+
+|P k|
+
+X
+
+> (u,v )∈P k
+
+ˆFu,v 
+
+ , (9) where Pk = {(u, v ) | M2D (u, v ) = k} is the set of pixels assigned to class k by the tracked mask, and m = 0 .999 is the EMA momentum. This avoids circular self-prediction updates. 
+
+Training Objective. SAD-GS optimizes the semantic feature vectors {fi} and projection head ϕ while freezing the geomet-ric parameters from the pre-trained geometry stage. The full training objective is 
+
+Ltotal = Lsad (M ′), (10) where M ′ denotes the effective supervision mask: M ′=M2D 
+
+during warm-up and M ′ is the refined mask from Algorithm 1 after GSFL activation. Anchor updates (Eq. 9) are applied in-place and contribute no gradient to Ltotal .
+
+D. Open-vocabulary Querying 
+
+After training, the 3D semantic field can be queried directly with natural language prompts. Each position (u, v ) yields a rendered semantic feature ˆFu,v ∈ R512 in the CLIP feature space. Given a query phrase q, we extract its text embedding 
+
+eq = Etext (q) and introduce four canonical background em-beddings {ei
+
+> can
+
+} (object, things, stuff, texture ) following [33]. The final query relevancy score r(u, v ) is computed using a softmax formulation scaled by a decoding temperature T :
+
+r(u, v ) = min 
+
+> i
+
+exp 
+
+ ˆFu,v · eq /T 
+
+
+
+exp 
+
+ ˆFu,v · eq /T 
+
+
+
++ exp 
+
+ ˆFu,v · ei
+
+> can
+
+/T 
+
+ .
+
+(11) For 3D localization , we retrieve the 3D position of the Gaussian point with the highest rendered relevancy. For open-vocabulary 3D segmentation , we extract the target masks by filtering the relevancy map with a foreground threshold 
+
+ffg , retaining points where r(u, v ) > f fg . Here, T controls the sharpness of the query-background discrimination, while 
+
+ffg determines the boundary conservatism of the decoded foreground mask. IV. E XPERIMENTS 
+
+A. Experimental Setup 
+
+Datasets and Metrics. We evaluate whether supervision stabi-lization leads to more reliable open-vocabulary 3D semantics across three benchmarks with complementary scene character-istics and evaluation protocols:  
+
+> •
+
+LERF-OVS [21] contains cluttered real-world scenes with heavy object overlap (e.g., ramen ). We evaluate both open-vocabulary 3D localization with localization accu-racy and open-vocabulary 3D segmentation with mIoU.  
+
+> •
+
+3D-OVS [28] features relatively isolated long-tail ob-ject categories captured from diverse viewpoints and backgrounds. We use this benchmark to evaluate open-vocabulary 3D segmentation under weak supervision, reported as overall mIoU.  
+
+> •
+
+Mip-NeRF360 [3] covers large-scale unbounded indoor and outdoor scenes with complex geometry. Using labels annotated by GAGS [15], we report mean IoU to assess cross-scene generalization. 
+
+Implementation Details. Our framework is built on standard 3DGS [20]. For each scene, we first optimize the geomet-ric field under RGB supervision for 30,000 iterations. We then freeze all geometric parameters and optimize the 16-dimensional semantic feature field and projection head for another 20,000 iterations. For 2D prior generation, we use ViT-H SAM [23] for mask proposals and Qwen3-VL [1] for object-centric descriptions. Experiments are run on NVIDIA RTX PRO 6000 GPUs. Training takes about 2 hours per scene, including roughly 30 minutes for geometry, 90 minutes for semantic training, and about 10 minutes for offline anchor generation. RGB RGB LangSplat v2    
+
+> Ours
+> LangSplat v2
+> Ours
+> “miffy ”
+> “red cup ”
+> “napkin ”
+> “corn ”
+> RGB LangSplat v2
+> Ours
+> RGB LangSplat v2
+> Ours LangSplat
+> LangSplat LangSplat
+> LangSplat
+
+Fig. 3: Qualitative localization comparison on LERF-OVS. 
+
+SAD-GS yields sharper query responses and more accurate target localization than prior methods. 
+
+B. 3D Object Localization 
+
+Table I reports the quantitative localization results. SAD-GS 
+
+achieves the best overall accuracy on LERF-OVS. The largest gain appears on the challenging ramen scene, where accuracy improves from 74 .7% with LangSplat–v2 [26] to 85 .8% . This improvement is consistent with the role of SAD: stable text-consensus anchors reduce viewpoint-dependent semantic drift and make query-conditioned localization more reliable. TABLE I: Quantitative comparisons of open-vocabulary 3D object localization. We report the mean accuracy (%) .                                        
+
+> Method Ramen Teatime Kitchen Figurines Overall LERF [21] 62 .084 .872 .775 .073 .6
+> GS-Grouping [50] 32 .469 .550 .044 .649 .1
+> OpenGaussian [47] 29 .461 .631 .961 .146 .0
+> LangSplat [33] 73 .288 .195 .580 .484 .3
+> GOI [34] 56 .367 .868 .244 .659 .2
+> LangSplat–v2 [26] 74 .793 .286 .482 .184 .1
+> Ours 85 .889 .396 .583 .288 .7
+
+TABLE II: Component ablation for 3D localization on fig-urines and ramen . ∆: improvement over LangSplat–v2 [26]. 
+
+SAD GSFL Figurines Ramen — — Acc (%) ∆ Acc (%) ∆
+
+— ✓ 81.3 +0.9 76 .0 +1 .3
+
+✓ — 81.9 +1.5 81 .6 +6 .9
+
+✓ ✓ 83.2 +1.9 85.8 +11.1 
+
+Table II shows that both SAD and GSFL consistently improve open-vocabulary 3D localization, with the full SAD-GS model achieving the best results. Compared with other baselines, SAD successfully reduces multi-view query drift, while GSFL further sharpens the localization response in regions with heavy spatial overlap or visual confusion. These results demonstrate that our model effectively stabilizes the 3D language field for precise object localization. Fig. 3 visually confirms this quantitative trend. 
+
+C. 3D Semantic segmentation. 
+
+Results on the LERF-OVS Dataset. Table III shows that 
+
+SAD-GS achieves the best overall performance on LERF-OVS. Compared with LangSplat–v2, it improves the overall mIoU from 59 .9% to 68 .8% . This result shows that supervision stabilization improves open-vocabulary 3D semantic segmen-tation in cluttered scenes. TABLE III: Quantitative 3D semantic segmentation results on LERF-OVS, reported as mean IoU ( %).                                              
+
+> Method Ramen Teatime Kitchen Figurines Overall GS-Grouping [50] 26 .454 .031 .334 .636 .6
+> Refersplat [17] 55 .150 .167 .548 .955 .4
+> OpenGaussian [47] 31 .060 .439 .322 .738 .4
+> LangSplat [33] 51 .265 .144 .544 .751 .4
+> LangSplat–v2 [26] 51 .872 .259 .156 .459 .9
+> SparseLGS [5] 55 .240 .747 .322 .941 .5
+> SAD-only ⋆72.5 67.2 63.7 46.3 63.7
+> SAD-GS 77.9 72.2 68.4 57.6 68.8
+
+Results on the 3D-OVS Dataset. Table IV shows the quanti-tative comparisons on the 3D-OVS dataset. We see that SAD-GS achieves the highest overall mIoU score of 96 .0%, out-performing LangSplat by 2.6% and the SOTA LangSplatv2 by 
+
+1.4% . This consistent improvement further demonstrates that our model effectively builds more stable and view-invariant 3D semantic fields. TABLE IV: Quantitative 3D semantic segmentation results on 3D-OVS full scenes, reported as mean IoU (%).                                                 
+
+> Method Bed Bench Room Sofa Lawn Overall LERF[21] 73 .553 .246 .627 .073 .754 .8
+> Refersplat[17] 96 .392 .196 .795 .088 .993 .8
+> OpenGaussian[47] 91 .288 .393 .589 .493 .391 .1
+> 3D-OVS [54] 89 .589 .392 .874 .088 .286 .8
+> LangSplat[33] 92 .594 .294 .190 .096 .193 .4
+> LangSplat–v2[26] 93 .094 .996 .192 .396 .694 .6
+> Ours 98 .497 .796 .692 .095 .296 .0
+
+Results on the Mip-NeRF360 Dataset. Table V further validates cross-scene generalization on the more complex Mip-NeRF360 scenes. SAD-GS reaches 75 .4% overall mIoU, exceeding LangSplat–v2 by 6.0% , with the largest gain on 
+
+bonsai .
+
+Qualitative Results. Fig. 4 shows the same trend across all three datasets. Compared with prior methods, SAD-GS pro-duces more compact query masks with less spillover to nearby regions, consistent with the quantitative gains in Tables III–V. LangSplat v2  RGB Ours  OpenGS 
+
+camera      
+
+> LangSplat Ground Truth
+> 3D-OVS LERF-OVS Mip-NeRF360v2
+> “piano pedals ”“baking gloves ”“coffee mug ”“napkin ”“camera ”“dressing doll ”
+
+Fig. 4: Cross-dataset qualitative segmentation comparison. Across LERF-OVS, Mip-NeRF360, and 3D-OVS, SAD-GS produces cleaner query masks with less semantic leakage than prior methods. TABLE V: Quantitative 3D semantic segmentation results on Mip-NeRF360 sparse scenes, reported as mean IoU (%).                                    
+
+> Method room counter garden bonsai Overall GS–Grouping[50] 47 .740 .454 .149 .254 .4
+> GOI[34] 60 .346 .659 .867 .358 .5
+> OpenGaussian[47] 56 .639 .432 .244 .148 .0
+> LangSplat[33] 53 .268 .851 .955 .457 .3
+> LangSplat–v2[26] 64 .375 .165 .073 .169 .4
+> Ours 65 .280 .966 .389 .375 .4
+
+Ablation Study. Table VI evaluates the contribution of each gate in GSFL on the ramen scene. The SAD-GS model achieves the best performance at 77 .9% mIoU, outperforming SAD-only ( 72 .5% ). Removing any gate lowers performance. The largest drop comes from removing Gate 2, which reduces mIoU to 41 .5% and shows that the absolute acceptance threshold ( τacc ) is the main barrier against incorrect relabeling. Removing Gate 3 also causes a clear drop, confirming that the margin constraint ( δ) is needed when multiple anchors remain plausible. Fig. 5 clarifies this role: ambiguity in figurines is global, whereas ambiguity in waldo kitchen is concentrated in a few local confusion pairs. Gate 3 does not change this anchor-space structure; it makes relabeling safer by requiring a clear margin over the runner-up. Fig. 6 provides qualitative evidence for the same conclusion. In Case A (plate ), SAD-only shows substantial semantic leakage inside the bowl, whereas the SAD-GS model produces a much cleaner mask. In Case B ( kamaboko ), SAD-only fails to recover the target, while the full model succeeds. Removing any gate degrades the result, and removing Gate 2 causes the most severe failure. These examples show that the three gates work together to make pseudo-label refinement robust. 
+
+D. Closed-Loop Dynamics and Sensitivity Analysis 
+
+Feedback Convergence Tracking. Fig. 7 shows that GSFL behaves as a closed-loop refinement process after activation at iteration 35,000. Across figurines , waldo , and teatime ,the consistency score C rises above 0.96 while the label-update rate decays toward zero, indicating progressively self-consistent pseudo-label correction. On ramen , C stays near 
+
+0.63 and the update rate remains almost zero even after activation, showing that GSFL suppresses further relabeling red apple 
+
+> old camera
+> porcelain hand
+> green apple
+> toy cat statue
+> waldo
+> miffy
+> green toy chair
+> toy elephant
+> pink ice cream cone
+> red toy chair
+> pikachu
+> jake adventure time
+> rubber duck with pirate hat
+> rubber duck with buoy
+> rubiks cube
+> orange pumpkin
+
+red apple 
+
+old camera 
+
+porcelain hand 
+
+green apple 
+
+toy cat statue 
+
+waldo 
+
+miffy 
+
+green toy chair 
+
+toy elephant 
+
+pink ice cream cone 
+
+red toy chair 
+
+pikachu 
+
+jake adventure time 
+
+rubber duck with pirate hat 
+
+rubber duck with buoy 
+
+rubiks cube 
+
+orange pumpkin 
+
+0.75 0.72 0.88 0.69 0.71 0.65 0.61 0.71 0.67 0.75 0.69 0.61 0.65 0.68 0.72 0.80 
+
+0.75 0.75 0.74 0.76 0.67 0.64 0.62 0.74 0.64 0.65 0.68 0.64 0.62 0.63 0.75 0.71 
+
+0.72 0.75 0.71 0.80 0.67 0.70 0.62 0.74 0.70 0.65 0.66 0.58 0.60 0.63 0.68 0.71 
+
+0.88 0.74 0.71 0.67 0.63 0.63 0.74 0.70 0.63 0.62 0.68 0.64 0.62 0.64 0.70 0.78 
+
+0.69 0.76 0.80 0.67 0.64 0.71 0.65 0.81 0.68 0.68 0.70 0.63 0.65 0.66 0.69 0.68 
+
+0.71 0.67 0.67 0.63 0.64 0.62 0.55 0.63 0.64 0.66 0.65 0.58 0.63 0.62 0.65 0.63 
+
+0.65 0.64 0.70 0.63 0.71 0.62 0.53 0.69 0.57 0.57 0.69 0.63 0.57 0.63 0.59 0.67 
+
+0.61 0.62 0.62 0.74 0.65 0.55 0.53 0.65 0.58 0.83 0.57 0.55 0.51 0.58 0.62 0.58 
+
+0.71 0.74 0.74 0.70 0.81 0.63 0.69 0.65 0.68 0.68 0.70 0.64 0.67 0.69 0.71 0.69 
+
+0.67 0.64 0.70 0.63 0.68 0.64 0.57 0.58 0.68 0.65 0.61 0.56 0.59 0.63 0.64 0.63 
+
+0.75 0.65 0.65 0.62 0.68 0.66 0.57 0.83 0.68 0.65 0.62 0.54 0.57 0.66 0.64 0.63 
+
+0.69 0.68 0.66 0.68 0.70 0.65 0.69 0.57 0.70 0.61 0.62 0.77 0.73 0.70 0.67 0.70 
+
+0.61 0.64 0.58 0.64 0.63 0.58 0.63 0.55 0.64 0.56 0.54 0.77 0.64 0.63 0.60 0.63 
+
+0.65 0.62 0.60 0.62 0.65 0.63 0.57 0.51 0.67 0.59 0.57 0.73 0.64 0.87 0.62 0.67 
+
+0.68 0.63 0.63 0.64 0.66 0.62 0.63 0.58 0.69 0.63 0.66 0.70 0.63 0.87 0.64 0.69 
+
+0.72 0.75 0.68 0.70 0.69 0.65 0.59 0.62 0.71 0.64 0.64 0.67 0.60 0.62 0.64 0.67 
+
+0.80 0.71 0.71 0.78 0.68 0.63 0.67 0.58 0.69 0.63 0.63 0.70 0.63 0.67 0.69 0.67 
+
+figurines anchor CLIP similarity (mean=0.662, 32/136 pairs > 0.70) 
+
+Blue border: sim > 0.70 -- global clustering drives PLR failure 
+
+0.3 
+
+0.4 
+
+0.5 
+
+0.6 
+
+0.7 
+
+0.8 
+
+0.9 
+
+> CLIP cosine similarity
+
+(a) figurines : global confusion. black spoon 
+
+> cabinet
+> dark cup
+> frog cup
+> ketchup
+> knife
+> ottolenghi
+> plastic ladle
+> plate
+> pot
+> pour-over vessel
+> red cup
+> refrigerator
+> spatula
+> stainless steel pot
+> toaster
+> yellow desk
+
+black spoon 
+
+cabinet 
+
+dark cup 
+
+frog cup 
+
+ketchup 
+
+knife 
+
+ottolenghi 
+
+plastic ladle 
+
+plate 
+
+pot 
+
+pour-over vessel 
+
+red cup 
+
+refrigerator 
+
+spatula 
+
+stainless steel pot 
+
+toaster 
+
+yellow desk 
+
+0.42 0.83 0.60 0.43 0.66 0.47 0.50 0.64 0.64 0.61 0.51 0.47 0.46 0.69 0.55 0.43 
+
+0.42 0.51 0.50 0.54 0.58 0.67 0.50 0.53 0.55 0.43 0.43 0.71 0.47 0.53 0.47 0.63 
+
+0.83 0.51 0.62 0.52 0.65 0.53 0.53 0.68 0.61 0.61 0.59 0.52 0.52 0.71 0.58 0.51 
+
+0.60 0.50 0.62 0.41 0.48 0.55 0.43 0.79 0.53 0.48 0.62 0.48 0.38 0.67 0.54 0.49 
+
+0.43 0.54 0.52 0.41 0.60 0.63 0.50 0.39 0.61 0.39 0.49 0.47 0.62 0.56 0.37 0.44 
+
+0.66 0.58 0.65 0.48 0.60 0.63 0.59 0.48 0.66 0.49 0.38 0.58 0.62 0.56 0.45 0.51 
+
+0.47 0.67 0.53 0.55 0.63 0.63 0.47 0.54 0.57 0.43 0.40 0.57 0.50 0.62 0.45 0.57 
+
+0.50 0.50 0.53 0.43 0.50 0.59 0.47 0.38 0.69 0.37 0.35 0.46 0.71 0.46 0.35 0.48 
+
+0.64 0.53 0.68 0.79 0.39 0.48 0.54 0.38 0.54 0.53 0.74 0.47 0.42 0.64 0.55 0.47 
+
+0.64 0.55 0.61 0.53 0.61 0.66 0.57 0.69 0.54 0.55 0.45 0.59 0.70 0.71 0.52 0.50 
+
+0.61 0.43 0.61 0.48 0.39 0.49 0.43 0.37 0.53 0.55 0.44 0.48 0.39 0.57 0.70 0.63 
+
+0.51 0.43 0.59 0.62 0.49 0.38 0.40 0.35 0.74 0.45 0.44 0.42 0.51 0.51 0.43 0.37 
+
+0.47 0.71 0.52 0.48 0.47 0.58 0.57 0.46 0.47 0.59 0.48 0.42 0.50 0.52 0.50 0.48 
+
+0.46 0.47 0.52 0.38 0.62 0.62 0.50 0.71 0.42 0.70 0.39 0.51 0.50 0.49 0.41 0.36 
+
+0.69 0.53 0.71 0.67 0.56 0.56 0.62 0.46 0.64 0.71 0.57 0.51 0.52 0.49 0.65 0.53 
+
+0.55 0.47 0.58 0.54 0.37 0.45 0.45 0.35 0.55 0.52 0.70 0.43 0.50 0.41 0.65 0.63 
+
+0.43 0.63 0.51 0.49 0.44 0.51 0.57 0.48 0.47 0.50 0.63 0.37 0.48 0.36 0.53 0.63 
+
+waldo_kitchen anchor CLIP similarity (mean=0.531, 9/136 pairs > 0.70) 
+
+Blue border: sim > 0.70 tight confusion pairs driving PLR failure 
+
+0.3 
+
+0.4 
+
+0.5 
+
+0.6 
+
+0.7 
+
+0.8 
+
+0.9  
+
+> CLIP cosine similarity
+
+(b) waldo kitchen : localized confusion pairs. 
+
+Fig. 5: Anchor-space ambiguity patterns motivating Gate 3. Blue borders mark anchor pairs with similarity >0.70 . The two scenes exhibit different ambiguity structures, but both make naive relabeling unreliable and motivate the margin-based safeguard in GSFL. 
+
+Fig. 6: Visual comparison of gate-removal ablations on ramen . The full three-gate design yields the cleanest masks, while removing any gate degrades pseudo-label refinement. TABLE VI: Gate-removal ablation on ramen . The full three-gate design remains the strongest overall setting, while remov-ing Gate 2 produces the largest regression. 
+
+Variant mIoU (%) ∆ vs. Full T ffg 
+
+SAD-only 72.5 −5.4 0.13 0.50 SAD + PLR w/o Gate 1 72.8 −5.1 0.07 0.65 SAD + PLR w/o Gate 2 41.5 −36 .4 0.07 0.65 SAD + PLR w/o Gate 3 69.0 −8.9 0.10 0.45 
+
+SAD-GS 77.9 – 0.11 0.65 
+
+when heavy spatial overlap leaves the ambiguity unresolved. This supports the role of GSFL as a stabilizing feedback mechanism rather than an always-on source of label changes. 
+
+Fig. 7: GSFL convergence on representative scenes. After activation, geo-semantic consistency rises while label updates are progressively suppressed as training stabilizes. 
+
+Decoding Robustness Analysis. Fig. 8 evaluates the perfor-Fig. 8: Decode robustness of SAD-GS on ramen . SAD-GS maintains strong segmentation performance across a broad range of decoding temperature T and foreground threshold ffg ,showing that its gains are not tied to a narrow threshold choice. mance stability of SAD-GS under varying inference configu-rations. We sweep the decoding temperature T and foreground threshold ffg over a broad range on the ramen scene. The full model maintains high mIoU scores across a wide parameter region rather than relying on a narrow operating point. This decoding robustness indicates that the performance gains stem from a more reliable 3D semantic field rather than sensitive post-hoc threshold tuning. Performance drops only under extreme decoding settings where the relevancy maps become either over-saturated or overly conservative. V. C ONCLUSION AND LIMITATIONS .In this paper, we have presented SAD-GS for robust open-vocabulary 3D semantic Gaussian splatting, designed to overcome the supervision reliability limitations of previous language fields. To achieve this, SAD stabilizes semantic iden-tities using consensus text anchors, while GSFL refines noisy tracker labels through geometry-aware feedback, significantly improving both localization and segmentation across multiple benchmarks. Despite its strong performance, SAD-GS still has several limitations. Its correction gains can saturate under severe spatial overlap or inside complex container where pure text anchoring provides an incomplete supervisory signal. Furthermore, when many semantic categories cluster closely in the CLIP space, the fixed global margin threshold becomes less effective. Future work could address these by incorporat-ing spatio-temporal priors or developing class-adaptive local decision boundaries to handle persistent ambiguity. REFERENCES 
+
+[1] Shuai Bai, Yuxuan Cai, Ruizhe Chen, Keqin Chen, Xionghui Chen, Zesen Cheng, Lianghao Deng, Wei Ding, Chang Gao, Chunjiang Ge, Wenbin Ge, Zhifang Guo, Qidong Huang, Jie Huang, Fei Huang, Binyuan Hui, Shutong Jiang, Zhaohai Li, Mingsheng Li, Mei Li, Kaixin Li, Zicheng Lin, Junyang Lin, Xuejing Liu, Jiawei Liu, Chenglong Liu, Yang Liu, Dayiheng Liu, Shixuan Liu, Dunjie Lu, Ruilin Luo, Chenxu Lv, Rui Men, Lingchen Meng, Xuancheng Ren, Xingzhang Ren, Sibo Song, Yuchong Sun, Jun Tang, Jianhong Tu, Jianqiang Wan, Peng Wang, Pengfei Wang, Qiuyue Wang, Yuxuan Wang, Tianbao Xie, Yiheng Xu, Haiyang Xu, Jin Xu, Zhibo Yang, Mingkun Yang, Jianxin Yang, An Yang, Bowen Yu, Fei Zhang, Hang Zhang, Xi Zhang, Bo Zheng, Humen Zhong, Jingren Zhou, Fan Zhou, Jing Zhou, Yuanzhi Zhu, and Ke Zhu. Qwen3-vl technical report. arXiv preprint arXiv:2511.21631 , 2025. 3, 5 [2] Shuai Bai, Keqin Chen, Xuejing Liu, Jialin Wang, Wenbin Ge, Sibo Song, Kai Dang, Peng Wang, Shijie Wang, Jun Tang, Humen Zhong, Yuanzhi Zhu, Mingkun Yang, Zhaohai Li, Jianqiang Wan, Pengfei Wang, Wei Ding, Zheren Fu, Yiheng Xu, Jiabo Ye, Xi Zhang, Tianbao Xie, Zesen Cheng, Hang Zhang, Zhibo Yang, Haiyang Xu, and Junyang Lin. Qwen2.5-vl technical report. arXiv preprint arXiv:2502.13923 , 2025. 2 [3] Jonathan T. Barron, Ben Mildenhall, Dor Verbin, Pratul P. Srini-vasan, and Peter Hedman. Mip-NeRF 360: Unbounded anti-aliased neural radiance fields. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 5470–5479, 2022. 5 [4] Mathilde Caron, Hugo Touvron, Ishan Misra, Herv´ e J´ egou, Julien Mairal, Piotr Bojanowski, and Armand Joulin. Emerging properties in self-supervised vision transformers. In Pro-ceedings of the International Conference on Computer Vision (ICCV) , 2021. 1, 2 [5] Kangjie Chen, Bingquan Dai, Minghan Qin, Peihao Li, Haoqian Wang, and Weidong Wang. Sparselgs: Fast language gaus-sian splatting from sparse multi-view images. arXiv preprint arXiv:2412.07258 , 2024. 6 [6] Yiwen Chen, Zilong Chen, Chi Zhang, Feng Wang, Xiaofeng Yang, Yikai Wang, Zhongang Cai, Lei Yang, Huaping Liu, and Guosheng Lin. Gaussianeditor: Swift and controllable 3d editing with gaussian splatting. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 21476–21485, 2024. 2 [7] Yuedong Chen, Haofei Xu, Chuanxia Zheng, Bohan Zhuang, Marc Pollefeys, Andreas Geiger, Tat-Jen Cham, and Jianfei Cai. Mvsplat: Efficient 3d gaussian splatting from sparse multi-view images. In European Conference on Computer Vision , pages 370–386. Springer, 2024. 2 [8] Zhe Chen, Weiyun Wang, Yue Cao, Yangzhou Liu, Zhangwei Gao, Erfei Cui, Jinguo Zhu, Shenglong Ye, Hao Tian, Zhaoyang Liu, et al. Expanding performance boundaries of open-source multimodal models with model, data, and test-time scaling. 
+
+arXiv preprint arXiv:2412.05271 , 2024. 2 [9] Zhe Chen, Jiannan Wu, Wenhai Wang, Weijie Su, Guo Chen, Sen Xing, Muyan Zhong, Qinglong Zhang, Xizhou Zhu, Lewei Lu, et al. Internvl: Scaling up vision foundation models and aligning for generic visual-linguistic tasks. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 24185–24198, 2024. 2 [10] Ho Kei Cheng, Seoung Wug Oh, Brian Price, Alexander Schwing, and Joon-Young Lee. Tracking anything with de-coupled video segmentation. In Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 1316– 1326, 2023. 1, 2, 4 [11] Runyu Ding, Jihan Yang, Chuhui Xue, Wenqing Zhang, Song Bai, and Xiaojuan Qi. Pla: Language-driven open-vocabulary 3d scene understanding. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 7010–7019, 2023. 2 [12] Runyu Ding, Jihan Yang, Chuhui Xue, Wenqing Zhang, Song Bai, and Xiaojuan Qi. Lowis3d: Language-driven open-world instance-level 3d scene understanding. IEEE Transactions on Pattern Analysis and Machine Intelligence , 2024. 2 [13] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner, Mostafa De-hghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, et al. An image is worth 16x16 words: Transformers for image recognition at scale. arXiv preprint arXiv:2010.11929 , 2020. 1[14] Golnaz Ghiasi, Xiuye Gu, Yin Cui, and Tsung-Yi Lin. Scaling open-vocabulary image segmentation with image-level labels. In European conference on computer vision , pages 540–557. Springer, 2022. 2 [15] Jun Guo, Xiaojian Ma, Yue Fan, Huaping Liu, and Qing Li. Semantic gaussians: Open-vocabulary scene understanding with 3d gaussian splatting. arXiv preprint arXiv:2403.15624 , 2024. 5[16] Oliver Hahn, Yuanchen Peng, Rami Briq, Sven Behnke, and Juergen Gall. Scene-centric unsupervised panoptic segmenta-tion. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2025. 2 [17] Shuting He, Guangquan Jie, Changshuo Wang, Yun Zhou, Shuming Hu, Guanbin Li, and Henghui Ding. Refersplat: Referring segmentation in 3d gaussian splatting. In Proceedings of the 42nd International Conference on Machine Learning ,pages 22456–22467. PMLR, 2025. 1, 2, 6 [18] SungMin Jang and Wonjun Kim. Identity-aware language gaus-sian splatting for open-vocabulary 3D semantic segmentation. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , pages 20467–20476, 2025. 1, 2 [19] Li Jiang, Shaoshuai Shi, and Bernt Schiele. Open-vocabulary 3d semantic segmentation with foundation models. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 21284–21294, 2024. 1, 2 [20] Bernhard Kerbl, Georgios Kopanas, Thomas Leimk¨ uhler, and George Drettakis. 3d gaussian splatting for real-time radiance field rendering. ACM Transactions on Graphics , 42(4):1–14, 2023. 1, 5 [21] Justin Kerr, Chung Min Kim, Ken Goldberg, Angjoo Kanazawa, and Matthew Tancik. Lerf: Language embedded radiance fields. In Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 19729–19739, 2023. 2, 5, 6 [22] Jun-Seong Kim, Tae-Hyun Nam, Gyeong-Moon Kim, and Jun-Young Choi. Dr. Splat: Directly referring 3D Gaussian splatting via direct language embedding registration. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2025. arXiv:2502.16652. 1 [23] Alexander Kirillov, Eric Mintun, Nikhila Ravi, Hanzi Mao, Chloe Rolland, Laura Gustafson, Tete Xiao, Spencer Whitehead, Alexander C Berg, Wan-Yen Lo, et al. Segment anything. In Proceedings of the IEEE/CVF international conference on computer vision , pages 4015–4026, 2023. 1, 2, 5 [24] Boyi Li, Kilian Q Weinberger, Serge Belongie, Vladlen Koltun, and Ren´ e Ranftl. Language-driven semantic segmentation. 
+
+arXiv preprint arXiv:2201.03546 , 2022. 2 [25] Wanhua Li, Renping Zhou, Jiawei Zhou, Yingwei Song, Jo-hannes Herter, Minghan Qin, Gao Huang, and Hanspeter Pfister. 4D LangSplat: 4D language gaussian splatting via multimodal large language models. In Proceedings of the IEEE/CVF Con-ference on Computer Vision and Pattern Recognition (CVPR) ,pages 22001–22011, 2025. 2 [26] Wanhua Li, Yujie Zhao, Minghan Qin, Yang Liu, Yuanhao Cai, Chuang Gan, and Hanspeter Pfister. Langsplatv2: High-dimensional 3d language gaussian splatting with 450+ fps. Ad-vances in Neural Information Processing Systems , 38:174306– 174330, 2026. 6, 7 [27] Guibiao Liao, Jiankun Li, Zhenyu Bao, Xiaoqing Ye, Jingdong Wang, Qing Li, and Kanglin Liu. Clip-gs: Clip-informed gaussian splatting for real-time and view-consistent 3d semantic understanding. arXiv preprint arXiv:2404.14249 , 2024. 2 [28] Kunhao Liu, Fangneng Zhan, Jiahui Zhang, Muyu Xu, Yingchen Yu, Abdulmotaleb El Saddik, Christian Theobalt, Eric Xing, and Shijian Lu. Weakly supervised 3d open-vocabulary segmenta-tion. Advances in Neural Information Processing Systems , 36: 53433–53456, 2023. 2, 5 [29] Xi Liu, Chaoyi Zhou, and Siyu Huang. 3dgs-enhancer: En-hancing unbounded 3d gaussian splatting with view-consistent 2d diffusion priors. Advances in Neural Information Processing Systems , 37:133305–133327, 2024. 2 [30] Phuc Nguyen, Tuan Duc Ngo, Evangelos Kalogerakis, Chuang Gan, Anh Tran, Cuong Pham, and Khoi Nguyen. Open3DIS: Open-vocabulary 3D instance segmentation with 2D mask guid-ance. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , pages 4018–4028, 2024. 1, 2 [31] Maxime Oquab, Timoth´ ee Darcet, Th´ eo Moutakanni, Huy Vo, Marc Szafraniec, Vasil Khalidov, Pierre Fernandez, Daniel Haziza, Francisco Massa, Alaaeldin El-Nouby, et al. Dinov2: Learning robust visual features without supervision. Transac-tions on Machine Learning Research Journal , pages 1–31, 2024. 2[32] Jens Piekenbrinck, Christian Schmidt, Alexander Hermans, Narunas Vaskevicius, Timm Linder, and Bastian Leibe. Open-Splat3D: Open-vocabulary 3D instance segmentation using gaussian splatting. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) Work-shops , pages 5285–5294, 2025. 1, 2 [33] Minghan Qin, Wanhua Li, Jiawei Zhou, Haoqian Wang, and Hanspeter Pfister. Langsplat: 3d language gaussian splatting. In 
+
+Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 20051–20060, 2024. 1, 2, 3, 5, 6, 7 [34] Yansong Qu, Shaohui Dai, Xinyang Li, Jianghang Lin, Liu-juan Cao, Shengchuan Zhang, and Rongrong Ji. GOI: Find 3D gaussians of interest with an optimizable open-vocabulary semantic-space hyperplane. In Proceedings of the 32nd ACM International Conference on Multimedia , pages 5328–5337, 2024. 3, 6, 7 [35] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, et al. Learning transferable visual models from natural language supervision. In International conference on machine learning , pages 8748–8763. PmLR, 2021. 1, 2 [36] Nikhila Ravi, Valentin Gabeur, Yuan-Ting Hu, Ronghang Hu, Chaitanya Ryali, Tengyu Ma, Haitham Khedr, Roman R¨ adle, Chloe Rolland, Laura Gustafson, Eric Mintun, Junting Pan, Kalyan Vasudev Alwala, Nicolas Carion, Chao-Yuan Wu, Ross Girshick, Piotr Doll´ ar, and Christoph Feichtenhofer. Sam 2: Segment anything in images and videos, 2024. 1, 2 [37] Tianhe Ren, Shilong Liu, Ailing Zeng, Jing Lin, Kunchang Li, He Cao, Jiayu Chen, Xinyu Huang, Yukang Chen, Feng Yan, Zhaoyang Zeng, Hao Zhang, Feng Li, Jie Yang, Hongyang Li, Qing Jiang, and Lei Zhang. Grounded sam: Assembling open-world models for diverse visual tasks, 2024. 2 [38] David Rozenberszki, Or Litany, and Angela Dai. Unscene3d: Unsupervised 3d instance segmentation for indoor scenes. In 
+
+Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 19957–19967, 2024. 2 [39] Jonas Schult, Francis Engelmann, Alexander Hermans, Or Litany, Siyu Tang, and Bastian Leibe. Mask3d: Mask trans-former for 3d semantic instance segmentation. In 2023 IEEE International Conference on Robotics and Automation (ICRA) ,pages 8216–8223. IEEE, 2023. 2 [40] Jiahao Sun, Chunmei Qing, Junpeng Tan, and Xiangmin Xu. Superpoint transformer for 3d scene instance segmentation. In 
+
+Proceedings of the AAAI Conference on Artificial Intelligence ,pages 2393–2401, 2023. 2 [41] Peize Sun, Shoufa Chen, Chenchen Zhu, Fanyi Xiao, Ping Luo, Saining Xie, and Zhicheng Yan. Going denser with open-vocabulary part segmentation. In Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 15453– 15465, 2023. 2 [42] Hanchen Tai, Qingdong He, Jiangning Zhang, Yijie Qian, Zhenyu Zhang, Xiaobin Hu, Xiangtai Li, Yabiao Wang, and Yong Liu. Open-vocabulary sam3d: Towards training-free open-vocabulary 3d scene understanding. arXiv preprint arXiv:2405.15580 , 2024. 2 [43] Lei Tian, Xiaomin Li, Liqian Ma, Hao Yin, Zirui Zheng, Hefei Huang, Taiqing Li, Huchuan Lu, and Xu Jia. CCL-LGS: Con-trastive codebook learning for 3D language gaussian splatting. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , pages 9855–9864, 2025. 2 [44] Weiyun Wang, Zhangwei Gao, Lixin Gu, Hengjun Pu, Long Cui, Xingguang Wei, Zhaoyang Liu, Linglin Jing, Shenglong Ye, Jie Shao, et al. Internvl3.5: Advancing open-source mul-timodal models in versatility, reasoning, and efficiency. arXiv preprint arXiv:2508.18265 , 2025. 2 [45] Xiaoqi Wang, Wenbin He, Xiwei Xuan, Clint Sebastian, Jorge Piazentin Ono, Xin Li, Sima Behpour, Thang Doan, Liang Gou, Han-Wei Shen, et al. Use: Universal segment embeddings for open-vocabulary image segmentation. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 4187–4196, 2024. 2 [46] Jialian Wu, Jianfeng Wang, Zhengyuan Yang, Zhe Gan, Zicheng Liu, Junsong Yuan, and Lijuan Wang. Grit: A generative region-to-text transformer for object understanding. In European Con-ference on Computer Vision , pages 207–224. Springer, 2024. 2[47] Yanmin Wu, Jiarui Meng, Haijie Li, Chenming Wu, Yahao Shi, Xinhua Cheng, Chen Zhao, Haocheng Feng, Errui Ding, Jingdong Wang, and Jian Zhang. Opengaussian: Towards point-level 3d gaussian-based open vocabulary understanding. In 
+
+Proceedings of the Advances in Neural Information Processing Systems (NeurIPS) , pages 19114–19138, 2024. 1, 2, 6, 7 [48] Mutian Xu, Xingyilang Yin, Lingteng Qiu, Yang Liu, Xin Tong, and Xiaoguang Han. Sampro3d: Locating sam prompts in 3d for zero-shot scene segmentation. arXiv preprint arXiv:2311.17707 ,2023. 1, 2 [49] Jihan Yang, Runyu Ding, Weipeng Deng, Zhe Wang, and Xiaojuan Qi. Regionplc: Regional point-language contrastive learning for open-world 3d scene understanding. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 19823–19832, 2024. 2 [50] Mingqiao Ye, Martin Danelljan, Fisher Yu, and Lei Ke. Gaus-sian grouping: Segment and edit anything in 3d scenes. In 
+
+European Conference on Computer Vision , pages 162–179. Springer, 2024. 1, 6, 7 [51] Zongxin Ye, Wenyu Li, Sidun Liu, Peng Qiao, and Yong Dou. Absgs: Recovering fine details in 3d gaussian splatting. In 
+
+Proceedings of the 32nd ACM International Conference on Multimedia , pages 1053–1061, 2024. 2 [52] Yingda Yin, Yuzheng Liu, Yang Xiao, Daniel Cohen-Or, Jing-wei Huang, and Baoquan Chen. Sai3d: Segment any instance in 3d scenes. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 3292–3302, 2024. 1, 2 [53] Haiyang Ying, Yixuan Yin, Jinzhi Zhang, Fan Wang, Tao Yu, Ruqi Huang, and Lu Fang. Omniseg3d: Omniversal 3d seg-mentation via hierarchical contrastive learning. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 20612–20622, 2024. 2 [54] Zehao Yu, Anpei Chen, Binbin Huang, Torsten Sattler, and Andreas Geiger. Mip-splatting: Alias-free 3d gaussian splatting. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 19447–19456, 2024. 6 [55] Junsheng Zhou, Weiqi Zhang, and Yu-Shen Liu. Diffgs: Functional gaussian splatting diffusion. Advances in Neural Information Processing Systems , 37:37535–37560, 2024. 2 [56] Jinguo Zhu, Weiyun Wang, Zhe Chen, Zhaoyang Liu, Shen-glong Ye, Lixin Gu, Hao Tian, Yuchen Duan, Weijie Su, Jie Shao, et al. Internvl3: Exploring advanced training and test-time recipes for open-source multimodal models. arXiv preprint arXiv:2504.10479 , 2025. 2 [57] Xingxing Zuo, Pouya Samangouei, Yunwen Zhou, Yan Di, and Mingyang Li. Fmgs: Foundation model embedded 3d gaussian splatting for holistic 3d scene understanding. International Journal of Computer Vision , 133(2):611–627, 2025. 2

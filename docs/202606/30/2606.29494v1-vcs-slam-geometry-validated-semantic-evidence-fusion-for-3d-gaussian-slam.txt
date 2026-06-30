@@ -1,0 +1,317 @@
+Title: VCS-SLAM: Geometry-Validated Semantic Evidence Fusion for 3D Gaussian SLAM
+
+URL Source: https://arxiv.org/pdf/2606.29494v1
+
+Published Time: Tue, 30 Jun 2026 01:35:52 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# VCS-SLAM: Geometry-Validated Semantic Evidence Fusion for 3D Gaussian SLAM 
+
+Raman Jha 1,2, Shuaihang Yuan 2,3, and Yi Fang 1,2,3
+
+Abstract — Visual SLAM performance often deteriorates in complex real-world applications. Semantic 3D Gaussian SLAM commonly fuses 2D semantic priors into a persistent 3D map using uniform optimization weights. However, such priors are not equally reliable in online mapping: occlusions, unsupported semantic boundaries, and ambiguous ray geometry can in-troduce persistent semantic artifacts into the global Gaussian map. We propose VCS-SLAM, a geometry-validated semantic evidence fusion framework for RGB-D 3D Gaussian SLAM. Instead of treating all semantic observations as uniformly valid supervision, VCS-SLAM evaluates their geometric reli-ability through visibility consistency, surface-supported bound-ary evidence, and ray-level conflict uncertainty. The resulting reliability-aware objective suppresses occluded semantic up-dates, reduces unsupported semantic bleeding, and delays pre-mature label assignment in ambiguous regions. Experiments on Replica demonstrate improved semantic consistency, boundary preservation, and reconstruction quality. Results on ScanNet further show that VCS-SLAM maintains competitive tracking performance under real RGB-D inputs. 
+
+Index Terms — Semantic SLAM, Semantic Scene Understand-ing, Semantic Mapping, 3D Gaussian Splatting 
+
+I. INTRODUCTION 
+
+Visual SLAM fundamentally challenges robotics by requir-ing simultaneous camera pose estimation and incremental environment mapping [1]. While traditional frameworks per-form robustly in static settings, their performance deteriorates during complex real-world applications. Although multi-modal sensor fusion addresses visual degradation in extreme conditions [2], ensuring spatial and geometric consistency of semantic representations in 3D environments remains a critical bottleneck. Integrating visibility consistency and surface coupling improves structural mapping and object association, providing richer representations for advanced deployments. Recent breakthroughs in Neural Radiance Fields (NeRF) [3] and 3D Gaussian Splatting (3DGS) [4] prompted their integration into visual SLAM, mitigating surface continuity limitations inherent in discrete mapping. Notably NeRF-based architectures (e.g. iMAP [5] NICE-SLAM [6]) and 3DGS frameworks (e.g. MonoGS [7] SplaTAM [8] SGS-SLAM [9]) achieve state-of-the-art performance producing consistent geometric and photorealistic maps. Semantic map-ping increasingly relies on 2D data-driven models. Lacking inherent spatial and temporal continuity, these models intro-duce severe semantic inconsistencies during online mapping.       
+
+> 1New York University, Electrical & Computer Engineering Dept., Brook-lyn, NY 11201, USA.
+> 2Embodied AI and Robotics (AIR) Lab, NYU Abu Dhabi, UAE.
+> 3New York University Abu Dhabi, Electrical Engineering, Abu Dhabi 129188, UAE.
+> Fig. 1. Overview of VCS-SLAM. Top: High-fidelity global semantic reconstruction. Bottom: Effectiveness of our modules against 3DGS baselines. (1) Overall : Enhanced global consistency. (2) VCSU : Mitigates occlusion artifacts via a depth-gated mask. (3) SCEA : Reduces unsupported semantic bleeding (4) CAUW : Down-weights ambiguous observations via conflict-aware uncertainty mapping.
+
+Accumulating spatial discrepancies significantly degrades semantic scene reconstruction accuracy. While recent frame-works [10], [11], [9] successfully integrate semantic features, they fail to adequately mitigate the propagation of these mapping errors. By overlooking visibility consistency, princi-pled uncertainty weighting, and explicit coupling of semantic boundaries to geometric surfaces, current methods exhibit limited robustness in real-world applications. Existing se-mantic 3D Gaussian SLAM methods treat per-frame labels as uniformly reliable supervision, so geometrically inconsistent priors from occluded boundaries, smooth-surface bleeding, or ambiguous geometry are repeatedly fused into the map and become persistent artifacts. VCS-SLAM instead vali-dates each observation’s geometric reliability before fusion, preventing inconsistent updates from accumulating in the Gaussian map. To address these critical issues, this paper introduces a novel semantic SLAM framework featuring the following core contributions:  
+
+> •
+
+We formulate online semantic 3D Gaussian SLAM as a geometry-validated semantic evidence fusion problem, where 2D semantic priors are assimilated into the Gaus-sian map according to their geometric reliability rather than treated as uniformly valid supervision.  
+
+> •
+
+We instantiate this reliability model using three comple-mentary geometric cues: visibility consistency, surface-supported boundary evidence, and ray-level conflict un-certainty. These cues jointly suppress occluded semantic updates, unsupported semantic bleeding, and premature 
+
+> arXiv:2606.29494v1 [cs.CV] 28 Jun 2026
+
+label assignment in ambiguous regions.  
+
+> •
+
+We integrate the proposed reliability model into adifferentiable semantic Gaussian optimization objective and validate its effect through targeted analyses on depth-inconsistent pixels, semantic boundary regions, and uncertainty-error calibration. 
+
+II. RELATED WORKS 
+
+A. Traditional Semantic SLAM-based methods 
+
+Conventional semantic SLAM frameworks struggle to seamlessly integrate semantic information into mapping pro-cesses. Historically, these methods relied on discrete or implicit geometries like point clouds, voxels, and signed distance fields (SDFs) [12], [13], [14]. Point clouds and voxel grids are highly vulnerable to sparsity and degradation during rapid camera motion. Conversely, SDFs offer continuous surfaces but incur severe computational overhead, restricting real-time scalability. Consequently, a critical need remains for efficient continuous mapping methods providing robust semantic-geometric representations. 
+
+B. SLAM with Neural Radiance Fields 
+
+The remarkable performance of Neural Radiance Fields (NeRF) in high-fidelity novel view synthesis [3] motivated their integration into SLAM frameworks [5], [6]. For instance, SNI-SLAM [15] employs hierarchical semantic encoding and cross-attention mechanisms fusing appearance, geometric, and semantic features. However, the computational overhead inherent in NeRF volume rendering makes it challenging for dense SLAM methods to simultaneously model and optimize environmental semantic maps in real time [16], [17]. Additionally, the implicit nature of these representations fundamentally limits overall NeRF-based system performance [18]. 
+
+C. SLAM with Gaussian Splatting 
+
+3D Gaussian Splatting (3DGS) has emerged as a promising representation utilizing 3D Gaussians parameterized by po-sition anisotropic covariance opacity and color [4]. Existing 3DGS methods predominantly focus on RGB reconstruction, refining camera pose estimation via differentiable rendering with less attention devoted to semantic reconstruction [7], [8], [19], [20]. Recent approaches typically integrate semantics by encoding ground-truth labels as an auxiliary color channel within Gaussian parameters [9], [10], [21], [11]. Because these methods lack explicit modeling of semantic reliability, there remains substantial potential to improve semantic-geometric fusion during online mapping. While recent works such as NEDS-SLAM [22] investigate consistency, they overlook surface coupling and conflict-awareness weighting, prioritiz-ing representation over observation reliability, the gap VCS-SLAM targets. 
+
+III. METHODOLOGY 
+
+A. Semantic Scene Representation using Gaussian Splatting 
+
+Our framework extends 3D Gaussian Splatting [4] by integrating semantic information. The environment is modeled as 3D Gaussians characterized by position 𝜇 , opacity 𝜎 , and geometric scale. For dense semantic mapping, we augment each Gaussian with channels encoding visual appearance 𝑐 𝑖 
+
+and a 𝐶 -dimensional semantic logit vector 𝑠 𝑖 where 𝐶 is the number of semantic classes. Per-frame semantic labels are converted into one-hot class targets for cross-entropy supervision. During rendering, semantic logits are alpha-composited and supervised using pixel-wise cross-entropy. To optimize parameters against 2D observations, 3D Gaus-sians are differentiably projected onto the image plane. Overlapping Gaussians are aggregated via depth-sorted front-to-back volume rendering. Let 𝛼 𝑖 denote the evaluated 2D influence of a Gaussian including its occlusion term. The semantic map 𝑆 𝑝 is rendered by blending semantic vectors of contributing Gaussians: 
+
+𝑆 𝑝 =
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+𝑠 𝑖 𝛼 𝑖 𝑖 −1Ö
+
+> 𝑗 =1
+
+(1 − 𝛼 𝑗 )
+
+Similarly expected depth 𝐷 𝑝 is synthesized by accumulating depth 𝑑 𝑖 of each Gaussian center in camera coordinates: 
+
+𝐷 𝑝 =
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+𝑑 𝑖 𝛼 𝑖 𝑖 −1Ö
+
+> 𝑗 =1
+
+(1 − 𝛼 𝑗 ).
+
+While multi-channel rendering allows joint optimization of geometry and semantics, the baseline formulation applies gradients uniformly across the view. This assumes all projected semantic features are equally reliable. Consequently, this rep-resentation fails to account for visibility inconsistencies from occlusions, edge misalignments, and depth uncertainty. To address these bottlenecks, we introduce a visibility-consistent and surface-coupled mapping paradigm. 
+
+B. Geometry Validated Semantic Evidence Fusion 
+
+For each pixel 𝑝 , the rendered semantic prediction 𝑆 𝑝 is supervised by a 2D semantic prior 𝑦 𝑝 . Instead of applying this supervision uniformly, we define a geometric reliability score 
+
+𝜌 𝑝 that measures whether the semantic observation is valid for updating the Gaussian map: 
+
+𝜌 𝑝 = 𝑓 𝑣𝑖𝑠 ( 𝑝 ) · 𝑓 𝑢𝑛𝑐 ( 𝑝 ),
+
+where 𝑓 𝑣𝑖𝑠 ( 𝑝 ) evaluates visibility consistency and 𝑓 𝑢𝑛𝑐 ( 𝑝 )
+
+evaluates ray level conflict confidence. Surface-supported boundary consistency is further imposed through a structural regularizer L𝑠𝑢𝑟 𝑓 𝑎𝑐𝑒 . The semantic objective is written as: 
+
+L𝑠𝑒𝑚 = 1
+
+𝑁 ∑︁ 𝑝 
+
+𝜌 𝑝 · ℓ𝑠𝑒𝑚 (𝑆 𝑝 , 𝑦 𝑝 ) + 𝜆 𝑒𝑑𝑔𝑒 L𝑒𝑑𝑔𝑒 
+
+Under this unified formulation, VCSU provides 𝑓 𝑣𝑖𝑠 , CAUW provides 𝑓 𝑢𝑛𝑐 , and SCEA provides L𝑒𝑑𝑔𝑒 . This ensures 2D semantic priors are assimilated according to their geometric reliability rather than treated as uniformly valid supervision. 
+
+C. Visibility-Consistent and Surface-Coupled Semantic Mapping 1) Visibility-Consistent Semantic Updates : Conventional semantic mapping commonly relies on per-frame semantic observations, which may come from dataset annotations or Fig. 2. System architecture of VCS-SLAM. Left (Input): Processes RGB images, depth maps, and Per-frame Semantic Label. The VCSU block evaluates spatial and depth features to generate a depth-gated visibility mask, filtering occluded or inconsistent observations. Middle (Optimization): 3D Semantic Gaussians and camera tracking are iteratively refined via joint multi-channel optimization. This integrates the SCEA constraint, aligning semantic boundaries with physical geometric edges, and the CAUW module, dynamically down-weighting ambiguous updates using intermediate depth variance. Right (Results): 
+
+> The optimized Gaussians enable high-fidelity novel view synthesis and globally consistent dense semantic mapping.
+
+2D segmentation models. Although such observations provide useful category supervision, they are fused frame by frame and can become geometrically inconsistent under occlusion, boundary misalignment, or incomplete reconstruction. Direct integration of these fluctuating observations corrupts the global semantic map. To mitigate this, frameworks, like SNI-SLAM [15] utilize cross-attention mechanisms fusing features. Similarly CoSegGaussians [23] embeds DINO [24] features into Gaussian parameters, leveraging multi-view scale consistency. While improving consistency these approaches treat all semantic observations equally during optimization, failing to reject erroneous updates from occluded boundaries. To address this we propose a depth-gated Visibility-Consistent Se-mantic Update (VCSU) module. Pixels exhibiting significant discrepancies between rendered expected depth and sensor depth correspond to occluded dynamic or poorly reconstructed regions, making their semantic observations unreliable. To attenuate these unreliable updates we formulate a soft visibility mask 𝑀 𝑣𝑖𝑠 applying a Gaussian weighting function to the depth residual. Given the differentiably rendered depth 
+
+𝐷 𝑝 and the observed input depth 𝐷 𝑜𝑏𝑠 𝑝 visibility weight is: 
+
+𝑀 𝑣𝑖𝑠 ( 𝑝 ) = exp − |𝐷 𝑝 − 𝐷 𝑜𝑏𝑠 𝑝 |2
+
+2𝜎 2
+
+> 𝑣𝑖𝑠
+
+!
+
+where 𝐷 𝑜𝑏𝑠 𝑝 denotes the RGB-D input depth at pixel 𝑝 
+
+and 𝜎 𝑣𝑖𝑠 = 0.05 is a bandwidth hyperparameter dictating sensitivity to geometric inconsistencies. Acting as a dynamic depth gating mechanism during optimization 𝑀 𝑣𝑖𝑠 ( 𝑝 ) is applied to the semantic loss calculation, down-weighting gradients at pixels suffering from depth misalignment. 
+
+2) Surface-Coupled Edge Alignment : A fundamental limitation of continuous volumetric representations is seman-tic feature bleeding across geometric boundaries. While VCSU mitigates visibility inconsistencies it cannot prevent spatial oversmoothing at object edges. To address this we introduce a Surface-Coupled Edge Alignment (SCEA) module. SCEA discourages unsupported semantic gradients in geometrically smooth and low-confidence regions, reducing semantic bleed-ing while preserving reliable co-planar semantic transitions. We extract spatial gradients of rendered expected depth 
+
+𝐷 𝑝 and semantic map 𝑆 𝑝 using a Sobel operator. The edge magnitude 𝐸 for a 2D tensor 𝐼 is: 
+
+𝐸 (𝐼 ) =√︃ (∇ 𝑥 ∗ 𝐼 )2 + (∇ 𝑦 ∗ 𝐼 )2
+
+where ∇𝑥 and ∇𝑦 are horizontal and vertical Sobel convo-lution kernels. Let 𝐸 𝐷 = 𝐸 (𝐷 𝑝 ) and 𝐸 𝑆 = 𝐸 (𝑆 𝑝 ) denote the depth and semantic edge maps. For our multi-channel representation, 𝐸 𝑆 is the maximum edge magnitude across individual semantic channels capturing categorical transitions. To formulate the boundary constraint, the depth edge map is normalized to [0, 1] as a structural reference: ˆ𝐸 𝐷 = 𝐸 𝐷 
+
+max (𝐸 𝐷 ) + 𝜖 
+
+where 𝜖 = 10 −8 ensures numerical stability. Rather than enforcing a hard constraint requiring every semantic boundary to coincide with a depth discontinuity we formulate a soft surface support penalty. The surface-coupled edge loss L𝑒𝑑𝑔𝑒 evaluates semantic edge magnitudes weighted by the lack of geometric support: 
+
+L𝑒𝑑𝑔𝑒 = 1
+
+𝑁 ∑︁ 𝐸 𝑆 · max (0, 𝜏 𝑑 − ˆ𝐸 𝐷 )
+
+where 𝜏 𝑑 is a tolerance threshold. Incorporating this align-ment loss penalizes semantic gradients mainly when geometric support is weak. This explicit coupling mechanism guides 3D Gaussian optimization to reduce isolated semantic bleeding while allowing stable transitions on flat surfaces, preserving high-fidelity object delineations. 
+
+3) Conflict-Aware Uncertainty Weighting : While pre-vious modules enforce structural alignment and visibility, standard optimization suffers when observations originate from noisy or conflicting geometric regions. Treating all visible pixels with equal confidence degrades the semantic map, where the underlying 3D geometry remains unconverged. We propose a Conflict-Aware Uncertainty Weighting (CAUW) mechanism to evaluate ray-level conflict confidence and modulate semantic residuals according to geometric reliability per pixel. Within the volumetric rendering framework, we evaluate expected depth and its higher-order moments, extracting pixel-wise geometric uncertainty. Let expected depth be 𝐸 [𝐷 ] = 𝐷 𝑝 
+
+and expected squared depth be 𝐸 [𝐷 2]. The depth variance 
+
+𝑉 𝑝𝑖𝑥 along the rendered ray is: 
+
+𝑉 𝑝𝑖𝑥 = max (𝐸 [𝐷 2] − ( 𝐸 [𝐷 ]) 2, 𝜖 )
+
+where 𝜖 = 10 −8 ensures numerical stability. High depth variance indicates geometric conflicts (e.g., object boundaries or poorly optimized splats), making the corresponding seman-tic observation uncertain. CAUW converts this ray-wise depth variance into a local semantic confidence score 𝐶 𝑝𝑖𝑥 :
+
+𝐶 𝑝𝑖𝑥 = 11 + 𝛾𝑉 𝑝𝑖𝑥 
+
+where 𝛾 = 100 .0 controls sensitivity to depth conflicts. Instead of applying a global image-level weight, we utilize 
+
+𝐶 𝑝𝑖𝑥 to perform true per-pixel uncertainty weighting. Pixels with high depth variance, indicating competing or poorly optimized geometry along the ray, receive smaller semantic gradients. This prevents ambiguous regions from prematurely committing to incorrect semantic labels, fostering a highly robust, globally consistent semantic reconstruction. 
+
+D. Joint Optimization Objective 
+
+We formulate a unified joint optimization objective to si-multaneously optimize 3D Gaussian parameters across appear-ance, geometric, and semantic channels, explicitly accounting for our geometry-validated reliability model. To integrate our unified reliability model, we define the per-pixel reliability score 𝜌 𝑝 combining the depth-gated mask 
+
+𝑀 𝑣𝑖𝑠 and the local confidence score 𝐶 𝑝 :
+
+𝜌 𝑝 = 𝑀 𝑣𝑖𝑠 ( 𝑝 ) · 𝐶 𝑝 
+
+We modulate pixel-wise semantic residuals using this unified reliability score. To maintain stability, the semantic fidelity interpolates the reliability, gated, and standard cross entropy (CE) losses per pixel: 
+
+L 𝑓 𝑖𝑑 𝑠𝑒𝑚 = 𝛽 1
+
+𝑁 ∑︁ 𝑝 
+
+𝜌 𝑝 CE (𝑆 𝑝 , 𝑦 𝑝 ) + ( 1 − 𝛽 ) 1
+
+𝑁 ∑︁ 𝑝 
+
+CE (𝑆 𝑝 , 𝑦 𝑝 )
+
+where 𝛽 = 0.7 is a blending coefficient. Incorporating SCEA, we formulate our final semantic loss 
+
+L𝑜𝑢𝑟 𝑠 𝑠𝑒𝑚 . The structural boundary constraint L𝑒𝑑𝑔𝑒 acts as an additive penalty: 
+
+L𝑜𝑢𝑟 𝑠 𝑠𝑒𝑚 = L 𝑓 𝑖𝑑 𝑠𝑒𝑚 + 𝜆 𝑒𝑑𝑔𝑒 L𝑒𝑑𝑔𝑒 
+
+where 𝜆 𝑒𝑑𝑔𝑒 = 0.02 determines the geometric boundary coupling strength. Finally this loss is integrated into the overarching mapping objective. The complete joint mapping loss is: 
+
+L𝑚𝑎 𝑝 𝑝𝑖𝑛𝑔 = 𝜆 𝐷 L𝐷 + 𝜆 𝐶 L𝐶 + 𝜆 𝑆 L𝑜𝑢𝑟 𝑠 𝑠𝑒𝑚 
+
+where L𝐷 and L𝐶 represent standard depth and photomet-ric rendering losses with their respective 𝜆 balancing weights. Optimizing this objective ensures per-frame semantic priors are assimilated strictly according to their geometric reliability, yielding a highly accurate, globally consistent semantic map. VCSU and CAUW target complementary failures: VCSU rejects occluded priors through rendered-versus-sensor depth, while CAUW down-weights intra-ray ambiguity flagged by high depth variance. 
+
+IV. EXPERIMENTS 
+
+A. Experimental Setup 1) Dataset : Following standard dense SLAM protocols, we evaluate our framework on synthetic and real RGB-D datasets. For synthetic evaluation, we use eight scenes from Replica, which provide RGB-D frames, per-pixel semantic labels rendered via Habitat-Sim, and ground-truth camera poses for evaluation only. For real-world evaluation, we use six scenes from the ScanNet, which provides RGB-D sequences, per-frame 2D semantic annotations and BundleFusion[26] camera poses were used as evaluation references. The SLAM system uses RGB-D frames and per-frame semantic labels as input supervision; evaluation poses are not used during tracking or mapping. 
+
+2) Metrics : We employ comprehensive metrics to quanti-tatively assess reconstruction fidelity and system robustness. Rendering quality is evaluated using PSNR, SSIM [27], and LPIPS [28]. Geometric accuracy is measured using the Depth L1 error on rendered 2D depth maps. We quantify camera tracking precision using absolute trajectory error [29]. Finally 3D semantic mapping efficacy is evaluated using the mean intersection over Union (mIoU) metric. 
+
+3) Baselines : We benchmark our approach against state-of-the-art dense visual SLAM systems. For geometric recon-struction and camera tracking we compare against implicit neu-ral methods [6], [30], [31] and explicit 3DGS frameworks [8], [10], [21]. For dense semantic mapping evaluation, we com-pare against the NeRF-based semantic method SNI-SLAM [15] alongside contemporary 3DGS semantic SLAM systems (SGS-SLAM [9], SemGauss-SLAM [10], Hier-SLAM [21]). 
+
+4) Implementation Details : VCS-SLAM is implemented in PyTorch and evaluated on an NVIDIA RTX 4090 GPU. The framework processes RGB-D frames online: camera tracking runs on every frame, while global mapping and Gaussian densification are triggered every 𝑁 =8 frames. 2D Fig. 3. Qualitative RGB reconstruction comparison on three Replica scenes [25] (Room-0, Room-1, Office-0) . We compare renderings from NICE-SLAM [6], SplaTAM [8], SGS-SLAM [9], Hier-SLAM [21], and VCS-SLAM (Ours) against ground truth. Colored boxes mark thin structures and high-frequency regions where methods differ most. All panels, including baselines, are produced by our own runs under a common evaluation protocol. VCS-SLAM preserves fine geometric detail and sharper boundaries, whereas implicit reconstruction tends to oversmooth these regions. 
+
+semantic priors are provided as per-frame label images, using ground-truth semantic annotations on Replica and dataset-provided semantic annotations on ScanNet. Each Gaussian stores a C-dimensional semantic logit vector, which is jointly optimized with appearance and geometry using pixel-wise cross-entropy supervision. Loss weighting coefficients balance multi-channel gradient contributions. For tracking, photomet-ric and depth weights are 𝜆 𝑡𝑟 𝑎𝑐𝑘 𝐶 =0.5 and 𝜆 𝑡𝑟 𝑎𝑐𝑘 𝐷 =1.0. For map-ping, these are maintained at 𝜆 𝑚𝑎 𝑝 𝐶 =0.5 and 𝜆 𝑚𝑎 𝑝 𝐷 =1.0 with semantic loss weight 𝜆 𝑆 =0.01. Module-specific hyperparame-ters are: depth-gating bandwidth 𝜎 𝑣𝑖𝑠 =0.05 (VCSU), visibility blending coefficient 𝛽 =0.7, depth variance scaling 𝛾 =100 .0(CAUW), and boundary penalty 𝜆 𝑒𝑑𝑔𝑒 =0.02 (SCEA). These values ensure numerical stability and prevent gradient domi-nation across feature channels during convergence. 
+
+B. SLAM Performance 1) Tracking Performance: We evaluate camera tracking accuracy on the synthetic Replica [25] and real ScanNet [32] datasets, with results shown in Tab. I and Tab. II, respectively. On Replica, our approach demonstrates superior localization precision outperforming most recent state-of-the-art (SOTA) frameworks. ScanNet poses greater challenges due to sensor noise and camera blur, leading to higher trajectory errors across all evaluated methods. Despite these dynamic conditions, our system maintains robust tracking capabilities alongside leading SOTA methods. 
+
+2) Mapping and Runtime Performance: We evaluate map-ping performance and geometric fidelity using the Depth L1 error metric on the Replica dataset. Tab. III shows that our proposed methodology achieves the lowest depth estimation error of 0.321 cm. These results confirm the efficacy of our spatial consistency constraints as our system consistently surpasses recent SOTA dense SLAM approaches. Further-more, we quantify system runtime to validate operational efficiency. Despite integrating complex reliability modules, 
+
+TABLE I 
+
+Localization performance ATE RMSE (cm) on the Replica dataset. Baseline results are taken from [21]. VCS-SLAM results are from our implementation. Best results are highlighted as FIRST ,SECOND .                                                                                                                               
+
+> Methods Avg. R0 R1 R2 Of0 Of1 Of2 Of3 Of4
+> iMap [5] 4.15 6.33 3.46 2.65 3.31 1.42 7.17 6.32 2.55 NICE-SLAM [6] 1.07 0.97 1.31 1.07 0.88 1.00 1.06 1.10 1.13 Vox-Fusion [33] 3.09 1.37 4.70 1.47 8.48 2.04 2.58 1.11 2.94 co-SLAM [30] 1.06 0.72 0.85 1.02 0.69 0.56 2.12 1.62 0.87 ESLAM [31] 0.63 0.71 0.70 0.52 0.57 0.55 0.58 0.72 0.63 Point-SLAM [34] 0.52 0.61 0.41 0.37 0.38 0.48 0.54 0.69 0.72 MonoGS [7] 0.79 0.47 0.43 0.31 0.70 0.57 0.31 0.31 3.2 SplaTAM [8] 0.36 0.31 0.40 0.29 0.47 0.27 0.29 0.32 0.55 SNI-SLAM [15] 0.46 0.50 0.55 0.45 0.35 0.41 0.33 0.62 0.50 DNS SLAM [17] 0.45 0.49 0.46 0.38 0.34 0.35 0.39 0.62 0.60 SemGauss-SLAM [10] 0.33 0.26 0.42 0.27 0.34 0.17 0.32 0.36 0.49 Hier-SLAM [21] 0.33 0.21 0.49 0.24 0.29 0.16 0.31 0.37 0.53
+> VCS-SLAM (Ours) 0.30 0.23 0.39 0.24 0.28 0.17 0.28 0.32 0.51
+
+TABLE II 
+
+Localization performance ATE RMSE (cm) on the Scannet dataset. Baseline results are taken from [21]. VCS-SLAM results are from our implementation. Best results are highlighted as FIRST , SECOND , THIRD .                                                         
+
+> Methods Avg. 0000 0059 0106 0169 0181 0207
+> NICE-SLAM [6] 10.70 12.00 14.00 7.90 10.90 13.40 6.20 Vox-Fusion [33] 26.90 68.84 24.18 8.41 27.28 23.30 9.41 Point-SLAM [34] 12.19 10.24 7.81 8.65 22.16 14.77 9.54 SplaTAM [8] 11.88 12.83 10.10 17.72 12.08 11.10 7.46 SemGauss-SLAM [10] –11.87 7.97 –8.70 9.78 8.97 Hier-SLAM [21] 11.36 11.45 9.61 17.80 11.93 10.04 7.32
+> VCS-SLAM (Ours) 10.22 10.85 12.36 9.23 10.51 9.75 8.62
+
+VCS-SLAM maintains a highly competitive overall SLAM speed of 7.27 FPS, ensuring practical applicability alongside top-tier geometric accuracy. Baseline results are taken from [9], VCS-SLAM results are from our implementation. 
+
+3) Rendering Performance: Following established evalu-ation protocols [6], [34], [8], [9], [21], we quantify novel view synthesis and rendering quality across eight Replica [25] scenes. Our method demonstrates exceptional photometric re-TABLE III                             
+
+> Mapping and Runtime Performance Comparison on the Replica Dataset Baseline results are taken from [9]. Best results are highlighted as FIRST ,SECOND
+> Methods Depth L1 [cm] ↓
+> Track. FPS [f/s] ↑
+> Map. FPS [f/s] ↑
+> SLAM FPS [f/s] ↑
+> NICE-SLAM [6] 1.903 13.70 0.20 0.20 Co-SLAM [30] 1.513 17.24 10.20 6.41 ESLAM [31] 1.180 18.11 3.62 3.02 SplaTAM [8] 0.525 5.53 3.84 2.26 SGS-SLAM [9] 0.356 5.27 3.52 2.11
+> VCS-SLAM(Ours) 0.321 17.71 9.56 7.27
+
+construction, outperforming most evaluated SOTA baselines. Tab. IV provides detailed results showing rendering metrics (PSNR, SSIM, LPIPS) comparable to the best performing Hier-SLAM [21] system. The results are reported from [21], VCS-SLAM results are ours. 
+
+4) Semantic Performance: Following the evaluation pro-tocol of recent Gaussian-based semantic SLAM methods [9], [10], [21], we benchmark semantic segmentation accuracy under the per-frame visible-class (subset) protocol on four Replica [25] scenes. We report under this single proto-col because the directly comparable methods, SGS-SLAM, SemGauss-SLAM, and Hier-SLAM are evaluated under it, yielding a consistent and interpretable comparison. As shown in Tab. V, VCS-SLAM attains 95.87% mean mIoU, second only to SemGauss-SLAM [10] which leverages pre-trained foundation-model semantic supervision and ahead of Hier-SLAM [21], while achieving the highest accuracy on Room-0. These results show that the fusion of geometry-validated evidence delivers competitive global semantic accuracy, with the targeted contributions per-module isolated in Tab. VII. 
+
+C. Qualitative Analysis 
+
+Fig. 3 compares RGB reconstruction quality on Room-0, Room-1, and Office-0, with colored boxes marking thin structures and high-frequency texture where reconstruction methods diverge most. The implicit NICE-SLAM [6] over-smooths these regions, rounding off depth transitions so that small or thin objects blur into the surrounding surface. Explicit Gaussian methods (SplaTAM [8], SGS-SLAM [9], Hier-SLAM [21]) recover sharper local geometry, but residual blur and floaters persist on weakly observed or low-texture surfaces. VCS-SLAM yields the most consistent reconstructions in these regions: although its reliability modules act on semantic supervision, suppressing unreliable and conflicting gradients stabilizes densification and local geometry refinement, which in turn sharpens rendered structure and object boundaries. The semantic-specific effects of VCSU, SCEA, and CAUW, boundary preservation and reduced label bleeding, are isolated separately in Fig. 4 and Tab. VII. 
+
+D. Ablation Study 
+
+We evaluate individual module contributions through a Replica dataset ablation study. Tab. VI assesses geometric accuracy (Depth L1), localization precision (ATE RMSE), rendering quality (PSNR), and semantic fidelity (mIoU). Results demonstrate that each component improves overall reconstruction and tracking. Fig. 4 validates our mechanisms maintain spatial consistency and surface-coupled boundaries. While applied to semantic supervision, our modules affect joint Gaussian optimization. Incorrect semantic gradients alter densification, opacity, and local geometry refinement. Suppressing unreliable gradients indirectly improves rendered depth and pose refinement.   
+
+> Fig. 4. Qualitative ablation study. Image (a) shows the input RGB view; (b) our base 3DGS-SLAM model without VCSU, SCEA, and CAUW; (c) the full VCS-SLAM.
+
+E. Mechanism Analysis 
+
+Beyond global metrics, we conducted targeted evaluations to validate specific operational claims of our core modules. Tab. VII summarizes these quantitative results. SGS-SLAM [9] is re-evaluated under our implementation using the same targeted-metric protocol (depth-inconsistent mIoU, boundary F1, error-detection AUROC) as VCS-SLAM. 
+
+Occlusion Robustness (VCSU): To verify that VCSU actively rejects occluded artifacts, we evaluated semantic mIoU strictly on depth-inconsistent pixels. We define these as pixels where the absolute difference between the rendered and sensor depth exceeds 0.05 meters. Our method yields an absolute 4.62% improvement over the SGS-SLAM baseline, reaching 91.05%, confirming depth-gated visibility mask efficacy. 
+
+Boundary Preservation (SCEA): To quantify semantic bleeding reduction we evaluated the Boundary F1 score. We compute this using a 3 pixel tolerance band around ground truth morphological edges. Outperforming standard 3DGS baselines, our framework achieves a 0.98 score (a 0.16 absolute increase), indicating that surface-coupled constraints help preserve crisp labels transitions. 
+
+Uncertainty Calibration (CAUW): To validate Conflict Aware Uncertainty Weighting, we analyzed correlations be-tween per-pixel uncertainty maps and actual semantic errors. We classify a pixel as erroneous if the predicted class differs from the ground truth label. An Error Detection AUROC score of 0.85, corresponding to a 0.12 absolute improvement, indicates that the proposed uncertainty weighting better iden-tifies ambiguous geometric regions and down-weights their semantic gradients during optimization. TABLE IV  
+
+> Rendering performance PSNR, SSIM, LPIPS on Replica. Baseline results are taken from [21]. Best results are highlighted as FIRST , SECOND .
+
+Methods Metrics Avg. room0 room1 room2 office0 office1 office2 office3 office4 Visual SLAM 
+
+NICE-SLAM [6] PSNR ↑ 24.42 22.12 22.47 24.52 29.07 30.34 19.66 22.23 24.94 SSIM ↑ 0.809 0.689 0.757 0.814 0.874 0.886 0.797 0.801 0.856 LPIPS ↓ 0.233 0.330 0.271 0.208 0.229 0.181 0.235 0.209 0.198 Co-SLAM [30] PSNR ↑ 30.24 27.27 28.45 29.06 34.14 34.87 28.43 28.76 30.91 SSIM ↑ 0.939 0.910 0.909 0.932 0.961 0.969 0.938 0.941 0.955 LPIPS ↓ 0.252 0.324 0.294 0.266 0.209 0.196 0.258 0.229 0.236 ESLAM [31] PSNR ↑ 29.08 25.32 27.77 29.08 33.71 30.20 28.09 28.77 29.71 SSIM ↑ 0.929 0.875 0.902 0.932 0.960 0.923 0.943 0.948 0.945 LPIPS ↓ 0.239 0.313 0.298 0.248 0.184 0.228 0.241 0.196 0.204 SplaTAM [8] PSNR ↑ 34.11 32.86 33.89 35.25 38.26 39.17 31.97 29.70 31.81 SSIM ↑ 0.968 0.978 0.969 0.979 0.977 0.978 0.969 0.949 0.949 LPIPS ↓ 0.102 0.072 0.103 0.081 0.092 0.093 0.102 0.121 0.152 
+
+Semantic SLAM 
+
+SNI-SLAM [15] PSNR ↑ 29.43 25.91 28.17 29.15 31.85 30.34 29.13 28.75 30.97 SSIM ↑ 0.921 0.884 0.900 0.921 0.935 0.925 0.930 0.932 0.936 LPIPS ↓ 0.237 0.307 0.292 0.265 0.185 0.211 0.230 0.209 0.198 SGS-SLAM [9] PSNR ↑ 34.66 32.50 34.25 35.10 38.54 39.20 32.90 32.05 32.75 SSIM ↑ 0.973 0.976 0.978 0.981 0.984 0.980 0.967 0.966 0.949 LPIPS ↓ 0.096 0.070 0.094 0.070 0.086 0.087 0.101 0.115 0.148 SemGauss-SLAM [10] PSNR ↑ 35.03 32.55 33.32 35.15 38.39 39.07 32.11 31.60 35.00 SSIM ↑ 0.982 0.979 0.970 0.987 0.989 0.972 0.978 0.972 0.978 LPIPS ↓ 0.062 0.055 0.054 0.045 0.048 0.046 0.069 0.078 0.093 Hier-SLAM [21] PSNR ↑ 35.70 32.83 34.68 36.33 39.75 40.93 33.29 32.48 35.33 SSIM ↑ 0.980 0.976 0.979 0.987 0.988 0.989 0.975 0.971 0.976 LPIPS ↓ 0.067 0.060 0.063 0.052 0.050 0.049 0.083 0.081 0.094 
+
+VCS-SLAM (ours) PSNR ↑ 36.03 32.85 34.82 36.32 39.79 40.84 34.05 33.68 35.91 SSIM ↑ 0.984 0.978 0.984 0.989 0.987 0.992 0.979 0.978 0.981 LPIPS ↓ 0.059 0.057 0.059 0.047 0.043 0.044 0.059 0.075 0.087    
+
+> TABLE V
+> Semantic performance mIoU (%) on four Replica [25] scenes under the per-frame visible-class (subset) protocol of [9]. Best and second-best per column are highlighted as FIRST and SECOND .
+
+Methods Avg. R0 R1 R2 Of0 
+
+SNI-SLAM [15] 87.41 88.42 87.43 86.16 87.63 SGS-SLAM [9] 92.72 92.95 92.91 92.10 92.90 SemGauss-SLAM [10] 96.34 96.30 95.82 96.51 96.72 Hier-SLAM [21] 95.58 95.25 95.81 95.73 95.52 
+
+VCS-SLAM (Ours) 95.87 96.44 95.78 95.63 95.63                                     
+
+> TABLE VI
+> Ablation study on Replica dataset
+> Settings Depth L1 [cm] ↓
+> ATE RMSE [cm] ↓
+> PSNR [dB] ↑
+> mIoU [%] ↑
+> without VCSU module 0.62 0.68 32.71 91.85 without SCEA module 0.85 0.81 33.45 93.73 without CAUW module 0.53 0.71 34.37 92.04 With All modules 0.32 0.30 36.03 95.87
+> TABLE VII
+> Quantitative Mechanism Analysis of Core Modules on Replica.
+> Module Targeted Metric SGS-SLAM Ours Improvement VCSU Depth-Inconsistent mIoU (%) ↑86.43 91.05 +4.62 SCEA Boundary F1 Score (BF) ↑0.82 0.98 +0.16 CAUW Error Detection AUROC ↑0.73 0.85 +0.12
+
+V. CONCLUSION AND LIMITATION 
+
+We propose a visibility-consistent and surface-coupled semantic mapping framework for RGB-D 3D Gaussian SLAM. By integrating depth-gated visibility masking, surface-supported edge alignment, and conflict-aware uncertainty weighting, VCS-SLAM validates per-frame semantic super-vision before fusing it into the persistent Gaussian map. The proposed reliability-aware semantic objective reduces occlusion- induced artifacts, unsupported semantic bleeding, and premature label assignment in ambiguous regions. Experi-ments on Replica demonstrate improved semantic consistency, boundary preservation, rendering quality, and geometric re-construction, while ScanNet results show competitive tracking performance under real RGB-D inputs. Future work will study robustness to noisy semantic predictions from open-vocabulary or pre-trained 2D segmentation models in more complex real-world environments. 
+
+References 
+
+[1] R. A. Newcombe, S. Izadi, O. Hilliges, D. Molyneaux, D. Kim, A. J. Davison, P. Kohi, J. Shotton, S. Hodges, and A. Fitzgibbon, “Kinectfusion: Real-time dense surface mapping and tracking,” in 2011 10th IEEE International Symposium on Mixed and Augmented Reality ,2011, pp. 127–136. [2] R. Jha, A. Lenka, M. Ramanagopal, A. Sankaranarayanan, and K. Mitra, “Rt-x net: Rgb-thermal cross attention network for low-light image enhancement,” in 2025 IEEE International Conference on Image Processing (ICIP) , 2025, pp. 1492–1497. [3] B. Mildenhall, P. P. Srinivasan, M. Tancik, J. T. Barron, R. Ramamoorthi, and R. Ng, “Nerf: Representing scenes as neural radiance fields for view synthesis,” Communications of the ACM , vol. 65, no. 1, pp. 99–106, 2021. [4] B. Kerbl, G. Kopanas, T. Leimk¨ uhler, G. Drettakis et al. , “3d gaussian splatting for real-time radiance field rendering.” ACM Trans. Graph. ,vol. 42, no. 4, pp. 139–1, 2023. [5] E. Sucar, S. Liu, J. Ortiz, and A. J. Davison, “imap: Implicit mapping and positioning in real-time,” in Proceedings of the IEEE/CVF international conference on computer vision , 2021, pp. 6229–6238. [6] Z. Zhu, S. Peng, V. Larsson, W. Xu, H. Bao, Z. Cui, M. R. Oswald, and M. Pollefeys, “Nice-slam: Neural implicit scalable encoding for slam,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 2022, pp. 12 786–12 796. [7] H. Matsuki, R. Murai, P. H. Kelly, and A. J. Davison, “Gaussian splatting slam,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 2024, pp. 18 039–18 048. [8] N. Keetha, J. Karhade, K. M. Jatavallabhula, G. Yang, S. Scherer, D. Ramanan, and J. Luiten, “Splatam: Splat track & map 3d gaussians for dense rgb-d slam,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 2024, pp. 21 357–21 366. [9] M. Li, S. Liu, H. Zhou, G. Zhu, N. Cheng, T. Deng, and H. Wang, “Sgs-slam: Semantic gaussian splatting for neural dense slam,” in European Conference on Computer Vision . Springer, 2024, pp. 163–179. [10] S. Zhu, R. Qin, G. Wang, J. Liu, and H. Wang, “Semgauss-slam: Dense semantic gaussian splatting slam,” in 2025 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) . IEEE, 2025, pp. 21 174–21 181. [11] D. Yang, Y. Gao, X. Wang, Y. Yue, Y. Yang, and M. Fu, “Opengs-slam: Open-set dense semantic slam with 3d gaussian splatting for object-level scene understanding,” in 2025 IEEE International Conference on Robotics and Automation (ICRA) . IEEE, 2025, pp. 8486–8492. [12] G. Narita, T. Seno, T. Ishikawa, and Y. Kaji, “Panopticfusion: Online volumetric semantic mapping at the level of stuff and things,” in 2019 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) . IEEE, 2019, pp. 4205–4212. [13] A. Hermans, G. Floros, and B. Leibe, “Dense 3d semantic mapping of indoor scenes from rgb-d images,” in 2014 IEEE International Conference on Robotics and Automation (ICRA) , 2014, pp. 2631–2638. [14] R. Jha, Y. Zhou, and G. Loianno, “Adaptive keyframe selection for scalable 3d scene reconstruction in dynamic environments,” arXiv preprint arXiv:2510.23928 , 2025. [15] S. Zhu, G. Wang, H. Blum, J. Liu, L. Song, M. Pollefeys, and H. Wang, “Sni-slam: Semantic neural implicit slam,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,2024, pp. 21 167–21 177. [16] Y. Haghighi, S. Kumar, J.-P. Thiran, and L. Van Gool, “Neural implicit dense semantic slam,” arXiv preprint arXiv:2304.14560 , 2023. [17] K. Li, M. Niemeyer, N. Navab, and F. Tombari, “Dns-slam: Dense neural semantic-informed slam,” in 2024 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) . IEEE, 2024, pp. 7839– 7846. [18] F. Tosi, Y. Zhang, Z. Gong, S. Mattoccia, M. R. Oswald, E. Sandstrom, and M. Poggi, “How nerfs and 3d gaussian splatting are reshaping slam: a survey,” IEEE Transactions on Robotics , 2026. [19] C. Yan, D. Qu, D. Xu, B. Zhao, Z. Wang, D. Wang, and X. Li, “Gs-slam: Dense visual slam with 3d gaussian splatting,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition ,2024, pp. 19 595–19 604. [20] V. Yugay, Y. Li, T. Gevers, and M. R. Oswald, “Gaussian-slam: Photo-realistic dense slam with gaussian splatting,” arXiv preprint arXiv:2312.10070 , 2023. [21] B. Li, Z. Cai, Y.-F. Li, I. Reid, and H. Rezatofighi, “Hier-slam: Scaling-up semantics in slam with a hierarchically categorical gaussian splatting,” in 2025 IEEE International Conference on Robotics and Automation (ICRA) . IEEE, 2025, pp. 9748–9754. [22] Y. Ji, Y. Liu, G. Xie, B. Ma, Z. Xie, and H. Liu, “Neds-slam: A neural explicit dense semantic slam framework using 3d gaussian splatting,” 
+
+IEEE Robotics and Automation Letters , vol. 9, no. 10, pp. 8778–8785, 2024. [23] B. Dou, T. Zhang, Z. Wang, Y. Ma, Z. Yuan, and N. Zheng, “Learning segmented 3d gaussians via efficient feature unprojection for zero-shot neural scene segmentation,” in International Conference on Neural Information Processing . Springer, 2024, pp. 398–412. [24] M. Caron, H. Touvron, I. Misra, H. J´ egou, J. Mairal, P. Bojanowski, and A. Joulin, “Emerging properties in self-supervised vision transformers,” in Proceedings of the IEEE/CVF international conference on computer vision , 2021, pp. 9650–9660. [25] J. Straub, T. Whelan, L. Ma, Y. Chen, E. Wijmans, S. Green, J. J. Engel, R. Mur-Artal, C. Ren, S. Verma et al. , “The replica dataset: A digital replica of indoor spaces,” arXiv preprint arXiv:1906.05797 , 2019. [26] A. Dai, M. Nießner, M. Zollh¨ ofer, S. Izadi, and C. Theobalt, “Bundle-fusion: Real-time globally consistent 3d reconstruction using on-the-fly surface reintegration,” ACM Transactions on Graphics (ToG) , vol. 36, no. 4, p. 1, 2017. [27] Z. Wang, A. C. Bovik, H. R. Sheikh, and E. P. Simoncelli, “Image quality assessment: from error visibility to structural similarity,” IEEE transactions on image processing , vol. 13, no. 4, pp. 600–612, 2004. [28] R. Zhang, P. Isola, A. A. Efros, E. Shechtman, and O. Wang, “The unreasonable effectiveness of deep features as a perceptual metric,” in 
+
+Proceedings of the IEEE conference on computer vision and pattern recognition , 2018, pp. 586–595. [29] J. Sturm, N. Engelhard, F. Endres, W. Burgard, and D. Cremers, “A benchmark for the evaluation of rgb-d slam systems,” in 2012 IEEE/RSJ international conference on intelligent robots and systems . IEEE, 2012, pp. 573–580. [30] H. Wang, J. Wang, and L. Agapito, “Co-slam: Joint coordinate and sparse parametric encodings for neural real-time slam,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition ,2023, pp. 13 293–13 302. [31] M. M. Johari, C. Carta, and F. Fleuret, “Eslam: Efficient dense slam system based on hybrid representation of signed distance fields,” in 
+
+Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 2023, pp. 17 408–17 419. [32] A. Dai, A. X. Chang, M. Savva, M. Halber, T. Funkhouser, and M. Nießner, “Scannet: Richly-annotated 3d reconstructions of indoor scenes,” in Proceedings of the IEEE conference on computer vision and pattern recognition , 2017, pp. 5828–5839. [33] X. Yang, H. Li, H. Zhai, Y. Ming, Y. Liu, and G. Zhang, “Vox-fusion: Dense tracking and mapping with voxel-based neural implicit representation,” in 2022 IEEE International Symposium on Mixed and Augmented Reality (ISMAR) . IEEE, 2022, pp. 499–507. [34] E. Sandstr¨ om, Y. Li, L. Van Gool, and M. R. Oswald, “Point-slam: Dense neural point cloud-based slam,” in Proceedings of the IEEE/CVF international conference on computer vision , 2023, pp. 18 433–18 444.
