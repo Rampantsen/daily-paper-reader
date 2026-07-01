@@ -6,88 +6,67 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-30
-- 运行时间：2026-06-30 22:05:52 UTC
+- 最新运行日期：2026-07-01
+- 运行时间：2026-07-01 22:08:27 UTC
 - 运行状态：成功
-- 本次总论文数：22
-- 精读区：14
-- 速读区：8
+- 本次总论文数：15
+- 精读区：8
+- 速读区：7
 
 ### 今日简报（AI）
-今日从22篇AI论文中精读2篇满分工作，聚焦3D高斯SLAM的语义几何验证与稀疏肖像驱动的4D头部重建。
-最值得关注：VCS-SLAM将语义证据融入3D高斯地图，突破建图精度；FFAvatar仅用少数照片即可实时生成高保真动态头部模型。
-下一步可重点追踪3D高斯前沿与轻量化数字人建模的结合趋势。
-- 详情：[/202606/30/README](/202606/30/README)
+今日精读两篇高分论文《Ground4D》与《Occlusion-Robust Multi-Object Decoupling》，并速读三篇关于匹配、位姿估计和紧凑高斯泼溅的工作。
+最值得关注的方向：单目视频的时序一致性4D重建，以及物理交互中如何鲁棒分离并操控遮挡中的多个物体。
+建议继续追踪这两项技术的开源实验，尤其适合想在自己项目中实现视频转动态3D或机器人抓取的用户。
+- 详情：[/202607/01/README](/202607/01/README)
 
 ### 精读区论文标签
-1. [VCS-SLAM: Geometry-Validated Semantic Evidence Fusion for 3D Gaussian SLAM](/202606/30/2606.29494v1-vcs-slam-geometry-validated-semantic-evidence-fusion-for-3d-gaussian-slam)  
-   标签：评分：10.0/10、query:d-gen-recon
-   evidence：几何验证的语义证据融合用于3D高斯SLAM生成语义3D地图
-2. [FFAvatar: Feed-Forward 4D Head Avatar Reconstruction from Sparse Portrait Images](/202606/30/2606.30347v1-ffavatar-feed-forward-4d-head-avatar-reconstruction-from-sparse-portrait-images)  
-   标签：评分：10.0/10、query:d-gen-recon
-   evidence：FFAvatar从稀疏肖像图像重建可动画3D头部化身
-3. [UnfoldArt: Zero-Shot Recovery of Full Articulated 3D Objects from Text or Image](/202606/30/2606.30608v1-unfoldart-zero-shot-recovery-of-full-articulated-3d-objects-from-text-or-image)  
-   标签：评分：10.0/10、query:d-gen-recon
-   evidence：从文本或图像零样本恢复完整铰接三维物体
-4. [3DCarGen: Scalable 3D Car Generation via 3D-consistent Multi-view Synthesis](/202606/30/2606.24257v2-3dcargen-scalable-3d-car-generation-via-3d-consistent-multi-view-synthesis)  
+1. [Ground4D: Consistency-Aware 4D Reconstruction from Monocular Video](/202607/01/2606.28828v1-ground4d-consistency-aware-4d-reconstruction-from-monocular-video)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：通过3D一致的多视图合成和重建实现单视图3D汽车生成。
-5. [HiFiVe: High-Fidelity Vehicle Generation Leveraging Auto-Regressive 2D Generative Priors](/202606/30/2606.25300v2-hifive-high-fidelity-vehicle-generation-leveraging-auto-regressive-2d-generative-priors)  
+   evidence：利用三维基础模型从单目视频进行四维重建以获得多视图一致性几何
+2. [Occlusion-Robust Multi-Object Decoupling for Physics-Based Robotic Interaction](/202607/01/2606.29303v2-occlusion-robust-multi-object-decoupling-for-physics-based-robotic-interaction)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：利用二维先验的高保真3D车辆生成
-6. [Home3D 1.0: A High-Fidelity Image-to-3D Asset Generation System for Interior Design](/202606/30/2606.27923v2-home3d-10-a-high-fidelity-image-to-3d-asset-generation-system-for-interior-design)  
+   evidence：从稀疏遮挡视图进行无掩码多物体三维重建
+3. [T2LDM++: A Self-Conditioned Representation Guided Diffusion Model for Realistic Text-to-LiDAR Scene Generation](/202607/01/2606.30147v1-t2ldm-a-self-conditioned-representation-guided-diffusion-model-for-realistic-text-to-lidar-scene-generation)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：基于单张参考图像的3D资产生成系统
-7. [Meshtryoshka: Differentiable Rendering of Real-World Scenes via Mesh Rasterization](/202606/30/2606.28622v1-meshtryoshka-differentiable-rendering-of-real-world-scenes-via-mesh-rasterization)  
+   evidence：使用自条件表示引导的扩散模型进行文本到LiDAR场景生成
+4. [UnfoldArt: Zero-Shot Recovery of Full Articulated 3D Objects from Text or Image](/202607/01/2606.30608v2-unfoldart-zero-shot-recovery-of-full-articulated-3d-objects-from-text-or-image)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：基于可微网格渲染的大规模真实场景多视图重建框架。
-8. [Occlusion-Robust Multi-Object Decoupling for Physics-Based Interaction](/202606/30/2606.29303v1-occlusion-robust-multi-object-decoupling-for-physics-based-interaction)  
+   evidence：从文本或图像零样本重建铰接三维物体
+5. [DANTE-W: Diffuse Albedo Neural Texturing in the Wild](/202607/01/2606.30677v1-dante-w-diffuse-albedo-neural-texturing-in-the-wild)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：从稀疏和遮挡的真实世界视图进行无掩膜多物体三维重建
-9. [L2D2-GS: Learning to Densify for Feedforward Dynamic Gaussian Scene Reconstruction](/202606/30/2606.29374v1-l2d2-gs-learning-to-densify-for-feedforward-dynamic-gaussian-scene-reconstruction)  
+   evidence：从无结构图像集合中恢复大规模场景的高保真纹理
+6. [Streaming Gaussian Encoding for 4D Panoptic Occupancy Tracking](/202607/01/2606.30754v1-streaming-gaussian-encoding-for-4d-panoptic-occupancy-tracking)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：从密集多视图观测的前馈动态高斯场景重建
-10. [SAD-GS: Learning Reliable 3D Semantic Gaussian Fields via Dynamic Geo-Semantic Anchoring](/202606/30/2606.29376v1-sad-gs-learning-reliable-3d-semantic-gaussian-fields-via-dynamic-geo-semantic-anchoring)  
+   evidence：基于多视图图像的4D全景占用追踪，联合推理几何、语义和物体身份
+7. [CasaMaestro: Multi-View Panoramas for House-Scale 3D Reconstruction](/202607/01/2606.31086v1-casamaestro-multi-view-panoramas-for-house-scale-3d-reconstruction)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：从多视图2D监督学习可靠的3D语义高斯场
-11. [Rectifying Mask via Entropy for Distractor-Free 3DGS in Ambiguous Scenarios](/202606/30/2606.29496v1-rectifying-mask-via-entropy-for-distractor-free-3dgs-in-ambiguous-scenarios)  
+   evidence：多视图全景图用于房屋级三维重建
+8. [LiteMatch: Lightweight Zero-Shot Stereo Matching via Cost Volume Stabilization](/202607/01/2606.31636v1-litematch-lightweight-zero-shot-stereo-matching-via-cost-volume-stabilization)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：RefineSplat通过瞬态掩码实现无干扰的3D高斯泼溅重建
-12. [Scenes as Objects, Not Primitives: Instance-Structured 3D Tokenization from Unposed Views](/202606/30/2606.29513v1-scenes-as-objects-not-primitives-instance-structured-3d-tokenization-from-unposed-views)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：从未标注的多视图图像中实例结构化3D分词，实现重建与分割
-13. [Argus: Metric Panoramic 3D Reconstruction for Indoor Scenes](/202606/30/2606.30047v1-argus-metric-panoramic-3d-reconstruction-for-indoor-scenes)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：从全景多视角数据的前馈度量三维重建。
-14. [Open-Vocabulary and Referring Segmentation for 3D Gaussians Using 2D Detectors](/202606/30/2606.30638v1-open-vocabulary-and-referring-segmentation-for-3d-gaussians-using-2d-detectors)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：使用2D检测器对3D高斯场景进行开放词汇语义分割
+   evidence：轻量级零样本立体匹配实现跨域鲁棒视差估计
 
 ### 速读区论文标签
-1. [Graph-GSReg: Leveraging 3D Scene Graphs for Gaussian Splatting Registration](/202606/30/2606.29782v1-graph-gsreg-leveraging-3d-scene-graphs-for-gaussian-splatting-registration)  
+1. [REDI-Match: Rotation-Equivariant Distillation for Efficient and Robust Dense Matching](/202607/01/2606.24330v2-redi-match-rotation-equivariant-distillation-for-efficient-and-robust-dense-matching)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：通过三维场景图合并多个3D高斯泼溅场景实现大规模三维建图
-2. [HomeDiffusion: Zero-Shot Object Customization with Multi-View Representation Learning for Indoor Scenes](/202606/30/2606.29828v1-homediffusion-zero-shot-object-customization-with-multi-view-representation-learning-for-indoor-scenes)  
+   evidence：旋转等变密集匹配蒸馏，实现鲁棒多视图特征匹配
+2. [Planar-SfM: Camera Pose Estimation via Homography Graph Embeddings](/202607/01/2606.31979v1-planar-sfm-camera-pose-estimation-via-homography-graph-embeddings)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：基于多视角表征学习实现零样本物体定制生成，从参考图像合成物体。
-3. [Variance Reduction on the Camera Axis: Multi-View Score Distillation for 3D](/202606/30/2606.29964v1-variance-reduction-on-the-camera-axis-multi-view-score-distillation-for-3d)  
+   evidence：利用单应性分解为平面场景估计相机姿态，提升在极线几何退化场景中的鲁棒性
+3. [PointSplat: Compact Gaussian Splatting via Human-Centric Prediction](/202607/01/2606.32036v1-pointsplat-compact-gaussian-splatting-via-human-centric-prediction)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：减少多视图评分蒸馏中的方差以改进3D生成
-4. [Learning Efficient 4D Gaussian Representations from Monocular Videos with Flow Splatting](/202606/30/2606.29976v1-learning-efficient-4d-gaussian-representations-from-monocular-videos-with-flow-splatting)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：从单目视频重建动态3D场景，使用4D高斯和光流监督
-5. [Robust and Efficient Monocular 3D Gaussian SLAM for Kilometer-Scale Outdoor Scenes](/202606/30/2606.30436v1-robust-and-efficient-monocular-3d-gaussian-slam-for-kilometer-scale-outdoor-scenes)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：大规模室外场景的单目3DGS SLAM重建
-6. [Articulating then Matching: Zero-Shot Shape Matching for Uncurated Data](/202606/30/2606.29167v1-articulating-then-matching-zero-shot-shape-matching-for-uncurated-data)  
+   evidence：从多视图输入推断紧凑的三维人体表示
+4. [Beyond 2D Matching: A Unified Single-Stage Framework for Geometry-Aware Cross-View Object Geo-Localization](/202607/01/2606.30576v1-beyond-2d-matching-a-unified-single-stage-framework-for-geometry-aware-cross-view-object-geo-localization)  
    标签：评分：7.0/10、query:d-gen-recon
-   evidence：利用多视图渲染和视觉模型进行零样本形状匹配
-7. [SemDynReg: Semantics-Guided Deformation Regularization for Dynamic 3D Gaussian Splatting](/202606/30/2606.28656v1-semdynreg-semantics-guided-deformation-regularization-for-dynamic-3d-gaussian-splatting)  
+   evidence：几何感知的跨视角物体匹配用于地理定位，利用相机姿态和多模态提示
+5. [AnyMatch: Supercharging Universal Multi-Modal Image Matching with Large-Scale Single-View Images](/202607/01/2606.31077v1-anymatch-supercharging-universal-multi-modal-image-matching-with-large-scale-single-view-images)  
+   标签：评分：7.0/10、query:d-gen-recon
+   evidence：利用单视图图像生成多模态匹配数据，提升三维场景理解中的特征匹配
+6. [NaLA: A 3D Native LLM Layout Agent for High-quality 3D Scene Generation](/202607/01/2606.29395v1-nala-a-3d-native-llm-layout-agent-for-high-quality-3d-scene-generation)  
    标签：评分：6.0/10、query:d-gen-recon
-   evidence：语义引导的变形用于动态3D重建
-8. [Emergence of a Shared Canonical Object Frame from In-the-Wild Videos](/202606/30/2606.30058v1-emergence-of-a-shared-canonical-object-frame-from-in-the-wild-videos)  
+   evidence：三维原生大语言模型智能体通过放置资产生成三维场景
+7. [Knowledge-Driven Dimension Estimation from a Single Image -3D Asset Generation Technology for Digital Twin Construction](/202607/01/2606.30896v1-knowledge-driven-dimension-estimation-from-a-single-image--3d-asset-generation-technology-for-digital-twin-construction)  
    标签：评分：6.0/10、query:d-gen-recon
-   evidence：从野外视频学习共享规范物体框架，通过稠密对应辅助3D特征匹配
+   evidence：尺寸估计辅助3D资产生成
 
 
 <div class="dpr-home-promo-card">
