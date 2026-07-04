@@ -1,0 +1,54 @@
+{
+  "label": "2026-07-04",
+  "date": "2026-07-04",
+  "generated_at": "2026-07-04T20:58:25",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202607/04/2606.29395v1-nala-a-3d-native-llm-layout-agent-for-high-quality-3d-scene-generation",
+      "section": "quick",
+      "title_en": "NaLA: A 3D Native LLM Layout Agent for High-quality 3D Scene Generation",
+      "authors": "Cheng Wan, Yongsen Mao, Wenzheng Wu, Yuxuan Xie, Chucheng Xiang, Runze Wang, Xiang Zhang, Zhongyuan Liu, Rushi Dai, Yuan Liu",
+      "date": "2026-06-28",
+      "pdf": "https://arxiv.org/pdf/2606.29395v1",
+      "score": "7.0",
+      "evidence": "通过原生3D推理放置资产生成3D场景",
+      "tldr": "现有基于文本的3D布局代理在生成场景时，由于3D资产和布局被转换为文本描述，严重的模态间隙导致信息丢失，常产生不合理布局。NaLA通过直接将3D场景边界和资产编码进LLM，保留细粒度几何，并能显式推理碰撞、支撑和包含等空间关系。该方法采用粗到细预测机制，先自回归预测离散姿态，再连续回归修正，精准输出位置与朝向。经多样布局数据训练，NaLA在生成质量和推理速度上超越以往方法，消融实验验证各模块有效性。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Recently, Large Language Models (LLMs) have emerged as promising layout agents for 3D scene generation. Existing layout agents still suffer from implausible layout generation because most of them convert 3D assets and 3D layouts into textual descriptions as inputs and outputs, which involves severe information loss due to the modality gap between texts and 3D assets and 3D layouts. We propose NaLA, a native 3D LLM layout Agent for high-quality 3D scene generation by placing 3D assets in the scene. For the inputs, NaLA encodes 3D scene boundaries and 3D assets directly into the LLM, preserving fine-grained geometry and enabling explicit reasoning over relationships like collisions, surface supporting, and containment. To accurately output the positions and orientations of assets, NaLA adopts a coarse-to-fine prediction mechanism that first predicts discrete poses in an autoregressive manner and then refines the discrete poses with a continuous regression. Trained on diverse layout datasets, NaLA attains strong geometric perception and layout coherence. Experiments demonstrate that NaLA outperforms prior layout agents in both generation quality and inference efficiency, with comprehensive ablation studies to verify each component's effectiveness.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/04/2607.02516v1-alignment-is-all-you-need-for-x-to-4d-generation",
+      "section": "quick",
+      "title_en": "Alignment Is All You Need For X-to-4D Generation",
+      "authors": "Qiaowei Miao, Kehan Li, Yawei Luo, Yi Yang",
+      "date": "2026-07-02",
+      "pdf": "https://arxiv.org/pdf/2607.02516v1",
+      "score": "7.0",
+      "evidence": "从任意模态生成4D内容，对齐视频与多视图3D以合成动态序列",
+      "tldr": "尽管扩散模型在图像、视频、3D合成上成果显著，任意模态到4D生成仍面临数据稀缺与可扩展性瓶颈。本文提出 Align4D 框架，利用视频指导运动、3D塑造几何，并创新引入对象距离对齐（VAOD/MAOD）、运动-几何联合对齐与异步优化，将多模态输入转换为时空一致的视频-3D对。在 X4D 和 Consistent4D 数据集上，Align4D 取得领先的生成质量与一致性，有效融合视频和3D先验。该工作为 X-to-4D 生成提供了灵活可扩展的方案，推动动态内容创作发展。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Generative diffusion models excel at synthesizing high-quality images, videos, and 3D content under multimodal control. However, arbitrary user-defined modality-to-4D (X-to-4D) generation remains challenging due to the high cost of constructing diverse datasets and the limited scalability of existing methods. This paper presents Align4D, a flexible framework that translates any-modal input into coherent video-3D pairs, using video to guide 4D motion and 3D data to shape 4D geometry. Align4D introduces three key techniques: (1) Object Distance Alignment, which searches Video-Aligned and Multiview-Aligned Object Distances (VAOD/MAOD), respectively, to reconcile 4D renderings with video and the priors of multiview diffusion models; (2) Motion-Geometry Joint Alignment, which constrains known and unknown views through synchronized video and 3D inputs, ensuring consistent 4D generation; and (3) Asynchronous Optimization, which decouples Gaussian attribute and deformation network training to enhance motion and geometry fidelity. We further propose the X4D dataset, which integrates prompt, image, video, and 3D data for benchmarking. Experiments on X4D and Consistent4D demonstrate that Align4D achieves state-of-the-art quality and consistency in X-to-4D generation. Project page: https://miaoqiaowei.github.io/Align4D/.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/04/2606.29786v1-op3dsg-open-vocabulary-part-aware-3d-scene-graph-generation-for-real-world-environments",
+      "section": "quick",
+      "title_en": "OP3DSG: Open-Vocabulary Part-Aware 3D Scene Graph Generation for Real-World Environments",
+      "authors": "Yirum Kim, Ue-Hwan Kim",
+      "date": "2026-06-29",
+      "pdf": "https://arxiv.org/pdf/2606.29786v1",
+      "score": "6.0",
+      "evidence": "开放词汇部件感知的3D场景图生成，包含物体-部件检测与融合",
+      "tldr": "现有3D场景图生成方法忽略了物体的交互部件与多层次关系，难以满足真实环境中细粒度理解需求。OP3DSG框架联合建模对象、部件、空间/功能关系与可供性，通过部件感知检测与融合、几何先验及LLM优化实现高效图构建。实验在UniGraph3D基准上取得领先性能，并成功应用于多种机器人任务，展示了统一部件感知3D场景图的实用价值。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "3D scene graphs (3DSGs) provide a compact and structured abstraction of 3D environments. Although advances in foundation models have enabled open-vocabulary 3DSG generation, existing approaches remain object-centric and encode limited relational information -- restricting their applicability in real-world scenarios that require fine-grained understanding. We propose OP3DSG, an open-vocabulary part-aware 3DSG generation framework that constructs unified graphs that jointly model objects, interactive parts, spatial relations, functional relations, and affordances. OP3DSG integrates object-part knowledge-guided detection with part-aware 3D fusion to preserve small and interaction-relevant components, and employs a geometry-initialized prior graph with LLM-based refinement to reduce spurious relational predictions while enabling efficient graph construction. To systematically evaluate unified 3D scene graph construction, we introduce UniGraph3D, a benchmark designed for part-aware perception and multi-level relational reasoning. Experimental results show that OP3DSG achieves state-of-the-art performance and demonstrates its effectiveness as a perception backbone in diverse real-world robotics tasks.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
