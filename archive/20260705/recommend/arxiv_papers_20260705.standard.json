@@ -1,0 +1,221 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-05T21:04:10.665721+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2607.02515v1",
+      "source": "arxiv",
+      "title": "PointDiT: Pixel-Space Diffusion for Monocular Geometry Estimation",
+      "abstract": "State-of-the-art single-image 3D reconstruction methods often rely on complex hybrid architectures and loss functions, or compress geometry into latent spaces in order to leverage pre-trained latent diffusion models. In this work, we show that such architectural overhead and intricate loss formulations are unnecessary. We introduce a minimalist pixel-space Diffusion Transformer, built on a plain ViT, that operates directly on raw 3D point map patches and is conditioned on image tokens from a pre-trained DINOv3. Unlike existing latent diffusion approaches, we train our diffusion backbone entirely from scratch, eliminating the need for point map tokenizers. Despite its simplicity, our approach surpasses complex latent-based diffusion models while remaining significantly simpler than hybrid alternatives. Notably, it produces sharper geometric structure and is more robust in highly ambiguous regions, such as transparent objects.",
+      "authors": [
+        "Haofei Xu",
+        "Rundi Wu",
+        "Philipp Henzler",
+        "Nikolai Kalischek",
+        "Michael Oechsle",
+        "Fabian Manhardt",
+        "Marc Pollefeys",
+        "Andreas Geiger",
+        "Federico Tombari",
+        "Michael Niemeyer"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-02T17:59:56+00:00",
+      "link": "https://arxiv.org/pdf/2607.02515v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "pixel-space diffusion for monocular 3D point map estimation",
+      "llm_evidence_cn": "像素空间扩散用于单目3D点云估计",
+      "llm_evidence": "像素空间扩散用于单目3D点云估计",
+      "canonical_evidence": "像素空间扩散用于单目3D点云估计",
+      "llm_tldr_en": "PointDiT uses a plain ViT-based diffusion transformer operating directly on raw 3D point patches, conditioned on DINOv3 features, to surpass complex latent diffusion models for single-image 3D reconstruction.",
+      "llm_tldr_cn": "现有单图像3D重建方法依赖复杂混合架构或潜空间扩散，引入了架构与损失设计的冗余。PointDiT 提出极简像素空间扩散Transformer，直接对原始3D点云块建模，并以预训练DINOv3图像标记为条件，完全免去了点云标记器。尽管结构简单，该方法在多个基准上超越了复杂的潜空间扩散模型，证明精心设计的像素空间扩散足以完成精确的单目几何估计，为3D重建提供了更轻量高效的途径。",
+      "llm_tldr": "现有单图像3D重建方法依赖复杂混合架构或潜空间扩散，引入了架构与损失设计的冗余。PointDiT 提出极简像素空间扩散Transformer，直接对原始3D点云块建模，并以预训练DINOv3图像标记为条件，完全免去了点云标记器。尽管结构简单，该方法在多个基准上超越了复杂的潜空间扩散模型，证明精心设计的像素空间扩散足以完成精确的单目几何估计，为3D重建提供了更轻量高效的途径。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.30352v1",
+      "source": "arxiv",
+      "title": "FastPano3D: Feed-Forward Indoor Panoramic 3D Reconstruction from a Single Image",
+      "abstract": "Recent advances in 3D scene reconstruction have highlighted the intricate trade-offs among rendering quality, inference efficiency, and data dependency. To address the challenge of rapidly reconstructing detailed 3D indoor scenes from minimal input, we introduce FastPano3D, an end-to-end framework that directly generates renderable 3D Gaussian representations from a single panoramic image. Unlike perspective-based methods, panoramic images inherently suffer from equirectangular projection distortions and spatially non-uniform feature distributions, making direct feed-forward Gaussian generation particularly challenging. In contrast to existing Gaussian Splatting based methods that rely on multi-view supervision or per-scene optimization, FastPano3D employs a lightweight feature encoder, adaptive Gaussian sampling, and a point-cloud-guided refinement strategy to achieve efficient and accurate scene generation without any test-time optimization. Our approach reconstructs high-fidelity 3D scenes within seconds, achieving up to 156 times faster inference than prior state-of-the-art methods such as Pano2Room, while using only half the parameters. Extensive experiments demonstrate that FastPano3D delivers rendering quality comparable to NeRF- and 3DGS-based reconstructions, establishing a new benchmark for rapid, single-view 3D scene inference.",
+      "authors": [
+        "Jianqiang Li",
+        "Liumei Zhang",
+        "Wenjia Guo",
+        "Tianlong Feng",
+        "Yongzhi Liao",
+        "Di Lu",
+        "Hanchi Ren",
+        "Jingjing Deng"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-29T14:23:12+00:00",
+      "link": "https://arxiv.org/pdf/2606.30352v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Feed-forward indoor 3D reconstruction from a single panoramic image",
+      "llm_evidence_cn": "从单张全景图像前馈式室内三维重建",
+      "llm_evidence": "从单张全景图像前馈式室内三维重建",
+      "canonical_evidence": "从单张全景图像前馈式室内三维重建",
+      "llm_tldr_en": "Introduces FastPano3D, an end-to-end framework that directly generates 3D Gaussian representations from a single panoramic image for rapid indoor scene reconstruction.",
+      "llm_tldr_cn": "针对传统方法依赖多视图或逐场景优化的不足，提出FastPano3D端到端框架，从单张全景图像直接生成可渲染的3D高斯表示。该方法克服了全景投影畸变，实现了快速高质量的室内三维重建，对虚拟现实和室内导航具有重要意义。",
+      "llm_tldr": "针对传统方法依赖多视图或逐场景优化的不足，提出FastPano3D端到端框架，从单张全景图像直接生成可渲染的3D高斯表示。该方法克服了全景投影畸变，实现了快速高质量的室内三维重建，对虚拟现实和室内导航具有重要意义。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.01663v1",
+      "source": "arxiv",
+      "title": "Unified Panoramic-Gaussian Representation for Monocular 4D Scene Synthesis",
+      "abstract": "4D scene synthesis from monocular videos has made significant progress in recent years. However, existing methods are typically constrained by view interpolation. As a result, they struggle to infer unseen regions beyond the observed views. In this paper, we reformulate the task as 4D scene synthesis with unseen regions, which extends beyond traditional interpolation settings. Camera-conditioned video generation enables unseen region synthesis by guiding generation along specified cameras. However, these methods lack explicit 3D priors and are optimized with random camera trajectories. This design leads to severe inconsistencies under large trajectory deviations. To address this limitation, we build a unified training and inference framework with panoramic trajectory guidance. While this design improves cross-view consistency, the panoramic representation alone fails to model dynamic content effectively. Object motion in panoramic space introduces scale and shape distortions. To address this, we propose PanoGaussian, a unified Panoramic-Gaussian representation that distills the panoramic representation into an explicit dynamic Gaussian representation to capture dynamic physical priors of the 4D scene. Experiments demonstrate that PanoGaussian achieves consistent 4D scene synthesis even under large viewpoint variations.",
+      "authors": [
+        "Yuankun Yang",
+        "Yi Wei",
+        "Wenyang Zhou",
+        "Li Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-02T03:43:06+00:00",
+      "link": "https://arxiv.org/pdf/2607.01663v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Monocular 4D scene synthesis with unseen regions using panoramic-Gaussian representation",
+      "llm_evidence_cn": "使用全景高斯表示的单目4D场景合成，可推断未观测区域",
+      "llm_evidence": "使用全景高斯表示的单目4D场景合成，可推断未观测区域",
+      "canonical_evidence": "使用全景高斯表示的单目4D场景合成，可推断未观测区域",
+      "llm_tldr_en": "Proposes a unified panoramic-Gaussian framework for monocular 4D scene synthesis that goes beyond view interpolation to generate unseen regions with explicit 3D priors and camera-conditioned video generation.",
+      "llm_tldr_cn": "针对单目视频4D场景合成中现有方法局限于视角插值、难以推断未观测区域的问题，提出统一全景高斯表示框架。该方法结合显式三维先验和相机条件视频生成，实现从单目视频合成包含未观测区域的4D场景。实验表明，该方法在大轨迹偏差下保持时空一致性，为动态场景合成提供了新思路。",
+      "llm_tldr": "针对单目视频4D场景合成中现有方法局限于视角插值、难以推断未观测区域的问题，提出统一全景高斯表示框架。该方法结合显式三维先验和相机条件视频生成，实现从单目视频合成包含未观测区域的4D场景。实验表明，该方法在大轨迹偏差下保持时空一致性，为动态场景合成提供了新思路。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.02372v1",
+      "source": "arxiv",
+      "title": "Learning Spectral and Polarimetric Clues for One-to-Multimodal Novel View Synthesis",
+      "abstract": "Neural rendering techniques allow for accurate reconstruction of the geometry and color appearance of 3D scenes. Some methods have extended their use to additional imaging modalities, such as multispectral, infrared, or polarimetric data. However, all of these approaches require expensive sensors and calibrated setups to capture new multimodal frames for each new scene. We propose Spectral and Polarimetric Implicit Learned Representation (SPoILeR), a novel method to obtain multi-view consistent renderings of unconventional modalities for scenes where either only RGB frames or very few of the additional modalities are available. Thanks to a multimodal pre-training phase, the model learns the mutual correlation between different modalities. This step allows predicting accurate renderings of unconventional modalities during a fine-tuning phase supervised only by RGB images. Experimental results show that the approach can accurately render infrared, polarimetric, and multispectral frames for scenes where no input sample captured by these types of sensors is provided.",
+      "authors": [
+        "Federico Lincetto",
+        "Gianluca Agresti",
+        "Mattia Rossi",
+        "Piergiorgio Sartor",
+        "Pietro Zanuttigh"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-02T16:13:19+00:00",
+      "link": "https://arxiv.org/pdf/2607.02372v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "reconstructs 3D scenes from multi-view RGB and synthesizes novel views with spectral/polarimetric modalities",
+      "llm_evidence_cn": "从多视图RGB重建3D场景并合成具有光谱/偏振模态的新视图",
+      "llm_evidence": "从多视图RGB重建3D场景并合成具有光谱/偏振模态的新视图",
+      "canonical_evidence": "从多视图RGB重建3D场景并合成具有光谱/偏振模态的新视图",
+      "llm_tldr_en": "SPoILeR learns to reconstruct 3D scenes from RGB frames and generate multi-view consistent renderings of additional modalities like spectral and polarimetric, using multimodal pre-training.",
+      "llm_tldr_cn": "针对需要昂贵传感器和校准获取多模态新视图的问题，提出SPoILeR方法。该方法通过多模态预训练学习RGB与其他模态（光谱、偏振）之间的相关性，从而在仅有RGB帧或极少额外模态的情况下，重建3D场景并生成多视图一致的非传统模态渲染。实验验证了该方法在合成新颖模态视图时的准确性和一致性，降低了多模态3D成像的门槛。",
+      "llm_tldr": "针对需要昂贵传感器和校准获取多模态新视图的问题，提出SPoILeR方法。该方法通过多模态预训练学习RGB与其他模态（光谱、偏振）之间的相关性，从而在仅有RGB帧或极少额外模态的情况下，重建3D场景并生成多视图一致的非传统模态渲染。实验验证了该方法在合成新颖模态视图时的准确性和一致性，降低了多模态3D成像的门槛。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.29395v1",
+      "source": "arxiv",
+      "title": "NaLA: A 3D Native LLM Layout Agent for High-quality 3D Scene Generation",
+      "abstract": "Recently, Large Language Models (LLMs) have emerged as promising layout agents for 3D scene generation. Existing layout agents still suffer from implausible layout generation because most of them convert 3D assets and 3D layouts into textual descriptions as inputs and outputs, which involves severe information loss due to the modality gap between texts and 3D assets and 3D layouts. We propose NaLA, a native 3D LLM layout Agent for high-quality 3D scene generation by placing 3D assets in the scene. For the inputs, NaLA encodes 3D scene boundaries and 3D assets directly into the LLM, preserving fine-grained geometry and enabling explicit reasoning over relationships like collisions, surface supporting, and containment. To accurately output the positions and orientations of assets, NaLA adopts a coarse-to-fine prediction mechanism that first predicts discrete poses in an autoregressive manner and then refines the discrete poses with a continuous regression. Trained on diverse layout datasets, NaLA attains strong geometric perception and layout coherence. Experiments demonstrate that NaLA outperforms prior layout agents in both generation quality and inference efficiency, with comprehensive ablation studies to verify each component's effectiveness.",
+      "authors": [
+        "Cheng Wan",
+        "Yongsen Mao",
+        "Wenzheng Wu",
+        "Yuxuan Xie",
+        "Chucheng Xiang",
+        "Runze Wang",
+        "Xiang Zhang",
+        "Zhongyuan Liu",
+        "Rushi Dai",
+        "Yuan Liu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-28T13:33:44+00:00",
+      "link": "https://arxiv.org/pdf/2606.29395v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "native 3D LLM layout agent for placing 3D assets in scene generation, encoding 3D geometry directly",
+      "llm_evidence_cn": "原生3D大语言模型布局代理，直接编码3D几何以进行场景生成中的资产放置",
+      "llm_evidence": "原生3D大语言模型布局代理，直接编码3D几何以进行场景生成中的资产放置",
+      "canonical_evidence": "原生3D大语言模型布局代理，直接编码3D几何以进行场景生成中的资产放置",
+      "llm_tldr_en": "NaLA is an LLM-based layout agent that directly encodes 3D scene boundaries and assets to generate plausible 3D scenes, avoiding information loss from text-conversion.",
+      "llm_tldr_cn": "为解决现有基于文本的3D场景生成布局代理因模态差距导致的信息丢失和布局不合理问题，提出NaLA，一种原生3D LLM布局代理。该代理直接将3D场景边界和资产编码输入LLM，保留精细几何信息，并支持碰撞、支撑等关系的显式推理。实验表明，NaLA生成的场景布局在合理性和多样性上优于将3D转换为文本描述的方法，为高质量3D场景生成提供了有效途径。",
+      "llm_tldr": "为解决现有基于文本的3D场景生成布局代理因模态差距导致的信息丢失和布局不合理问题，提出NaLA，一种原生3D LLM布局代理。该代理直接将3D场景边界和资产编码输入LLM，保留精细几何信息，并支持碰撞、支撑等关系的显式推理。实验表明，NaLA生成的场景布局在合理性和多样性上优于将3D转换为文本描述的方法，为高质量3D场景生成提供了有效途径。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
