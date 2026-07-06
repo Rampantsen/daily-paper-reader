@@ -1,0 +1,61 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-06T20:39:36.404093+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2606.29395v1",
+      "source": "arxiv",
+      "title": "NaLA: A 3D Native LLM Layout Agent for High-quality 3D Scene Generation",
+      "abstract": "Recently, Large Language Models (LLMs) have emerged as promising layout agents for 3D scene generation. Existing layout agents still suffer from implausible layout generation because most of them convert 3D assets and 3D layouts into textual descriptions as inputs and outputs, which involves severe information loss due to the modality gap between texts and 3D assets and 3D layouts. We propose NaLA, a native 3D LLM layout Agent for high-quality 3D scene generation by placing 3D assets in the scene. For the inputs, NaLA encodes 3D scene boundaries and 3D assets directly into the LLM, preserving fine-grained geometry and enabling explicit reasoning over relationships like collisions, surface supporting, and containment. To accurately output the positions and orientations of assets, NaLA adopts a coarse-to-fine prediction mechanism that first predicts discrete poses in an autoregressive manner and then refines the discrete poses with a continuous regression. Trained on diverse layout datasets, NaLA attains strong geometric perception and layout coherence. Experiments demonstrate that NaLA outperforms prior layout agents in both generation quality and inference efficiency, with comprehensive ablation studies to verify each component's effectiveness.",
+      "authors": [
+        "Cheng Wan",
+        "Yongsen Mao",
+        "Wenzheng Wu",
+        "Yuxuan Xie",
+        "Chucheng Xiang",
+        "Runze Wang",
+        "Xiang Zhang",
+        "Zhongyuan Liu",
+        "Rushi Dai",
+        "Yuan Liu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-28T13:33:44+00:00",
+      "link": "https://arxiv.org/pdf/2606.29395v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "native 3D LLM layout agent for placing 3D assets to generate high-quality 3D scenes",
+      "llm_evidence_cn": "原生三维大语言模型布局代理用于放置三维资产生成高质量三维场景",
+      "llm_evidence": "原生三维大语言模型布局代理用于放置三维资产生成高质量三维场景",
+      "canonical_evidence": "原生三维大语言模型布局代理用于放置三维资产生成高质量三维场景",
+      "llm_tldr_en": "NaLA encodes 3D scene boundaries and assets directly into the LLM to preserve geometry, enabling explicit spatial reasoning for plausible 3D scene layout generation.",
+      "llm_tldr_cn": "该工作针对现有大语言模型在三维场景生成中因文本转换损失几何信息导致布局不合理的问题，提出原生三维大语言模型布局代理NaLA，直接编码三维边界和资产保留几何细节，并显式推理碰撞、支撑等关系。方法生成更合理的三维场景布局，推动高质量场景自动生成。",
+      "llm_tldr": "该工作针对现有大语言模型在三维场景生成中因文本转换损失几何信息导致布局不合理的问题，提出原生三维大语言模型布局代理NaLA，直接编码三维边界和资产保留几何细节，并显式推理碰撞、支撑等关系。方法生成更合理的三维场景布局，推动高质量场景自动生成。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

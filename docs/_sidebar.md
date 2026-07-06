@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-07-06 <!--dpr-date:20260706-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202607/06/2606.29395v1-nala-a-3d-native-llm-layout-agent-for-high-quality-3d-scene-generation" data-sidebar-item="{&quot;title&quot;: &quot;NaLA: A 3D Native LLM Layout Agent for High-quality 3D Scene Generation&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2606.29395v1-nala-a-3d-native-llm-layout-agent-for-high-quality-3d-scene-generation&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;d-gen-recon&quot;}], &quot;evidence&quot;: &quot;原生三维大语言模型布局代理用于放置三维资产生成高质量三维场景&quot;}">NaLA: A 3D Native LLM Layout Agent for High-quality 3D Scene Generation</a>
   * 2026-07-05 <!--dpr-date:20260705-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202607/05/2607.02515v1-pointdit-pixel-space-diffusion-for-monocular-geometry-estimation" data-sidebar-item="{&quot;title&quot;: &quot;PointDiT: Pixel-Space Diffusion for Monocular Geometry Estimation&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.02515v1-pointdit-pixel-space-diffusion-for-monocular-geometry-estimation&quot;, &quot;score&quot;: &quot;10.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;d-gen-recon&quot;}], &quot;evidence&quot;: &quot;像素空间扩散用于单目3D点云估计&quot;}">PointDiT: Pixel-Space Diffusion for Monocular Geometry Estimation</a>

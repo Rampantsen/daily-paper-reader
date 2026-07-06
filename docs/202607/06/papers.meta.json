@@ -1,0 +1,24 @@
+{
+  "label": "2026-07-06",
+  "date": "2026-07-06",
+  "generated_at": "2026-07-06T20:40:28",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202607/06/2606.29395v1-nala-a-3d-native-llm-layout-agent-for-high-quality-3d-scene-generation",
+      "section": "quick",
+      "title_en": "NaLA: A 3D Native LLM Layout Agent for High-quality 3D Scene Generation",
+      "authors": "Cheng Wan, Yongsen Mao, Wenzheng Wu, Yuxuan Xie, Chucheng Xiang, Runze Wang, Xiang Zhang, Zhongyuan Liu, Rushi Dai, Yuan Liu",
+      "date": "2026-06-28",
+      "pdf": "https://arxiv.org/pdf/2606.29395v1",
+      "score": "7.0",
+      "evidence": "原生三维大语言模型布局代理用于放置三维资产生成高质量三维场景",
+      "tldr": "当前基于大语言模型的3D场景布局智能体普遍将3D资产和空间布局转化为文本描述，这一跨模态转换导致细粒度几何信息严重丢失，使得生成的布局常违背物理约束，影响场景质量。为此，本文提出NaLA，一种原生3D LLM布局智能体，通过直接编码3D场景边界和3D资产几何，保留完整空间信息，并设计由粗到细的位姿预测机制，先自回归生成离散姿态再连续回归精炼，实现精准的资产摆放。在多个数据集上训练后，NaLA展现出强大的几何推理与布局一致性，实验证明其生成质量和推理效率全面超越现有方法，消融实验充分验证了各设计模块的有效性。该工作展现了将3D原生信息融入LLM进行场景生成的潜力，为高质量3D布局开辟了新方向。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Recently, Large Language Models (LLMs) have emerged as promising layout agents for 3D scene generation. Existing layout agents still suffer from implausible layout generation because most of them convert 3D assets and 3D layouts into textual descriptions as inputs and outputs, which involves severe information loss due to the modality gap between texts and 3D assets and 3D layouts. We propose NaLA, a native 3D LLM layout Agent for high-quality 3D scene generation by placing 3D assets in the scene. For the inputs, NaLA encodes 3D scene boundaries and 3D assets directly into the LLM, preserving fine-grained geometry and enabling explicit reasoning over relationships like collisions, surface supporting, and containment. To accurately output the positions and orientations of assets, NaLA adopts a coarse-to-fine prediction mechanism that first predicts discrete poses in an autoregressive manner and then refines the discrete poses with a continuous regression. Trained on diverse layout datasets, NaLA attains strong geometric perception and layout coherence. Experiments demonstrate that NaLA outperforms prior layout agents in both generation quality and inference efficiency, with comprehensive ablation studies to verify each component's effectiveness.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
