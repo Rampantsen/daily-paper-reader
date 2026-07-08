@@ -6,76 +6,64 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-07
-- 运行时间：2026-07-07 21:00:16 UTC
+- 最新运行日期：2026-07-08
+- 运行时间：2026-07-08 21:52:28 UTC
 - 运行状态：成功
-- 本次总论文数：18
-- 精读区：12
-- 速读区：6
+- 本次总论文数：14
+- 精读区：7
+- 速读区：7
 
 ### 今日简报（AI）
-今日聚焦三维视觉前沿，精读12篇论文，顶会满分研究揭示室内外场景重建的新突破。  
-最值得关注的全景3D重建方向：Argus实现室内全景度量重建，City-Level通过视点分区完成城市级表面重建与补全。  
-下一步可跟进Pano2World等端到端生成方法，探索单张全景图直接合成3D场景的轻量应用。
-- 详情：[/202607/07/README](/202607/07/README)
+1) 今日精读两篇满分论文，聚焦稀疏视角重建与场景级3D扩散模型。
+2) 最值得关注：高斯泼溅结合深度置信传播与法向先验，实现稀疏视角下的高质量表面重建；SynCity 3000用自举法突破城市级3D生成。
+3) 推荐拓展阅读《WarpHammer》，其通过密集化场景变形和3D物体先验，为极端视角合成提供了新思路。
+- 详情：[/202607/08/README](/202607/08/README)
 
 ### 精读区论文标签
-1. [Argus: Metric Panoramic 3D Reconstruction for Indoor Scenes](/202607/07/2606.30047v3-argus-metric-panoramic-3d-reconstruction-for-indoor-scenes)  
+1. [Sparse-View Surface Reconstruction using Gaussian Splatting through High-Confidence Depth Propagation with Normal Priors](/202607/08/2607.03765v1-sparse-view-surface-reconstruction-using-gaussian-splatting-through-high-confidence-depth-propagation-with-normal-priors)  
    标签：评分：10.0/10、query:d-gen-recon
-   evidence：从稀疏无序全景图像进行度量全景三维重建
-2. [City-Level 3D Surface Reconstruction with Viewpoint Orientation Partitioning and Scene Completion](/202607/07/2607.03771v1-city-level-3d-surface-reconstruction-with-viewpoint-orientation-partitioning-and-scene-completion)  
+   evidence：基于高斯泼溅和深度传播的稀疏视图三维表面重建
+2. [SynCity 3000: Bootstrapping Scene-Scale 3D Diffusion](/202607/08/2607.05392v1-syncity-3000-bootstrapping-scene-scale-3d-diffusion)  
    标签：评分：10.0/10、query:d-gen-recon
-   evidence：基于视角方向划分的大规模场景多视图三维表面重建
-3. [CGGS: Consistency-Augmented Geometric Gaussian Splatting for Ego-centric 3D Scene Generation](/202607/07/2607.03819v1-cggs-consistency-augmented-geometric-gaussian-splatting-for-ego-centric-3d-scene-generation)  
-   标签：评分：10.0/10、query:d-gen-recon
-   evidence：文本到三维场景生成，直接从文本生成自我中心三维场景。
-4. [WildSplat: Feedforward Gaussian Splatting from Unposed In-the-Wild Images](/202607/07/2607.05347v1-wildsplat-feedforward-gaussian-splatting-from-unposed-in-the-wild-images)  
-   标签：评分：10.0/10、query:d-gen-recon
-   evidence：从无姿态的野外图像前馈三维重建，直接解决无标签互联网照片重建问题。
-5. [Diversity-aware View Partitioning for Scalable VGGT](/202607/07/2607.01885v2-diversity-aware-view-partitioning-for-scalable-vggt)  
+   evidence：根据用户提示生成全局一致且布局可控的3D场景
+3. [Signal Structure-Aware Gaussian Splatting for Large-Scale Scene Reconstruction](/202607/08/2607.01698v2-signal-structure-aware-gaussian-splatting-for-large-scale-scene-reconstruction)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：多样性感知的视图分区方法，扩展多视角几何变换器用于三维重建
-6. [PRISM3D: Probabilistic Refinement and Robust Initialization for Physically Consistent Scene Modeling under Extreme Motion Blur](/202607/07/2607.03855v1-prism3d-probabilistic-refinement-and-robust-initialization-for-physically-consistent-scene-modeling-under-extreme-motion-blur)  
+   evidence：通过信号结构感知的致密化处理大规模场景重建，直接匹配多视图3D重建。
+4. [VLRC: Vision-Language Reprojection Consistency as a scalable signal for better feed-forward 3D pretraining](/202607/08/2607.02707v2-vlrc-vision-language-reprojection-consistency-as-a-scalable-signal-for-better-feed-forward-3d-pretraining)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：从极端运动模糊多视图图像盲三维场景重建
-7. [BAT3R: Bootstrapping Articulated 3D Reconstruction from 2D Image Collections](/202607/07/2607.03891v1-bat3r-bootstrapping-articulated-3d-reconstruction-from-2d-image-collections)  
+   evidence：利用无标签数据上的视觉-语言重投影一致性作为预训练信号
+5. [ReCal3R: Reliability-Calibrated Learning Rates for Streaming 3D Reconstruction](/202607/08/2607.05356v1-recal3r-reliability-calibrated-learning-rates-for-streaming-3d-reconstruction)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：利用单类别刚性规范网格和无标注二维图像集合重建铰接三维物体
-8. [Targeted Structure Completion for Sparse-View 3D Reconstruction in Autonomous Driving](/202607/07/2607.04661v1-targeted-structure-completion-for-sparse-view-3d-reconstruction-in-autonomous-driving)  
+   evidence：直接处理流式多视图3D重建，提升状态更新可靠性。
+6. [PixWorld: Unifying 3D Scene Generation and Reconstruction in Pixel Space](/202607/08/2607.05373v1-pixworld-unifying-3d-scene-generation-and-reconstruction-in-pixel-space)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：通过目标高斯补全从稀疏、低重叠视图中重建三维场景
-9. [SparseOcc++: Geometry-Aware Sparse Latent Representation for Semantic Occupancy Prediction](/202607/07/2607.04732v1-sparseocc-geometry-aware-sparse-latent-representation-for-semantic-occupancy-prediction)  
+   evidence：在像素空间扩散中统一三维重建与生成
+7. [Rendering-Aware Bayesian 3D Gaussian Splatting with Native Uncertainty and Adaptive Complexity Control](/202607/08/2607.05522v1-rendering-aware-bayesian-3d-gaussian-splatting-with-native-uncertainty-and-adaptive-complexity-control)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：几何感知的稀疏框架，解耦场景补全与语义分割，用于三维语义占用预测
-10. [3DMPE: 3D Multi-Perspective Embedding](/202607/07/2607.04898v1-3dmpe-3d-multi-perspective-embedding)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：利用跨视角对应从多个2D投影重建3D点云
-11. [Beyond Isolated Objects: Relationship-aware Open Vocabulary Scene Understanding via 3D Scene Graph Analysis](/202607/07/2607.05348v1-beyond-isolated-objects-relationship-aware-open-vocabulary-scene-understanding-via-3d-scene-graph-analysis)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：利用多视角观测构建3D场景图进行开放词汇场景分割
-12. [PixWorld: Unifying 3D Scene Generation and Reconstruction in Pixel Space](/202607/07/2607.05373v1-pixworld-unifying-3d-scene-generation-and-reconstruction-in-pixel-space)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：将三维重建和生成统一为像素空间扩散任务
+   evidence：贝叶斯3D高斯泼溅用于新视角合成，具备不确定性
 
 ### 速读区论文标签
-1. [Pano2World: End-to-End 3D Generation via Unified Multi-View Sequences](/202607/07/2607.00832v2-pano2world-end-to-end-3d-generation-via-unified-multi-view-sequences)  
+1. [WarpHammer: Densifying Scene Warps with 3D Object Priors for Extreme View Synthesis](/202607/08/2606.31258v1-warphammer-densifying-scene-warps-with-3d-object-priors-for-extreme-view-synthesis)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：通过统一多视图序列从单张全景图端到端生成三维场景
-2. [MAGE: View-guided Point Cloud Completion with Efficient Modality Alignment and Adaptive Geometry Enhancement](/202607/07/2607.02568v1-mage-view-guided-point-cloud-completion-with-efficient-modality-alignment-and-adaptive-geometry-enhancement)  
+   evidence：通过3D物体先验增强扭曲场景重建，直接提升多视图3D重建质量。
+2. [Text-Driven 3D Indoor Scene Synthesis in Non-Manhattan Environments](/202607/08/2607.02407v1-text-driven-3d-indoor-scene-synthesis-in-non-manhattan-environments)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：视图引导点云补全从图像和部分点云恢复3D形状，符合3D物体生成。
-3. [InSpace: Structure-Aware 3D Indoor Scene Generation from a Single 360° Image](/202607/07/2607.03990v1-inspace-structure-aware-3d-indoor-scene-generation-from-a-single-360-image)  
+   evidence：文本驱动的非曼哈顿环境三维室内场景合成
+3. [G$^2$TAM: Geometry Grounded Track Anything Model](/202607/08/2607.03789v1-g2tam-geometry-grounded-track-anything-model)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：从单张360°图像生成结构感知的3D室内场景
-4. [SceneFrom3D: Geometry-Conditioned Outdoor 3D Scene Generation via View Scheduling with Object-Level Control](/202607/07/2607.04540v1-scenefrom3d-geometry-conditioned-outdoor-3d-scene-generation-via-view-scheduling-with-object-level-control)  
+   evidence：基于几何的跨视角实例跟踪
+4. [CGGS: Consistency-Augmented Geometric Gaussian Splatting for Ego-centric 3D Scene Generation](/202607/08/2607.03819v2-cggs-consistency-augmented-geometric-gaussian-splatting-for-ego-centric-3d-scene-generation)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：通过规划多视图观察并重建三维表示，从用户几何体生成三维场景
-5. [SynCity 3000: Bootstrapping Scene-Scale 3D Diffusion](/202607/07/2607.05392v1-syncity-3000-bootstrapping-scene-scale-3d-diffusion)  
+   evidence：文本到3D的自我中心场景生成，一致性增强多视图潜扩散
+5. [SSA-3DGS: Unsupervised Removal of Screen-Space Artifacts for 3D Gaussian Splatting](/202607/08/2607.05598v1-ssa-3dgs-unsupervised-removal-of-screen-space-artifacts-for-3d-gaussian-splatting)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：通过卷积式的图像到三维操作生成3D场景
-6. [VLRC: Vision-Language Reprojection Consistency as a scalable signal for better feed-forward 3D pretraining](/202607/07/2607.02707v1-vlrc-vision-language-reprojection-consistency-as-a-scalable-signal-for-better-feed-forward-3d-pretraining)  
+   evidence：从多视图位姿图像中移除屏幕空间伪影，提升3DGS场景重建质量。
+6. [ELSA3D: Elastic Semantic Anchoring for Unified 3D Understanding and Generation](/202607/08/2607.06565v1-elsa3d-elastic-semantic-anchoring-for-unified-3d-understanding-and-generation)  
+   标签：评分：8.0/10、query:d-gen-recon
+   evidence：统一3D模型，生成3D资产并进行语言推理，弹性语义锚定
+7. [Global Pose Control for Generative View Synthesis in Normalized Object Coordinate Space](/202607/08/2607.02712v1-global-pose-control-for-generative-view-synthesis-in-normalized-object-coordinate-space)  
    标签：评分：6.0/10、query:d-gen-recon
-   evidence：视觉-语言多视角重投影一致性为3D重建预训练提供语义监督。
+   evidence：从少量无位姿图像生成具有全局相机控制的物体新视图，支持3D物体探索。
 
 
 <div class="dpr-home-promo-card">
