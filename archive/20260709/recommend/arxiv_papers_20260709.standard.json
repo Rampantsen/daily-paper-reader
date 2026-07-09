@@ -1,0 +1,287 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-09T21:45:58.275108+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2607.02707v3",
+      "source": "arxiv",
+      "title": "VLRC: Vision-Language Reprojection Consistency as a scalable signal for better feed-forward 3D pretraining",
+      "abstract": "Feed-forward 3D models are commonly trained using either expensive geometric supervision or self-supervised photometric objectives, both of which provide incomplete learning signals. We introduce Vision-Language Reprojection Consistency (VLRC), a scalable auxiliary objective that exploits frozen vision-language representations as semantic multi-view supervision. Given a predicted 3D reconstruction, VLRC reprojects dense vision-language features across views and enforces feature consistency between corresponding image locations, requiring no additional 3D annotations. The objective integrates seamlessly with both self-supervised monocular reconstruction and supervised-pretrained feed-forward 3D models during unlabeled adaptation. By aligning geometry with language-grounded features, VLRC not only improves depth and camera estimation but also enables more coherent multi-view semantic fusion for open-vocabulary 3D scene understanding. Experiments on indoor and outdoor benchmarks demonstrate consistent gains in 3D reconstruction accuracy and zero-shot open-vocabulary 3D semantic segmentation.",
+      "authors": [
+        "Marwane Hariat",
+        "David Filliat",
+        "Antoine Manzanera"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-02T18:49:34+00:00",
+      "link": "https://arxiv.org/pdf/2607.02707v3",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "uses frozen vision-language representations as semantic multi-view supervision for feed-forward 3D pretraining, enforcing feature consistency across views",
+      "llm_evidence_cn": "利用冻结的视觉语言表示作为语义多视图监督，进行前馈三维预训练，强制跨视图特征一致性",
+      "llm_evidence": "利用冻结的视觉语言表示作为语义多视图监督，进行前馈三维预训练，强制跨视图特征一致性",
+      "canonical_evidence": "利用冻结的视觉语言表示作为语义多视图监督，进行前馈三维预训练，强制跨视图特征一致性",
+      "llm_tldr_en": "Introduces VLRC, a scalable auxiliary objective for 3D pretraining that reprojects vision-language features across views and enforces consistency, providing semantic multi-view supervision without 3D annotations.",
+      "llm_tldr_cn": "提出VLRC目标，通过在不同视图间重投影视觉语言特征并强制一致性，为前馈三维模型提供可扩展的语义多视图监督，无需额外三维标注，改进了自监督和预训练三维重建模型的性能。",
+      "llm_tldr": "提出VLRC目标，通过在不同视图间重投影视觉语言特征并强制一致性，为前馈三维模型提供可扩展的语义多视图监督，无需额外三维标注，改进了自监督和预训练三维重建模型的性能。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "unsupervised 3D object generation and semantic segmentation from multi view images",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.05243v1",
+      "source": "arxiv",
+      "title": "GUSH3R: Everyone Everywhere All at Once as Gaussians",
+      "abstract": "Reconstructing dynamic human-scene environments from monocular videos is a challenging problem that requires jointly modeling scene geometry, camera motion, and non-rigid human dynamics while enabling photorealistic rendering. Recent feed-forward methods can efficiently predict geometry, but they are often limited to non-photorealistic representations such as point clouds and meshes, or they fail to handle non-rigid objects, particularly dynamic humans. To fill this gap, we present GUSH3R (Gaussian-Unified Scene Human 3D Reconstruction), a feed-forward framework for online dynamic human-scene reconstruction. From a monocular human-scene video, our method reconstructs dynamic humans (everyone) and static scenes (everywhere) in a single forward pass (all at once) as 3D Gaussian Splatting (3DGS) primitives (as gaussians), which are geometrically consistent and capable of novel view synthesis. Experiments on monocular human-scene datasets demonstrate that our approach achieves competitive novel view synthesis quality while significantly improving inference efficiency compared to optimization-based methods.",
+      "authors": [
+        "Keito Abe",
+        "Kaede Shiohara",
+        "Takashi Otonari",
+        "Toshihiko Yamasaki"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-06T15:53:09+00:00",
+      "link": "https://arxiv.org/pdf/2607.05243v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "feed-forward reconstruction of dynamic human-scene environments from monocular video, achieving 3D scene reconstruction from multiple views",
+      "llm_evidence_cn": "从单目视频前馈重建动态人场景环境，实现多视角三维场景重建",
+      "llm_evidence": "从单目视频前馈重建动态人场景环境，实现多视角三维场景重建",
+      "canonical_evidence": "从单目视频前馈重建动态人场景环境，实现多视角三维场景重建",
+      "llm_tldr_en": "GUSH3R reconstructs dynamic humans and static scenes from monocular video in a single forward pass as 3D Gaussians, enabling online photorealistic rendering and multi-view 3D reconstruction.",
+      "llm_tldr_cn": "GUSH3R从单目视频中一次性前馈重建动态人物与静态场景的三维高斯表示，同时恢复场景几何和相机运动，支持在线逼真渲染和多视角三维重建。",
+      "llm_tldr": "GUSH3R从单目视频中一次性前馈重建动态人物与静态场景的三维高斯表示，同时恢复场景几何和相机运动，支持在线逼真渲染和多视角三维重建。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.07168v1",
+      "source": "arxiv",
+      "title": "NoDrift3R: Raymap-Guided Coupling for Drift-Robust Unposed Feed-Forward 3D Reconstruction",
+      "abstract": "Pose-Free Feed-forward 3D Gaussian Splatting (3DGS) has recently emerged as a powerful paradigm for fast scene reconstruction. However, its performance degrades significantly in long image sequences due to cumulative camera pose estimation drift, which propagates errors into geometric modeling and severely limits rendering fidelity. In this work, we revisit the long-sequence bottleneck and identify pose drift as the primary factor restricting reconstruction quality. Furthermore, while SfM-based pseudo ground-truth poses introduce sensor noise, purely rendering-based supervision often leads to optimization instability and local minima due to the entangled optimization of geometry and pose. To address the challenges, we propose a synergistic pose-free framework that explicitly couples geometry and appearance via a Raymap-Guided Coupling Module (RGC). Concretely, we anchor Gaussian centers to raymap-induced geometry and jointly optimize RGB reconstruction, raymap consistency, and camera regularization under a unified objective, yielding a bidirectional feedback loop: stronger geometry improves rendering, and appearance supervision in turn refines geometry and pose. To further stabilize learning across wide temporal ranges, we introduce a Dual-Frequency Viewpoint Scheduling strategy that combines easy-to-hard interval expansion with replay of short-interval pairs. Extensive experiments across in-domain and cross-domain datasets show consistent gains in both rendering and pose estimation, with notably improved robustness on long sequences. Ablation studies validate our central insight: explicitly designed geometry-appearance synergy is the key to scalable and drift-robust pose-free feed-forward 3D reconstruction.",
+      "authors": [
+        "Xiangyu Sun",
+        "Liu Liu",
+        "Seungkwon Yang",
+        "Jingbing Han",
+        "Seungtae Nam",
+        "Zhizhong Su",
+        "Eunbyung Park"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-08T09:02:18+00:00",
+      "link": "https://arxiv.org/pdf/2607.07168v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "drift-robust feed-forward 3D reconstruction from long image sequences",
+      "llm_evidence_cn": "抗漂移的前馈式三维重建，适用于长图像序列",
+      "llm_evidence": "抗漂移的前馈式三维重建，适用于长图像序列",
+      "canonical_evidence": "抗漂移的前馈式三维重建，适用于长图像序列",
+      "llm_tldr_en": "Addresses pose drift in feed-forward 3D reconstruction for long sequences by synergizing ray-map constraints and geometric-consistent bundle adjustment, achieving drift-robust reconstruction without known poses.",
+      "llm_tldr_cn": "针对长图像序列前馈三维重建中因相机位姿漂移导致的几何建模误差，提出结合光线映射约束与几何一致性束调整的方法，有效抑制漂移，在无已知位姿条件下实现稳健的三维重建。该方法提升了长序列重建的渲染保真度与几何精度。",
+      "llm_tldr": "针对长图像序列前馈三维重建中因相机位姿漂移导致的几何建模误差，提出结合光线映射约束与几何一致性束调整的方法，有效抑制漂移，在无已知位姿条件下实现稳健的三维重建。该方法提升了长序列重建的渲染保真度与几何精度。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.03819v2",
+      "source": "arxiv",
+      "title": "CGGS: Consistency-Augmented Geometric Gaussian Splatting for Ego-centric 3D Scene Generation",
+      "abstract": "Challenges remain in ego-centric 3D scene generation due to limited view overlap and the dominant influence of individual perspectives on scene interpretation. These factors hinder the creation of viewpoint-consistent and semantically aligned visual content, as well as the construction of accurate geometric structures. In this paper, we propose CGGS, a text-to-3D framework aiming to enhance 3D-content-awareness and address geometric distortions in ego-centric scene generation. Firstly, the Ego-centric Generator is proposed by fine-tuning a Multi-View Latent Diffusion Model with consistency-augmented loss to generate consistent, high-fidelity 2D content aligned with textual descriptions. Then, Layout Decorator leverages optical flow and point-track correspondence to estimate depth, therefore producing dense point clouds as coarse layouts from the ego-centric 2D priors. Building on this initialization, Geometric Refiner is proposed to enhance 3D Gaussian reconstruction via an entropy-based Mutual Information Depth Loss (MID) combined with a hierarchical optimization scheme for improving visual quality and geometric structure. Comprehensive experiments demonstrate that CGGS outperforms previous methods in generating coherent and accurate text-driven 3D scenes. Project page: [https://cggs-26.github.io/cggs26/](https://cggs-26.github.io/cggs26/).",
+      "authors": [
+        "Zhenyu Sun",
+        "Xiaohan Zhang",
+        "Qi Liu",
+        "Huan Wang"
+      ],
+      "primary_category": "cs.GR",
+      "categories": [
+        "cs.GR",
+        "cs.AI"
+      ],
+      "published": "2026-07-04T11:06:41+00:00",
+      "link": "https://arxiv.org/pdf/2607.03819v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "text-to-3D ego-centric scene generation using multi-view diffusion and Gaussian Splatting",
+      "llm_evidence_cn": "使用多视图扩散和高斯溅射的文本到3D自我中心场景生成",
+      "llm_evidence": "使用多视图扩散和高斯溅射的文本到3D自我中心场景生成",
+      "canonical_evidence": "使用多视图扩散和高斯溅射的文本到3D自我中心场景生成",
+      "llm_tldr_en": "CGGS addresses ego-centric 3D scene generation from text by fine-tuning a multi-view latent diffusion model with consistency loss and using optical flow for layout decoration, combined with geometric Gaussian Splatting to produce consistent, high-fidelity 3D scenes.",
+      "llm_tldr_cn": "自我中心场景生成面临视点重叠有限和视角解释偏差的挑战，导致内容不一致和几何失真。本文提出CGGS，一种一致性增强的几何高斯溅射框架。通过微调多视图潜在扩散模型并加入一致性损失生成高质量2D内容，同时利用光流进行布局装饰，最终用高斯溅射重建3D场景。实验表明，CGGS能生成视点一致、语义准确的自我中心3D场景，在生成质量和几何精度上优于现有方法，推动了文本到3D场景生成的实际应用。",
+      "llm_tldr": "自我中心场景生成面临视点重叠有限和视角解释偏差的挑战，导致内容不一致和几何失真。本文提出CGGS，一种一致性增强的几何高斯溅射框架。通过微调多视图潜在扩散模型并加入一致性损失生成高质量2D内容，同时利用光流进行布局装饰，最终用高斯溅射重建3D场景。实验表明，CGGS能生成视点一致、语义准确的自我中心3D场景，在生成质量和几何精度上优于现有方法，推动了文本到3D场景生成的实际应用。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.06565v1",
+      "source": "arxiv",
+      "title": "ELSA3D: Elastic Semantic Anchoring for Unified 3D Understanding and Generation",
+      "abstract": "Unified 3D foundation models aspire to generate 3D assets and reason about them in language within a single backbone, but their text-3D interaction remains largely implicit. Existing methods concatenate text and 3D tokens into a flat sequence and rely on self-attention, collapsing coarse structural cues and fine geometric details into one undifferentiated representation. We introduce ELSA3D, a unified 3D model that addresses this with elastic semantic anchoring, structuring language and geometric reasoning jointly along matched abstraction scales. ELSA3D represents geometry with a scale-aware octree tokenizer and introduces Anchor Tokens, sparse cross-modal units that select semantic cues, route them to the most relevant 3D scale, retrieve scale-specific geometric evidence, and write the fused signal back into the unified representation, keeping interaction sparse yet precise. A lightweight per-block router makes both computation and reasoning elastic, choosing which text tokens instantiate anchors at which geometric scale so that cross-modal capacity concentrates where alignment is most needed. ELSA3D achieves state-of-the-art performance across image-to-3D generation, text-to-3D generation, and 3D captioning, outperforming the strongest unified baseline while roughly halving FLOPs and inference latency relative to the non-elastic version of the same model.",
+      "authors": [
+        "Tianjiao Yu",
+        "Xinzhuo Li",
+        "Yifan Shen",
+        "Onkar Susladkar",
+        "Yuanzhe Liu",
+        "Xiaona Zhou",
+        "Ismini Lourentzou"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-07-07T17:59:50+00:00",
+      "link": "https://arxiv.org/pdf/2607.06565v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "unified 3D model for generating 3D assets and reasoning about them in language with elastic semantic anchoring",
+      "llm_evidence_cn": "统一的三维模型，通过弹性语义锚定生成三维资产并进行语言推理",
+      "llm_evidence": "统一的三维模型，通过弹性语义锚定生成三维资产并进行语言推理",
+      "canonical_evidence": "统一的三维模型，通过弹性语义锚定生成三维资产并进行语言推理",
+      "llm_tldr_en": "ELSA3D is a unified 3D model that uses elastic semantic anchoring with anchor tokens and scale-aware octree to jointly handle geometry and language, improving 3D generation and understanding.",
+      "llm_tldr_cn": "ELSA3D提出弹性语义锚定机制，通过锚定令牌和尺度感知八叉树，将语言与几何推理联合在不同抽象尺度上，统一了三维资产生成和理解，解决了文本-三维交互隐式缺失的问题。",
+      "llm_tldr": "ELSA3D提出弹性语义锚定机制，通过锚定令牌和尺度感知八叉树，将语言与几何推理联合在不同抽象尺度上，统一了三维资产生成和理解，解决了文本-三维交互隐式缺失的问题。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.05568v1",
+      "source": "arxiv",
+      "title": "Harnessing Generative Image Models for Training-Free Primitive Shape Abstraction",
+      "abstract": "Representing 3D shapes as compact sets of geometric primitives is fundamental to robotics, simulation, and scene understanding. Generative image models trained at scale have recently emerged as generalist visual learners that can identify and segment object parts directly in the image domain, across arbitrary categories and without task-specific training. Adapting such models to downstream tasks typically requires fine-tuning; we ask whether their pretrained capability can instead be harnessed directly, without any training, and answer affirmatively with a training-free harness. Our pipeline renders multi-view images of a 3D object, uses a vision-language model to analyze its semantic parts, prompts a generative image model to paint a color-coded part segmentation mask, reprojects it onto the geometry, and fits a superquadric primitive to each part via parameter optimization. The approach contains no learned parameters: it is category-agnostic and orientation-invariant, properties that previous learning-based models struggled with. Its accuracy ceiling rises with future generative-model improvements, which we confirm with a ground-truth segmentation study showing that part segmentation, not primitive fitting, is the current accuracy bottleneck. On HumanPrim and Toys4K, our method achieves the lowest Chamfer distance among all evaluated methods, using 5--9 primitives per object on average.",
+      "authors": [
+        "Gregor Kobsik",
+        "Tim Elsner",
+        "Leif Kobbelt"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-07-06T19:10:43+00:00",
+      "link": "https://arxiv.org/pdf/2607.05568v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "training-free primitive shape abstraction using multi-view images and generative image models for part segmentation",
+      "llm_evidence_cn": "利用多视角图像和生成模型进行无训练的原语形状抽象（部分分割）",
+      "llm_evidence": "利用多视角图像和生成模型进行无训练的原语形状抽象（部分分割）",
+      "canonical_evidence": "利用多视角图像和生成模型进行无训练的原语形状抽象（部分分割）",
+      "llm_tldr_en": "It uses multi-view renders of a 3D object and pretrained generative image models to segment semantic parts into geometric primitives without any training, enabling training-free 3D part segmentation.",
+      "llm_tldr_cn": "本文利用多视角渲染和预训练生成式图像模型，无需任何训练即可将三维物体抽象为紧凑的几何原语。通过分析语义部分、喷涂颜色编码并概括到三维空间，实现了无训练的三维形状分割与抽象。该方法展示了生成模型在三维理解任务中的零样本能力，为机器人、仿真等应用提供了一种简便的三维解析手段。",
+      "llm_tldr": "本文利用多视角渲染和预训练生成式图像模型，无需任何训练即可将三维物体抽象为紧凑的几何原语。通过分析语义部分、喷涂颜色编码并概括到三维空间，实现了无训练的三维形状分割与抽象。该方法展示了生成模型在三维理解任务中的零样本能力，为机器人、仿真等应用提供了一种简便的三维解析手段。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "unsupervised 3D object generation and semantic segmentation from multi view images",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.07170v1",
+      "source": "arxiv",
+      "title": "PUF: Plug-and-Play Uncertainty-Aware Fusion for Online 3D Scene Graph Generation",
+      "abstract": "Online 3D scene graph generation builds a persistent, structured representation of a scene by incrementally fusing 2D observations into a global 3D graph. Existing online methods treat this fusion as a fully deterministic pipeline, where we identify three sources of uncertainty that are overlooked: observation, 2D model, and 3D representation. We propose PUF: a Plug-and-play, Uncertainty-aware, and training-free Fusion framework. Scene graph node association is reformulated as a probabilistic likelihood over semantic and spatial factors, replacing binary accept/reject gates. Dirichlet evidence accumulation distributes class and relationship evidence across plausible candidates proportional to association likelihood. An optional class-conditional prior completes edges for sparsely or never co-observed object pairs. We instantiate PUF with both a 3D Gaussian and a 3D voxel backend and observe consistent improvements, demonstrating its ability to generalize across different representations. Experiments on the 3DSSG and ReplicaSSG benchmarks show that our method substantially outperforms existing approaches while maintaining real-time latency. These results establish uncertainty-aware fusion as a principled and effective paradigm for online 3D scene understanding. The source code is publicly available at https://github.com/yyyyangyi/PUF.",
+      "authors": [
+        "Yi Yang",
+        "Myrna Castillo",
+        "Bodo Rosenhahn",
+        "Michael Ying Yang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-08T09:05:52+00:00",
+      "link": "https://arxiv.org/pdf/2607.07170v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "online 3D scene graph generation with uncertainty-aware fusion",
+      "llm_evidence_cn": "不确定性感知融合的在线三维场景图生成",
+      "llm_evidence": "不确定性感知融合的在线三维场景图生成",
+      "canonical_evidence": "不确定性感知融合的在线三维场景图生成",
+      "llm_tldr_en": "Introduces a probabilistic fusion framework for online 3D scene graph generation, handling observation and model uncertainty to incrementally build consistent scene representations from 2D observations.",
+      "llm_tldr_cn": "针对在线三维场景图生成中忽略的观测、模型及表示不确定性，提出即插即用的不确定性感知融合框架，将节点关联重铸为语义与空间因子上的概率似然，并通过狄利克雷证据累积实现软证据融合，能从多视图观测逐步构建鲁棒的三维场景结构化描述，为三维场景语义分割与理解提供基础支撑。",
+      "llm_tldr": "针对在线三维场景图生成中忽略的观测、模型及表示不确定性，提出即插即用的不确定性感知融合框架，将节点关联重铸为语义与空间因子上的概率似然，并通过狄利克雷证据累积实现软证据融合，能从多视图观测逐步构建鲁棒的三维场景结构化描述，为三维场景语义分割与理解提供基础支撑。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
