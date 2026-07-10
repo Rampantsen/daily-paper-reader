@@ -1,0 +1,258 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-10T20:58:23.327936+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2607.08769v1",
+      "source": "arxiv",
+      "title": "Geometry and Gradient-based Partitioning for Panoramic Outdoor Reconstruction",
+      "abstract": "Scaling 3D Gaussian Splatting (3DGS) to large outdoor scenes is costly in both data acquisition and computation. Adopting panoramic images with equirectangular projection (ERP) can reduce capture effort via their full $360^{\\circ}$ field of view, yet the resulting omnipresent visibility invalidates existing partitioning strategies that rely on local camera frustums, causing block-wise optimization to degenerate into global training. Thus, we propose PanoLOG, a two-stage coarse-to-fine framework equipped with a Geometry and Gradient-based Partitioning Strategy tailored for large-scale panoramic 3DGS reconstruction. In the global coarse stage, PanoLOG leverages sky-sphere modeling and panoramic monocular depth supervision for reliable geometry, while in the refinement stage, G$^2$PS builds adaptive bounding volumes via parallax-driven uncertainty and assigns cameras via gradient-based importance scoring. Furthermore, we construct Pano360, the first benchmark on large-scale panoramic dataset for outdoor scene reconstruction. Extensive experiments demonstrate that G$^2$PS achieves state-of-the-art rendering quality while maintaining scalable, block-parallel training. Our models, training code, and dataset are publicly available.",
+      "authors": [
+        "Weijian Chen",
+        "Weibo Yao",
+        "Yuhang Zhang",
+        "Xiaolin Tang",
+        "Guo Wang",
+        "Weijun Zhang",
+        "Xitong Gao",
+        "Yihao Chen",
+        "Hongde Qin",
+        "Lu Qi"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-09T17:59:43+00:00",
+      "link": "https://arxiv.org/pdf/2607.08769v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "scalable 3D Gaussian splatting reconstruction for large outdoor scenes using panoramic images",
+      "llm_evidence_cn": "利用全景图像进行大规模室外场景的三维高斯泼溅重建",
+      "llm_evidence": "利用全景图像进行大规模室外场景的三维高斯泼溅重建",
+      "canonical_evidence": "利用全景图像进行大规模室外场景的三维高斯泼溅重建",
+      "llm_tldr_en": "PanoLOG introduces a geometry- and gradient-based partitioning strategy for efficient large-scale 3DGS reconstruction from panoramic images, overcoming omnipresent visibility issues with a two-stage coarse-to-fine framework.",
+      "llm_tldr_cn": "该论文提出了PanoLOG框架，通过几何与梯度引导的分块策略，解决了全景图像全视域可见性导致的块式优化退化问题，实现了大规模室外场景的三维高斯泼溅高效重建，并利用天空球建模和深度监督提升了几何精度。",
+      "llm_tldr": "该论文提出了PanoLOG框架，通过几何与梯度引导的分块策略，解决了全景图像全视域可见性导致的块式优化退化问题，实现了大规模室外场景的三维高斯泼溅高效重建，并利用天空球建模和深度监督提升了几何精度。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.05955v1",
+      "source": "arxiv",
+      "title": "NegROI: Click-Centric Uncertainty-Guided Refinement with Scene-Conditioned Negative Prompts for Robust Interactive 3D Segmentation",
+      "abstract": "Interactive 3D segmentation aims to extract object masks in point clouds with minimal user clicks. Despite recent progress, most existing approaches still struggle with (i) coarse voxel resolution that blurs fine boundaries under limited clicks and (ii) hard false positives caused by confusing background structures. These issues are exacerbated by density and scale shifts across datasets (e.g., dense RGB-D reconstructions vs. sparse LiDAR scans), where fixed refinement heuristics and purely click-driven decoding generalize poorly. To address them, we propose NegROI -- a novel transformer-based interactive framework that couples click-centric multi-resolution refinement with scene-conditioned negative prompts. Given a coarse voxel prediction, it refines only a local Region Of Interest (ROI) around the current click on a finer grid and fuses refined logits back to the coarse mask. To improve robustness and efficiency, we introduce uncertainty-driven selective refinement that prioritizes ambiguous regions. Meanwhile, we model hard background patterns via a set of scene-conditioned negative prompts obtained by cross-attention over scene tokens. We further stabilize these prompts with a diversity regularizer. Finally, we propose boundary-aware hard negative mining to supervise negative-prompt attention toward boundary-proximal, high-confidence false positives. Our experiments on common benchmark datasets (i.e., ScanNet, S3DIS, and KITTI) demonstrate improved click efficiency and reduced false positives, with stronger cross-dataset robustness than the state-of-the-art baselines.",
+      "authors": [
+        "Shuheng Zhang",
+        "Feng Wu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-07-07T07:54:52+00:00",
+      "link": "https://arxiv.org/pdf/2607.05955v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "interactive 3D segmentation with click-centric refinement and scene-conditioned negative prompts",
+      "llm_evidence_cn": "点击中心式三维交互分割，结合场景条件负提示",
+      "llm_evidence": "点击中心式三维交互分割，结合场景条件负提示",
+      "canonical_evidence": "点击中心式三维交互分割，结合场景条件负提示",
+      "llm_tldr_en": "Proposes NegROI, a transformer-based interactive 3D segmentation method that uses click-centric multi-resolution refinement and scene-conditioned negative prompts to handle fine boundaries and false positives robustly across datasets.",
+      "llm_tldr_cn": "现有交互式三维分割方法在细粒度边界和误检方面表现不佳，本文提出NegROI框架，通过点击中心的多分辨率细化和场景条件负提示机制，有效抑制背景误检并提升边界精度，在多个数据集上展现出更强的鲁棒性和泛化能力，推动了三维交互分割的实际应用。",
+      "llm_tldr": "现有交互式三维分割方法在细粒度边界和误检方面表现不佳，本文提出NegROI框架，通过点击中心的多分辨率细化和场景条件负提示机制，有效抑制背景误检并提升边界精度，在多个数据集上展现出更强的鲁棒性和泛化能力，推动了三维交互分割的实际应用。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.08772v1",
+      "source": "arxiv",
+      "title": "Wat3R: Underwater 3D Geometry Learning without Annotations",
+      "abstract": "Estimating 3D geometry in underwater environments presents unique challenges due to light attenuation, scattering, and the absence of large-scale, high-quality 3D annotations. Pioneering methods rely on massive dense annotations that are impractical in underwater settings. In this paper, we propose Wat3R, a cross-domain semi-supervised learning framework designed to adapt feed-forward 3D reconstruction models from air to underwater scenes. Uniquely, our method eliminates the need for any annotated underwater data following a teacher-student architecture, that learns robust geometry representations merely on abundant unlabeled real underwater video footage. We also design a cross-view consistency loss that leverages geometric cues from other views to compensate for the information degradation in the current view caused by water attenuation and scattering. Furthermore, considering the lack of comprehensive evaluation benchmarks, we construct Water3D, a diverse dataset covering various water bodies and underwater scenarios, designed for geometric task evaluation. Experimental results demonstrate that Wat3R outperforms current state-of-the-art methods in underwater multi-view depth estimation and point cloud reconstruction. The dataset and code are available at https://github.com/LSXI7/Wat3R .",
+      "authors": [
+        "Jiangwei Ren",
+        "Xingyu Jiang",
+        "Zijie Song",
+        "Wei Xu",
+        "Hongkai Lin",
+        "Dingkang Liang",
+        "Xiang Bai"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-09T17:59:58+00:00",
+      "link": "https://arxiv.org/pdf/2607.08772v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "cross-domain semi-supervised 3D reconstruction from unlabeled underwater video",
+      "llm_evidence_cn": "利用无标注水下视频进行跨域半监督三维重建",
+      "llm_evidence": "利用无标注水下视频进行跨域半监督三维重建",
+      "canonical_evidence": "利用无标注水下视频进行跨域半监督三维重建",
+      "llm_tldr_en": "Proposes Wat3R, a cross-domain semi-supervised framework that adapts in-air 3D reconstruction models to underwater scenes without any underwater annotations, using teacher-student architecture and cross-view consistency loss on unlabeled video.",
+      "llm_tldr_cn": "水下三维几何估计因光照衰减和标注稀缺而困难，本文提出Wat3R框架，通过教师-学生架构和跨视图一致性损失，在无任何水下标注的情况下从无标签真实视频中学习鲁棒的几何表征，实现了无需标注的水下三维重建。实验表明该方法能有效适应水下环境，推动了自主水下场景重建的发展。",
+      "llm_tldr": "水下三维几何估计因光照衰减和标注稀缺而困难，本文提出Wat3R框架，通过教师-学生架构和跨视图一致性损失，在无任何水下标注的情况下从无标签真实视频中学习鲁棒的几何表征，实现了无需标注的水下三维重建。实验表明该方法能有效适应水下环境，推动了自主水下场景重建的发展。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.02693v1",
+      "source": "arxiv",
+      "title": "Property-Constrained 3D Porous Media Reconstruction from 2D Images via Conditional Generative Adversarial Networks",
+      "abstract": "This study presents a conditional Generative Adversarial Network (cGAN) framework for generating 3D porous media volumes with controlled porosity, trained exclusively on 2D thin section images. The key innovation lies in combining property-conditioned generation with 2D-to-3D reconstruction, eliminating the need for expensive 3D training data while maintaining control over petrophysical properties. The framework employs a hybrid architecture with a 3D generator and 2D discriminator, where multi-axis slice extraction enables learning 3D-consistent structures from 2D training data. Porosity labels are extracted using an Enhanced U-Net segmentation model. The methodology was demonstrated on two carbonate samples with different lithologies: dolomite-anhydrite and pure dolomite. Results show that the framework successfully generates realistic 3D volumes capturing lithological features such as anhydrite inclusions and fine crystalline textures. Porosity control achieved an $R^2$ of 0.93, with mean absolute errors of 0.019 and 0.010 for the heterogeneous and homogeneous samples, respectively.",
+      "authors": [
+        "Ali Sadeghkhani",
+        "Brandon Bennett",
+        "Arash Rabbani"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.LG",
+        "physics.geo-ph"
+      ],
+      "published": "2026-07-02T18:34:18+00:00",
+      "link": "https://arxiv.org/pdf/2607.02693v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "generating 3D objects (porous media) from 2D images using conditional GAN",
+      "llm_evidence_cn": "使用条件GAN从2D图像生成3D对象（多孔介质）",
+      "llm_evidence": "使用条件GAN从2D图像生成3D对象（多孔介质）",
+      "canonical_evidence": "使用条件GAN从2D图像生成3D对象（多孔介质）",
+      "llm_tldr_en": "This paper presents a cGAN framework that generates 3D porous media volumes from 2D thin section images with controlled porosity, using a hybrid 3D-2D architecture, enabling 3D object generation from limited 2D data without 3D training data.",
+      "llm_tldr_cn": "本文提出一种条件GAN框架，仅利用2D薄片图像训练，即可生成具有可控孔隙度的3D多孔介质体积，通过混合3D-2D架构实现从2D到3D的重建，避免了昂贵的3D训练数据，为从2D图像生成3D物体提供了新途径。",
+      "llm_tldr": "本文提出一种条件GAN框架，仅利用2D薄片图像训练，即可生成具有可控孔隙度的3D多孔介质体积，通过混合3D-2D架构实现从2D到3D的重建，避免了昂贵的3D训练数据，为从2D图像生成3D物体提供了新途径。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.05906v1",
+      "source": "arxiv",
+      "title": "GaussFusion: Towards Multimodal 3D Gaussian Pretraining",
+      "abstract": "3D Gaussian Splatting provides an explicit representation that jointly models geometry and appearance, serving as a scalable foundation for 3D representation learning. Existing pre-training methods for Gaussian representations, such as masked Gaussian reconstruction, primarily capture local structures but offer limited semantic supervision. In this paper, we propose GaussFusion, a multimodal pre-training framework for 3D Gaussian representations. GaussFusion integrates image and text supervision into masked Gaussian modeling through cross-modal semantic alignment, enabling the Gaussian encoder to learn both visual and language-level semantic information during pre-training. To better adapt masked modeling to the non-uniform distribution of Gaussian primitives, we further propose Gaussian Salience-guided Multi-scale Hole Masking (GSHM). GSHM constructs spatially continuous masked regions based on Gaussian salience. By applying hole masks at multiple scales, GSHM encourages the encoder to capture both fine-grained local patterns and broader structural dependencies. Extensive experiments on downstream tasks demonstrate that GaussFusion improves the transferability of Gaussian representations. Notably, GaussFusion outperforms Gaussian-MAE on ModelNet40 and ScanObjectNN (PB-T50-RS) by 0.61\\% and 3.85\\%, respectively.",
+      "authors": [
+        "Zhixuan You",
+        "Jihua Zhu",
+        "Yiding Sun",
+        "Zihao Guo",
+        "Haozhe Cheng",
+        "Dongxu Zhang",
+        "Lin Chen",
+        "Hainan Luo"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-07T07:01:46+00:00",
+      "link": "https://arxiv.org/pdf/2607.05906v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "multimodal pre-training of 3D Gaussian representations with image and text alignment",
+      "llm_evidence_cn": "多模态三维高斯预训练，对齐图像与文本以支持生成任务",
+      "llm_evidence": "多模态三维高斯预训练，对齐图像与文本以支持生成任务",
+      "canonical_evidence": "多模态三维高斯预训练，对齐图像与文本以支持生成任务",
+      "llm_tldr_en": "Introduces GaussFusion, a multimodal pre-training framework for 3D Gaussian representations that aligns image and text semantics, enabling the encoder to learn both visual and language features for improved 3D generation and understanding tasks.",
+      "llm_tldr_cn": "现有三维高斯预训练方法主要捕捉局部结构而缺乏语义监督，本文提出GaussFusion框架，通过跨模态语义对齐整合图像和文本监督，使高斯编码器能学习视觉与语言语义，并设计自适应掩码策略以适应高斯原语的非均匀分布。实验表明该预训练模型在下游三维生成与理解任务中表现更优，为三维基础模型构建提供了新思路。",
+      "llm_tldr": "现有三维高斯预训练方法主要捕捉局部结构而缺乏语义监督，本文提出GaussFusion框架，通过跨模态语义对齐整合图像和文本监督，使高斯编码器能学习视觉与语言语义，并设计自适应掩码策略以适应高斯原语的非均匀分布。实验表明该预训练模型在下游三维生成与理解任务中表现更优，为三维基础模型构建提供了新思路。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.06620v1",
+      "source": "arxiv",
+      "title": "SpaR3D-MoE: Adaptive 3D Spatial Reasoning from Sparse Views Meets Geometry-Inductive Mixture-of-Experts",
+      "abstract": "Recent Multimodal Large Language Models (MLLMs) struggle to bridge the representational gap between 2D semantic understanding and 3D spatial geometry. Existing 3D-aware models either rely on costly 3D-specific data or utilize RGB-only inputs with heuristic sampling and monolithic, shallow fusion, which respectively disrupt essential spatiotemporal connectivity and induce modality contention across diverse spatial tasks. To overcome these bottlenecks, we introduce SpaR3D-MoE, an end-to-end framework that enables adaptive spatial reasoning by equipping MLLMs with geometry-aware capabilities from only sparse RGB inputs. First, we propose an adaptive spatiotemporal manifold sampling mechanism that constructs a geometry-aware spatiotemporal graph to extract informative keyframes, effectively mitigating sequence redundancy while preserving the scene's topological connectivity. Second, we introduce the heterogeneous geometry-inductive Mixture-of-Experts driven by an instruction-pose aware router, which adaptively routes multimodal tokens to specialized experts, resolving the cross-modal contention inherent in monolithic fusion. Extensive experiments on VSI-Bench, ScanQA, and SQA3D demonstrate that our method achieves state-of-the-art performance. Notably, SpaR3D-MoE achieves the highest average score of 63.5 on VSI-Bench, outperforming the strongest baseline by 7.8 absolute points, alongside relative improvements of 35.4% and 51.4% in Route Plan and Relative Direction tasks, respectively.",
+      "authors": [
+        "Haida Feng",
+        "Hao Wei",
+        "Haolin Wang",
+        "Shiwei Li",
+        "Chade Li",
+        "Yihong Wu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-07-07T09:27:38+00:00",
+      "link": "https://arxiv.org/pdf/2607.06620v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "adaptive 3D spatial reasoning from sparse RGB inputs bridges 2D and 3D",
+      "llm_evidence_cn": "从稀疏RGB输入的自适应3D空间推理，连接2D与3D",
+      "llm_evidence": "从稀疏RGB输入的自适应3D空间推理，连接2D与3D",
+      "canonical_evidence": "从稀疏RGB输入的自适应3D空间推理，连接2D与3D",
+      "llm_tldr_en": "SpaR3D-MoE is an end-to-end framework that enables adaptive spatial reasoning from sparse views by introducing an adaptive spatiotemporal manifold sampling and a geometry-inductive Mixture-of-Experts, bridging 2D semantics and 3D geometry.",
+      "llm_tldr_cn": "本文提出SpaR3D-MoE框架，从稀疏RGB输入赋予多模态大模型空间推理能力，通过自适应时空流形采样和几何归纳混合专家组解决2D语义与3D几何的表示鸿沟，为3D场景理解提供了方法学桥梁。",
+      "llm_tldr": "本文提出SpaR3D-MoE框架，从稀疏RGB输入赋予多模态大模型空间推理能力，通过自适应时空流形采样和几何归纳混合专家组解决2D语义与3D几何的表示鸿沟，为3D场景理解提供了方法学桥梁。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
