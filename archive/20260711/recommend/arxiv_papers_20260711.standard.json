@@ -1,0 +1,414 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-11T20:29:15.005496+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 5,
+    "quick_skim_target": 11,
+    "quick_selected": 5
+  },
+  "deep_dive": [
+    {
+      "id": "2607.03209v1",
+      "source": "arxiv",
+      "title": "Fast 3D Foundation Model Initialized Gaussian Splatting",
+      "abstract": "This paper introduces a fast method for high-quality 3D Gaussian Splatting (3DGS) reconstruction without traditional Structure-from-Motion (SfM). The proposed approach leverages 3D Foundation Models (3DFMs) for camera pose and point-cloud initialization, then jointly optimizes both camera poses and Gaussian primitives using a depth-guided loss function. This enables fast convergence even from rough initialization with as few as 50-60 input views. To further improve reconstruction quality in sparse-view scenarios, an MLP-based pose refinement module is introduced alongside depth-guided supervision from the foundation model. Extensive experiments on Mip-NeRF 360, Tanks and Temples, and RobustNeRF demonstrate that the proposed method achieves competitive reconstruction quality (23.61 dB PSNR, 0.19 LPIPS) while reducing training time to approximately three minutes per scene. The proposed method produces ready-to-use 3DGS models at a fraction of the time required by existing pipelines, making it suitable for near real-time applications in robotics, VR, and autonomous navigation.",
+      "authors": [
+        "Anurag Dalal",
+        "Daniel Hagen",
+        "Kjell G. Robbersmyr",
+        "Kristian Muri Knausgård"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR",
+        "cs.RO"
+      ],
+      "published": "2026-07-03T11:24:27+00:00",
+      "link": "https://arxiv.org/pdf/2607.03209v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Fast 3DGS reconstruction from multi-view images without SfM, using 3DFMs for initialization",
+      "llm_evidence_cn": "利用3D基础模型初始化实现无需SfM的多视图3D高斯泼溅重建",
+      "llm_evidence": "利用3D基础模型初始化实现无需SfM的多视图3D高斯泼溅重建",
+      "canonical_evidence": "利用3D基础模型初始化实现无需SfM的多视图3D高斯泼溅重建",
+      "llm_tldr_en": "Proposes fast 3D Gaussian Splatting reconstruction using 3D Foundation Models for camera pose and point cloud initialization, achieving competitive quality without traditional SfM from 50-60 views and improved sparse-view results.",
+      "llm_tldr_cn": "为了解决传统3D重建依赖SfM的问题，本文提出利用3D基础模型初始化相机姿态和点云，并结合深度引导联合优化高斯原语。实验在Mip-NeRF 360等数据集上表明，该方法在50-60视图下无需SfM即可快速收敛，并支持稀疏视图下的高质量重建。该方法显著提升了3D重建的效率和鲁棒性。",
+      "llm_tldr": "为了解决传统3D重建依赖SfM的问题，本文提出利用3D基础模型初始化相机姿态和点云，并结合深度引导联合优化高斯原语。实验在Mip-NeRF 360等数据集上表明，该方法在50-60视图下无需SfM即可快速收敛，并支持稀疏视图下的高质量重建。该方法显著提升了3D重建的效率和鲁棒性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.03872v1",
+      "source": "arxiv",
+      "title": "SharpSplat: Edge-Regularized 3D Gaussian Splatting for High Fidelity Urban Building Reconstruction from UAV images",
+      "abstract": "Reconstructing high-fidelity 3D building models from UAV imagery is essential for large-scale digital twin development. However, existing 3D Gaussian Splatting (3DGS) techniques often struggle with building facades, failing to capture sharp geometric transitions. To address this, we propose a semantic edge regularization framework that supervises 3DGS to produce crisp architectural boundaries. Our method leverages SAM 3 to generate precise building masks, from which we extract architecturally significant edges. During training, we align rendered image gradients with these extracted edges, forcing the Gaussians to converge into sharp structural geometries. Evaluations across campus environments, dense urban centers, and custom residential datasets demonstrate significant improvements in edge fidelity without requiring architectural modifications to the 3DGS pipeline. Our approach proves robust across diverse building types, roof geometries, and urban densities.",
+      "authors": [
+        "Porus Vaid",
+        "Shivam Chopra",
+        "Vaibhav Kumar"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-04T13:31:22+00:00",
+      "link": "https://arxiv.org/pdf/2607.03872v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "semantic edge regularization for 3D building reconstruction from UAV images using SAM 3 masks",
+      "llm_evidence_cn": "基于SAM 3语义边缘正则化的无人机图像三维建筑重建",
+      "llm_evidence": "基于SAM 3语义边缘正则化的无人机图像三维建筑重建",
+      "canonical_evidence": "基于SAM 3语义边缘正则化的无人机图像三维建筑重建",
+      "llm_tldr_en": "SharpSplat improves 3D building reconstruction from UAV images by aligning rendered image gradients with semantic edges extracted via SAM 3, producing sharp architectural boundaries.",
+      "llm_tldr_cn": "针对无人机图像重建建筑模型时边缘模糊的问题，提出SharpSplat框架，利用SAM 3生成精确建筑掩膜提取边缘，在训练中对齐渲染梯度与语义边缘约束高斯分布，使建筑边界锐利。在校园和城市场景中验证了高保真重建效果，为数字孪生应用提供关键支持。",
+      "llm_tldr": "针对无人机图像重建建筑模型时边缘模糊的问题，提出SharpSplat框架，利用SAM 3生成精确建筑掩膜提取边缘，在训练中对齐渲染梯度与语义边缘约束高斯分布，使建筑边界锐利。在校园和城市场景中验证了高保真重建效果，为数字孪生应用提供关键支持。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.05543v1",
+      "source": "arxiv",
+      "title": "GEM-Occ: From Visual Geometry Evidence to Embodied Semantic Occupancy Memory",
+      "abstract": "Semantic occupancy provides a structured spatial memory for embodied indoor agents by jointly representing occupied regions, observed free space, unknown areas, and object semantics. However, existing indoor occupancy benchmarks and methods mainly focus on single-view prediction or room-level online perception, leaving long-horizon semantic mapping across connected indoor spaces underexplored. We introduce HIOcc, a hierarchical indoor occupancy benchmark that unifies ScanNet, ScanNet++, and Matterport3D under a common sparse semantic occupancy format while preserving their native observation geometries, including perspective RGB-D frames and pano-centric observation groups. HIOcc supports three complementary evaluation regimes: local semantic occupancy prediction, room-level online occupancy mapping, and building-level mapping across connected panoramic environments. We further propose GEM-Occ, a Gaussian Evidence Memory framework for semantic occupancy mapping. Rather than using pointmaps as persistent map states, GEM-Occ treats local visual geometry predictions as transient evidence, converts them into semantic Gaussian occupancy evidence and free-space ray evidence, and fuses them into a persistent hierarchical memory through visibility- and uncertainty-aware causal updates. The memory is organized into local caches, room-level submaps, and a building-level graph, and can be queried at any time through Gaussian-to-occupancy splatting. Experiments on HIOcc show that GEM-Occ improves local occupancy prediction, online map stability, free-space reasoning, revisit consistency, and building-level scalability over prior indoor occupancy and Gaussian-based mapping baselines.",
+      "authors": [
+        "Hu Zhu",
+        "Bohan Li",
+        "Xianda Guo",
+        "Hongsi Liu",
+        "Baorui Peng",
+        "Mingqi Yuan",
+        "Xin Jin",
+        "Wenjun Zeng",
+        "Chang Wen Chen"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-07-06T18:26:27+00:00",
+      "link": "https://arxiv.org/pdf/2607.05543v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Semantic occupancy prediction for 3D indoor scenes, representing geometry and semantics",
+      "llm_evidence_cn": "对三维室内场景进行语义占用预测，联合表示几何与语义",
+      "llm_evidence": "对三维室内场景进行语义占用预测，联合表示几何与语义",
+      "canonical_evidence": "对三维室内场景进行语义占用预测，联合表示几何与语义",
+      "llm_tldr_en": "GEM-Occ addresses long-horizon semantic mapping for embodied agents by introducing HIOcc, a hierarchical indoor occupancy benchmark, and a method to learn semantic occupancy from visual geometry evidence, enabling embodied memory across connected spaces.",
+      "llm_tldr_cn": "针对现有室内占用预测方法局限于单视角或房间级感知，缺乏跨连通空间长时序语义建图能力的问题，提出GEM-Occ方法和HIOcc基准。该工作将ScanNet等数据集统一为稀疏语义占用格式，并利用视觉几何证据学习语义占用，支持局部感知、单室建图及跨室建图评估。实验证明能有效整合占据区域与物体语义，为具身智能体提供持久空间记忆。",
+      "llm_tldr": "针对现有室内占用预测方法局限于单视角或房间级感知，缺乏跨连通空间长时序语义建图能力的问题，提出GEM-Occ方法和HIOcc基准。该工作将ScanNet等数据集统一为稀疏语义占用格式，并利用视觉几何证据学习语义占用，支持局部感知、单室建图及跨室建图评估。实验证明能有效整合占据区域与物体语义，为具身智能体提供持久空间记忆。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.05765v1",
+      "source": "arxiv",
+      "title": "Image2Sim: Scaling Embodied Navigation via Generative Neural Simulator",
+      "abstract": "Embodied navigation aims to build agents that interpret multimodal goals, reason in 3D space, and reach target destinations reliably in the real world. However, progress remains constrained by the lack of scalable, high-fidelity, and physically grounded interactive environments. Although real-world scanned datasets offer visual realism, they are limited by scale. In contrast, synthetic simulators scale more easily but often exhibit large sim-to-real gaps. We introduce Image2Sim, a real-time neural simulation framework that constructs high-quality interactive environments from posed RGB-D image sequences. The central idea is to decouple 3D spatial anchoring from photorealistic observation synthesis. For scene construction, Image2Sim uses a feed-forward feature Gaussian model that lifts posed RGB-D observations into a 3D feature-Gaussian representation in a single pass. For rendering, we propose a Geometry-Aware One-Step Pixel Flow model that transforms sparse and noisy Gaussian projections into high-quality panoramic RGB-D observations. Image2Sim also serves as a fully automated embodied data engine that generates high-fidelity observations, executable actions, and diverse navigation instructions at scale. It converts large collections of videos and images into nearly 20K interactive scenes and synthesizes more than 10 million navigation training samples. Navigation models trained entirely in these neural environments achieve strong improvements on major benchmarks and transfer effectively to real-world zero-shot settings. These results suggest that scalable neural simulation can serve as a practical training substrate for embodied navigation at scale.",
+      "authors": [
+        "Zihan Wang",
+        "Seungjun Lee",
+        "Yinghao Xu",
+        "Gim Hee Lee"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.RO"
+      ],
+      "published": "2026-07-07T02:42:41+00:00",
+      "link": "https://arxiv.org/pdf/2607.05765v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Real-time neural simulation framework that constructs interactive 3D environments from posed RGB-D sequences",
+      "llm_evidence_cn": "从有姿态的RGB-D序列构建交互式3D环境的实时神经模拟器",
+      "llm_evidence": "从有姿态的RGB-D序列构建交互式3D环境的实时神经模拟器",
+      "canonical_evidence": "从有姿态的RGB-D序列构建交互式3D环境的实时神经模拟器",
+      "llm_tldr_en": "Image2Sim uses a feed-forward approach to construct high-quality interactive 3D environments from posed RGB-D images, decoupling spatial anchoring from photorealistic rendering.",
+      "llm_tldr_cn": "提出Image2Sim框架，从有姿态的RGB-D图像序列构建实时交互3D环境，将3D空间锚定与真实感渲染解耦，为具身导航提供可扩展的高保真神经模拟器。",
+      "llm_tldr": "提出Image2Sim框架，从有姿态的RGB-D图像序列构建实时交互3D环境，将3D空间锚定与真实感渲染解耦，为具身导航提供可扩展的高保真神经模拟器。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.08711v1",
+      "source": "arxiv",
+      "title": "LTM: Large-scale Terrain Model for Wildfire-prone Landscapes",
+      "abstract": "Accurate 3D terrain maps are essential for emergency response when assessing wildfire hazards. However, wildfire-prone regions often span vast areas where conventional reconstruction methods underperform. Airborne LiDAR systems provide high-resolution terrain data, but they are expensive and infrequently updated. Image-based methods offer a lower-cost alternative, but struggle due to sparse visual features and limited image overlap. We propose a multi-modal reconstruction framework leveraging outdated Digital Elevation Models (DEMs) as geometric priors for image-based 3D reconstruction. Our key innovation is physics-based pixel-pixel alignment between images and DEM data, dramatically reducing computational complexity by eliminating expensive feature matching procedures. To validate our approach, we developed a large-terrain simulator based on a real wildfire-prone area, generating realistic images enabling a comprehensive evaluation. Given posed images and legacy DEMs, our method produces high-fidelity depth maps while maintaining real-time performance. We find significant improvements in reconstruction accuracy and computational efficiency over existing techniques, offering a scalable solution for wildfire response.",
+      "authors": [
+        "Xiao Fu",
+        "Yue Hu",
+        "Meida Chen",
+        "Peter Anthony Beerel",
+        "Barath Raghavan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-07-09T17:22:35+00:00",
+      "link": "https://arxiv.org/pdf/2607.08711v1",
+      "tags": [
+        "keyword:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Multi-modal large-scale terrain reconstruction using outdated DEMs as geometric priors to improve image-based 3D reconstruction",
+      "llm_evidence_cn": "利用过时DEM作为几何先验的多模态大规模地形重建",
+      "llm_evidence": "利用过时DEM作为几何先验的多模态大规模地形重建",
+      "canonical_evidence": "利用过时DEM作为几何先验的多模态大规模地形重建",
+      "llm_tldr_en": "Proposes a multi-modal reconstruction framework that uses outdated DEMs as geometric priors for image-based 3D terrain reconstruction, avoiding expensive feature matching.",
+      "llm_tldr_cn": "针对传统图像三维重建在稀疏纹理、低重叠区域的困境，提出LTM框架，利用过时数字高程模型作为几何先验，通过物理像素对齐替代特征匹配，高效重建大规模火灾易发区地形。",
+      "llm_tldr": "针对传统图像三维重建在稀疏纹理、低重叠区域的困境，提出LTM框架，利用过时数字高程模型作为几何先验，通过物理像素对齐替代特征匹配，高效重建大规模火灾易发区地形。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.03614v1",
+      "source": "arxiv",
+      "title": "IDEAL-Bench: Indoor Dataset and Evaluation suite for Analyzing 3D Layout reasoning",
+      "abstract": "Spatial question answering is the dominant paradigm for evaluating spatial intelligence in Vision-Language Models (VLMs), but it leaves a complementary axis of spatial competence under-evaluated: holistic 3D layout inference, which predicts every visible object's pose and extent from a single image in a structured form. To this end, we introduce IDEAL-Bench, an evaluation suite that requires VLMs to predict structured 3D layouts on photorealistic indoor scenes across 10 room types, scored along five numerical dimensions and a perceptual render-and-compare protocol. By operating on semantically realistic scenes with full asset substitution under controlled lighting and viewpoint, IDEAL-Bench moves beyond CLEVR-style simple geometric primitives so that any image-space discrepancy reflects spatial reasoning alone. The benchmark is built on IDEAL-Scenes, a procedurally generated dataset of 1,000 re-renderable Blender environments with ground-truth layouts. Evaluating 15 prominent VLMs reveals three findings: the task remains substantially unsolved, with the strongest model reaching only 62.1/100 overall; all models exhibit a sharp asymmetry between object recognition and geometric regression, indicating that current VLMs are trained to describe scenes rather than to measure them; model rankings partially diverge from those on QA-based and primitive-reconstruction benchmarks: top-tier consensus holds, but mid-tier rankings shift substantially. Collectively, these findings establish IDEAL-Bench as a diagnostic suite, targeting the geometric and structural competencies that QA-based evaluation cannot surface, and paving the way towards more rigorous evaluation of spatial intelligence in next-generation VLMs. Together, these findings position IDEAL-Bench as a principled diagnostic for whether future VLMs achieve genuine spatial understanding rather than linguistic approximations of it.",
+      "authors": [
+        "Yuening Cai",
+        "Junwei Zhou",
+        "Youran Qu",
+        "Yu-Wing Tai"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-03T22:04:42+00:00",
+      "link": "https://arxiv.org/pdf/2607.03614v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Evaluates VLMs on holistic 3D layout inference from single images, predicting object poses and extents",
+      "llm_evidence_cn": "评估视觉语言模型从单张图像进行整体3D布局推理，预测物体姿态和范围",
+      "llm_evidence": "评估视觉语言模型从单张图像进行整体3D布局推理，预测物体姿态和范围",
+      "canonical_evidence": "评估视觉语言模型从单张图像进行整体3D布局推理，预测物体姿态和范围",
+      "llm_tldr_en": "Introduces a benchmark for evaluating 3D layout reasoning in VLMs, requiring structured prediction of object poses and extents from realistic indoor scenes, with five numerical metrics and a perceptual render-and-compare protocol.",
+      "llm_tldr_cn": "针对视觉语言模型在空间智能评估中缺少3D布局推理维度的问题，本文提出IDEAL-Bench基准，要求模型从单张室内图像预测可见物体的3D姿态和范围。通过五种数值指标和渲染对比协议，该基准为3D场景理解提供了更全面的评测手段。",
+      "llm_tldr": "针对视觉语言模型在空间智能评估中缺少3D布局推理维度的问题，本文提出IDEAL-Bench基准，要求模型从单张室内图像预测可见物体的3D姿态和范围。通过五种数值指标和渲染对比协议，该基准为3D场景理解提供了更全面的评测手段。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "feature matching and 3D scene understanding from large scale image collections",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.03875v1",
+      "source": "arxiv",
+      "title": "MACRO: Training-free Multi-plane Attention for Closeup Render Optimization",
+      "abstract": "Close-up rendering, zooming into a scene well beyond any training camera, is important for virtual production and interactive 3D content, yet remains an open challenge. 3D Gaussian splatting (3DGS) enables high-fidelity, real-time novel view synthesis, but its rendering quality degrades at close range. Recent diffusion-based methods that enhance the rendering by conditioning on reference images from the training set produce significant artifacts in this setting. We analyze this failure and identify its root cause: the scale gap between the close-up and reference views. We show that the features in reference-conditioned enhancement models are not scale-invariant, causing cross-view attention to retrieve incorrect correspondences when the same content appears at different scales, and that this mismatch cannot be corrected in latent space because the VAE encoder is not scale-equivariant. Building on this analysis we introduce MACRO, Multi-plane Attention for Closeup Render Optimization, a training-free method for high-quality close-up novel view synthesis from 3DGS. MACRO resolves the scale gap by leveraging the scene's known 3D structure: it decomposes the close-up into depth planes, crops and resizes references in image space to match the scale of each plane before encoding, and applies a depth-aware attention mask so each token attends only to scale-matched references. The method requires no architectural changes or additional training. We further contribute two new close-up novel view synthesis benchmarks, the first standardized evaluation protocol for this setting, and demonstrate state-of-the-art results on both, outperforming existing 3DGS and diffusion-based methods on both reconstruction and perceptual metrics. Project page: https://nitzanhod.github.io/MACRO",
+      "authors": [
+        "Nitzan Hodos",
+        "Roy Amoyal",
+        "Lior Fritz",
+        "Ianir Ideses",
+        "Sagie Benaim",
+        "Netalee Efrat"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-04T13:36:06+00:00",
+      "link": "https://arxiv.org/pdf/2607.03875v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "improves cross-view attention and correspondence in novel view synthesis",
+      "llm_evidence_cn": "改进新视角合成中的跨视图注意力与对应关系",
+      "llm_evidence": "改进新视角合成中的跨视图注意力与对应关系",
+      "canonical_evidence": "改进新视角合成中的跨视图注意力与对应关系",
+      "llm_tldr_en": "MACRO addresses close-up rendering artifacts in 3DGS by correcting scale-invariant cross-view attention with multi-plane attention, enhancing novel view synthesis.",
+      "llm_tldr_cn": "针对3D高斯泼溅在近距离渲染时因尺度差异导致跨视图注意力错误匹配的问题，提出MACRO方法，通过多平面注意力对齐特征尺度，无需训练即可显著提升特写镜头下的渲染质量。",
+      "llm_tldr": "针对3D高斯泼溅在近距离渲染时因尺度差异导致跨视图注意力错误匹配的问题，提出MACRO方法，通过多平面注意力对齐特征尺度，无需训练即可显著提升特写镜头下的渲染质量。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.06534v1",
+      "source": "arxiv",
+      "title": "CAIRN: Cross-Room 3D Scene Understanding with Topology-Aware Large Multimodal Models",
+      "abstract": "Existing 3D scene-grounded Large Language Models (3D-LLMs) focus on answering questions grounded in simplified single-room 3D scenes, lacking the ability to reason over real-world household environments containing multiple interconnected rooms and diverse object categories. We introduce CAIRN, a topology-aware 3D-LLM for multi-room 3D scene understanding. CAIRN aligns transformer attention with scene hierarchy, giving the model explicit awareness of object-level relations and room-level connectivity. It enriches object tokens with room-local relational context via a graph neural network, introduces learned room tokens for room-level abstraction, and applies a hierarchical attention mask with geometric bias to route information according to scene topology. CAIRN is developed on CAIRN-MR, a benchmark we introduce on HM3D for multi-room 3D scene understanding, covering grounding, captioning, and four question-answering tasks that progressively evaluate from intra-room perception to cross-room reasoning. Experiments show that CAIRN outperforms prior 3D-LLMs by a large margin across all CAIRN-MR tasks while remaining competitive on five single-room benchmarks.",
+      "authors": [
+        "He Liang",
+        "Chenyang Ma",
+        "Yiming Zhang",
+        "Sangyun Shin",
+        "Andrew Markham",
+        "Niki Trigoni",
+        "Yuhang He"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-07T17:39:41+00:00",
+      "link": "https://arxiv.org/pdf/2607.06534v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Multi-room 3D scene understanding with topology-aware model, linked to semantic segmentation tasks",
+      "llm_evidence_cn": "拓扑感知的多房间三维场景理解模型，与语义分割任务相关",
+      "llm_evidence": "拓扑感知的多房间三维场景理解模型，与语义分割任务相关",
+      "canonical_evidence": "拓扑感知的多房间三维场景理解模型，与语义分割任务相关",
+      "llm_tldr_en": "Proposes a topology-aware 3D-LLM for multi-room scene understanding that leverages scene hierarchy and object relations, advancing semantic comprehension in 3D environments.",
+      "llm_tldr_cn": "现有三维场景语言模型局限于单房间简化场景，CAIRN通过拓扑感知注意力机制对齐变换器与场景层级，利用图神经网络增强对象令牌的房间局部上下文，并引入层级注意力掩码，实现跨房间三维场景的深入语义理解。",
+      "llm_tldr": "现有三维场景语言模型局限于单房间简化场景，CAIRN通过拓扑感知注意力机制对齐变换器与场景层级，利用图神经网络增强对象令牌的房间局部上下文，并引入层级注意力掩码，实现跨房间三维场景的深入语义理解。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.06620v1",
+      "source": "arxiv",
+      "title": "SpaR3D-MoE: Adaptive 3D Spatial Reasoning from Sparse Views Meets Geometry-Inductive Mixture-of-Experts",
+      "abstract": "Recent Multimodal Large Language Models (MLLMs) struggle to bridge the representational gap between 2D semantic understanding and 3D spatial geometry. Existing 3D-aware models either rely on costly 3D-specific data or utilize RGB-only inputs with heuristic sampling and monolithic, shallow fusion, which respectively disrupt essential spatiotemporal connectivity and induce modality contention across diverse spatial tasks. To overcome these bottlenecks, we introduce SpaR3D-MoE, an end-to-end framework that enables adaptive spatial reasoning by equipping MLLMs with geometry-aware capabilities from only sparse RGB inputs. First, we propose an adaptive spatiotemporal manifold sampling mechanism that constructs a geometry-aware spatiotemporal graph to extract informative keyframes, effectively mitigating sequence redundancy while preserving the scene's topological connectivity. Second, we introduce the heterogeneous geometry-inductive Mixture-of-Experts driven by an instruction-pose aware router, which adaptively routes multimodal tokens to specialized experts, resolving the cross-modal contention inherent in monolithic fusion. Extensive experiments on VSI-Bench, ScanQA, and SQA3D demonstrate that our method achieves state-of-the-art performance. Notably, SpaR3D-MoE achieves the highest average score of 63.5 on VSI-Bench, outperforming the strongest baseline by 7.8 absolute points, alongside relative improvements of 35.4% and 51.4% in Route Plan and Relative Direction tasks, respectively.",
+      "authors": [
+        "Haida Feng",
+        "Hao Wei",
+        "Haolin Wang",
+        "Shiwei Li",
+        "Chade Li",
+        "Yihong Wu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-07-07T09:27:38+00:00",
+      "link": "https://arxiv.org/pdf/2607.06620v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Equips MLLMs with geometry-aware 3D reasoning from sparse RGB inputs, bridging 2D semantics and 3D geometry",
+      "llm_evidence_cn": "为多模态大语言模型配备从稀疏RGB输入进行几何感知的3D推理，桥接2D语义与3D几何",
+      "llm_evidence": "为多模态大语言模型配备从稀疏RGB输入进行几何感知的3D推理，桥接2D语义与3D几何",
+      "canonical_evidence": "为多模态大语言模型配备从稀疏RGB输入进行几何感知的3D推理，桥接2D语义与3D几何",
+      "llm_tldr_en": "Proposes a framework to enable adaptive 3D spatial reasoning in MLLMs from sparse views, using geometry-inductive Mixture-of-Experts and adaptive spatiotemporal sampling, bridging the gap between 2D understanding and 3D geometry.",
+      "llm_tldr_cn": "针对多模态大语言模型在2D语义与3D几何之间的表示鸿沟，本文提出SpaR3D-MoE框架，通过几何引导混合专家和自适应时空流形采样，使模型仅从稀疏RGB输入中获得几何感知能力。实验表明，该方法有效提升了稀疏视图下的空间推理性能，为3D场景理解提供了新思路。",
+      "llm_tldr": "针对多模态大语言模型在2D语义与3D几何之间的表示鸿沟，本文提出SpaR3D-MoE框架，通过几何引导混合专家和自适应时空流形采样，使模型仅从稀疏RGB输入中获得几何感知能力。实验表明，该方法有效提升了稀疏视图下的空间推理性能，为3D场景理解提供了新思路。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "feature matching and 3D scene understanding from large scale image collections",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.07749v1",
+      "source": "arxiv",
+      "title": "Projected Energy Matching for Generative 3D Priors",
+      "abstract": "Energy Matching has emerged as a powerful generative framework that combines flow model efficiency with the explicit likelihood of Energy-Based Models (EBMs) via a single, time-independent scalar potential. However, directly training this potential on high-dimensional 3D data remains computationally challenging. While distilling a pre-trained flow model circumvents some of the initial training costs, we demonstrate that velocity fields inevitably contain non-conservative rotational artifacts (curl). Forcing a strictly conservative scalar potential to match this unconstrained field creates a \"structural conflict\", which degrades generation quality and mode coverage. To solve this, we propose Projected Energy Matching, a scalable framework that resolves these structural and computational bottlenecks. We introduce Helmholtz Distillation, a structural relaxation that leverages a Hutchinson trace estimator to explicitly absorb rotational noise into an auxiliary residual network. We subsequently refine this landscape using Negative Caching, a memory-efficient strategy that reuses negative samples across micro-batches, rendering sampling tractable during contrastive training with gradient accumulation. We deploy our method as an unconditional prior for real-world medical CT inverse problems, specifically sparse-view reconstruction. Ultimately, our amortized pipeline reduces total compute to a small fraction of that required by standard energy matching, while achieving high-fidelity reconstructions and successfully resolving severe measurement artifacts.",
+      "authors": [
+        "Daniel Barco",
+        "Michal Balcerak",
+        "Suprosanna Shit",
+        "Chinmay Prabhakar",
+        "Philipp Denzel",
+        "Bjoern Menze",
+        "Frank-Peter Schilling"
+      ],
+      "primary_category": "eess.IV",
+      "categories": [
+        "eess.IV",
+        "q-bio.QM"
+      ],
+      "published": "2026-07-08T10:25:21+00:00",
+      "link": "https://arxiv.org/pdf/2607.07749v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "generative 3D priors via projected energy matching for high-dimensional 3D data",
+      "llm_evidence_cn": "通过投影能量匹配为高维三维数据提供生成式先验",
+      "llm_evidence": "通过投影能量匹配为高维三维数据提供生成式先验",
+      "canonical_evidence": "通过投影能量匹配为高维三维数据提供生成式先验",
+      "llm_tldr_en": "Projected Energy Matching resolves structural conflict in distilling flow models into energy-based models for 3D, improving generation quality and mode coverage.",
+      "llm_tldr_cn": "针对能量匹配中流模型速度场非保守旋转伪影导致的生成质量下降，提出投影能量匹配框架，通过投影修正结构冲突，提升了高维三维数据生成的保真度和模式覆盖。",
+      "llm_tldr": "针对能量匹配中流模型速度场非保守旋转伪影导致的生成质量下降，提出投影能量匹配框架，通过投影修正结构冲突，提升了高维三维数据生成的保真度和模式覆盖。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
