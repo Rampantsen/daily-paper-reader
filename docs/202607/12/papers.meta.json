@@ -1,0 +1,69 @@
+{
+  "label": "2026-07-12",
+  "date": "2026-07-12",
+  "generated_at": "2026-07-12T21:11:39",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202607/12/2607.04256v1-adaptivesplattexture-aware-controllable-3d-gaussian-allocation-for-feed-forward-reconstruction",
+      "section": "deep",
+      "title_en": "AdaptiveSplat:Texture Aware Controllable 3D Gaussian Allocation for Feed-Forward Reconstruction",
+      "authors": "Badrinath Singhal, Srihari K G, Sreehari Iyer, Ankit Dhiman, Venkatesh Babu Radhakrishnan",
+      "date": "2026-07-05",
+      "pdf": "https://arxiv.org/pdf/2607.04256v1",
+      "score": "9.0",
+      "evidence": "纹理感知可控3D高斯分配用于前馈重建",
+      "tldr": "现有前馈3D重建方法预测像素对齐的高斯原语，导致表示高度冗余，直接剪枝易引入伪影并破坏前馈范式。AdaptiveSplat观察到高频区域需更多高斯、低频区域可用更少表示，提出利用局部纹理信息显式控制高斯数量：先估计纹理捕捉场景细节变化，再进行纹理感知剪枝去除低频冗余，最后通过自适应高斯头预测保留原语属性，全程保持端到端前馈。在RE10K、ACID、DL3DV等数据集上验证有效，消融实验证实各模块贡献。该方法首次实现前馈范式下的可控高斯分配，显著提升重建效率，为高效3D重建带来新思路。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Current feed-forward 3D reconstruction methods predict pixel aligned Gaussian primitives, resulting in highly redundant representations. A natural solution is to prune the redundant Gaussians, but naive pruning introduces severe artifacts and often requires inference time fine-tuning, breaking the feed-forward paradigm. Based on previous works, high frequency regions require more Gaussian primitives, while low frequency regions can be represented with significantly fewer primitives. Motivated by this, we propose a novel approach to explicitly control the number of Gaussians by leveraging local texture information. Our approach achieves this through three key components: (1) texture estimation to capture spatial variation in scene detail, (2) texture-aware pruning that removes redundant Gaussians from low frequency regions, and (3) an adaptive Gaussian head that predicts the modified attributes of the retained primitives without breaking the feed-forward paradigm. Experiments on RE10K, ACID, DL3DV, Tanks and Temples, and DTU demonstrate the effectiveness of our approach, while ablation studies validate the contributions of its key components.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/12/2607.08250v1-on-the-design-of-mixture-of-experts-for-dynamic-gaussian-splatting",
+      "section": "deep",
+      "title_en": "On the Design of Mixture-of-Experts for Dynamic Gaussian Splatting",
+      "authors": "In-Hwan Jin, Hyeongju Mun, Joonsoo Kim, Kugjin Yun, Kyeongbo Kong",
+      "date": "2026-07-09",
+      "pdf": "https://arxiv.org/pdf/2607.08250v1",
+      "score": "9.0",
+      "evidence": "研究动态三维高斯表示的多样变形建模，改善多视图动态场景重建",
+      "tldr": "动态场景重建因真实运动异质性，单一变形模型鲁棒性不足。从混合专家视角，提出两种多变形集成策略：MoDE联合优化共享规范高斯，MoE-GS独立优化后路由组合。两种方法在不同约束下均有效融合多个变形专家，探索了动态高斯泼溅的多变形建模新范式，揭示了专家交互方式对表示设计的关键影响。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Dynamic scene reconstruction remains challenging due to the heterogeneous and spatially varying nature of real-world motion. Although recent 3D Gaussian Splatting methods have introduced diverse deformation formulations for dynamic novel view synthesis, each method typically relies on a single deformation model within its representation, which limits robustness across diverse dynamic scenarios. In this work, we study a fundamental problem-multi-deformation modeling for dynamic 3D Gaussian representations-under two distinct integration constraints that differ in when and how multiple deformation experts interact during training. From a Mixture-of-Experts (MoE) perspective, we view multi-deformation modeling as the problem of combining multiple specialized deformation models within a unified 3D representation. We first introduce Mixture of Deformation Experts (MoDE), which integrates multiple deformation experts directly into the deformable Gaussian Splatting pipeline through joint optimization. In MoDE, experts operate on a shared canonical Gaussian representation, enabling multi-deformation modeling without introducing additional training stages or modifying the original optimization schedule. In contrast, we further present Mixture of Experts for Dynamic Gaussian Splatting (MoE-GS) under a different integration constraint, where deformation experts are optimized independently and combined through a separate routing stage. As a result, expert interaction occurs over non-canonical Gaussian representations after individual optimization. Together, these two approaches provide alternative strategies for multi-deformation modeling, clarifying how integration constraints shape the design and behavior of deformation experts in dynamic 3D Gaussian representations. Our code is available at: https://github.com/cvsp-lab/MoE-GS-studio.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/12/2607.07452v1-geogs-slam-geometry-only-gaussian-splatting-for-dense-monocular-slam",
+      "section": "quick",
+      "title_en": "GeoGS-SLAM: Geometry-Only Gaussian Splatting for Dense Monocular SLAM",
+      "authors": "Lipu Zhou, Yaoyun Kang, Junxiang Pang, Shengkai Sun, Tingting Bao, Kehan Wang",
+      "date": "2026-07-08",
+      "pdf": "https://arxiv.org/pdf/2607.07452v1",
+      "score": "7.0",
+      "evidence": "通过仅几何高斯泼溅从单目视频进行稠密三维场景重建",
+      "tldr": "密集视觉SLAM是机器人基础问题，近年基于3D高斯泼溅的方法同时重建外观和几何，然而下游任务如导航和避障主要依赖精确几何而非逼真渲染，外观建模带来大量冗余参数和计算负担。针对此，我们提出了GeoGS，一种仅保留空间参数的几何高斯泼溅表示，通过局部平面驱动初始化更好地对齐局部结构，并结合单视图与多视图几何光度损失优化，显著加速几何收敛；此外，设计了全局地图变换的回环修正策略，防止因逐帧位姿修正不一致导致的地图撕裂。实验表明，在合成与真实数据集上，GeoGS-SLAM的在线建图效率和几何重建质量均超越当前最先进方法，高斯基元数量大幅减少，参数减少超过80%，对光照变化具有强鲁棒性。这项工作首次证明，不依赖外观建模的纯几何3DGS即可实现高效密集SLAM，为面向机器人任务的高效地图构建开辟了新方向。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Dense visual SLAM is a fundamental problem in robotics. Recent advances in 3DGS have demonstrated its potential for dense SLAM. Existing 3DGS frameworks focus on both appearance and geometry modeling. However, scene geometry is typically more critical for SLAM than novel view synthesis because downstream robotic tasks, such as navigation and obstacle avoidance, rely primarily on accurate spatial geometry rather than photorealistic rendering. This observation raises a natural question: Is it feasible for 3DGS to perform 3D reconstruction without scene appearance modeling? Motivated by this, we propose Geometry-only Gaussian Splatting (GeoGS), which directly reconstructs scene geometry, and further present GeoGS-SLAM, a dense visual SLAM system built upon this representation. Specifically, GeoGS retains only spatial parameters to reduce the number of per-primitive parameters by over 80%. In contrast to existing 3DGS methods, GeoGS focuses solely on geometric reconstruction, which significantly reduces the number of Gaussian primitives, accelerates geometric convergence, and enhances robustness to illumination variations. In addition, we present an effective training framework that optimizes the Gaussian primitives via single-view and multi-view geometric and photometric supervision, and speeds up geometry convergence with a local-plane driven initialization that better aligns primitives with local structures. Furthermore, we introduce a map update strategy for loop closure that globally transforms the Gaussian map to align it with the corrected pose estimates, thereby preventing map tearing caused by inconsistent per-viewpoint pose corrections in existing methods. Extensive experiments on synthetic and real-world benchmarks demonstrate that our method outperforms SOTA methods in terms of online mapping efficiency and geometric reconstruction quality.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/12/2607.05376v1-mv-forcing-long-multi-view-video-generation-via-4d-grounded-spatio-temporal-self-forcing",
+      "section": "quick",
+      "title_en": "MV-Forcing: Long Multi-View Video Generation via 4D-Grounded Spatio-Temporal Self-Forcing",
+      "authors": "Gal Fiebelman, Hadar Averbuch-Elor, Sagie Benaim",
+      "date": "2026-07-06",
+      "pdf": "https://arxiv.org/pdf/2607.05376v1",
+      "score": "6.0",
+      "evidence": "以自回归三维重建为桥梁生成多视角一致性长视频",
+      "tldr": "当前视频扩散模型仅能实现长单视图或短多视图生成，无法同时满足长时、多视角动态场景的一致性要求。MV-Forcing框架创新地通过自回归3D重建模型构建4D几何桥梁，将时间与视角自回归融合到单一扩散模型中，并利用联合去噪机制拓展至无界时序生成，再以分布匹配蒸馏消除自回归暴露偏差。在合成与真实数据上，该方法能以少步学生模型生成任意长度的多视角几何一致视频，显著推进了动态3D内容生成技术。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Recent advances in video diffusion models have enabled either long single-view generation through temporal autoregression, or short multi-view synthesis through bidirectional attention. However, generating long, multi-view consistent videos of dynamic scenes remains unsolved. In this work, we present MV-Forcing, a framework that composes temporal and view-wise autoregression within a single diffusion model by introducing a 4D geometric bridge between sequentially generated views. Our key insight is that an autoregressive 3D reconstruction model naturally interfaces between autoregressively generated views. Given a completed source view, we reconstruct its 3D structure and render a geometric prior of the next target viewpoint, which the diffusion model refines into a high-quality video. To extend generation beyond the teacher's fixed temporal window, we introduce a joint denoising regime where both view slots are initialized from noise during training, enabling temporally unbounded generation. We distill the model via Distribution Matching Distillation with Spatio-Temporal Self-Forcing, closing the train-inference exposure bias gap for both temporal and view-sequential autoregression. Extensive experiments on both synthetic and real-world data demonstrate that MV-Forcing produces geometrically consistent multi-view videos of dynamic scenes at arbitrary lengths and viewpoint counts using a single few-step student model.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
