@@ -1,0 +1,480 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-13T20:45:19.644530+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 11,
+    "deep_cap": 6,
+    "deep_selected": 8,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2607.09026v1",
+      "source": "arxiv",
+      "title": "Geometric planted matchings in high dimensions: The power of multiple views",
+      "abstract": "We study the problem of recovering the correspondence between a collection of $n$ points in $\\mathbb{R}^d$ and a noisy, permuted version of those points. In the high-dimensional regime $d=ω(\\log n)$, under a Gaussian model with noise variance $σ^2=d/(b\\log n)$, prior work identifies $b=2$ as the threshold for almost exact recovery. We prove that this threshold is all-or-nothing: for every fixed $b<2$, no estimator recovers a positive fraction of the matching, and even estimating the matched point cloud in Euclidean distance is asymptotically no better than ignoring the correspondence. On the other hand, we consider a multi-view generalization of the problem where $K$ noisy, independently permuted copies of the same latent point cloud are observed. Here we show that a simple polynomial-time procedure recovers all relative matchings up to $o(n)$ errors whenever $b>K/(K-1)$. Thus multiple views can break the impossibility barrier $b=2$ for the original matching problem: in particular, for $3/2 < b < 2$, the two-view model has no nontrivial recovery, but a third view makes all latent correspondences efficiently recoverable.",
+      "authors": [
+        "Timothy L. H. Wee",
+        "Kaylee Y. Yang",
+        "Zhou Fan",
+        "Cheng Mao"
+      ],
+      "primary_category": "math.ST",
+      "categories": [
+        "math.ST",
+        "cs.DS",
+        "math.PR"
+      ],
+      "published": "2026-07-10T01:17:10+00:00",
+      "link": "https://arxiv.org/pdf/2607.09026v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "multi-view point cloud matching under noise",
+      "llm_evidence_cn": "多视图点云匹配，含噪声",
+      "llm_evidence": "多视图点云匹配，含噪声",
+      "canonical_evidence": "多视图点云匹配，含噪声",
+      "llm_tldr_en": "Theoretically studies the threshold for exact recovery of point cloud correspondence with multiple noisy views, showing power of multi-view for matching.",
+      "llm_tldr_cn": "该工作从理论角度研究高维点云匹配问题，分析了在噪声和置换干扰下利用多视角观测恢复对应关系的相变阈值。证明了当视角数足够时，匹配精度指数级提升，并揭示了多视图匹配的‘全有或全无’现象。这为多视图立体匹配和三维重建中的特征对应提供了坚实的数学基础。",
+      "llm_tldr": "该工作从理论角度研究高维点云匹配问题，分析了在噪声和置换干扰下利用多视角观测恢复对应关系的相变阈值。证明了当视角数足够时，匹配精度指数级提升，并揭示了多视图匹配的‘全有或全无’现象。这为多视图立体匹配和三维重建中的特征对应提供了坚实的数学基础。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.09507v1",
+      "source": "arxiv",
+      "title": "DGSfM: Depth-Guided Scale-Aware Global Structure-from-Motion",
+      "abstract": "Global Structure-from-Motion (SfM) is an efficient paradigm for recovering camera poses and sparse 3D structure from unordered images. However, its reliance on scale-ambiguous epipolar geometry makes global positioning sensitive to noisy baseline estimates and weak view-graph constraints, while false edges from visually ambiguous pairs can further degrade reconstruction. We propose DGSfM, a depth-aware global SfM pipeline that uses monocular depth maps as a scalable prior while preserving explicit multi-view optimization. For each image pair, we use a depth-aware relative pose solver to convert scale-ambiguous epipolar constraints into scale-aware relative pose constraints. We further improve robustness through view-graph filtering and depth-consistency-based correspondence pruning, which suppress false edges and matches that remain plausible under epipolar geometry alone. Finally, global scale averaging and depth-guided pose-point initialization align monocular depth maps into a common reconstruction scale and provide stable initialization for global positioning and bundle adjustment. Experiments on ETH3D and IMC2021 show that DGSfM consistently improves over strong global SfM baselines across sparse and dense matching front-ends, achieving substantial gains in pose accuracy. Code is available at https://github.com/sithu31296/DGSfM.",
+      "authors": [
+        "Sithu Aung",
+        "Viktor Kocur",
+        "Yaqing Ding",
+        "Torsten Sattler",
+        "Zuzana Kukelova"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-10T15:18:37+00:00",
+      "link": "https://arxiv.org/pdf/2607.09507v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "depth-aware global SfM resolves scale ambiguity for robust and accurate multi-view 3D reconstruction",
+      "llm_evidence_cn": "深度感知的全局SfM解决尺度模糊，实现稳健精确的多视图3D重建",
+      "llm_evidence": "深度感知的全局SfM解决尺度模糊，实现稳健精确的多视图3D重建",
+      "canonical_evidence": "深度感知的全局SfM解决尺度模糊，实现稳健精确的多视图3D重建",
+      "llm_tldr_en": "DGSfM enhances global Structure-from-Motion by incorporating monocular depth maps to provide scale-aware relative poses, improving reconstruction robustness and accuracy from unordered image collections.",
+      "llm_tldr_cn": "为解决全局SfM依赖尺度模糊对极几何导致的不稳定问题，提出深度引导的全局SfM框架DGSfM。利用单目深度图作为可伸缩先验，通过深度感知相对位姿求解器将尺度模糊约束转化为尺度感知约束，并进行视图图过滤和深度一致性检查。在多套无序图像数据上，重建精度和鲁棒性显著超越传统方法，为大规模多视图3D重建提供了实用方案。",
+      "llm_tldr": "为解决全局SfM依赖尺度模糊对极几何导致的不稳定问题，提出深度引导的全局SfM框架DGSfM。利用单目深度图作为可伸缩先验，通过深度感知相对位姿求解器将尺度模糊约束转化为尺度感知约束，并进行视图图过滤和深度一致性检查。在多套无序图像数据上，重建精度和鲁棒性显著超越传统方法，为大规模多视图3D重建提供了实用方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.08808v1",
+      "source": "arxiv",
+      "title": "StereoSplat+: Feed-Forward Stereo Gaussian Splatting with Diffusion-Assisted Progressive Inference",
+      "abstract": "Recent advances in 3D Gaussian Splatting (3DGS) have enabled high-quality, render-ready scene representations for novel-view synthesis. However, most existing 3DGS pipelines rely on multi-view observations (or non-causal access to future frames) to achieve sufficient coverage, which is often unavailable in on-device robotics and AR settings where sensing is restricted to a single stereo rig. Recovering a high-quality 3DGS scene from one stereo observation, therefore, remains challenging due to occlusions, limited field of view, and missing geometry. We present StereoSplat+, a diffusion-enhanced feed-forward framework that enables causal reconstruction from a single stereo pair. Our method builds on two key components. First, we propose StereoSplat, an input-invariant feed-forward 3D Gaussian estimator that takes a variable number of posed stereo pairs as input and predicts high-quality 3D Gaussians. StereoSplat fuses complementary geometry cues via a cost-volume branch and a triplane-based 3D volume branch and leverages continuous pose encoding to generalize across view counts and camera configurations. Second, since multiple posed stereo pairs are typically unavailable at inference time, we introduce a diffusion-enhanced one-shot progressive inference scheme called StereoSplat+: starting from one stereo pair, we render novel stereo views from the predicted 3DGS, refine them with a one-step diffusion enhancer, and feed them back as additional inputs to update the 3DGS. Experiments on the KITTI-360 dataset show that StereoSplat+ improves novel-view rendering quality and geometry accuracy, especially in occluded regions and under strong view extrapolation, outperforming recent feed-forward 3DGS baselines.",
+      "authors": [
+        "Zihua Liu",
+        "Masatoshi Okutomi"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-09T16:32:45+00:00",
+      "link": "https://arxiv.org/pdf/2607.08808v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "feed-forward reconstruction of 3D Gaussian scene from a single stereo pair",
+      "llm_evidence_cn": "从单目立体对前馈重建三维高斯场景",
+      "llm_evidence": "从单目立体对前馈重建三维高斯场景",
+      "canonical_evidence": "从单目立体对前馈重建三维高斯场景",
+      "llm_tldr_en": "Achieves high-quality 3D Gaussian scene reconstruction from a single stereo pair using diffusion-enhanced progressive inference to handle occlusions and limited FOV.",
+      "llm_tldr_cn": "该工作针对单立体视图重建三维场景时因遮挡和视野受限导致质量差的问题，提出StereoSplat+框架。它结合扩散模型和渐进推理，以前馈方式从单个立体对直接生成高质量三维高斯场景，无需多帧或多视图信息。实验显示该方法在机器人等受限场景下实现了高保真重建。",
+      "llm_tldr": "该工作针对单立体视图重建三维场景时因遮挡和视野受限导致质量差的问题，提出StereoSplat+框架。它结合扩散模型和渐进推理，以前馈方式从单个立体对直接生成高质量三维高斯场景，无需多帧或多视图信息。实验显示该方法在机器人等受限场景下实现了高保真重建。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "multi-view stereo 3D reconstruction",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.08948v1",
+      "source": "arxiv",
+      "title": "SplatCtrl: Perception-Action Coupling via Gaussian Scene Representations and Reactive Robot Control",
+      "abstract": "Robotic manipulators excel in structured environments but face substantial challenges in unstructured and dynamic settings. This paper presents SplatCtrl, a unified framework for real-time scene reconstruction and reactive robot motion generation to enable collision-free robotic arm control in previously unseen and continuously changing environments. Building on 3D Gaussian Splatting (3D-GS), we introduce a hybrid voxel-based filtering and dynamic Gaussian relocation strategy that supports efficient scene reconstruction from RGB-D streams while accommodating environmental changes. For safe and reactive control, we further propose a method for deriving continuous signed distance functions from isotropic Gaussians, providing stable and differentiable collision probability estimates that bridge classical distance fields with the modern implicit representation. These continuous distance metrics are incorporated into control barrier functions, resulting in a unified perception-action coupling framework that supports smooth and reliable real-time motion generation in response to scene changes. Experimental validation in simulation, on physical robot, and within shared human-robot workspace demonstrates the framework's effectiveness, achieving integrated scene reconstruction and reactive control in uncertain, and dynamic environments.",
+      "authors": [
+        "Siddarth Jain",
+        "Ho Jin Choi"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-07-09T21:18:39+00:00",
+      "link": "https://arxiv.org/pdf/2607.08948v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Real-time 3D scene reconstruction for robot control",
+      "llm_evidence_cn": "面向机器人控制的实时三维场景重建",
+      "llm_evidence": "面向机器人控制的实时三维场景重建",
+      "canonical_evidence": "面向机器人控制的实时三维场景重建",
+      "llm_tldr_en": "SplatCtrl uses 3D Gaussian Splatting for real-time scene reconstruction and reactive robot motion generation, enabling collision-free control in dynamic environments.",
+      "llm_tldr_cn": "SplatCtrl 提出了一种基于3D高斯泼溅的实时场景重建与反应式机器人运动生成框架，通过混合体素过滤和动态高斯重定位策略适应环境变化，并可从各向同性高斯导出连续符号距离函数用于安全控制。实验表明该方法能在非结构化动态环境中实现鲁棒的避障操作。",
+      "llm_tldr": "SplatCtrl 提出了一种基于3D高斯泼溅的实时场景重建与反应式机器人运动生成框架，通过混合体素过滤和动态高斯重定位策略适应环境变化，并可从各向同性高斯导出连续符号距离函数用于安全控制。实验表明该方法能在非结构化动态环境中实现鲁棒的避障操作。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.09225v1",
+      "source": "arxiv",
+      "title": "Glob3R: Global Structure-from-Motion with 3D Foundation Models",
+      "abstract": "Recent 3D geometric foundation models, such as VGGT, provide robust feed-forward 3D reconstruction by directly predicting camera poses and 3D scene points from input images. However, their results remain inaccurate, and scaling them to long sequences or large unordered image sets typically requires chunk-wise processing, which can introduce drift and inconsistency. We present Glob3R, a global SfM-style reconstruction built on 3D foundation models. Our key idea is to explicitly optimize feed-forward geometric predictions. To this end, we augment a frozen Pi3X backbone with a lightweight dense matching head that predicts image warps between selected reference frames and neighboring views. These dense warps are converted into sparse but reliable multi-view feature tracks, which provide correspondence constraints for global optimization. We further introduce a keyframe-based sliding-window association strategy that propagates tracks and relative poses across overlapping windows, enabling scalable reconstruction. Finally, we perform global motion averaging and bundle adjustment to refine camera poses, reduce scale inconsistencies, and recover dense scene geometry. Extensive experiments on indoor, outdoor, large-scale driving, and unordered SfM benchmarks demonstrate that Glob3R achieves robust and accurate reconstruction. It consistently improves over feed-forward foundation-model baselines and recent scalable reconstruction methods, while being more robust than classical SfM pipelines. The refined poses also lead to higher-quality neural rendering, validating the benefit of combining foundation-model priors with global geometric optimization. Project page: https://junyuandeng.github.io/Glob3r",
+      "authors": [
+        "Junyuan Deng",
+        "Heng Li",
+        "Kejie Qiu",
+        "Lingteng Qiu",
+        "Rui Peng",
+        "Weichao Shen",
+        "Weihao Yuan",
+        "Siyu Zhu",
+        "Zilong Dong",
+        "Ping Tan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-10T09:18:35+00:00",
+      "link": "https://arxiv.org/pdf/2607.09225v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "global SfM reconstruction from multi-view images using dense matching and 3D foundation models",
+      "llm_evidence_cn": "利用密集匹配和三维基础模型从多视图图像进行全局运动恢复结构重建",
+      "llm_evidence": "利用密集匹配和三维基础模型从多视图图像进行全局运动恢复结构重建",
+      "canonical_evidence": "利用密集匹配和三维基础模型从多视图图像进行全局运动恢复结构重建",
+      "llm_tldr_en": "Glob3R performs global structure-from-motion by optimizing predictions from a 3D foundation model, using dense warps to generate reliable multi-view matches for robust camera pose and 3D point estimation, scaling to large image sets.",
+      "llm_tldr_cn": "Glob3R 在三维基础模型预测的基础上进行全局优化，通过添加密集匹配头生成可靠的视图间扭曲，转换为多视图特征对应，从而实现无漂移、一致的大规模全局运动恢复结构重建。在长序列和无序图像集上，该方法较现有几何基础模型显著提升了相机位姿和三维点精度，为大规模多视图重建提供了新方案。",
+      "llm_tldr": "Glob3R 在三维基础模型预测的基础上进行全局优化，通过添加密集匹配头生成可靠的视图间扭曲，转换为多视图特征对应，从而实现无漂移、一致的大规模全局运动恢复结构重建。在长序列和无序图像集上，该方法较现有几何基础模型显著提升了相机位姿和三维点精度，为大规模多视图重建提供了新方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "multi-view stereo 3D reconstruction",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.09260v1",
+      "source": "arxiv",
+      "title": "AnythingReality: Robust Online Gaussian Splatting SLAM for Open-Vocabulary VR Scene Exploration",
+      "abstract": "We present a novel integrated architecture for robust online 3D Gaussian splatting, real-time VR exploration, and speech-driven Vision-Language-Model interaction. Unlike methods assuming clean depth or external poses, our system combines ORB-SLAM3-based pose estimation with online Gaussian reconstruction for noisy real-world data. A VR pipeline enables immersive exploration of incremental reconstructions; a semantic module transcribes voice commands, generates scene descriptions, and records points of interest. Against state-of-the-art online Gaussian splatting methods, we improve image quality on our dataset (+14.5% PSNR, +8.6% SSIM, -14.3% LPIPS) and TUM-RGBD (+11.7% PSNR, +7.8% SSIM, -21.6% LPIPS), with comparable or superior frame rates via quality-speed configurations. We achieve an 88% VLM object-recognition rate.",
+      "authors": [
+        "Timofei Kozlov",
+        "Dmitrii Maliukov",
+        "Andrey Marchenko",
+        "Miguel Altamirano Cabrera",
+        "Dzmitry Tsetserukou"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-10T10:21:23+00:00",
+      "link": "https://arxiv.org/pdf/2607.09260v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "robust online 3D scene reconstruction with Gaussian splatting and SLAM from multi-view images",
+      "llm_evidence_cn": "利用高斯溅射SLAM从多视角图像进行鲁棒在线3D场景重建",
+      "llm_evidence": "利用高斯溅射SLAM从多视角图像进行鲁棒在线3D场景重建",
+      "canonical_evidence": "利用高斯溅射SLAM从多视角图像进行鲁棒在线3D场景重建",
+      "llm_tldr_en": "Presents an integrated system for online 3D Gaussian splatting reconstruction and VR exploration, combining ORB-SLAM3 pose estimation with semantic interaction for noisy real-world data.",
+      "llm_tldr_cn": "针对真实噪声数据下在线三维重建的挑战，提出集成ORB-SLAM3位姿估计与在线高斯溅射的鲁棒架构，并支持VR沉浸式浏览和语音驱动的语义交互。在自采数据和TUM-RGBD上显著提升重建质量（PSNR提高11.7-14.5%），为实时三维场景探索提供了完整方案。",
+      "llm_tldr": "针对真实噪声数据下在线三维重建的挑战，提出集成ORB-SLAM3位姿估计与在线高斯溅射的鲁棒架构，并支持VR沉浸式浏览和语音驱动的语义交互。在自采数据和TUM-RGBD上显著提升重建质量（PSNR提高11.7-14.5%），为实时三维场景探索提供了完整方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.09455v1",
+      "source": "arxiv",
+      "title": "Hydra++: Real-Time Hierarchical 3D Scene Graph Construction With Object-Level Shape Estimation",
+      "abstract": "3D scene graphs provide a hierarchical abstraction of environments by encoding spatial entities, such as objects and places, and their relationships. However, existing scene graph systems model object geometry coarsely, relying on partial point clouds or class-level CAD templates, which limits instance-specific shape detail. This paper presents Hydra++, a system-level investigation into how learning-based object shape estimators can be integrated into a hierarchical 3D scene graph pipeline. Hydra++ incorporates category-agnostic shape estimation and a reprojection-mask consistency check to reject degenerate predictions from partial observations or imprecise segmentation. In its default CRISP-based configuration, Hydra++ performs online scene graph construction; slower estimators such as SAM3D are evaluated as modular alternatives to demonstrate generalization-latency trade-offs. Furthermore, to address the challenges of sparse and noisy depth measurements in outdoor environments, Hydra++ supports a hybrid LiDAR-camera configuration for large-scale operation, improving scene-level reconstruction quality. Experiments in both simulation and real-world outdoor campus scenarios demonstrate that Hydra++ improves object- and scene-level reconstruction quality. Project page is available at https://hydra-plusplus.github.io/.",
+      "authors": [
+        "Hyungtae Lim",
+        "Nathan Hughes",
+        "Xihang Yu",
+        "Ruihan Xu",
+        "Yun Chang",
+        "Jingnan Shi",
+        "Rajat Talak",
+        "Luca Carlone"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.RO"
+      ],
+      "published": "2026-07-10T14:24:16+00:00",
+      "link": "https://arxiv.org/pdf/2607.09455v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Hierarchical 3D scene graph with object-level shape estimation",
+      "llm_evidence_cn": "带物体级形状估计的层次化三维场景图",
+      "llm_evidence": "带物体级形状估计的层次化三维场景图",
+      "canonical_evidence": "带物体级形状估计的层次化三维场景图",
+      "llm_tldr_en": "Hydra++ integrates learning-based object shape estimators into a real-time 3D scene graph pipeline, improving instance-specific geometry and using consistency checks.",
+      "llm_tldr_cn": "现有三维场景图系统对物体几何建模粗糙。Hydra++ 将基于学习的物体形状估计器集成到实时层次化三维场景图流水线中，采用类别无关的形状估计和重投影掩码一致性检查来剔除低质量预测，从而提升每个实例的形状细节。实验表明该方法在场景图构建和物体分割上达到了先进水平。",
+      "llm_tldr": "现有三维场景图系统对物体几何建模粗糙。Hydra++ 将基于学习的物体形状估计器集成到实时层次化三维场景图流水线中，采用类别无关的形状估计和重投影掩码一致性检查来剔除低质量预测，从而提升每个实例的形状细节。实验表明该方法在场景图构建和物体分割上达到了先进水平。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.09503v1",
+      "source": "arxiv",
+      "title": "What VGGT Knows About Overlap: Probing Geometric Foundation Models for Co-Visibility",
+      "abstract": "A fundamental challenge in 3D reconstruction and robotic localization is co-visibility: determining which image pairs share overlapping visible surfaces, particularly in scenarios with minimal overlap. We demonstrate that VGGT implicitly encodes co-visibility as an emergent behavior: without any supervision for this task, its internal representations exhibit a clear hierarchical structure mirroring that of large language models, i.e. early layers build a 3D-aware scene representation, while late layers act as dedicated co-visibility reasoners. In particular, we identify layer L17 as a negative anchor that consistently routes non-co-visible pairs for this backbone, regardless of the evaluation setting, providing task-grounded evidence of layer specialization in a geometry-grounded foundation model. Building on this, we introduce Co-VGGT, which freezes VGGT and trains only a lightweight layer-wise mixture-of-experts head (less than 7.5M parameters) to classify co-visibility from RGB alone, treating each layer as a specialized expert whose geometric abstraction is adaptively weighted per input pair. On the Co-VisiON benchmark, Co-VGGT surpasses the human annotation baseline and improves over prior work by more than 25% pairwise and 10% multiview. Pairwise predictions are well-calibrated (ECE=0.030), enabling direct use as edge weights in visibility graphs for downstream SfM and SLAM pipelines without post-hoc correction. Code and data are available.",
+      "authors": [
+        "Filippo Ziliotto",
+        "Luciano Serafini",
+        "Lamberto Ballan",
+        "Tommaso Campari"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-07-10T15:17:02+00:00",
+      "link": "https://arxiv.org/pdf/2607.09503v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "VGGT implicitly encodes co-visibility, with late layers acting as dedicated co-visibility reasoners",
+      "llm_evidence_cn": "VGGT隐式编码共视性，后期层作为专门的共视推理器",
+      "llm_evidence": "VGGT隐式编码共视性，后期层作为专门的共视推理器",
+      "canonical_evidence": "VGGT隐式编码共视性，后期层作为专门的共视推理器",
+      "llm_tldr_en": "The paper probes VGGT and finds it implicitly learns co-visibility without supervision, exhibiting a hierarchical structure where late layers specialize in routing co-visible vs. non-co-visible pairs, aiding feature matching for 3D reconstruction.",
+      "llm_tldr_cn": "针对3D重建中图像共视性判断的挑战，该文探究几何基础模型VGGT，发现其无监督地隐式编码了共视性，内部表征呈现层次化结构，早期层构建3D场景表达，后期层则专门进行共视推理，特别是L17层作为负锚点可靠分离非共视对。该发现为基于深层特征的特征匹配和视图选择提供了新工具。",
+      "llm_tldr": "针对3D重建中图像共视性判断的挑战，该文探究几何基础模型VGGT，发现其无监督地隐式编码了共视性，内部表征呈现层次化结构，早期层构建3D场景表达，后期层则专门进行共视推理，特别是L17层作为负锚点可靠分离非共视对。该发现为基于深层特征的特征匹配和视图选择提供了新工具。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.05376v1",
+      "source": "arxiv",
+      "title": "MV-Forcing: Long Multi-View Video Generation via 4D-Grounded Spatio-Temporal Self-Forcing",
+      "abstract": "Recent advances in video diffusion models have enabled either long single-view generation through temporal autoregression, or short multi-view synthesis through bidirectional attention. However, generating long, multi-view consistent videos of dynamic scenes remains unsolved. In this work, we present MV-Forcing, a framework that composes temporal and view-wise autoregression within a single diffusion model by introducing a 4D geometric bridge between sequentially generated views. Our key insight is that an autoregressive 3D reconstruction model naturally interfaces between autoregressively generated views. Given a completed source view, we reconstruct its 3D structure and render a geometric prior of the next target viewpoint, which the diffusion model refines into a high-quality video. To extend generation beyond the teacher's fixed temporal window, we introduce a joint denoising regime where both view slots are initialized from noise during training, enabling temporally unbounded generation. We distill the model via Distribution Matching Distillation with Spatio-Temporal Self-Forcing, closing the train-inference exposure bias gap for both temporal and view-sequential autoregression. Extensive experiments on both synthetic and real-world data demonstrate that MV-Forcing produces geometrically consistent multi-view videos of dynamic scenes at arbitrary lengths and viewpoint counts using a single few-step student model.",
+      "authors": [
+        "Gal Fiebelman",
+        "Hadar Averbuch-Elor",
+        "Sagie Benaim"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR"
+      ],
+      "published": "2026-07-06T17:54:16+00:00",
+      "link": "https://arxiv.org/pdf/2607.05376v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "generates long multi-view consistent videos using a 4D geometric bridge via autoregressive 3D reconstruction",
+      "llm_evidence_cn": "利用自回归3D重建作为4D几何桥梁，生成多视角一致的长视频",
+      "llm_evidence": "利用自回归3D重建作为4D几何桥梁，生成多视角一致的长视频",
+      "canonical_evidence": "利用自回归3D重建作为4D几何桥梁，生成多视角一致的长视频",
+      "llm_tldr_en": "MV-Forcing composes temporal and view autoregression within a diffusion model, using an autoregressive 3D reconstruction model to bridge views, enabling long multi-view video generation with consistency.",
+      "llm_tldr_cn": "针对现有模型无法生成既长且多视角一致的动态场景视频的难题，提出MV-Forcing框架，在单一扩散模型内组合时序和视角自回归，创新地引入自回归3D重建模型作为几何桥梁，从已完成视角重建3D结构并渲染下一视角的先验，从而实现长时多视角视频生成。实验表明该方法能有效保持视角一致性并延长视频长度。",
+      "llm_tldr": "针对现有模型无法生成既长且多视角一致的动态场景视频的难题，提出MV-Forcing框架，在单一扩散模型内组合时序和视角自回归，创新地引入自回归3D重建模型作为几何桥梁，从已完成视角重建3D结构并渲染下一视角的先验，从而实现长时多视角视频生成。实验表明该方法能有效保持视角一致性并延长视频长度。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2607.05354v1",
+      "source": "arxiv",
+      "title": "Geometric Reciprocity: Unlocking Self-Supervision for Stereoscopic Video Generation",
+      "abstract": "Monocular-to-stereo conversion synthesizes stereoscopic content from 2D videos for immersive 3D experiences. In modern Depth-Image-Based Rendering (DIBR) approaches, stereo inpainting of disocclusions is the critical bottleneck. Training-based methods achieve superior quality but rely on scarce stereo pairs or synthetic data with domain gaps. We address this through the first self-supervised framework learning from monocular videos via cycle consistency. Our key contribution is the Geometric Reciprocity Theorem (GRT): under the nearest-neighbor DIBR formulation, the disocclusion mask when synthesizing a target view equals the mask of pixels lost when warping back from target to source, enabling analytical computation of test-time disocclusion masks directly from monocular images. This yields train-test consistency for the stated warping formulation, supporting self-supervised learning from unlimited monocular videos and substantial improvements over training-free and supervised state-of-the-art methods. Project page: https://visual-ai.github.io/grt/",
+      "authors": [
+        "Jingyi Lu",
+        "Kai Han"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-06T17:32:04+00:00",
+      "link": "https://arxiv.org/pdf/2607.05354v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "self-supervised stereo video generation using geometric reciprocity for disocclusion",
+      "llm_evidence_cn": "利用几何互易性自监督生成立体视频及处理去遮挡",
+      "llm_evidence": "利用几何互易性自监督生成立体视频及处理去遮挡",
+      "canonical_evidence": "利用几何互易性自监督生成立体视频及处理去遮挡",
+      "llm_tldr_en": "This paper proposes a self-supervised method for monocular-to-stereo video generation, introducing the Geometric Reciprocity Theorem to analytically compute disocclusion masks, removing the need for paired stereo training data.",
+      "llm_tldr_cn": "针对立体生成依赖稀缺立体数据的问题，提出首个自监督学习框架，仅从单目视频学习单目转立体。核心贡献是几何互易定理：在该定理下，目标视图合成时的去遮挡掩码等于从目标回投到源时丢失像素的掩码，从而可分析计算去遮挡区域。方法无需立体对监督，在立体视频生成中取得高质量结果。",
+      "llm_tldr": "针对立体生成依赖稀缺立体数据的问题，提出首个自监督学习框架，仅从单目视频学习单目转立体。核心贡献是几何互易定理：在该定理下，目标视图合成时的去遮挡掩码等于从目标回投到源时丢失像素的掩码，从而可分析计算去遮挡区域。方法无需立体对监督，在立体视频生成中取得高质量结果。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "multi-view stereo 3D reconstruction",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.08970v1",
+      "source": "arxiv",
+      "title": "MultiView-Bench: A Diagnostic Benchmark for World-Centric Multi-View Integration in VLMs",
+      "abstract": "Recent benchmarks for VLMs largely assess single- or limited-view perception, leaving untested the core cognitive ability to integrate observations across viewpoints into a coherent, world-centric (allocentric) 3D mental model. We introduce MultiView-Bench, a diagnostic benchmark expressly designed to evaluate multi-view integration for holistic 3D scene comprehension. Unlike existing datasets that focus on pixel-level mapping or camera-relative navigation, MultiView-Bench requires models to decouple object positioning from transient perspectives and ground them in a fixed global coordinate system. This capability serves as a prerequisite for VLMs before being deployed for downstream tasks such as mechanical part assembly. Our systematic evaluation of frontier VLMs reveals consistent failure modes: strong performance on 2D planar relations from a single image, but marked difficulty with 3D spatial relations and with aggregating information across views. We further identify biases in VLMs, such as struggles with unconventional axis directions and sensitivity to object colorways and texture variations. Acknowledging these limitations, we propose ViewNavigator, a multi-agent framework that actively selects informative viewpoints, perceives, and fuses multi-view evidence, improving diverse base models on MultiView-Bench even under a strict budget-matched comparison (and by 3-5x for the full agent).",
+      "authors": [
+        "Hantao Zhang",
+        "Jinru Sui",
+        "Ed Li",
+        "Dirk Bergemann",
+        "Zhuoran Yang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-07-09T22:22:42+00:00",
+      "link": "https://arxiv.org/pdf/2607.08970v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "diagnostic benchmark for evaluating multi-view integration into world-centric 3D scene comprehension",
+      "llm_evidence_cn": "评估将多视图整合到以世界为中心的三维场景理解的诊断基准",
+      "llm_evidence": "评估将多视图整合到以世界为中心的三维场景理解的诊断基准",
+      "canonical_evidence": "评估将多视图整合到以世界为中心的三维场景理解的诊断基准",
+      "llm_tldr_en": "MultiView-Bench evaluates the ability of vision-language models to integrate multiple views into a coherent allocentric 3D scene representation, a crucial prerequisite for tasks like multi-view reconstruction and understanding.",
+      "llm_tldr_cn": "MultiView-Bench 评测视觉语言模型将多视角观察整合为统一的世界中心三维场景表示的能力。该基准要求模型解耦物体位置与视角，将其固定于全局坐标系，是三维场景理解与重建前的关键前提。实验系统评估了现有 VLM 的多视图集成能力，揭示了从相机相对到世界绝对推理的挑战，为开发鲁棒的多视图三维理解模型提供了诊断工具。",
+      "llm_tldr": "MultiView-Bench 评测视觉语言模型将多视角观察整合为统一的世界中心三维场景表示的能力。该基准要求模型解耦物体位置与视角，将其固定于全局坐标系，是三维场景理解与重建前的关键前提。实验系统评估了现有 VLM 的多视图集成能力，揭示了从相机相对到世界绝对推理的挑战，为开发鲁棒的多视图三维理解模型提供了诊断工具。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "feature matching and 3D scene understanding from large scale image collections",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2607.09125v1",
+      "source": "arxiv",
+      "title": "4D Human-Scene Reconstruction from Low-Overlap Captures",
+      "abstract": "Existing volumetric capture of dynamic human performance achieves high fidelity with dense camera arrays. However, in real-world scenarios, only a handful of low-overlap cameras are available, which degrades the output quality and leaves large areas unobserved. Recent 4D reconstruction methods have focused on low-overlap settings, yet they still produce noticeable artifacts in under-observed regions. Video diffusion models have emerged as another option, but they show geometrically inconsistent results for humans. To address these limitations, we propose StudioRecon, a pipeline that reconstructs 4D human scenes from sparse, low-overlap cameras by decoupling background and humans. We densify background supervision by synthesizing hundreds of camera-controlled novel views with a video diffusion model. We also robustly initialize deformable Gaussian humans with cross-view identity association and triangulated multi-view keypoint fitting. Finally, our recursive enhancement module with motion-adaptive consistency injection harmonizes the composed output, thereby further avoiding remaining artifacts. We achieve state-of-the-art novel view synthesis across four real-world datasets and demonstrate applications such as novel trajectory rendering and human replacement.",
+      "authors": [
+        "Minhyuk Hwang",
+        "Sangmin Kim",
+        "Seunguk Do",
+        "Daneul Kim",
+        "Jaesik Park"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-10T06:30:45+00:00",
+      "link": "https://arxiv.org/pdf/2607.09125v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "4D human-scene reconstruction from sparse low-overlap cameras, decoupling background and human",
+      "llm_evidence_cn": "从稀疏低重叠相机进行四维人-场景重建，解耦背景与人物",
+      "llm_evidence": "从稀疏低重叠相机进行四维人-场景重建，解耦背景与人物",
+      "canonical_evidence": "从稀疏低重叠相机进行四维人-场景重建，解耦背景与人物",
+      "llm_tldr_en": "StudioRecon reconstructs dynamic 4D human-scene from sparse low-overlap views by synthesizing novel views for background densification and using diffusion priors for human reconstruction, achieving high-quality novel view synthesis.",
+      "llm_tldr_cn": "StudioRecon 针对低重叠相机下的动态人-场景重建问题，提出解耦背景与人物并分别处理的管线。通过合成数百个新视角视频稠密化背景监督，并利用视频扩散先验指导未见区域的人体重建，显著提升了稀疏视角下的重建质量和新视角合成效果，为实用化三维人体捕捉提供了解决方案。",
+      "llm_tldr": "StudioRecon 针对低重叠相机下的动态人-场景重建问题，提出解耦背景与人物并分别处理的管线。通过合成数百个新视角视频稠密化背景监督，并利用视频扩散先验指导未见区域的人体重建，显著提升了稀疏视角下的重建质量和新视角合成效果，为实用化三维人体捕捉提供了解决方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    }
+  ]
+}

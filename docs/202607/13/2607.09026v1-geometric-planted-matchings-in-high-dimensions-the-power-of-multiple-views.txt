@@ -1,0 +1,5994 @@
+Title: Geometric planted matchings in high dimensions: The power of multiple views
+
+URL Source: https://arxiv.org/pdf/2607.09026v1
+
+Published Time: Mon, 13 Jul 2026 00:15:41 GMT
+
+Number of Pages: 43
+
+Markdown Content:
+# Geometric planted matchings in high dimensions: The power of multiple views 
+
+Timothy L. H. Wee ∗ Kaylee Y. Yang † Zhou Fan ‡ Cheng Mao §
+
+Abstract 
+
+We study the problem of recovering the correspondence between a collection of n points in 
+
+Rd and a noisy, permuted version of those points. In the high-dimensional regime d = ω(log n), under a Gaussian model with noise variance σ2 = d/ (b log n), prior work identifies b = 2 as the threshold for almost exact recovery. We prove that this threshold is all-or-nothing: for every fixed b < 2, no estimator recovers a positive fraction of the matching, and even estimating the matched point cloud in Euclidean distance is asymptotically no better than ignoring the correspondence. On the other hand, we consider a multi-view generalization of the problem where K noisy, independently permuted copies of the same latent point cloud are observed. Here we show that a simple polynomial-time procedure recovers all relative matchings up to 
+
+o(n) errors whenever b > K/ (K − 1). Thus multiple views can break the impossibility barrier 
+
+b = 2 for the original matching problem: in particular, for 3 /2 < b < 2, the two-view model has no nontrivial recovery, but a third view makes all latent correspondences efficiently recoverable. 
+
+# Contents 
+
+1 Introduction 2
+
+1.1 Related work . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+
+2 Main results 4
+
+2.1 Two-view geometric planted matching . . . . . . . . . . . . . . . . . . . . . . . . . . 42.2 Multi-view geometric planted matching . . . . . . . . . . . . . . . . . . . . . . . . . 62.3 Gaussian weighted matching . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+
+3 Proof overview of Theorems 2.1 and 2.5 9A Proofs for the two-view negative result 12 
+
+A.1 Upper bound on restricted free energy . . . . . . . . . . . . . . . . . . . . . . . . . . 15 A.2 Asymptotics of the full free energy . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18 A.2.1 High probability event . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21 A.2.2 First moment computations . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28 A.2.3 Second moment . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 29 A.2.4 Proof of Theorem A.3 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 34 A.3 Proof of Corollary 2.2 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 36 
+
+> ∗
+
+School of Mathematics, Georgia Institute of Technology, timothy.wee@gatech.edu 
+
+> †
+
+Department of Statistics and Data Science, Yale University, yingxi.yang@yale.edu 
+
+> ‡
+
+Department of Statistics and Data Science, Yale University, zhou.fan@yale.edu 
+
+> §
+
+School of Mathematics, Georgia Institute of Technology, cheng.mao@math.gatech.edu 
+
+1arXiv:2607.09026v1 [math.ST] 10 Jul 2026 B Proofs for the multi-view positive result 37 
+
+# 1 Introduction 
+
+Let X1, . . . , X n be a point cloud consisting of independent standard Gaussian vectors in Rd. In the geometric planted matching model, one observes the original point cloud as well as a noisy permuted copy 
+
+Yi = XΠ∗(i) + σZ i, i = 1 , . . . , n, (1) where the noise Z1, . . . , Z n are independent standard Gaussian vectors in Rd, σ is the noise scaling, and Π ∗ is an unknown uniformly random permutation, viewed as a bijection on [ n]. The goal is to recover Π ∗.This model captures the fundamental task of identifying unknown correspondences between un-ordered objects from noisy features. Such matching problems arise across science and engineering, including in single-cell data integration and multi-omics alignment [HLMM18, DSS +22, CJM +22], particle tracking [CKK +10], image matching [MJF +21], record linkage [SBSBS16], and network alignment [BGG +09]. Across these settings, the same statistical and algorithmic question recurs: what level of noise can the observations tolerate so that the latent correspondence remains recov-erable, and when can this be done efficiently? Our results and techniques pertain to the high-dimensional regime where d = ω(log n) and where the noise scales as 
+
+σ2 = db log n ,
+
+where b > 0 is a fixed parameter. This is the critical scaling in which sharp recovery transitions occur at constant values of b.Much of the existing theory for geometric planted matching has focused on exact or almost exact recovery , where one must identify all but o(n) of the matched pairs. Prior results [KNW22, DCK23, WWXY22] place the almost exact recovery threshold at b = 2. However, this still leaves open the nature of the recovery landscape below the threshold for this canonical model. In particular, for 
+
+b < 2, it is plausible that an estimator might still recover a positive fraction of the matching, or might localize the matched point cloud well in Euclidean distance, producing a “something” phase that straddles between almost exact recovery and total failure. In this paper we resolve this uncertainty. Our results rule out the presence of a “something” phase for b < 2. Instead we show that the model is in a strong “nothing” phase: the posterior assigns exponentially small mass to the set of permutations that agree with the truth on any fixed positive fraction of indices. In particular, no estimator can achieve nonvanishing overlap with the true permutation Π ∗. Furthermore, this failure is not only combinatorial: even if one only asks to reconstruct the matched point cloud ( XΠ∗(1) , . . . , X Π∗(n)) in Euclidean distance, the observations are asymptotically no more informative than in the case where the correspondence is completely absent. Thus, for b < 2, the data support neither weak recovery of the permutation nor geometrically accurate matching of the points. On the other hand, multiple views reveal a different side of the same matching problem. In-formally, instead of one noisy copy, we observe K independently relabeled noisy views of the same point cloud X1, . . . , X n,
+
+Y (a) 
+
+> i
+
+= X¯Π(a)  
+
+> ∗(i)
+
++ independent Gaussian noise , i = 1 , . . . , n, a = 0 , . . . , K − 1, (2) where the ¯Π(a) 
+
+> ∗
+
+’s are independent uniformly random permutations. The original point cloud itself is not observed, so the absolute labels of the latent points are unidentifiable; the task is instead 2to determine which rows in different views correspond to the same latent point. For K = 2, this coincides with (1) after choosing one view as the reference and passing to the relative permutation. This can be viewed as a stylized multi-view registration problem, abstracting settings such as multi-sensor point-cloud fusion [PCS15], record linkage across multiple databases [Chr12], single-particle cryo-EM [BBS20], or matching high-dimensional embeddings of the same entities across several modalities [DSS +22, CJM +22]. The effect of multiple views is not obvious a priori. Additional observations of the same latent point cloud are obtained, but more latent matchings have to be estimated. At the same time, multiple views create consistency checks that are absent from the two-view problem: a proposed tuple of matches must agree across many pairwise comparisons. Our results show that the balance comes out favorably: for fixed K, and with an analogous high-dimensional scaling indexed by b, a polynomial-time algorithm achieves almost exact recovery for b > K/ (K − 1). Already for K = 3, this gives a clean illustration of the gain from multiple views: for 3 /2 < b < 2, two views give us nothing, but an additional third view breaks this barrier and permits efficient recovery of all 
+
+relative matchings. As by-products of our arguments, we also obtain analogous negative results for a “ d = ∞”Gaussian weighted matching model of standalone interest, where geometric correlations are replaced by independent Gaussian noise. In addition, by data processing, our negative results transfers over to geometric graph matching models [WWXY22] that are stochastically degraded variants of (1). 
+
+1.1 Related work 
+
+Planted matchings. The overarching goal in these problems is to uncover a hidden correspon-dence between two collections of objects based on noisy observations. A mathematical formulation arose in the context of particle tracking [CKK +10], where geometric observations determine the like-lihood of pairing particles across images. A parallel, non-geometric line studied independent-edge planted matching models [SSZ20, MMX21, DWXY23, WM25, ABAL +26]. Closer to the geometric motivation, [KNW22, DCK23] studied Gaussian point-cloud matching, with related work going beyond Gaussianity [dRSO24], models with low-rank signals [CJM +22], and uncertainty quantifi-cation in match probabilities [FWY26]. A multiple view setting in the context of non-geometric Gaussian graph alignment was studied in [EG25]. 
+
+High-dimensional geometric matching. The geometric matching model (1) in the high-dimensional setting of d = ω(log n) and σ2 = d/ (b log n) has been studied by [KNW22, DCK23, WWXY22]. A major focus in [KNW22, DCK23] is the maximum likelihood estimator (MLE), which corresponds to the solution of a linear assignment problem with weights induced by the two observed point clouds. For b > 4, Kunisky and Niles-Weed [KNW22] proves that the MLE achieves exact recovery. For 
+
+b < 4, they instead conjectured that the MLE makes Ω( n) errors. Additionally, a heuristic analysis of a row-wise inner-product procedure is provided, predicting almost exact recovery for b > 2. Dai et al. [DCK23] studied an asymptotically equivalent setting from the perspective of database alignment. Their results determine polynomial error rates for the MLE throughout the intermediate regime 2 < b < 4. In particular, [DCK23] asserts that the MLE attains almost exact recovery for every b > 2. This contrasts with the high-dimensional conjectural picture in [KNW22], while agreeing with the proved exact recovery threshold at b = 4. Wang et al. [WWXY22] studied geometric graph observations generated from latent point clouds (1). In order to prove negative results, [WWXY22] gave a necessary condition ruling out almost exact recovery for b < 2 in the more stochastically informative model (1), agreeing with and 3supplementing the results of [KNW22, DCK23]. Our results strengthen this by ruling out the possibility of nontrivial recovery for b < 2. Furthermore, our results also rule out a “something” phase for the geometric graph models of [WWXY22] below the critical threshold. Our proofs are based on a conditional second moment method which differs from the rate distortion approach in [WWXY22]. 
+
+# 2 Main results 
+
+2.1 Two-view geometric planted matching 
+
+We start by formally defining the model. Let Pn denote the set of n × n permutation matrices. In the geometric planted matching problem we observe 
+
+X and Y = Π ∗X + σZ, (3) where Π ∗ is an n×n uniformly random permutation matrix in Pn, where X and Z are n×d matrices with i.i.d. standard Gaussian entries, and where σ > 0 is a noise parameter. We think of the rows of 
+
+X as an n-point cloud in Rd, so that the rows of Y are a noisy, randomly permuted version of those points. Here and throughout, we identify a permutation matrix Π with its associated bijection, and abuse notation by writing Π( i) for the unique j such that Π ij = 1. Thus (3) is equivalent to the row-wise formulation (1) in the introduction. We are interested in the “high-dimensional” regime where 
+
+σ2 = db log n and d = ω(log n), (4) where b > 0 is a fixed parameter. In particular σ2 → ∞ .Our main message for this model is that b = 2 is a sharp “all-or-nothing” phase transition for recovering Π ∗. The “all” side refers to almost exact recovery (AER): producing an estimator bΠwhose overlap with the truth satisfies Tr bΠΠ ⊤∗ /n → 1, or equivalently whose number of mismatches is o(n). For b > 2, this positive side can be deduced from prior work [KNW22, DCK23, WWXY22]. The novel content is the “nothing” side for b < 2. Here we show that not only does AER fail, but no estimator can recover even a positive fraction of the matching. In fact, we show a stronger statement: the posterior assigns exponentially small mass to permutations whose overlap with the truth is bounded away from zero. Consequently, we derive two information-theoretic impossibility statements, one for estimating the discrete permutation and one for estimating the matched point cloud in Euclidean distance. Let ⟨·⟩ denote the expectation with respect to the posterior distribution of Π ∗, given X and Y.This posterior is given as follows: for any function f on permutation matrices in Pn,
+
+⟨f ⟩ = 1
+
+Zn,d (σ)
+
+X
+
+> Π∈Pn
+
+f (Π) exp 
+
+ 1
+
+σ2 Tr ΠXY ⊤
+
+
+
+, Zn,d (σ) = X
+
+> Π∈Pn
+
+exp 
+
+ 1
+
+σ2 Tr ΠXY ⊤
+
+
+
+. (5) 
+
+Theorem 2.1. Let Π denote a sample from the posterior distribution. Then the following hold. (i) Suppose b < 2 is fixed. For any fixed δ ∈ (0 , 1] , there exists a constant Cb,δ > 0 such that, for all large n,
+
+E
+
+D
+
+1
+
+n
+
+Tr Π∗Π⊤ ≥ δn 
+
+oE 
+
+≤ exp ( −Cb,δ n log n) . (6) 4(ii) Suppose b > 2 is fixed. Then for any fixed δ ∈ (0 , 1) ,
+
+E
+
+D
+
+1
+
+n
+
+Tr Π∗Π⊤ ≤ (1 − δ)n
+
+oE 
+
+→ 0.
+
+The negative result (i) is proved in Appendix A. The positive result (ii) follows from the K = 2 specialization of Theorem 2.5 below, whose proof is given in Appendix B, and can also be de-duced from prior almost exact recovery results [KNW22, DCK23, WWXY22]. Nevertheless, for completeness, we give formal proofs for both parts of Theorem 2.1 in Appendices A and B. We now translate this posterior overlap statement into information-theoretic impossibility state-ments. Let ⟨Π⟩ = E[Π | X, Y] denote the posterior mean. Define 
+
+MMSE (b) := inf 
+
+> bΠ( X,Y)
+
+E bΠ( X, Y) − Π∗ 
+
+> 2
+> F
+
+= E ∥⟨ Π⟩ − Π∗∥2 
+
+> F
+
+,
+
+where the infimum ranges over all possible estimators. Thus MMSE (b) is the minimum achievable mean-squared error for recovering the planted matching based on ( X, Y). We also consider a geometric version of this error, in which the goal is not to recover the permutation itself, but rather the matched point cloud Π ∗X. Define 
+
+Y-MMSE (b) := inf 
+
+> bS(X,Y)
+
+E bS(X, Y) − Π∗X 2 
+
+> F
+
+, (7) where the infimum ranges over all estimators of the matched point cloud. A computation shows that the mean-squared error for recovering Π ∗ achieved by the dummy estimator EΠ∗ = 1 
+
+> n
+
+11 ⊤ is n − 1. Similarly the mean-squared error for recovering the matched point cloud Π ∗X achieved by the dummy estimator 1 
+
+> n
+
+11 ⊤X is ( n − 1) d. Our next result shows that for 
+
+b < 2, asymptotically, we can do no better than these dummy estimators. 
+
+Corollary 2.2. Suppose 0 < b < 2 is fixed. Then the following occur. (i) We have MMSE (b) 
+
+> n
+
+→ 1.(ii) We have Y-MMSE (b) 
+
+> nd
+
+→ 1.
+
+Thus, below b = 2, we fail to recover the latent discrete matching, as well as match the points geometrically, in the sense that we can do no better than random guessing. Corollary 2.2 is proved in Appendix A.3. Our results are based on precise asymptotics of the posterior normalizing constant Zn,d (σ) in (5). In our case, this quantity can be interpreted as a type of random assignment partition function .Its normalized logarithm is referred to as the free energy , and is spelled out as 1
+
+n log n log Zn,d (σ) = 1
+
+n log n log X
+
+> Π∈Pn
+
+exp 
+
+ 1
+
+σ2 Tr ΠXX ⊤Π⊤∗ + 1
+
+σ Tr ΠXZ ⊤
+
+
+
+. (8) We highlight a key free energy asymptotic result. 
+
+Proposition 2.3. Suppose b < 2 is fixed. Then 
+
+E
+
+ 1
+
+n log n log Zn,d (σ)
+
+
+
+= 1 + b
+
+2 + o(1) .
+
+5We remark that the proof of Theorem 2.1 also uses restricted versions of this free energy, known as the Franz–Parisi potential , where the sum in (2.3) is constrained to permutations Π with a fixed overlap with the truth. We finish this section by explaining the implication of our negative result Theorem 2.1 (i) on related matching problems. 
+
+Remark 2.4. Wang, Wu, Xu, and Yolou [WWXY22] study geometric graph matching models in which the latent point clouds satisfy (3) , but one observes only pairwise data generated through a transition kernel W :
+
+Aij ∼ W (· | Xi, X j ), Bij ∼ W (· | Yi, Y j ).
+
+Specific examples include the dot-product and distance kernel models. These observations are stochastically degraded relative to just observing (X, Y) as in (3) . Thus, to prove negative re-sults, [WWXY22, Appendix E, Proposition 1] gives a necessary condition ruling out almost exact recovery for b < 2 in model (3) (referred to as “linear assignment” there). However, this still leaves open the possibility of recovering a positive fraction of the matching. Our result closes this gap: Theorem 2.1 and Corollary 2.2 imply, by data processing, that when 
+
+d = ω(log n) and σ2 = d/ (b log n) with fixed b < 2, no estimator from such graph observations can have cn correct matches for any fixed c > 0. Thus, our results also reveal a new consequence for high-dimensional geometric graph matching models: there is no “something” phase below b = 2 .
+
+2.2 Multi-view geometric planted matching 
+
+In this section we consider a natural extension of the setting in (3). We observe K noisy, indepen-dently permuted views of the same latent point cloud: 
+
+Y(0) = ¯Π(0)  
+
+> ∗
+
+X + τ W(0) ,
+
+Y(1) = ¯Π(1)  
+
+> ∗
+
+X + τ W(1) ,
+
+...
+
+Y(K−1) = ¯Π(K−1)  
+
+> ∗
+
+X + τ W(K−1) , (9) where X, W(0) , . . . , W(K−1) are independent random matrices in Rn×d, each with i.i.d. standard Gaussian entries, and where ¯Π(0)  
+
+> ∗
+
+, . . . , ¯Π(K−1)  
+
+> ∗
+
+are independent uniformly random permutation ma-trices, independent of these Gaussian matrices. The absolute latent matchings are not identifiable. The identifiable signals of interest are the relative matchings from view 0 to the other views: Π(a) 
+
+> ∗
+
+:= ¯Π(0)  
+
+> ∗
+
+( ¯Π(a) 
+
+> ∗
+
+)⊤, a = 1 , . . . , K − 1. (10) Indeed, row i of view 0 and row j of view a correspond to the same latent row precisely when ¯Π(0)  
+
+> ∗
+
+(i) = ¯Π(a) 
+
+> ∗
+
+(j), or equivalently (Π (a) 
+
+> ∗
+
+)ij = 1. We claim that with the mapping 
+
+σ2 = 2 τ 2 + τ 4, (11) i.e. σ2 ∼ τ 4 asymptotically, the model (9) is equivalent to a K-view extension of the setting (3), which would be a 2-view model. We provide details in Remark B.1. To recover the relative matchings Π (a) 
+
+> ∗
+
+in (10), we define the statistic 
+
+Ti = X
+
+> 0≤a<b ≤K−1
+
+Y (a)⊤ 
+
+> ia
+
+Y (b) 
+
+> ib
+
+(12) 6for any candidate tuple i = ( i0, . . . , i K−1) ∈ [n]K . One should think of Ti as the score when attempting to match indices i1, . . . , i K−1 from views 1 , . . . , K − 1 respectively to i0.We next give a relatively simple algorithm based on the statistics Ti for identifying the rel-ative matchings Π (a) 
+
+> ∗
+
+, a = 1 , . . . , K − 1. Briefly, for each row i in view 0, the algorithm selects 
+
+j⋆ 
+
+> 1
+
+(i), . . . , j ⋆K−1(i) for views 1 , . . . , K − 1 as candidate matches, which is the tuple ( j1, . . . , j K−1)that attains the largest score Ti,j 1,...,j K−1 over all such tuples. A slight complication is that these greedy row-wise choices may not define a valid permutation altogether: for instance row j of view 1 may end up as a candidate match for two rows i and i′ of view 0. For each such j, the algorithm keeps one corresponding row i arbitrarily. Finally, we complete the remaining unmatched rows and columns so that the output matrix for each view is indeed a valid permutation matrix in Pn.
+
+Algorithm 1: Row-wise thresholding and completion for fixed K
+
+for i ← 1 to n do 
+
+Choose  j⋆ 
+
+> 1
+
+(i), . . . , j ⋆K−1(i) ∈ argmax 
+
+> (j1,...,j K−1)∈[n]K−1
+
+Ti,j 1,...,j K−1 . Break any ties arbitrarily. 
+
+end for a ← 1 to K − 1 do 
+
+Initialize bΠ(a) as the n × n zero matrix. 
+
+foreach j ∈ { j⋆a (i) : i ∈ [n]} do 
+
+Choose one i ∈ [n] such that j⋆a (i) = j, and set bΠ(a) 
+
+> ij
+
+= 1. 
+
+end 
+
+Complete bΠ(a) arbitrarily to a permutation matrix in Pn by padding ones appropriately in the remaining zero rows and columns. 
+
+end return bΠ(1) , . . . , bΠ(K−1) .For fixed K, Algorithm 1 is a polynomial-time procedure: the exhaustive maximization considers 
+
+nK−1 tuples for each of the n anchor rows, and each score is computed from OK (1) inner products in Rd. Thus the running time is OK (nK d). 
+
+Theorem 2.5. Fix K ≥ 2 and consider the K-view model (9) in the regime 
+
+d = ω(log n), τ 4 = db log n , and b > KK − 1 .
+
+Then Algorithm 1 achieves almost exact recovery for the relative matchings: for every a =1, . . . , K − 1, 1
+
+n Tr bΠ(a) 
+
+Π(a)
+
+> ∗
+
+⊤
+
+→ 1 in probability. (13) By (11), the scaling τ 4 = d/ (b log n) is asymptotically equivalent to the two-view scaling in (3). Thus Theorem 2.5 should be read as the multi-view analogue of the positive side of the two-view threshold. It shows that additional views improve the sufficient condition for recovery from b > 2when K = 2 to b > K/ (K − 1) for general fixed K.
+
+Remark 2.6. Specializing to K = 3 , we see that for b between 3/2 and 2, we get nothing for the 
+
+2-view matching, i.e. the relative matching Π(1)  
+
+> ∗
+
+cannot be recovered up to a linear number of errors (c.f. Corollary 2.2). But with a third view, we can recover both relative matchings Π(1)  
+
+> ∗
+
+and Π(2)  
+
+> ∗
+
+.
+
+7An intuitive explanation is that, for K = 3 , the statistic Ti does more than score two candidate matches against view 0: it also rewards consistency between the proposed rows in views 1 and 2.Theorem 2.5 quantifies the resulting gain in the recovery threshold. 
+
+Taken together, Corollary 2.2 and 2.5 imply an “all-or-nothing” phase transition at b = 2 for the two-view model (1). Determining whether b = K/ (K − 1) is the sharp information-theoretic threshold for K-view recovery in general is an interesting direction for future work. A challenge is that a matching lower bound may require controlling the multi-view posterior over a higher-dimensional overlap structure. 
+
+2.3 Gaussian weighted matching 
+
+We now record a “ d = ∞” version of the two-view matching problem, in which the geometry does not play any role. Let Kn,n be the complete bipartite graph with both partitions identified with [n]. Perfect matchings in Kn,n may be identified with n × n permutation matrices in Pn.In Gaussian weighted matching , we first draw a perfect matching Π ∗ ∈ Pn on Kn,n uniformly at random. We observe a weighted adjacency matrix A = ( Aij )i,j ∈[n] on Kn,n with weights given as follows. For a parameter β > 0, conditionally on Π ∗, the edge weights of A are independent: edges in Π ∗ have law N (1 , 1/β ), while all other edges have law N (0 , 1/β ). Equivalently, for Z = ( Zij )i,j ∈[n]
+
+with i.i.d. entries Zij ∼ N (0 , 1) and independent of Π ∗, we observe 
+
+A = Π ∗ + 1
+
+√β Z. (14) Such planted matching models were studied in [DWXY23], with particular focus on exponential edge weights. Remark 1 in [DWXY23] also discusses the Gaussian weighted version. In this paper, we include (14) as a non-geometric companion to (3). Both models share the same matching structure, but conditionally on Π ∗, the edge weights in (14) are independent Gaussians, whereas in (3) the edge weights remain dependent based on an underlying geometric structure. The posterior distribution is a distribution over matchings in Pn given by 
+
+P (Π | A) = exp H(Π) 
+
+ZGWM (β) , ZGWM (β) = X
+
+> Π∈Pn
+
+exp( H(Π)) , (15) where H(Π) = β Tr Π∗Π⊤ + √β Tr ZΠ⊤. Throughout this subsection, ⟨·⟩ denotes the expectation with respect to this posterior. Our main result for this model is analogous to Theorem 2.1. 
+
+Theorem 2.7. Consider the Gaussian weighted matching model (14) and suppose β = b log n for 
+
+b > 0. Let Π denote a sample from the posterior distribution. Then the following hold. (i) Suppose b < 2 is fixed. For any fixed δ ∈ (0 , 1] , there exists a constant Cb,δ > 0 such that 
+
+E
+
+D
+
+1
+
+n
+
+Tr Π∗Π⊤ ≥ δn 
+
+oE 
+
+≤ exp ( −Cb,δ n log n) . (16) 
+
+(ii) Suppose b > 2 is fixed. Then for any fixed δ ∈ (0 , 1) ,
+
+E
+
+D
+
+1
+
+n
+
+Tr Π∗Π⊤ ≤ (1 − δ)n
+
+oE 
+
+→ 0.
+
+8Remark 2.8. We omit the proof of Theorem 2.7 because it follows from the same ideas as the geo-metric result Theorem 2.1. In the geometric model (3) , the noise term in the posterior involves the matrix XZ ⊤/√d; in the “ d = ∞” model (14) this is replaced by an n×n matrix Z of i.i.d. standard Gaussians. Thus the proof of the negative result (i) is analogous to that for the geometric setting, and is in fact simpler. For part (ii), after some notation translation, [DWXY23, Remark 1] gives b > 2 as the threshold for almost exact recovery. The subsequent passage to the posterior overlap statement is identical to that for Theorem 2.1(ii). Hence we omit the details of the proofs. 
+
+Let ⟨Π⟩ = E[Π ∗ | A] be the posterior mean. Define 
+
+MMSE GWM (b) := inf 
+
+> bΠ( A)
+
+E bΠ( A) − Π∗ 
+
+> 2
+> F
+
+= E ∥⟨ Π⟩ − Π∗∥2 
+
+> F
+
+,
+
+where the infimum ranges over all possible matrix-valued estimators. The dummy estimator EΠ∗ = 
+
+> 1
+> n
+
+11 ⊤ has risk n−1, and the next result shows that this is asymptotically optimal below the critical threshold. The proof is analogous to that of Corollary 2.2 and is omitted. 
+
+Corollary 2.9. Consider the Gaussian weighted matching model (14) and suppose β = b log n for some fixed b < 2. Then MMSE GWM (b) 
+
+> n
+
+→ 1.
+
+Remark 2.10. Recent independent work [HL26] studied recovery of planted sparse structures in graphs in great generality. In particular, [HL26, Theorem 6] can be specialized to the setting of 
+
+(14) to recover the same b = 2 all-or-nothing threshold for (14) , and implies Corollary 2.9. Our Theorem 2.7(i) provides a stronger statement by showing that the posterior mass assigned to matchings with positive overlap with the truth decays to zero at a quantitative exponential rate. The area I-MMSE approach used in [HL26] differs from our conditional second moment method, which tackles the posterior directly. At a high level, the framework in [HL26] assumes independent edge weights conditional on the planted structure, and so does not encompass the geometric setting (3) where the edge weights remain dependent even conditional on the planted permutation. 
+
+# 3 Proof overview of Theorems 2.1 and 2.5 
+
+Proof overview of Theorem 2.1. We focus on the negative result (i), which is the main content. By an equivariance argument, we reduce to the case Π ∗ = I. We consider a fixed overlap level 
+
+αn ∈ Z with α ∈ (0 , 1] and show through a concentration argument that the expected posterior mass at this overlap is approximately 
+
+E ⟨1{Tr Π = αn }⟩ ≈ exp 
+
+n
+
+n log n  EΨσ(α) − E eΨσ + o(1) o
+
+, (17) where Ψ σ(α) = ( n log n)−1 log P  
+
+> Π: Tr Π= αn
+
+exp  1 
+
+> σ2
+
+Tr ΠXX ⊤ + 1 
+
+> σ
+
+Tr ΠXZ ⊤ , and eΨσ is defined in the same way, but without the constraint on Π. That is, eΨσ is the free energy in (8) after setting Π∗ = I. The focus is on showing that EΨσ(α) < E eΨσ strictly. Upper bound on EΨσ(α). For any permutation Π, denote its fixed points by S(Π) = {i : Π ii = 1 },and its derangement part by S(Π) c = [ n]\S(Π). Set k = αn . For Tr Π = k and S = S(Π), define 
+
+F (S) = 1
+
+σ2 ∥XS ∥2 
+
+> F
+
++ 1
+
+σ Tr XS Z⊤ 
+
+> S
+
+, R(S, Π) = 1
+
+σ2 Tr XΠ( Sc)X⊤ 
+
+> Sc
+
++ 1
+
+σ Tr XΠ( Sc)Z⊤ 
+
+> Sc
+
+,
+
+9where the notation XS ∈ Rk×d extracts the rows of X indexed by S, preserving their natural ordering, and where XΠ( Sc) = Π Sc XSc , with Π Sc being the ( n − k) × (n − k) permutation matrix corresponding to the restriction of Π to Sc.The proof decomposes EΨσ(α) into the fixed point part and the derangement part: 
+
+EΨσ(α) = 1
+
+n log n E log X 
+
+> Π: Tr Π= k
+
+exp {F (S(Π)) + R(S(Π) , Π) }≤ 1
+
+n log n E log max  
+
+> S:|S|=k
+
+exp {F (S)} + 1
+
+n log n E log X
+
+> S:|S|=k
+
+X
+
+> Π: S(Π)= S
+
+exp {R(S, Π) } .
+
+In the first term, for each S, the norm ∥XS ∥2 
+
+> F
+
+is chi-squared, while the Tr XS Z⊤ 
+
+> S
+
+term is conditionally Gaussian given X. Standard chi-squared and Gaussian maximum bounds then yield that the first term’s contribution is at most bα + o(1). In the second term, we apply Jensen’s inequality to push the expectation over the log, which reduces the problem to controlling a Gaussian quadratic moment generating function: for an admissible ( S, Π) pair, we compute EeR(S, Π) = EXEZeR(S, Π) =
+
+EX exp {x⊤Hx}, where x = vec( XSc ) and H = 12σ2 (In−k + 2Π Sc ) ⊗ Id. This quantity depends only on the cycle structure of the derangement Π Sc , and we carry out a spectral analysis to show that it is maximized when Π Sc consists of as many 2-cycles as possible. This leads to a bound on the second term’s contribution of (1 −α)(1+ b/ 2)+ o(1). Altogether, EΨσ(α) ≤ 1+ b/ 2+ α(b−2) /2+ o(1) .
+
+Lower bound on E eΨσ. We aim to show E eΨσ ≥ 1 + b 
+
+> 2
+
++ o(1). We start with a reduction argument to a noise partition function Z, such that 
+
+E eΨσ ≈ 1
+
+n log n E log Z, where Z = X
+
+> Π∈Pn
+
+exp 
+
+pb log n Tr Π XZ ⊤
+
+√d
+
+
+
+.
+
+We will adopt a conditional second moment method, and show that 1
+
+n log n log E[Z21E ] ≈ 2
+
+n log n log E[Z1E ]for an appropriately chosen high probability event E: For any small ϵ, c 0 > 0 and k0 = c0n, set 
+
+E =
+
+
+
+max 
+
+> S∈Pk
+
+1
+
+√dk Tr SXZ ⊤ ≤ p(2 + ϵ)( k ∨ k0) log n for all 1 ≤ k ≤ n s.t. Pk̸ = ∅
+
+
+
+,
+
+where Pk denotes the set of k-subpermutation matrices, i.e. n × n zero-one matrices with exactly 
+
+k rows and k columns containing a single one. Certainly, the event E is not immediately intuitive, so let us provide motivation. Consider the untruncated first moment EZ = exp   1 + b 
+
+> 2
+
++ o(1)  n log n which matches the target exponent. However, the second moment blows up when b > 1. To see this, write 
+
+EZ2 = X
+
+> Π,Π′∈Pn
+
+E exp 
+
+pb log n Tr (Π + Π ′) XZ ⊤
+
+√d
+
+
+
+(18) = n!
+
+> n
+
+X
+
+> k=0
+
+X 
+
+> Π: Tr Π= k
+
+E exp 
+
+pb log n Tr (I + Π) XZ ⊤
+
+√d
+
+
+
+. (19) We will argue that the main culprits are pairs (Π , Π′) in (18) that share a submatching. In (19), this corresponds to permutations Π with say k fixed points. These carry a doubled exponential 10 weight on the k aligned coordinates X⊤ 
+
+> i
+
+Zi : Π ii = 1 , yielding an excess factor e(1+ o(1)) bk log n over the corresponding term in ( EZ)2. However, such permutations make up a proportion of only 
+
+≈ 1/k ! ≈ exp {− k log k} of all permutations. Consequently, 
+
+EZ2
+
+(EZ)2 ≈ exp 
+
+
+
+max  
+
+> 0≤k≤n
+
+(bk log n − k log k) + o(n log n)
+
+
+
+, (20) which is eo(n log n) if b ≤ 1 (attained at k = nb), but e(b−1+ o(1)) n log n if b > 1 (attained at k = n). Thus the vanilla second moment method fails for b > 1, even though E log Z ≈ log EZ remains the correct scale for b < 2. A pair (Π , Π′) in a summand of (18) that share a k-subpermutation matrix S contributes 2√bk log nV S to the exponent, where VS = 1√dk Tr SXZ ⊤. On the other hand, one can show that the maximum of VS over Pk is typically √2k log n. Thus, such summands in (18) are carried by rare events. After accounting for the entropy discount 1 /k ! as in (20), one finds that for b > 1, the ratio blowup is driven by these rare, unusually large VS contributions. The event E is designed to cap the quantities VS at their typical scale, uniformly over all k and S ∈ Pk.We show that E is a high probability event. Furthermore, writing W = XZ ⊤/√d, we show that for any fixed permutation Π (c.f. Lemma A.6): 
+
+P
+
+
+
+Ec Tr ΠW
+
+
+
+1
+
+ 1
+
+√n Tr ΠW ≤ p2n log n
+
+
+
+= o(1) .
+
+This conditional statement arises from the need to show that truncation preserves the first moment: 
+
+E[Z1E ] ≈ EZ. In E[Z1E ], a generic summand is E[exp {√b log n Tr ΠW }1E ], which tilts towards large values of Tr ΠW , so a priori, the factor 1E could remove the contributions that carry the first moment. The conditional estimate above rules this out. Altogether, we show that the truncated moments satisfy 1
+
+n log n log E[Z1E ] = 1 + b
+
+2 + o(1) , 1
+
+n log n log E[Z21E ] ≤ b + 2 + o(1) .
+
+A routine application of the Paley–Zygmund inequality then leads to E eΨσ ≥ 1 + b/ 2 + o(1). Combining these bounds in (17) gives the exponent α(b − 2) /2 + o(1), which is strictly negative for b < 2. Summing over the at most n possible overlap levels α = k/n ≥ δ yields the result. 
+
+Proof overview of Theorem 2.5. By an equivariance argument, we work in relabeled coordi-nates where all planted relative matchings are the identity. Recall that, for each anchor row i0 = i,Algorithm 1 selects the candidate tuple i = ( i, j 1, . . . , j K−1) maximizing the statistic Ti from (12), and then completes these greedy row-wise choices to permutation matrices. For a true tuple i = ( i, i, . . . , i ), Ti has mean  K
+
+> 2
+
+d. A wrong tuple i is classified by the multiplicities ℓ = ( ℓ0, . . . , ℓ r) of its distinct latent labels, where r is the number of labels other than the anchor label. Then Ti has mean d P
+
+> s
+
+ ℓs
+
+> 2
+
+, so the signal gap is 
+
+Dℓ =
+
+K
+
+2
+
+
+
+−
+
+> r
+
+X
+
+> s=0
+
+ℓs
+
+2
+
+
+
+.
+
+We show that the probability of a wrong tuple exceeding the typical true tuple score satisfies 
+
+P
+
+
+
+Ti ≥
+
+ K
+
+2
+
+
+
+− ϵ
+
+
+
+d
+
+
+
+≤ exp 
+
+
+
+−
+
+ (Dℓ − ϵ)2
+
+K(K − 1) + o(1) 
+
+ dτ 4
+
+
+
+.
+
+11 At the same time there are only OK (nr) such tuples. The key combinatorial fact driving the threshold is D2
+
+> ℓ
+
+K(K − 1) r ≥ K − 1
+
+K ,
+
+with equality precisely for the one-outlier multiplicity pattern ℓ = ( K − 1, 1), corresponding to tuples such as ( i, i, . . . , i, j ) with j̸ = i. Since d/τ 4 = b log n, the union bound over all competitor patterns is o(1) whenever b > K/ (K − 1). Thus a fixed row is selected incorrectly with probability 
+
+o(1), and hence only o(n) rows are wrong in expectation. 
+
+# A Proofs for the two-view negative result 
+
+To prove Theorem 2.1, we first make some reductions. We claim that without loss, it suffices to consider Π ∗ = I in the left-hand side of (6). Indeed, fix any event A ⊆ { 0, 1, . . . , n }. Then for any fixed Π ∗, by the change of variables Π 7 → Π⊤∗ Π =: Q,
+
+E
+
+D
+
+1
+
+n
+
+Tr Π∗Π⊤ ∈ A
+
+oE 
+
+= EΠ∗ EX,Z
+
+" P  
+
+> Π
+
+1Tr Π∗Π⊤ ∈ A exp  1 
+
+> σ2
+
+Tr ΠX(Π ∗X + σZ)⊤
+
+P 
+
+> Π
+
+exp  1 
+
+> σ2
+
+Tr ΠX(Π ∗X + σZ)⊤
+
+#
+
+= EΠ∗ EX,Z
+
+" P  
+
+> Q
+
+1{Tr Q ∈ A} exp  1 
+
+> σ2
+
+Tr QXX ⊤ + 1 
+
+> σ
+
+Tr QX(Π ⊤∗ Z)⊤
+
+P 
+
+> Q
+
+exp  1 
+
+> σ2
+
+Tr QXX ⊤ + 1 
+
+> σ
+
+Tr QX(Π ⊤∗ Z)⊤
+
+#
+
+= EX,Z
+
+" P  
+
+> Π
+
+1{Tr Π ∈ A} exp  1 
+
+> σ2
+
+Tr ΠXX ⊤ + 1 
+
+> σ
+
+Tr ΠXZ ⊤
+
+P 
+
+> Π
+
+exp  1 
+
+> σ2
+
+Tr ΠXX ⊤ + 1 
+
+> σ
+
+Tr ΠXZ ⊤
+
+#
+
+= E ⟨1{Tr Π ∈ A}⟩ ,
+
+where the third equality uses Π ⊤∗ Z d
+
+= Z and then renames Q back to Π. Note that in the last line, and henceforth, ⟨·⟩ denotes the posterior in the Π ∗ = I planted model. We next derive an upper bound for one fixed overlap level. Fix α ∈ (0 , 1] such that αn is an integer. Then 
+
+E
+
+D
+
+1
+
+n
+
+Tr Π∗Π⊤ = αn 
+
+oE 
+
+= E ⟨1{Tr Π = αn }⟩ = E exp 
+
+n
+
+n log n
+
+h
+
+Ψσ(α) − eΨσ
+
+io 
+
+, (21) where Ψσ(α) = 1
+
+n log n log X
+
+> Π
+
+1{Tr Π = αn } exp 
+
+ 1
+
+σ2 Tr ΠXX ⊤ + 1
+
+σ Tr ΠXZ ⊤
+
+
+
+,
+
+eΨσ = 1
+
+n log n log X
+
+> Π
+
+exp 
+
+ 1
+
+σ2 Tr ΠXX ⊤ + 1
+
+σ Tr ΠXZ ⊤
+
+
+
+. (22) We now push the expectation in (21) into the exponent. Define 
+
+F (X, Z) = log X
+
+> Π
+
+exp 
+
+ 1
+
+σ2 Tr ΠXX ⊤ + 1
+
+σ Tr ΠXZ ⊤
+
+
+
+,
+
+so that ( n log n)−1F (X, Z) = eΨσ. We claim that, for any t > 0, 
+
+P
+
+ Fn log n − E
+
+ Fn log n
+
+
+
+≥ t
+
+
+
+≤ C′ exp 
+
+
+
+−c′ n log nb t2
+
+
+
++ C′ exp( −c′nd ), (23) 12 for universal constants C′, c ′ > 0. In particular, for every fixed t > 0, since d = ω(log n), this implies 
+
+P
+
+ Fn log n − E
+
+ Fn log n
+
+
+
+≥ t
+
+
+
+≤ C′ exp 
+
+
+
+−c′ n log nb t2
+
+
+
+, (24) for universal constants C′, c ′ > 0. Define G(X) = EZ[F (X, Z)]. To show (23), we first condition on 
+
+X. Then the map Z 7 → F (X, Z) is ∥X∥F /σ -Lipschitz. Take R = 2 √nd and set BR = {∥ X∥F ≤ R}.A standard chi-squared tail bound gives 
+
+P[∥X∥F ≥ R] ≤ exp( −cnd ). (25) Then by Gaussian concentration of Lipschitz functions (see e.g. [Tal10, Theorem 1.3.4]) and (25), for every s > 0, 
+
+P[|F − G(X)| ≥ s] = EXPZ[|F − G(X)| ≥ s | X]= EX [PZ[|F − G(X)| ≥ s | X]1BR ] + EX
+
+PZ[|F − G(X)| ≥ s | X]1BcR
+
+
+
+≤ 2 exp 
+
+
+
+−c s2σ2
+
+R2
+
+
+
++ exp( −cnd ). (26) We next show that G(X) concentrates as a function of X. On the ball BR, differentiating under the expectation and using E ∥Z∥F ≤ √nd shows that G is LG(R)-Lipschitz with 
+
+LG(R) = 2Rσ2 +
+
+√nd σ .
+
+Let G be the extension of G|BR to all of Rn×d given by 
+
+G(A) = inf  
+
+> U∈BR
+
+{G(U ) + LG(R) ∥A − U ∥F } .
+
+The purpose of G is to create a (globally) LG(R)-Lipschitz proxy for G. Note that G = G on BR.We now show that the difference E[G(X)] − E[G(X)] is of lower order. We have the bound, for each fixed X,
+
+|G(X)| ≤ EZ[|F (X, Z)|] ≤ log( n!) + EZ
+
+
+
+max 
+
+> Π
+
+1
+
+σ2 Tr ΠXX ⊤ + 1
+
+σ Tr ΠXZ ⊤
+
+
+
+≤ Cn log n + Cσ2 ∥X∥2 
+
+> F
+
++ Cσ ∥X∥F
+
+√nd, 
+
+where C > 0 is a constant. On BcR, a similar bound holds for G(X). Since G is LG(R)-Lipschitz, 
+
+G(0) = G(0) = log( n!), and R ≤ ∥ X∥F on BcR, we have 
+
+G(X) ≤ G(0) + LG(R) ∥X∥F = log( n!) + 2Rσ2 +
+
+√nd σ
+
+!
+
+∥X∥F
+
+≤ Cn log n + Cσ2 ∥X∥2 
+
+> F
+
++ Cσ ∥X∥F
+
+√nd. 
+
+Therefore, using these bounds, 
+
+E[G(X)] − E[G(X)] ≤ E[ |G(X)| + G(X)  1BcR ]
+
+≤ E
+
+ 
+
+Cn log n + Cσ2 ∥X∥2 
+
+> F
+
++ Cσ ∥X∥F
+
+√nd 
+
+
+
+1BcR
+
+
+
+≤
+
+
+
+Cn log n + Cσ2 E[∥X∥4 
+
+> F
+
+]1/2 + Cσ
+
+√nd E[∥X∥2 
+
+> F
+
+]1/2
+
+
+
+P[BcR]1/2
+
+≤
+
+
+
+Cn log n + Cbn log n + Cn pbd log n
+
+
+
+exp( −cnd ) ≤ C exp( −¯cnd ),
+
+13 where in the third line we used Cauchy–Schwarz, and in the last line we used (25), ∥X∥2 
+
+> F
+
+∼ χ2
+
+> nd
+
+,and σ2 = d/ (b log n), and where ¯ c > 0 is a constant. Thus G concentrates on its expectation: for any s > 0, 
+
+P[|G(X) − E[G(X)] | ≥ s] ≤ P[BcR] + P[ G(X) − E[G(X)] ≥ s, B R]
+
+≤ P[BcR] + P[ G(X) − E[G(X)] ≥ s − E[G(X)] − E[G(X)] ]
+
+≤ P[BcR] + P[ G(X) − E[G(X)] ≥ s − C exp( −¯cnd )] 
+
+≤ C exp( −cnd ) + C exp 
+
+
+
+−c s2
+
+LG(R)2
+
+
+
+. (27) where in the last line, the first term comes from (25), while the second term comes from Gaussian concentration for the LG(R)-Lipschitz function G with the lower order shift C exp( −¯cnd ) being absorbed by constants. Recall that we fixed R = 2 √nd , and that σ2 = d/ (b log n) and d = ω(log n). Then for large enough n we have R/σ = 2 √nb log n and LG(R) ≤ C√nb log n. Therefore, using E[G(X)] = E[F ], (26), and (27), 
+
+P[|F − E[F ]| ≥ s] ≤ P[|F − G(X)| ≥ s/ 2] + P[|G(X) − E[G(X)] | ≥ s/ 2] 
+
+≤ 2 exp 
+
+
+
+−c s2σ2
+
+R2
+
+
+
++ exp( −cnd ) + C exp( −cnd ) + C exp 
+
+
+
+−c s2
+
+LG(R)2
+
+
+
+≤ C exp 
+
+
+
+−c s2
+
+bn log n
+
+
+
++ C exp( −cnd ).
+
+Setting s = tn log n gives (23), which implies (24) for every fixed t > 0. An analogous argument for Ψ σ(α) gives the same concentration scale. For ϵ > 0, define 
+
+E1 =
+
+n eΨσ ≥ E eΨσ − ϵ
+
+3
+
+o
+
+, and E2 =
+
+n
+
+Ψσ(α) ≤ EΨσ(α) + ϵ
+
+6
+
+o
+
+.
+
+Then 
+
+P [E1] ≥ 1 − C exp 
+
+
+
+− cϵ 2
+
+b n log n
+
+
+
+, and P [E2] ≥ 1 − C exp 
+
+
+
+− cϵ 2
+
+b n log n
+
+
+
+. (28) Hence, using (21), (28), and Ψ σ(α) ≤ eΨσ,
+
+E
+
+D
+
+1
+
+n
+
+Tr Π∗Π⊤ = αn 
+
+oE 
+
+≤ exp 
+
+n
+
+n log n
+
+h
+
+EΨσ(α) − E eΨσ + ϵ
+
+2
+
+io 
+
++ C exp 
+
+
+
+− cϵ 2
+
+b n log n
+
+
+
+. (29) Our analysis therefore centers around establishing an upper bound for EΨσ(α), and a lower bound for E eΨσ. The former will be given next, while the latter was stated in Proposition 2.3. In Proposition 2.3, the full asymptotics for E eΨσ was given, and this will also be used for the proof of Corollary 2.2. 
+
+Proposition A.1. Let b > 0 be fixed. Then for any fixed δ0 > 0, uniformly over all δ ∈ [δ0, 1] such that δn is an integer, 
+
+EΨσ(δ) ≤ b
+
+2 + 1 + δ
+
+2 (b − 2) + o(1) . (30) 14 Proof of Theorem 2.1. We first prove (i). Take m ∈ {⌈ δn ⌉ , . . . , n } and set δm = m/n . Combining (29), Proposition A.1 applied with δ replaced by δm, and Proposition 2.3, for any ϵ > 0 we have that 
+
+E ⟨1{Tr Π = m}⟩ ≤ exp 
+
+
+
+n log n
+
+ δm
+
+2 (b − 2) + ϵ
+
+2 + o(1) 
+
+ 
+
++ C exp 
+
+
+
+− cϵ 2
+
+b n log n
+
+
+
+.
+
+Since δm ≥ δ and b < 2, δm 
+
+> 2
+
+(b − 2) ≤ δ 
+
+> 2
+
+(b − 2) . Choosing ϵ = δ 
+
+> 4
+
+(2 − b) gives 
+
+E ⟨1{Tr Π = m}⟩ ≤ exp 
+
+
+
+n log n
+
+ 3δ
+
+8 (b − 2) + o(1) 
+
+ 
+
++ C exp ( −Cb,δ n log n)for some constant Cb,δ > 0. Summing over the at most n possible values of m proves (i). We next prove (ii). The K = 2 case of Theorem 2.5, together with the equivalence in Remark B.1, gives an estimator bΠ = bΠ( X, Y) such that 1
+
+n Tr bΠΠ ⊤∗ → 1 in probability whenever b > 2. Since 0 ≤ n − Tr bΠΠ ⊤∗ ≤ n, this also implies 
+
+E bΠ − Π∗ 
+
+> 2
+> F
+
+= 2 E
+
+
+
+n − Tr bΠΠ ⊤∗
+
+
+
+= o(n).
+
+The posterior mean ⟨Π⟩ minimizes squared error among all estimators, so E ∥⟨ Π⟩ − Π∗∥2 
+
+> F
+
+= o(n).
+
+Given ( X, Y), let Π be a fresh sample from the posterior law of Π ∗. Then conditionally on ( X, Y), Π∗ and Π are two independent samples from this same law. Hence 
+
+E
+
+D
+
+∥Π − Π∗∥2
+
+> F
+
+E
+
+= E
+
+D
+
+∥Π − Π∗ ± ⟨ Π⟩∥ 2
+
+> F
+
+E
+
+= E
+
+hD 
+
+∥Π − ⟨ Π⟩∥ 2
+
+> F
+
+E
+
++ ∥Π∗ − ⟨ Π⟩∥ 2
+
+> F
+
+i
+
+= E ∥Π∗ − ⟨ Π⟩∥ 2 
+
+> F
+
++ E ∥⟨ Π⟩ − Π∗∥2 
+
+> F
+
+= o(n).
+
+Here the cross term vanishes because ⟨Π − ⟨ Π⟩⟩ = 0. On the event Tr Π∗Π⊤ ≤ (1 − δ)n, we have 
+
+∥Π − Π∗∥2 
+
+> F
+
+≥ 2δn . Therefore 
+
+E
+
+D
+
+1
+
+n
+
+Tr Π∗Π⊤ ≤ (1 − δ)n
+
+oE 
+
+≤ 12δn E
+
+D
+
+∥Π − Π∗∥2
+
+> F
+
+E
+
+→ 0.
+
+A.1 Upper bound on restricted free energy 
+
+Proof of Proposition A.1. For any permutation Π of [ n], let S(Π) ⊂ [n] denote the set of fixed points of Π. We have 
+
+Tr ΠXY ⊤ = Tr ΠXX ⊤ + σ Tr ΠXZ ⊤
+
+= X
+
+> i∈S(Π)
+
+∥Xi∥22 + X
+
+> i∈S(Π)
+
+σX ⊤ 
+
+> i
+
+Zi + X
+
+> i / ∈S(Π)
+
+X⊤
+
+> Π( i)
+
+Xi + X
+
+> i / ∈S(Π)
+
+σX ⊤
+
+> Π( i)
+
+Zi.
+
+Set k = δn ∈ Z. We have 
+
+EΨσ(δ) = 1
+
+n log n E log X 
+
+> Π: Tr Π= k
+
+exp 
+
+X
+
+> i∈S(Π)
+
+1
+
+σ2 ∥Xi∥22 + X
+
+> i∈S(Π)
+
+1
+
+σ X⊤ 
+
+> i
+
+Zi + X
+
+> i / ∈S(Π)
+
+1
+
+σ2 X⊤
+
+> Π( i)
+
+Xi + X
+
+> i / ∈S(Π)
+
+1
+
+σ X⊤
+
+> Π( i)
+
+Zi
+
+
+
+= 1
+
+n log n E log 
+
+X
+
+> S⊂[n]
+> |S|=k
+
+exp 
+
+ 1
+
+σ2 ∥XS ∥2 
+
+> F
+
++ 1
+
+σ Tr XS Z⊤
+
+> S
+
+ X
+
+> Π: S(Π)= S
+
+exp 
+
+ 1
+
+σ2 Tr XΠ( Sc)X⊤ 
+
+> Sc
+
++ 1
+
+σ Tr XΠ( Sc)Z⊤
+
+> Sc
+
+
+
+≤ (I) + (II) 15 where XS denotes the |S| × d matrix consisting of the rows in X indexed by S, and similarly for 
+
+ZS , XΠ( Sc), ZSc , and where (I) = 1
+
+n log n E log max 
+
+> S⊂[n]
+> |S|=k
+
+exp 
+
+ 1
+
+σ2 ∥XS ∥2 
+
+> F
+
++ 1
+
+σ Tr XS Z⊤
+
+> S
+
+
+
+(II) = 1
+
+n log n E log X
+
+> S⊂[n]
+> |S|=k
+
+X
+
+> Π: S(Π)= S
+
+exp 
+
+ 1
+
+σ2 Tr XΠ( Sc)X⊤ 
+
+> Sc
+
++ 1
+
+σ Tr XΠ( Sc)Z⊤
+
+> Sc
+
+
+
+,
+
+Let us consider the diagonal part (I) first. We have the bounds 
+
+E max 
+
+> S⊂[n]
+> |S|=k
+
+∥XS ∥2 
+
+> F
+
+≤ kd +
+
+s
+
+Ckd log 
+
+nk
+
+
+
+= (1 + o(1)) kd 
+
+E max 
+
+> S⊂[n]
+> |S|=k
+
+Tr XS Z⊤ 
+
+> S
+
+≤ (1 + o(1)) 
+
+s
+
+2kd log 
+
+nk
+
+
+
+= Oδ(k√d),
+
+where the first line follows from standard chi-squared maximum bounds (see e.g. [LM00, Lemma 1]), and where the second line follows since conditionally on XS , Tr XS Z⊤ 
+
+> S
+
+∼ N (0 , ∥XS ∥2 
+
+> F
+
+), and a maximum of Gaussians bound followed by the first line leads to the bound. Therefore, using 
+
+σ2 = db log n ,(I) ≤ 1
+
+n log n
+
+ 1
+
+σ2 (1 + o(1)) kd + 1
+
+σ Oδ(k√d)
+
+
+
+= (1 + o(1)) bδ + Oδ
+
+ 1
+
+√log n
+
+
+
+. (31) We now turn to term (II). By Jensen’s inequality, (II) ≤ 1
+
+n log n log X
+
+> S⊂[n]
+> |S|=k
+
+X
+
+> Π: S(Π)= S
+
+E exp 
+
+ 1
+
+σ2 Tr XΠ( Sc)X⊤ 
+
+> Sc
+
++ 1
+
+σ Tr XΠ( Sc)Z⊤
+
+> Sc
+
+| {z } 
+
+> =: V(S, Π)
+
+.
+
+Fix S and some Π with S(Π) = S. We first evaluate the Gaussian moment generating function in 
+
+V (S, Π), conditionally on X. This gives us 
+
+V (S, Π) = E exp 
+
+ 12σ2 ∥XSc ∥2 
+
+> F
+
++ 1
+
+σ2 Tr XΠ( Sc)X⊤
+
+> Sc
+
+
+
+= E exp 
+
+
+
+x⊤ 12σ2
+
+ In−k ⊗ Id + 2Π Sc ⊗ Id
+
+| {z }
+
+> =H
+
+x
+
+
+
+,
+
+where x = vec( XSc ) ∈ R(n−k)d is its vectorization and H ∈ R(n−k)d×(n−k)d. We let Π Sc denote the (n − k) × (n − k) submatrix of Π obtained by keeping only the rows and columns indexed by Sc. We replace the exponent by x⊤Hx = 12 x⊤(H + H⊤)x. Let the real ( n − k)d eigenvalues of 12 (H + H⊤)be λ1, . . . , λ (n−k)d. By spectral decomposition of the symmetric matrix 12 (H + H⊤) and orthogonal invariance of the Gaussian, we have V (S, Π) = Q(n−k)dj=1 E exp λj x2 
+
+> j
+
+, where xj is the j-th coordinate of x, and xj ∼ N (0 , 1). Suppose that Π Sc has cycle decomposition of lengths ℓ1, . . . , ℓ r, where 
+
+ℓj ≥ 2 (no singletons) and P 
+
+> j
+
+ℓj = n − k. Since eigenvalues are invariant to simultaneous row and column permutation, and by orthogonal invariance of the Gaussian again, we can suppose without 16 loss of generality that Π Sc is in block diagonal form, where each of the r blocks is a circulant matrix with the j-th block’s contribution to Π Sc + Π ⊤ 
+
+> Sc
+
+being 
+
+
+
+0 10 10 . . .. . . 11 0
+
+
+
++
+
+
+
+0 10 10 . . .. . . 11 0
+
+
+
+> ⊤
+
+=
+
+
+
+0 1 11 0 11 0 . . .. . . . . . 11 1 0
+
+
+
+∈ Rℓj ×ℓj .
+
+Let ωℓj = exp 
+
+ 2πi
+
+> ℓj
+
+
+
+be the ℓj -th root of unity. The eigenvalues of the matrix in the above display are ωaℓj + ω−aℓj  
+
+> ℓj−1
+> a=0
+
+. For x ∼ N (0 , 1), we have E exp tx 2 = (1 − 2t)−1/2 for t < 12 . Since 
+
+1 + ωaℓj + ω−aℓj ≤ 3 and σ2 → ∞ , it follows that for large enough n,
+
+V (S, Π) = 
+
+> r
+
+Y 
+
+> j=1
+> ℓj−1
+
+Y
+
+> a=0
+
+
+
+1 − 1
+
+σ2
+
+
+
+1 + ωaℓj + ω−aℓj
+
+− d
+
+> 2
+
+. (32) We now give an upper bound for V (S, Π). For any fixed integer ℓ ≥ 2, define ω = exp   2πi
+
+> ℓ
+
+. Let 
+
+ξ = 1 
+
+> σ2
+
+and we have 
+
+G(ℓ) := 
+
+> ℓ−1
+
+Y
+
+> a=0
+
+ 1 − ξ(1 + ωa + ω−a) =
+
+> ℓ−1
+
+Y
+
+> a=0
+
+−ξω 2a + (1 − ξ)ωa − ξωa
+
+= ( −1) ℓ−1
+
+> ℓ−1
+
+Y
+
+> a=0
+
+(−ξz 2 + (1 − ξ)z − ξ)
+
+| {z }  
+
+> =: q(z)
+> z=ωa
+
+.
+
+Observe that the two roots of q(z) are real if 0 < ξ < 1/3 (valid for large enough n). Furthermore, the two roots are reciprocals of each other: call them ρ and 1 /ρ , where ρ = (2 ξ)−1(1 − ξ +p−3ξ2 − 2ξ + 1) is the larger of the two. Note also ρ > 1 if ξ < 1/3. We may write q(z) = −ξ(z −
+
+ρ)( z − ρ−1). By definition of the roots of unity, we have the identity ( −1) ℓ Qℓ−1
+
+> a=0
+
+(ωa − x) = xℓ − 1for any x ∈ R. Thus 
+
+G(ℓ) = ( −1) ℓ−1
+
+> ℓ−1
+
+Y
+
+> a=0
+
+q(ωa) = ( −1) ℓ−1
+
+> ℓ−1
+
+Y
+
+> a=0
+
+−ξ(ωa − ρ)( ωa − ρ−1)= ( −1) ℓ−1(−ξ)ℓ(ρℓ − 1)( ρ−ℓ − 1) = 
+
+ ξρ
+
+ℓ
+
+(ρℓ − 1) 2. (33) We claim the following: For n large enough so that ξ < 1/3 and hence ρ > 1, (i) For ℓ ≥ 4, G(ℓ) ≥ G(2) G(ℓ − 2). (ii) G(3) 2 > G (2) 3.Statement (i) reduces to showing that ρℓ − 1 ≥ (ρ2 − 1)( ρℓ−2 − 1). This further simplifies to 
+
+ρℓ−2 + ρ2 ≥ 2 which is true since ρ > 1. For statement (ii), since ρ > 1, it suffices to show (ρ3 − 1) 2 > (ρ2 − 1) 3. This simplifies to 3 ρ4 − 2ρ3 − 3ρ2 + 2 > 0 where the LHS factorizes as (ρ − 1) 2(3 ρ2 + 4 ρ + 2) which proves the statement. 17 Note that 
+
+V (S, Π) = exp 
+
+− d
+
+2
+
+> r
+
+X
+
+> j=1
+
+log  
+
+> ℓj−1
+
+Y
+
+> a=0
+
+(1 − ξ(1 + ωaℓj + ω−aℓj )) 
+
+ = exp 
+
+− d
+
+2
+
+> r
+
+X
+
+> j=1
+
+log G(ℓj )
+
+ .
+
+Therefore, by Claims (i) and (ii), for any fixed S, V (S, Π) is maximized for Π’s whose derangement part Π Sc has a maximal number of two cycles. It follows that 
+
+V (S, Π) ≤ exp − d
+
+2 ×
+
+( n−k 
+
+> 2
+
+log G(2) n − k even  
+
+> n−k−32
+
+log G(2) + log G(3) n − k odd 
+
+!
+
+≤ exp 
+
+
+
+− d(n − k)4 log G(2) 
+
+
+
+=
+
+ 
+
+1 − 3
+
+σ2
+
+  
+
+1 + 1
+
+σ2
+
+ − d(n−k)4
+
+. (34) Thus, upper bounding the number of derangements of Sc as 2( n − k)! /e ≤ Ce (n−k) log n, and upper bounding  nk
+
+ ≤   eδ
+
+k we can upper bound term (II) as (II) ≤ 1
+
+n log n log X
+
+> S⊂[n]
+> |S|=k
+
+X
+
+> Π: S(Π)= S
+
+V (S, Π) 
+
+≤ 1
+
+n log n log 
+
+ eδ
+
+k
+
+C exp(( n − k) log n)
+
+ 
+
+1 − 3
+
+σ2
+
+  
+
+1 + 1
+
+σ2
+
+ − d(n−k)4
+
+
+
+≤ 1 − δ + d(n − k)4n log n
+
+2
+
+σ2 (1 + o(1)) + O
+
+ 1log n
+
+
+
+=
+
+ b
+
+2 + 1 
+
+
+
+(1 − δ) + o(1) , (35) where the third line follows from Taylor expanding log  1 −   2 
+
+> σ2
+
++ 3
+
+> σ4
+
+ = − 2 
+
+> σ2
+
++ O( 1 
+
+> σ4
+
+), and the last line by plugging in the definition of σ2 = db log n . The estimates above are uniform over δ ∈ [δ0, 1], since log( e/δ ) is then uniformly bounded. Combining (31) and (35) gives (30). 
+
+A.2 Asymptotics of the full free energy 
+
+This section gives the proof for Proposition 2.3. By symmetry, it suffices to prove Proposition 2.3 under Π ∗ = I, in which case the free energy in (8) reduces exactly to eΨσ. Thus it suffices to show that 
+
+E eΨσ = 1 + b
+
+2 + o(1) .
+
+The proposition will be shown by first reducing eΨσ as follows: define 
+
+Z = X
+
+> Π
+
+exp 
+
+pb log n Tr Π XZ ⊤
+
+√d
+
+
+
+(36) This quantity Z can be thought of as the noise part of eΨσ in (21). The following lemma shows that we can focus our attention on Z, because dropping the signal part in eΨσ costs only an arbitrarily small exponential factor at the n log n scale. 18 Lemma A.2. Suppose b > 0 is fixed. Then for every η > 0, there exists a constant cη,b > 0 such that, for all sufficiently large n,
+
+P
+
+eΨσ ≥ 1
+
+n log n log Z − η
+
+
+
+≥ 1 − exp {− cη,b nd } .
+
+Proof. We first show that 
+
+P
+
+
+
+min 
+
+> Π
+
+1
+
+σ2 Tr ΠXX ⊤ ≤ − ηn log n
+
+
+
+≤ exp {− cη,b nd } . (37) Fix a permutation matrix Π and write X(1) , . . . , X (d) ∈ Rn for the columns of X. Let AΠ = 
+
+> 12
+
+(Π + Π ⊤). Then 
+
+Tr ΠXX ⊤ =
+
+> d
+
+X
+
+> a=1
+
+(X(a))⊤AΠX(a).
+
+If g ∼ N (0 , I nd ) and BΠ = Id ⊗ AΠ, then the right-hand side of the above display has the same distribution as g⊤BΠg. Since Tr BΠ = d Tr Π ≥ 0, ∥BΠ∥op ≤ 1, and ∥BΠ∥2 
+
+> F
+
+≤ nd , the Hanson-Wright inequality for Gaussian quadratic forms (see e.g. [Ver18, Theorem 6.2.1]) gives, for any 
+
+t > 0, 
+
+P
+
+h
+
+Tr ΠXX ⊤ ≤ − t
+
+i
+
+≤ 2 exp 
+
+
+
+−c min 
+
+ t2
+
+nd , t 
+
+ 
+
+.
+
+Taking t = ηnd/b , and a union bound over at most n! ≤ exp( n log n) permutation matrices gives 
+
+P
+
+
+
+min 
+
+> Π
+
+1
+
+σ2 Tr ΠXX ⊤ ≤ − ηn log n
+
+
+
+≤ 2 exp n log n − c′
+
+> η,b
+
+nd ,
+
+for some constant c′ 
+
+> η,b
+
+> 0. Since d = ω(log n) this proves (37) for sufficiently large n.On the complementary event in (37), for every Π, 1 
+
+> σ2
+
+Tr ΠXX ⊤ ≥ − ηn log n. Therefore, 
+
+X
+
+> Π
+
+exp 
+
+ 1
+
+σ2 Tr ΠXX ⊤ + 1
+
+σ Tr ΠXZ ⊤
+
+
+
+≥ e−ηn log n X
+
+> Π
+
+exp 
+
+ 1
+
+σ Tr ΠXZ ⊤
+
+
+
+= e−ηn log nZ.
+
+Taking logarithms and dividing by n log n finishes the proof. The main work of the lower bound is therefore the asymptotics of the free energy Z.
+
+Theorem A.3. Let b > 0 be fixed. Then 
+
+lim 
+
+> n→∞
+
+1
+
+n log n log Z =
+
+( b 
+
+> 2
+
++ 1 , b < 2,
+
+√2b, b ≥ 2, a.s. (38) The starting point of the proof is to establish that the normalized free energy concentrates on its expectation. The proof follows by straightforward modifications of (24). 
+
+Lemma A.4. There exist constants C, c > 0 such that for every fixed t > 0 and all sufficiently large n,
+
+P
+
+ 1
+
+n log n log Z − 1
+
+n log n E log Z ≥ t
+
+
+
+≤ C exp 
+
+
+
+−c n log nb t2
+
+
+
+. (39) 19 By Lemma A.4 and Borel-Cantelli, we see that to establish Theorem A.3, it suffices to show that the deterministic sequence 1   
+
+> nlog n
+
+E log Z has the desired limit. This will follow from a conditional second moment method. The high probability event is given in Appendix A.2.1. The sections afterwards make first and second moment calculations which will be used to prove Theorem A.3. The conditional second moment argument establishes the subcritical branch. The critical and supercritical branch is then deduced from it by convexity and a fractional-moment bound. 
+
+Proof of Proposition 2.3. Lower bound. Fix ϵ1 > 0. By Theorem A.3, 
+
+P
+
+ 1
+
+n log n log Z ≥ b
+
+2 + 1 − ϵ1
+
+
+
+= 1 − o(1) .
+
+Combining this with Lemma A.2, applied with η = ϵ1, gives 
+
+P
+
+eΨσ ≥ b
+
+2 + 1 − 2ϵ1
+
+
+
+= 1 − o(1) .
+
+On the other hand, (24) gives 
+
+P
+
+h eΨσ ≤ E eΨσ + ϵ1
+
+i
+
+= 1 − o(1) .
+
+For all sufficiently large n, the last two events have nonempty intersection. On this intersection, 
+
+E eΨσ ≥ b
+
+2 + 1 − 3ϵ1.
+
+Taking lim inf n→∞ and then letting ϵ1 ↓ 0 gives lim inf  
+
+> n→∞
+
+E eΨσ ≥ 1 + b
+
+2 .
+
+Upper bound. For 0 ≤ k ≤ n, let 
+
+eZk = X  
+
+> Π: Tr Π= k
+
+exp 
+
+ 1
+
+σ2 Tr ΠXX ⊤ + 1
+
+σ Tr ΠXZ ⊤
+
+
+
+, and Ψσ,k = 1
+
+n log n log eZk.
+
+The empty sum is taken to be zero, so in particular Ψ σ,n −1 = −∞ . Then 
+
+eΨσ ≤ max  
+
+> 0≤k≤n
+
+Ψσ,k + log( n + 1) 
+
+n log n .
+
+Fix η ∈ (0 , 1). For k ≥ ηn , Proposition A.1 gives uniformly 
+
+EΨσ,k ≤ 1 + b
+
+2 + k
+
+2n (b − 2) + on(1) ≤ 1 + b
+
+2 − 2 − b
+
+2 η + on(1) .
+
+For 0 ≤ k ≤ ηn , applying the estimates behind (31) and (35) with δ = k/n gives, uniformly over this range, 
+
+EΨσ,k ≤ bk n +
+
+
+
+1 + b
+
+2
+
+  
+
+1 − kn
+
+
+
++ on(1) = 1 + b
+
+2 − 2 − b
+
+2
+
+kn + on(1) .
+
+Since b < 2, it follows that sup 0≤k≤ηn EΨσ,k ≤ 1 + b/ 2 + on(1). Finally, the concentration argument used for (24) applies to each restricted free energy Ψ σ,k with the same constants, uniformly in k.A union bound over the n + 1 possible values of k gives 
+
+E max  
+
+> 0≤k≤n
+
+(Ψ σ,k − EΨσ,k )+ = o(1) .
+
+Therefore lim sup n→∞ E eΨσ ≤ 1 + b 
+
+> 2
+
+. Combining the upper and lower bounds proves the claim. 20 A.2.1 High probability event 
+
+Let Pk denote the set of k-subpermutation matrices: any S ∈ Pk is a n × n matrix with exactly k
+
+rows and k columns containing one nonzero entry (which is one) and all the rest are zeros. Notice that Pn coincides with the usual set of n × n permutation matrices. For any ϵ, c 0 > 0, and k0 = c0n, define the event 
+
+E = E(ϵ, c 0) = 
+
+> n
+
+\
+
+> k=1
+
+Ek, where Ek =
+
+
+
+max 
+
+> S∈Pk
+
+1
+
+√dk Tr SXZ ⊤ ≤ p(2 + ϵ)k0 log n if k ≤ k0
+
+max 
+
+> S∈Pk
+
+1
+
+√dk Tr SXZ ⊤ ≤ p(2 + ϵ)k log n if k > k 0
+
+(40) 
+
+Lemma A.5. For any fixed ϵ, c 0 > 0, the event E = E(ϵ, c 0) holds with high probability, i.e. PE =1 − o(1) .Proof of Lemma A.5. For any k, for any c > 0 such that c/ √dk < 1, we have 
+
+E max 
+
+> S∈Pk
+
+1
+
+√dk Tr SXZ ⊤ ≤ 1
+
+c log X
+
+> S∈Pk
+
+E exp 
+
+ c
+
+√dk Tr SXZ ⊤
+
+
+
+= 1
+
+c log |Pk| − dk 
+
+2c log 
+
+
+
+1 − c2
+
+dk 
+
+
+
+.
+
+We have |Pk| =  nk
+
+  nk
+
+k! ≤ n2k(e/k )k. Then choosing c = p2 log |Pk| ≪ √dk , we obtain after Taylor expanding the log in the second term that 
+
+E max 
+
+> S∈Pk
+
+1
+
+√dk Tr SXZ ⊤ ≤ (1 + o(1)) p2 log |Pk| (41) The concentration step below is the same high-probability Lipschitz argument used in the proof of (24); we spell it out in this simpler max setting. Define 
+
+Mk(X, Z) = max 
+
+> S∈Pk
+
+1
+
+√dk Tr SXZ ⊤.
+
+We claim that 
+
+P [|Mk − EMk| ≥ t] ≤ C exp( −ct 2) + C′ exp( −c′d) (42) for some universal constants C, C ′, c, c ′ > 0 and every t > 0. To see this, note that conditionally on 
+
+Z, the function X 7 → Mk(X, Z) is LZ-Lipschitz, where 
+
+LZ = max 
+
+> S∈Pk
+
+S⊤Z F√dk .
+
+Since S⊤Z selects k rows of Z, we have L2 
+
+> Z
+
+≤ d−1 max i≤n ∥Zi∥22 . Since ∥Zi∥22 ∼ χ2
+
+> d
+
+, a union bound gives P L2 
+
+> Z
+
+> 2 ≤ exp( −c′d). Thus, by Gaussian concentration conditionally on Z,
+
+P [|Mk − E[Mk | Z]| ≥ t] ≤ 2e−t2/4 + exp( −c′d).
+
+On the other hand, the function E[Mk | Z] is L∗-Lipschitz, where 
+
+L∗ = E
+
+
+
+max 
+
+> S∈Pk
+
+∥SX∥F√dk 
+
+
+
+≤ E
+
+r 1
+
+d max  
+
+> i
+
+∥Xi∥22 ≤ C0
+
+21 for a universal constant C0 > 0. Hence 
+
+P [|E[Mk | Z] − EMk| ≥ t] ≤ 2 exp( −t2/(2 C20 )) .
+
+The claim then follows from the triangle inequality. For k > k 0, we have 
+
+P[Eck] = P
+
+h
+
+Mk − EMk > p(2 + ϵ)k log n − EMk
+
+i
+
+≤ P
+
+h
+
+Mk − EMk >
+
+√2 + ϵ − p2 + ϵ/ 2
+
+ p k log n
+
+i
+
+,
+
+where the inequality uses (41) and that lim n→∞ log |Pk |   
+
+> klog n
+
+= 1 . Indeed, since |Pk| =  nk
+
+2k!, Stirling’s formula gives log |Pk| = k log n + O(n) uniformly for k > k 0 = c0n. By (42), for k > k 0,
+
+P [Eck] ≤ C exp ( −c(ϵ)k log n) + C′ exp( −c′d) (43) For k ≤ k0, since log |Pk| ≤ 2k log n + k − k log k =: f (k) where f (k) is increasing for k ≤ k0,we have f (k) ≤ 2k0 log n + k0 − k0 log k0 = k0 log n + k0(1 − log c0) ≤  1 + ϵ
+
+> 8
+
+ k0 log n for sufficiently large n. It follows that for sufficiently large n, from (41), 
+
+E max 
+
+> S∈Pk
+
+1
+
+√dk Tr SXZ ⊤ ≤
+
+r
+
+2 + ϵ
+
+2
+
+
+
+k0 log n. 
+
+By (42), we obtain 
+
+P[Eck] ≤ P
+
+h
+
+Mk − EMk >
+
+√2 + ϵ − p2 + ϵ/ 2
+
+ p k0 log n
+
+i
+
+≤ C exp ( −c(ϵ)k0 log n) + C′ exp( −c′d) (44) A union bound combined with (43) and (44) gives, as n → ∞ ,
+
+PEc ≤ C X
+
+> k≤k0
+
+e−c(ϵ)k0 log n + C X
+
+> k>k 0
+
+e−c(ϵ)k log n + Cne −c′d → 0.
+
+Lemma A.6. Let W = 1√d XZ ⊤. For any fixed ϵ, c 0 > 0 and any fixed permutation matrix Π0,with E = E(ϵ, c 0),
+
+P
+
+
+
+Ec Tr Π0W
+
+
+
+1
+
+ 1
+
+√n Tr Π0W ≤ p2n log n
+
+
+
+= o(1) .
+
+Proof. Without loss of generality, assume Π 0 = I. Let T = Tr W . Write t for a deterministic value of T and condition on T = t. To prove the claim, it is enough to show that uniformly over 
+
+|t| ≤ n√2 log n,
+
+P
+
+" n[
+
+> k=1
+
+Eck T = t
+
+#
+
+= o(1) .
+
+We first show that the norm and inner products of the rows of Z still concentrate, even with the conditioning on Tr W . Fix a sufficiently large constant K > 0, to be chosen below, and set 
+
+ρn =
+
+r K log nd .
+
+22 Note that ρn ↓ 0 because d = ω(log n). Define 
+
+Gn =
+
+(
+
+max 
+
+> i
+
+∥Zi∥22
+
+d − 1 ≤ ρn
+
+)
+
+∩
+
+(
+
+max 
+
+> i̸=j
+
+Z⊤ 
+
+> i
+
+Zj
+
+d ≤ ρn
+
+)
+
+.
+
+We claim that sup  
+
+> |t|≤ n√2 log n
+
+P Gcn T = t = o(n−3). (45) This is seen as follows. Write N = nd , R = ∥Z∥2 
+
+> F
+
+, and U = Z/ ∥Z∥F (so Z = √RU ). By rotational invariance, U is uniform on the sphere in RN and is independent of R. Moreover, Tr W has the conditional distribution  T Z ∼ N 
+
+
+
+0, Rd
+
+
+
+.
+
+Notice that this distribution depends on Z only through R. Therefore the conditional density of 
+
+Tr W at t, given ( R, U ), is the same as the conditional density given R, namely 
+
+fT |R(t | r) = 
+
+r d
+
+2πr exp 
+
+
+
+− dt 2
+
+2r
+
+
+
+.
+
+We have R ∼ χ2 
+
+> N
+
+. Denote the marginal density of R by fR. By Bayes’ formula, for any Borel set 
+
+A ⊂ R+ and any Borel set B on the unit sphere, 
+
+P R ∈ A, U ∈ B T = t =
+
+R 
+
+> A
+
+fT |R(t | r)fR(r) d r
+
+R ∞ 
+
+> 0
+
+fT |R(t | r)fR(r) d r P [U ∈ B] . (46) We deduce that conditioning on T = t only influences the radius R of Z, while the direction U of 
+
+Z remains uniform. We further claim that, uniformly over |t| ≤ n√2 log n,
+
+P
+
+ RN − 1 > ρn
+
+4 T = t
+
+
+
+= o(n−3). (47) We prove (47) now. Define ht(r) = fT |R(t | r)fR(r). Then by taking B in (46) to be the whole unit sphere, and using the change of variables r = N (1 + s), we have 
+
+P
+
+ RN − 1 > ρn
+
+4 T = t
+
+
+
+= N R 
+
+> |s|>ρ n/4
+
+ht(N (1 + s)) d sN R ∞−1 ht(N (1 + s)) d s . (48) We consider the numerator first. Here and below, the condition |s| > ρn 
+
+> 4
+
+is understood together with s > −1, since r = N (1 + s) > 0. We have log ht(N (1 + s)) 
+
+ht(N ) =
+
+ N
+
+2 − 32
+
+
+
+log(1 + s) − N s 
+
+2 + t2
+
+2ns
+
+1 + s ≤ − cN s 2 + C |s| n log n, 
+
+where the inequality uses t2/n ≤ 2n log n, and log(1 + s) − s ≤ − cs 2 which holds for |s| < 1/2. Furthermore, for |s| ≥ ρn 
+
+> 4
+
+,
+
+C |s| n log ncN s 2 ≤ C log nd |s| ≤ C
+
+r log nKd = o(1) .
+
+23 Thus on the region, ρn 
+
+> 4
+
+≤ | s| ≤ 12 , for n large enough, 
+
+ht(N (1 + s)) ≤ ht(N ) exp  −cN s 2 .
+
+The contribution to the numerator in (48) from this region is therefore at most 
+
+N h t(N )
+
+Z  
+
+> ρn
+> 4≤| s|≤ 12
+
+exp  −cN s 2 ds ≤ Ch t(N )√N exp  −cN ρ 2
+
+> n
+
+ . (49) We now consider the remaining region |s| > 12 . If −1 < s < − 12 , then t2 
+
+> 2ns
+> 1+ s
+
+is nonpositive, and so log ht(N (1 + s)) 
+
+ht(N ) ≤
+
+ N
+
+2 − 32
+
+
+
+log(1 + s) − N s 
+
+2 ≤ − cN. 
+
+Therefore, 
+
+N
+
+Z − 12
+
+> −1
+
+ht(N (1 + s)) d s ≤ CN h t(N ) exp ( −cN ) . (50) If s > 12 , then s − log(1 + s) ≥ c, and so log ht(N (1 + s)) 
+
+ht(N ) ≤ − cN − 32 log(1 + s) + Cn log n ≤ − cN − 32 log(1 + s),
+
+where the last inequality uses N = nd and d = ω(log n). Thus, for s > 12 ,
+
+ht(N (1 + s)) ≤ ht(N ) exp ( −cN ) (1 + s)− 32 ,
+
+and hence 
+
+N
+
+Z ∞
+
+> 12
+
+ht(N (1 + s)) d s ≤ CN h t(N ) exp ( −cN ) . (51) Combining (50) and (51), we see that the contribution from the region |s| > 12 to the numerator in (48) is negligible compared with (49), since ρ2 
+
+> n
+
+= o(1). Together with (49), this gives the full numerator bound 
+
+N
+
+Z
+
+> |s|>ρ n/4
+
+ht(N (1 + s)) d s ≤ Ch t(N )√N exp  −cN ρ 2
+
+> n
+
+ . (52) For the denominator, we instead lower bound the integral by restricting to 0 ≤ s ≤ N −1/2. On this interval, by similar calculations, we have 
+
+N
+
+Z ∞−1
+
+ht(N (1 + s)) d s ≥ ch t(N )√N . (53) Combining the numerator (52) and denominator (53) bounds gives the claimed (47): 
+
+P
+
+ RN − 1 > ρn
+
+4 T = t
+
+
+
+≤ C exp  −cρ 2
+
+> n
+
+N  = o(n−3).
+
+This size of ∥Z∥2 
+
+> F
+
+estimate (47) will now be used to show (45). 24 Since U remains uniform after conditioning on T = t, we may realize the conditional law of 
+
+Z given T = t as follows: draw R from its conditional law given T = t, draw G = ( G1, . . . , G n)independently, where each Gi ∈ Rd has i.i.d. N (0 , 1) entries, and set 
+
+Z = √R G
+
+∥G∥F
+
+.
+
+Under this coupling, the following identities hold: 
+
+∥Zi∥22
+
+d = Rnd · ∥Gi∥22 /d 
+
+∥G∥2 
+
+> F
+
+/(nd ) , Z⊤ 
+
+> i
+
+Zj
+
+d = Rnd · G⊤ 
+
+> i
+
+Gj /d 
+
+∥G∥2 
+
+> F
+
+/(nd ) .
+
+Claim (47) controls the prefactor R/ (nd ). It remains to control the two ratios involving G. Astandard chi-square tail bound gives, for 0 < u < 1, P
+
+h χ2 
+
+> m
+> m
+
+− 1 > u 
+
+i
+
+≤ 2 exp  −cmu 2 . Applying this with m = d to each row and with m = nd to ∥G∥2 
+
+> F
+
+, and using the Gaussian inner-product bound 
+
+P
+
+h
+
+G⊤ 
+
+> i
+
+Gj > ud 
+
+i
+
+≤ C exp  −cu 2d , i̸ = j, 
+
+we obtain, after a union bound over i, j ,
+
+P
+
+"
+
+max 
+
+> i
+
+∥Gi∥22
+
+d − 1 > ρn
+
+8 or ∥G∥2
+
+> F
+
+nd − 1 > ρn
+
+8 or max 
+
+> i̸=j
+
+G⊤ 
+
+> i
+
+Gj
+
+d > ρn
+
+8
+
+#
+
+≤ Cn 2 exp  −cρ 2
+
+> n
+
+d = o(n−3),
+
+where the last step follows by choosing K large enough. Altogether, Claim (47), the last display and the identities above imply ∥Zi∥22 /d − 1 ≤ ρn for all i and Z⊤ 
+
+> i
+
+Zj /d ≤ ρn for all i̸ = j, except on an event with conditional probability o(n−3). This is exactly P[Gcn | T = t] = o(n−3), proving (45). For Π ∈ Pk, call i a fixed point of Π if Π ii = 1. Let S(Π) = {i : Π ii = 1 } be its set of fixed points. We now decompose each Ek according to |S(Π) | . For 0 ≤ j ≤ k, define 
+
+Ek,j =
+
+
+
+max  
+
+> Π∈Pk:|S(Π) |=j
+
+1
+
+√k Tr ΠW ≤ p(2 + ϵ)( k ∨ k0) log n
+
+
+
+.
+
+Then Ek = ∩kj=0 Ek,j . We have the decomposition max  
+
+> Π∈Pk:|S(Π) |=j
+
+1
+
+√k Tr ΠW = max 
+
+> S⊂[n]: |S|=j
+
+(
+
+1
+
+√k
+
+X
+
+> i∈S
+
+Wii + max 
+
+> Π′∈D[n]\S
+
+1
+
+√k Tr Π′W
+
+)
+
+, (54) where D[n]\S is the set of ( k − j)-subpermutation matrices supported on [ n]\S with no fixed points. When j = 0 the fixed-point term is absent, and when j = k the derangement term is absent. We first consider the fixed point part in (54). For S ⊂ [n] with |S| = j, decompose 
+
+X
+
+> i∈S
+
+Wii = ∥ZS ∥2
+
+> F
+
+∥Z∥2
+
+> F
+
+T
+
+| {z }
+
+> =: μS
+
++ X
+
+> i∈S
+
+Wii − ∥ZS ∥2
+
+> F
+
+∥Z∥2
+
+> F
+
+T
+
+| {z }
+
+> =: RS
+
+.
+
+Conditionally on Z, a calculation shows 
+
+Var 
+
+"X
+
+> i∈S
+
+Wii Z
+
+#
+
+= ∥ZS ∥2
+
+> F
+
+d , Cov 
+
+"X
+
+> i∈S
+
+Wii , T Z
+
+#
+
+= ∥ZS ∥2
+
+> F
+
+d . (55) 25 Also Var [T | Z] = ∥Z∥2 
+
+> F
+
+/d . Hence RS and μS are uncorrelated conditionally on Z; since they are jointly Gaussian conditionally on Z, they are independent. Conditioning further on T fixes μS , and as S varies the variables RS form a centered Gaussian process. From (55), 
+
+Var RS T, Z = 1
+
+d ∥ZS ∥2 
+
+> F
+
+− ∥ZS ∥4
+
+> F
+
+∥Z∥2
+
+> F
+
+!
+
+= ∥ZS ∥2 
+
+> F
+
+∥ZSc ∥2
+
+> F
+
+d ∥Z∥2
+
+> F
+
+.
+
+Equivalently, 
+
+X
+
+> i∈S
+
+Wii T = t, Z
+
+!
+
+∼ N ∥ZS ∥2
+
+> F
+
+∥Z∥2
+
+> F
+
+t, ∥ZS ∥2 
+
+> F
+
+∥ZSc ∥2
+
+> F
+
+d ∥Z∥2
+
+> F
+
+!
+
+.
+
+On Gn, we have ∥ZS ∥2 
+
+> F
+
+≤ (1 + o(1)) jd , ∥ZSc ∥2 
+
+> F
+
+≤ (1 + o(1))( n − j)d, and ∥Z∥2 
+
+> F
+
+≥ (1 − o(1)) nd .Thus 
+
+1Gn sup 
+
+> |S|=j
+
+Var 
+
+ RS
+
+√k T, Z
+
+
+
+≤ (1 + o(1)) jkn − jn ,
+
+and therefore 
+
+1Gn E
+
+
+
+max 
+
+> |S|=j
+
+RS
+
+√k T, Z
+
+
+
+≤ (1 + o(1)) 
+
+r jkn − jn
+
+p2(log 2) n. 
+
+Fix ϵ′ > 0 sufficiently small, depending only on ϵ. Let 
+
+Ak,j =
+
+(
+
+max 
+
+> |S|=j
+
+RS
+
+√k ≤
+
+r jkn − jn
+
+p(2 + ϵ′)(log 2) n
+
+)
+
+, 1 ≤ j ≤ k. 
+
+Gaussian concentration applied conditionally on T and Z gives, uniformly in k, j and |t| ≤ 
+
+n√2 log n,
+
+1Gn P Ack,j T = t, Z ≤ Ce −cn .
+
+Integrating over Z and using (45) gives 
+
+P Ack,j T = t ≤ o(n−3) + Ce −cn . (56) We next consider the derangement part in (54). For Π ′ ∈ D[n]\S , writing ( i, ℓ ) ∈ Π′ to mean that ( i, ℓ ) is a matched pair, i.e. Π ′ 
+
+> iℓ
+
+= 1, decompose 
+
+Tr Π′W =
+
+P 
+
+> (i,ℓ )∈Π′
+
+Z⊤ 
+
+> i
+
+Zℓ
+
+∥Z∥2
+
+> F
+
+T
+
+| {z }
+
+> =: μ′(Π ′)
+
++ Tr Π′W −
+
+P 
+
+> (i,ℓ )∈Π′
+
+Z⊤ 
+
+> i
+
+Zℓ
+
+∥Z∥2
+
+> F
+
+T
+
+| {z }
+
+> =: R′(Π ′)
+
+.
+
+Conditionally on ( T, Z), we claim that the variables {R′(Π ′)}S:|S|=j, Π′∈D[n]\S form a centered Gaus-sian process: 
+
+ Tr Π′W T = t, Z ∼ N 
+
+P 
+
+> (i,ℓ )∈Π′
+
+Z⊤ 
+
+> i
+
+Zℓ
+
+∥Z∥2
+
+> F
+
+t, 1
+
+d
+
+X
+
+> (i,ℓ )∈Π′
+
+∥Zi∥22 −
+
+P 
+
+> (i,ℓ )∈Π′
+
+Z⊤ 
+
+> i
+
+Zℓ
+
+2
+
+∥Z∥2
+
+> F
+
+ .
+
+To see this, for fixed S and Π ′, conditionally on Z, compute 
+
+Var 
+
+
+
+Tr Π′W Z
+
+
+
+= 1
+
+d
+
+X
+
+> (i,ℓ )∈Π′
+
+∥Zi∥22 , Cov 
+
+
+
+Tr Π′W, T Z
+
+
+
+= 1
+
+d
+
+X
+
+> (i,ℓ )∈Π′
+
+Z⊤ 
+
+> i
+
+Zℓ.
+
+26 Therefore 
+
+Var R′(Π ′) T, Z = 1
+
+d
+
+X
+
+> (i,ℓ )∈Π′
+
+∥Zi∥22 −
+
+P 
+
+> (i,ℓ )∈Π′
+
+Z⊤ 
+
+> i
+
+Zℓ
+
+2
+
+∥Z∥2
+
+> F
+
+ .
+
+On Gn, since Π ′ has k − j nonzero entries, we thus obtain 
+
+1Gn sup 
+
+> S, Π′
+
+Var 
+
+ R′(Π ′)
+
+√k T, Z
+
+
+
+≤ 1Gn
+
+dk sup 
+
+> S, Π′
+
+X
+
+> (i,ℓ )∈Π′
+
+∥Zi∥22 ≤ (1 + o(1)) k − jk .
+
+The number of choices of S and Π ′ is at most 
+
+nj
+
+ n − jk − j
+
+2
+
+(k − j)! ≤ 4nnk−j = exp {2(log 2) n + ( k − j) log n} .
+
+Let 
+
+Bk,j =
+
+(
+
+max  
+
+> |S|=j
+
+max 
+
+> Π′∈D[n]\S
+
+R′(Π ′)
+
+√k ≤
+
+r k − jk
+
+p (4 log 2 + ϵ′)n + p2( k − j) log n
+
+)
+
+, 0 ≤ j ≤ k−1.
+
+Again by Gaussian concentration conditionally on T and Z,
+
+1Gn P Bck,j T = t, Z ≤ Ce −cn .
+
+Integrating over Z and using (45), 
+
+P Bck,j T = t ≤ o(n−3) + Ce −cn , (57) uniformly in k, j and |t| ≤ n√2 log n.We now combine the two parts. On Gn and |t| ≤ n√2 log n,max 
+
+> |S|=j
+
+μS
+
+√k ≤ (1 + o(1)) j
+
+√k
+
+p2 log n, 
+
+and max  
+
+> |S|=j
+
+max 
+
+> Π′∈D[n]\S
+
+μ′(Π ′)
+
+√k ≤ o(1) k − j
+
+√k
+
+p2 log n. 
+
+Therefore, on Gn, together with Ak,j when j ≥ 1 and Bk,j when j ≤ k − 1, the split (54) gives max  
+
+> Π∈Pk:|S(Π) |=j
+
+1
+
+√k Tr ΠW ≤ (1 + o(1)) j
+
+√k
+
+p2 log n +
+
+r jkn − jn
+
+p(2 + ϵ′)(log 2) n
+
++ o(1) k − j
+
+√k
+
+p2 log n +
+
+r k − jk
+
+p (4 log 2 + ϵ′)n + p2( k − j) log n
+
+
+
+≤ (1 + o(1)) p2k log n + Oϵ′ (√n).
+
+If k > k 0, this is at most p(2 + ϵ)k log n for sufficiently large n. If k ≤ k0, it is at most p(2 + ϵ)k0 log n for sufficiently large n. Hence Ek,j holds for every k, j on 
+
+Gn ∩
+
+> n
+
+\
+
+> k=1
+> k
+
+\
+
+> j=1
+
+Ak,j ∩
+
+> n
+
+\
+
+> k=1
+> k−1
+
+\
+
+> j=0
+
+Bk,j .
+
+27 Finally, by (45), (56), and (57), 
+
+P Ec T = t ≤ P Gcn T = t +
+
+> n
+
+X
+
+> k=1
+> k
+
+X
+
+> j=1
+
+P Ack,j T = t +
+
+> n
+
+X
+
+> k=1
+> k−1
+
+X
+
+> j=0
+
+P Bck,j T = t
+
+≤ o(n−3) + n2o(n−3) + Cn 2e−cn = o(1) ,
+
+uniformly over |t| ≤ n√2 log n.
+
+A.2.2 First moment computations 
+
+We make conditional first moment computations in this section. Recall the free energy Z defined in (36) and the high probability event E defined in (40). 
+
+Lemma A.7. For any b < 2 and any fixed ϵ, c 0 > 0, with E = E(ϵ, c 0),
+
+lim sup 
+
+> n→∞
+
+1
+
+n log n log E[Z1E ] ≤ b
+
+2 + 1 . (58) 
+
+Proof. By dropping the indicator, we have since ( b log n)/d < 1 for large enough n,
+
+E[Z1E ] = X
+
+> Π
+
+E
+
+
+
+exp 
+
+pb log n Tr Π XZ ⊤
+
+√d
+
+
+
+1E
+
+
+
+≤ n!E
+
+
+
+exp 
+
+pb log n Tr XZ ⊤
+
+√d
+
+ 
+
+= n!
+
+
+
+1 − b log nd
+
+− dn 
+
+> 2
+
+= n! exp 
+
+ b
+
+2 n log n + o(n log n)
+
+
+
+,
+
+where we used log(1 − x) = −x + O(x2) and d = ω(log n). Thus (58) holds. Our next result is a matching lower bound for the conditional first moment. 
+
+Lemma A.8. For any b < 2 and any fixed ϵ, c 0 > 0, with E = E(ϵ, c 0),
+
+lim inf 
+
+> n→∞
+
+1
+
+n log n log E[Z1E ] ≥ b
+
+2 + 1 . (59) 
+
+Proof. For a fixed permutation matrix Π, define the event E(Π) = 
+
+n 1√nd Tr ΠXZ ⊤ ≤ √2n log n
+
+o
+
+.
+
+Then 
+
+E[Z1E ] = X
+
+> Π
+
+E
+
+
+
+exp 
+
+pbn log n Tr ΠXZ ⊤
+
+√nd 
+
+
+
+1E
+
+
+
+≥ X
+
+> Π
+
+E
+
+
+
+exp 
+
+pbn log n Tr ΠXZ ⊤
+
+√nd 
+
+
+
+1E(Π) 1E
+
+
+
+= X
+
+> Π
+
+E
+
+
+
+exp 
+
+pbn log n Tr ΠXZ ⊤
+
+√nd 
+
+
+
+1E(Π) PE Tr ΠXZ ⊤
+
+= (1 − o(1)) X
+
+> Π
+
+E
+
+
+
+exp 
+
+pbn log n Tr ΠXZ ⊤
+
+√nd 
+
+
+
+1E(Π) 
+
+
+
+= (1 − o(1)) n! E
+
+
+
+exp 
+
+pbn log n Tr XZ ⊤
+
+√nd 
+
+
+
+1
+
+ Tr XZ ⊤
+
+√nd ≤ p2n log n
+
+ 
+
+,
+
+28 where the last two lines follows from Lemma A.6 and the fact that Tr ΠXZ ⊤ has the same distri-bution for all Π. Abbreviate 
+
+V = Tr XZ ⊤
+
+√nd , λ = pbn log n, t = p2n log n. 
+
+We claim that for 0 ≤ b < 2
+
+E [exp( λV )1{| V | ≤ t}] = exp 
+
+ b
+
+2 n log n + o(n log n)
+
+
+
+. (60) The desired (59) follows from this claim and the approximation n! = exp( n log n + o(n log n)). We now verify the claim. Let R = ∥X∥2 
+
+> F
+
+/(nd ). Conditionally on X, we have V ∼ N (0 , R ). Note ndR ∼ χ2
+
+> nd
+
+. Let a := λ2 
+
+> nd
+
+= b log nd = o(1) . The untruncated moment generating function is 
+
+M (λ) := E[eλV ] = E exp 
+
+ λ2R
+
+2
+
+
+
+= (1 − a)− nd  
+
+> 2
+
+= exp 
+
+ b
+
+2 n log n + o(n log n)
+
+
+
+. (61) Consider a tilted law eE of R, tilted by the factor exp 
+
+n λ2R
+
+> 2
+
+o
+
+/M (λ); i.e. for any function f ,
+
+eEf (R) = E
+
+h
+
+f (R) exp 
+
+n λ2R
+
+> 2
+
+o
+
+/M (λ)
+
+i
+
+. Thus the left-hand side of (60) can be written as 
+
+E
+
+h
+
+eλV 1{| V | ≤ t}
+
+i
+
+= E
+
+
+
+exp 
+
+ λ2R
+
+2
+
+  
+
+Φ
+
+ t − λR 
+
+√R
+
+
+
+− Φ
+
+ −t − λR 
+
+√R
+
+ 
+
+= M (λ) · eE
+
+
+
+Φ
+
+ t − λR 
+
+√R
+
+
+
+− Φ
+
+ −t − λR 
+
+√R
+
+ 
+
+, (62) where Φ is the standard Gaussian CDF, and where the first equality follows from standard Gaussian truncated moment generating function identities. Under this tilted law, R follows the scaled chi-squared distribution 
+
+R ∼ 11 − aχ2
+
+> nd
+
+nd .
+
+By concentration, a random variable Y ∼ χ2
+
+> nd
+
+/(nd ) satisfies Y = 1 + oP(1). It follows that R =1 + oeP(1), where eP refers to the tilted law. Then for any fixed 0 ≤ b < 2, 
+
+t − λR 
+
+√R =
+
+√2 − √b + oeP(1) 
+
+ p n log n −→ +∞.
+
+Also −t−λR √R → −∞ , so the second CDF term in (62) is o(1). Therefore the tilted expectation in (62) is 1 − o(1). Together with (61), this finishes the proof. 
+
+A.2.3 Second moment 
+
+The main result of this section is a bound on the conditional second moment of Z.
+
+Lemma A.9. For any b < 2 and any ζ > 0, there exist ϵ, c 0 > 0 such that, with E = E(ϵ, c 0)
+
+defined in (40) ,
+
+lim sup 
+
+> n→∞
+
+1
+
+n log n log E[Z21E ] ≤ b + 2 + ζ. (63) 29 Proof of Lemma A.9. Case: 0 < b ≤ 1. In this regime we can drop the conditioning on the high probability event E. We have 
+
+E[Z21E ] ≤ EZ2 = X
+
+> Π
+
+X
+
+> Π′
+
+E exp 
+
+pb log n Tr (Π + Π ′) XZ ⊤
+
+√d
+
+
+
+= n! X
+
+> Π
+
+E exp 
+
+pb log n Tr (In + Π) XZ ⊤
+
+√d
+
+
+
+= n!
+
+> n
+
+X
+
+> k=0
+
+X
+
+> Π: |S(Π) |=k
+
+E exp 
+
+ 1
+
+σ · z⊤ [( In + Π) ⊗ Id] x
+
+
+
+, (64) where S(Π) ⊂ [n] is the set of fixed points of Π, and where x = vec( X) ∈ Rnd and z = vec( Z) ∈ Rnd 
+
+be the vectorizations of X and Z, and where we recall σ2 = db log n . Fix k and a Π with |S(Π) | = k.Conditionally on x,
+
+E
+
+
+
+exp 
+
+ 1
+
+σ · z⊤ [( In + Π) ⊗ Id] x
+
+
+
+x
+
+
+
+= exp 
+
+ 12σ2 x⊤ h
+
+(2 In + Π + Π ⊤) ⊗ Id
+
+i
+
+x
+
+
+
+.
+
+Let Sc = [ n] \ S be the set of non-fixed points of Π. Let xS ∈ Rkd and xSc denote the corresponding fixed point and derangement sub-vectors of x. Taking expectation over x in the above display, by independence between xS and xSc , we have 
+
+E
+
+
+
+exp 
+
+ 1
+
+σ · z⊤ [( In + Π) ⊗ Id] x
+
+ 
+
+= ( A) × (B), (65) where (A) = E
+
+
+
+exp 
+
+ 12σ2 x⊤ 
+
+> S
+
+[4 Ik ⊗ Id]xS
+
+ 
+
+, and (B) = E
+
+
+
+exp 
+
+ 12σ2 x⊤
+
+> Sc
+
+h 
+
+2In−k + Π Sc + Π ⊤
+
+> Sc
+
+
+
+⊗ Id
+
+i
+
+xSc
+
+ 
+
+.
+
+By evaluating the χ2 moment generating function, we obtain (A) = E
+
+
+
+exp 2
+
+σ2 x⊤ 
+
+> S
+
+xS
+
+
+
+=
+
+
+
+1 − 4
+
+σ2
+
+− kd 
+
+> 2
+
+.
+
+Now for term ( B). Suppose that Π Sc has cycle decomposition of lengths ℓ1, . . . , ℓ r, where P 
+
+> j
+
+ℓj =
+
+n − k and ℓj ≥ 2. Let ωℓj = exp 
+
+ 2πi
+
+> ℓj
+
+
+
+be the ℓj -th root of unity. Then we obtain (B) = 
+
+> r
+
+Y 
+
+> j=1
+> ℓj−1
+
+Y
+
+> a=0
+
+
+
+1 − 1
+
+σ2 (2 + ωaℓj + ω−aℓj )
+
+− d
+
+> 2
+
+≤
+
+
+
+1 − 4
+
+σ2
+
+− d(n−k)4
+
+,
+
+where the equality follows as in (32), and the inequality by similar arguments as in (34) (where (B) is maximized when the derangement part of Π contains a maximal number of two-cycles). 30 Therefore, combining the bounds for ( A) and ( B), we have from (64) that 
+
+E[Z21E ] ≤ (n!) 
+
+> n
+
+X
+
+> k=0
+
+nk
+
+
+
+(n − k)! max  
+
+> Π: |S(Π) |=k
+
+E exp 
+
+ 1
+
+σ · z⊤ [( In + Π) ⊗ Id] x
+
+
+
+≤ (n!) 2
+
+> n
+
+X
+
+> k=0
+
+1
+
+k!
+
+
+
+1 − 4
+
+σ2
+
+− d(n+k)4
+
+≤ (n!) 2
+
+> n
+
+X
+
+> k=0
+
+exp 
+
+
+
+− d(n + k)4
+
+
+
+− 4b log nd + O
+
+ (log n)2
+
+d2
+
+ 
+
++ k − k log k
+
+
+
+= ( n!) 2 exp 
+
+
+
+bn log n + O
+
+ n(log n)2
+
+d
+
+ nX
+
+> k=0
+
+exp {bk log n + k − k log k} . (66) where in the third line we Taylor expanded log(1 − 4 
+
+> σ2
+
+) and used 1 
+
+> k!
+
+≤ ( ek )k. The function k 7 →
+
+bk log n + k − k log k is concave and maximized at k ∼ nb. The summation above is hence bounded, for b ≤ 1, by 
+
+> n
+
+X
+
+> k=0
+
+exp {bk log n + k − k log k} ≤ n exp 
+
+n
+
+bn b log n + nb − nb log nbo
+
+= exp( o(n log n)) .
+
+Since also d ≫ log n, we conclude that 
+
+E[Z21E ] ≤ exp (( b + 2) n log n + o(n log n)) ,
+
+which yields (63) as desired. 
+
+Case: 1 < b < 2. For such a fixed b, choose 0 < ϵ < 2 sufficiently small so that 
+
+γb,ϵ := −b + 2 √b√2 + ϵ − 2 + ϵ
+
+2 < 1. (67) Such a choice is possible since γb, 0 = −b + 2 √2b − 1 = 1 − (√2 − √b)2 < 1 for every fixed b < 2. Remark that this is the same ϵ appearing in (40), and that this is the only point in proof that dictates the choice of this parameter. Similarly to (64), except we do not drop the indicator function, we have 
+
+E[Z21E ] ≤ (I) + (II) , (68) where with the same notation as in (64), (I) = n!
+
+> k0
+
+X
+
+> k=0
+
+X
+
+> Π: |S(Π) |=k
+
+E
+
+
+
+exp 
+
+ 1
+
+σ z⊤ [( In + Π) ⊗ Id] x
+
+
+
+1Ek
+
+
+
+(II) = n!
+
+> n
+
+X
+
+> k=k0+1
+
+X
+
+> Π: |S(Π) |=k
+
+E
+
+
+
+exp 
+
+ 1
+
+σ z⊤ [( In + Π) ⊗ Id] x
+
+
+
+1Ek
+
+
+
+.
+
+For term (I), recall from (40) that k0 = c0n. After dropping the factor 1Ek , we proceed as in the 31 derivation of (66), but restrict the outer sum to 0 ≤ k ≤ k0. This gives (I) ≤ n!
+
+> k0
+
+X
+
+> k=0
+
+nk
+
+
+
+(n − k)! 
+
+
+
+1 − 4
+
+σ2
+
+− d(n+k)4
+
+≤ (n!) 2
+
+> k0
+
+X
+
+> k=0
+
+exp {bn log n + bk log n + k − k log k + o(n log n)}≤ exp {(b + 2 + ( b − 1) c0 + o(1)) n log n} , (69) where in the last line we used k ≤ k0 = c0n, so bk log n − k log k ≤ (b − 1) c0n log n + O(n). For term (II), we have (II) ≤ (n!) 2
+
+> n
+
+X
+
+> k=k0+1
+
+1
+
+k! max  
+
+> Π: |S(Π) |=k
+
+E
+
+
+
+exp 
+
+pb log n Tr (I + Π) XZ ⊤
+
+√d
+
+
+
+1Ek
+
+
+
+(70) Let I + Π = 2( I ∩ Π) + I\ + Π \, thus splitting into a common overlapping part where I and Π coincide, and two non-overlapping parts. More precisely, I ∩ Π = {(i, i ) : Π ii = 1 }, while I\ and Π\ denote the matched pairs of I and Π, respectively, with the common part I ∩ Π removed. We write ( i, i ′) ∈ (I ∩ Π) to mean that ( i, i ′) is a matched pair of indices in I ∩ Π (equivalently the corresponding matrix entry is one); similarly for I\ and Π \. Fix k0 + 1 ≤ k ≤ n and any Π with 
+
+|S(Π) | = k. Define 
+
+U1 = 2
+
+√d
+
+> d
+
+X
+
+> j=1
+
+X
+
+> (i,i ′)∈(I∩Π)
+
+Xij Zi′j , U2 = 1
+
+√d
+
+> d
+
+X
+
+> j=1
+
+X
+
+> (i,i ′)∈I\
+
+Xij Zi′j , U3 = 1
+
+√d
+
+> d
+
+X
+
+> j=1
+
+X
+
+> (i,i ′)∈Π\
+
+Xij Zi′j .
+
+We note that U1 is indeed independent of ( U2, U 3). The variance of U1 is 4 k. Let 
+
+V = U1/(2 √k).
+
+Let λ = 2 √bk log n and t = p(2 + ϵ)k log n and note that λ ≍ t. Since Ek implies V ≤ t, we have 
+
+E
+
+
+
+exp 
+
+pb log n Tr (I + Π) XZ ⊤
+
+√d
+
+
+
+1Ek
+
+
+
+≤ E [exp ( λV ) 1{V ≤ t}] · E
+
+h
+
+exp 
+
+p b log n(U2 + U3)
+
+i 
+
+.
+
+(71) We consider the term involving U1 first. In the present case, we always have λ ≥ t. Indeed, since 1 < b < 2 and 0 < ϵ < 2, we have  
+
+> √2+ ϵ
+> 2
+
+< 1 < √b. 
+
+We use a “peeling argument”. Define L =  log 1+ ι t , where ι > 0 is a small constant. Thus (1 + ι)L−1 ≤ t ≤ (1 + ι)L. We have 
+
+E [exp ( λV ) 1{V ≤ t}]
+
+≤ E [exp ( λV ) 1{V ≤ 1}] + 
+
+> L
+
+X
+
+> ℓ=0
+
+E
+
+h
+
+exp ( λV ) 1
+
+n
+
+(1 + ι)ℓ < V ≤ (1 + ι)ℓ+1 oi 
+
+≤ eλ +
+
+> L−1
+
+X
+
+> ℓ=0
+
+exp 
+
+
+
+λ(1 + ι)ℓ+1 
+
+P
+
+h
+
+V > (1 + ι)ℓi
+
++ exp  λ(1 + ι)L+1  P [V > t ] (72) 32 A sub-Gaussian bound holds for the tail probabilities. To see this, without loss of generality suppose 
+
+{(1 , 1) , . . . , (k, k )} = ( I ∩ Π). For s > 0 and we have 
+
+E [exp sV ] = E
+
+E
+
+exp s
+
+√dk 
+
+> d
+
+X
+
+> j=1
+> k
+
+X
+
+> i=1
+
+Xij Zij X
+
+ =
+
+> d
+
+Y
+
+> j=1
+> k
+
+Y
+
+> i=1
+
+E
+
+
+
+exp s2
+
+2dk X2
+
+> ij
+
+
+
+=
+
+
+
+1 − s2
+
+dk 
+
+− dk 
+
+> 2
+
+,
+
+(73) where the last equality is valid whenever s2/(2 dk ) < 1/2. For s ≲ √n log n we have s2 ≪ dk so the equality is valid for large n. By an exponential Markov bound, for any s ≲ √n log n and for any 
+
+a ≤ t,
+
+P[V > a ] ≤ exp 
+
+
+
+−sa − dk 
+
+2 log 
+
+
+
+1 − s2
+
+dk 
+
+ 
+
+= exp 
+
+
+
+−sa + s2
+
+2 + O
+
+ s4
+
+dk 
+
+ 
+
+= exp 
+
+
+
+− a2
+
+2 + o(a2)
+
+
+
+,
+
+where the last line follows by setting s = a. Then from (72) we have 
+
+E [exp( λV )1{V ≤ t}] = E
+
+h
+
+exp 
+
+p b log n U 1
+
+
+
+1{V ≤ t}
+
+i
+
+≤ eλ +
+
+> L−1
+
+X
+
+> ℓ=0
+
+exp 
+
+
+
+λ(1 + ι)ℓ+1 − (1 + ι)2ℓ
+
+2 + o
+
+
+
+(1 + ι)2ℓ
+
++ exp 
+
+
+
+λ(1 + ι)L+1 − t2
+
+2 + o(t2)
+
+
+
+≤ eλ + ( L + 1) exp 
+
+
+
+λt (1 + ι)2 − t2
+
+2(1 + ι)2 + o(t2)
+
+
+
+≤ exp 
+
+
+
+λt − t2
+
+2 + Cιn log n
+
+
+
+= exp 
+
+ 
+
+2√b√2 + ϵ − 2 + ϵ
+
+2
+
+
+
+k log n + Cιn log n
+
+
+
+(74) where in the third line we used that the function x 7 → λ(1 + ι)x+1 − (1 + ι)2x/2 is increasing in x,for 0 ≤ x ≤ L.On the other hand, for the fixed 1 < b < 2 under consideration, by the exact same computation as (65) term (B), 
+
+E
+
+h
+
+exp 
+
+p b log n(U2 + U3)
+
+i 
+
+≤
+
+
+
+1 − 4
+
+σ2
+
+− d(n−k)4
+
+= exp {b(n − k) log n + o(n log n)} . (75) Using (74) and (75) in (70) and (71), we have (II) ≤ (n!) 2 exp {(b + Cι )n log n}
+
+> n
+
+X
+
+> k=k0+1
+
+exp 
+
+ 
+
+−b + 2 √b√2 + ϵ − 2 + ϵ
+
+2
+
+
+
+k log n + k − k log k
+
+
+
+≤ exp {(b + 2 + Cι )n log n + o(n log n)} .
+
+Here the last inequality follows from the choice γb,ϵ < 1 in (67), since 
+
+k 7 → γb,ϵ k log n + k − k log k
+
+is maximized at k∗ ∼ nγb,ϵ ≪ n.From (68), we thus have lim sup 
+
+> n→∞
+
+1
+
+n log n log E[Z21E ] ≤ b + 2 + Cι + ( b − 1) c0
+
+Choosing c0 and ι sufficiently small gives (63). 33 A.2.4 Proof of Theorem A.3 
+
+The subcritical branch ( b < 2) of Theorem A.3 will follow from Propositions A.10 and A.11 below, as well as the concentration of the free energy about its expectation in Lemma A.4. The critical and supercritical branch ( b ≥ 2) given in Proposition A.12 below. Our next result gives the upper bound. We remark here that this does not require the second moment machinery. 
+
+Proposition A.10. For any b < 2,
+
+lim sup 
+
+> n→∞
+
+1
+
+n log n E log Z ≤ b
+
+2 + 1 . (76) 
+
+Proof. Fix any ϵ, c 0 > 0 and let E = E(ϵ, c 0). Write 
+
+E log Z = E[log Z | E ] P[E] + E [1Ec log Z] ≤ P[E] log E[Z | E ] + E[1Ec log Z]= P[E] log E[Z1E ] − P[E] log P[E] + E [1Ec log Z] . (77) The second term in the right-hand side of (77) converges to zero by Lemma A.5. We use Cauchy-Schwarz on the third term to have E [1Ec log Z] ≤ pP[Ec]pE log 2 Z. We give a bound on E log 2 Z
+
+now. We first bound the variance of log Z. Let λ = √b log n and set pΠ = exp 
+
+n
+
+λ Tr ΠXZ ⊤/√d
+
+o
+
+/Z.Then by the Gaussian Poincare inequality (see e.g. [vH16, Corollary 2.27]), and direct differentia-tion, we obtain 
+
+Var log Z ≤ E
+
+h
+
+∥∇ X log Z∥ 2 
+
+> F
+
++ ∥∇ Z log Z∥ 2
+
+> F
+
+i
+
+≤ λ2
+
+d E
+
+ X
+
+> Π∈Pn
+
+pΠ Π⊤Z 2 
+
+> F
+
++ X
+
+> Π∈Pn
+
+pΠ ∥ΠX∥2
+
+> F
+
+
+
+= λ2
+
+d E
+
+h
+
+∥Z∥2 
+
+> F
+
++ ∥X∥2
+
+> F
+
+i
+
+≤ Cn log n, 
+
+where in the second line we used Jensen’s inequality, and in the equality we used the fact that Frobenius norm is preserved under permutation, and the final inequality uses E ∥X∥2 
+
+> F
+
+= E ∥Z∥2 
+
+> F
+
+=
+
+nd . We also have 
+
+E log Z ≤ E log 
+
+
+
+n! max 
+
+> Π∈Pn
+
+exp 
+
+pbn log n Tr Π XZ ⊤
+
+√nd 
+
+ 
+
+= log n! + pbn log n E max 
+
+> Π∈Pn
+
+Tr Π XZ ⊤
+
+√nd 
+
+= (1 + o(1)) Cn log n, 
+
+where the last line is by (41). Thus E log 2 Z = Var log Z + ( E log Z)2 = O(( n log n)2). Since 
+
+P[Ec] = o(1) by Lemma A.5, it follows that 1   
+
+> nlog n
+
+E [1Ec log Z] = o(1). The result follows from Lemmas A.5 and A.7 applied to the first term in (77). 
+
+Proposition A.11. For any b < 2,
+
+lim inf 
+
+> n→∞
+
+1
+
+n log n E log Z ≥ b
+
+2 + 1 . (78) 34 Proof. Fix any small constant η > 0, and choose ζ > 0 sufficiently small. By Lemma A.9, choose 
+
+ϵ, c 0 > 0 so that (63) holds with ζ/ 3 in place of ζ, and let E = E(ϵ, c 0). Combining this with Lemma A.8, for all large n,
+
+E[Z1E ]2
+
+E[Z21E ] ≥ exp ( −ζn log n) .
+
+Thus, for any ϵ0 > 0, for n large enough, by the Paley-Zygmund inequality, 
+
+P
+
+ 1
+
+n log n log Z ≥ 1
+
+n log n log E[Z1E ] − ϵ0 E
+
+
+
+= P
+
+h
+
+Z ≥ e−ϵ0n log nE[Z1E ] E
+
+i
+
+≥ P
+
+
+
+Z ≥ 12 E[Z1E ] E
+
+
+
+≥ 14
+
+E[Z1E ]2
+
+E[Z21E ] ≥ exp {− ζn log n} ,
+
+From the concentration of log Z in Lemma A.4, we have for some constants C, c > 0, 
+
+P
+
+ 1
+
+n log n log Z − E 1
+
+n log n log Z ≤ η
+
+
+
++ P
+
+ 1
+
+n log n log Z ≥ 1
+
+n log n log E[Z1E ] − ϵ0
+
+
+
+≥ 1 − C exp 
+
+
+
+−c η2
+
+b n log n
+
+
+
++ P[E] exp {− ζn log n} > 1,
+
+where the last strict inequality follows by choosing ζ < cη 2 
+
+> b
+
+. For any two events A, B we have 
+
+P [A ∩ B] ≥ PA + PB − 1. Therefore, the above display implies that the probability of the two events 
+
+ 1
+
+n log n log Z − E 1
+
+n log n log Z ≤ η
+
+
+
+and 
+
+ 1
+
+n log n log Z ≥ 1
+
+n log n log E[Z1E ] − ϵ0
+
+
+
+happening simultaneously is strictly positive. It follows that we must have 1
+
+n log n log E[Z1E ] − ϵ0 ≤ 1
+
+n log n E log Z + η, 
+
+otherwise the two events would be disjoint. The result follows from Lemma A.8 and sending η and 
+
+ϵ0 to 0. 
+
+Proposition A.12. For any b ≥ 2,
+
+lim 
+
+> n→∞
+
+1
+
+n log n log Z = √2b, a.s. .
+
+Proof. For s > 0, define 
+
+Zn(s) := X
+
+> Π
+
+exp 
+
+
+
+splog n Tr Π XZ ⊤
+
+√d
+
+
+
+, fn(s) := 1
+
+n log n log Zn(s).
+
+Thus Z = Zn(√b). For every n, the function s 7 → fn(s) is convex. Fix s ≥ √2 and rational numbers 0 < q < r < √2. Convexity gives 
+
+fn(s) ≥ fn(r) + ( s − r) fn(r) − fn(q)
+
+r − q .
+
+For the countable set of positive rational q, r < √2, the already established subcritical branch holds simultaneously almost surely. On this event, taking the limit inferior in the previous display gives lim inf  
+
+> n→∞
+
+fn(s) ≥ 1 + r2
+
+2 + ( s − r) r + q
+
+2 .
+
+35 Sending rational q, r ↑ √2, we obtain lim inf  
+
+> n→∞
+
+fn(s) ≥ √2 s, s ≥ √2, a.s. (79) For the matching upper bound, fix s ≥ √2 and 0 < θ ≤ 1. The subadditivity of x 7 → xθ on R+
+
+yields 
+
+EZn(s)θ ≤ X
+
+> Π
+
+E exp 
+
+
+
+θs plog n Tr Π XZ ⊤
+
+√d
+
+
+
+= n!
+
+
+
+1 − θ2s2 log nd
+
+− nd 
+
+> 2
+
+= exp 
+
+ 
+
+1 + θ2s2
+
+2 + o(1) 
+
+
+
+n log n
+
+
+
+,
+
+where the last line uses d = ω(log n). Hence, for any fixed η > 0, Markov’s inequality gives 
+
+P
+
+
+
+fn(s) ≥ 1
+
+θ + θs 2
+
+2 + η
+
+
+
+≤ exp {− θηn log n + o(n log n)} .
+
+The right-hand side is summable in n. By Borel-Cantelli, sending η ↓ 0, and then taking θ = √2/s ,lim sup 
+
+> n→∞
+
+fn(s) ≤ √2 s, s ≥ √2, a.s. (80) Combining (79) and (80), and substituting s = √b, proves the supercritical branch of (38). 
+
+A.3 Proof of Corollary 2.2 
+
+Proof of Corollary 2.2(i). We first show that the MMSE is equal to half of the expected error in using a posterior sample as an estimator: for Π ∼ ⟨·⟩ ,
+
+E
+
+D
+
+∥Π − Π∗∥2
+
+> F
+
+E
+
+= 2 E ∥⟨ Π⟩ − Π∗∥2 
+
+> F
+
+. (81) To see this, expand the left-hand side into E
+
+D
+
+∥Π∥2
+
+> F
+
+E
+
++E ∥Π∗∥2 
+
+> F
+
+−2ETr ⟨Π⟩ Π⊤∗ . Note that E
+
+D
+
+∥Π∥2
+
+> F
+
+E
+
+=
+
+E ∥Π∗∥2 
+
+> F
+
+= n because the marginal distribution of Π ∼ ⟨·⟩ is equal to that of Π ∗. Furthermore, 
+
+ETr ⟨Π⟩ Π⊤∗ = E ∥⟨ Π⟩∥ 2 
+
+> F
+
+since Π and Π ∗ are conditionally independent given ( X, Y) (this is also the Nishimori identity from statistical physics [ZK16, Equation 15].) Thus the left-hand side is 2( n − E ∥⟨ Π⟩∥ 2 
+
+> F
+
+). On the other hand, E ∥⟨ Π⟩ − Π∗∥2 
+
+> F
+
+= E ∥⟨ Π⟩∥ 2 
+
+> F
+
++ E ∥Π∗∥2 
+
+> F
+
+− 2E Tr ⟨Π⟩ Π⊤∗ . The cross term is equal to −2E ∥⟨ Π⟩∥ 2 
+
+> F
+
+as before. Thus E ∥⟨ Π⟩ − Π∗∥2 
+
+> F
+
+= n − E ∥⟨ Π⟩∥ 2 
+
+> F
+
+.It remains to show that the expected overlap of a posterior sample with the truth is small. Assume without loss that δ ∈ (0 , 1). Let B = Tr Π∗Π⊤ and fix η = δ/ 2. Since 0 ≤ B ≤ n,
+
+Bn ≤ η + 1{B ≥ ηn } .
+
+By Theorem 2.1, for all sufficiently large n, E ⟨1{B ≥ ηn }⟩ ≤ δ 
+
+> 2
+
+. Taking expectation with respect to the posterior and then the observation, we obtain 1
+
+n E
+
+D
+
+Tr Π∗Π⊤E
+
+≤ η + δ
+
+2 = δ. 
+
+36 Therefore E
+
+D
+
+∥Π − Π∗∥2
+
+> F
+
+E
+
+= 2 n − 2E Tr Π∗Π⊤ ≥ 2(1 − δ)n. By the identity above, for all suf-ficiently large n, MMSE (b) ≥ (1 − δ)n. Since δ > 0 is arbitrary, lim inf n MMSE (b)/n ≥ 1. The dummy estimator EΠ∗ = 1 
+
+> n
+
+11 ⊤ gives MMSE (b) ≤ n − 1, and hence MMSE (b)/n → 1. 
+
+Proof of Corollary 2.2(ii). Put eY = Y/σ = pb log n/d Π∗X + Z. Define 
+
+in(b) = 1
+
+n log n I(Π ∗; eY | X).
+
+Expanding the Gaussian likelihood and using E ∥X∥2 
+
+> F
+
+= nd gives 
+
+in(b) = log n!
+
+n log n + b − E eΨσ.
+
+By Proposition 2.3, in(b) → b/ 2 for every fixed 0 < b < 2. For each n, in is concave and differentiable in the SNR parameter b, and the Gaussian I-MMSE identity [GSV05] gives 
+
+i′
+
+> n
+
+(b) = 12nd Y-MMSE (b).
+
+Since the pointwise limit b/ 2 is differentiable on (0 , 2), the standard derivative-convergence property for concave functions yields i′
+
+> n
+
+(b) → 1/2 at every fixed 0 < b < 2. The claim follows. 
+
+# B Proofs for the multi-view positive result 
+
+The starting point of our analysis is a reduction: we may assume without loss that Π(a) 
+
+> ∗
+
+= I, a = 1 , . . . , K − 1. (82) Indeed, conditionally on ¯Π(0)  
+
+> ∗
+
+, . . . , ¯Π(K−1)  
+
+> ∗
+
+, left multiplying the a-th view by ( ¯Π(a) 
+
+> ∗
+
+)⊤ is, by Gaus-sian orthogonal invariance, only relabeling the observed rows of Y(a). The algorithms below are equivariant under such row relabelings, so their overlap with the relative matchings has the same distribution as their overlap with the identity in the relabeled model. In what follows, we will always assume that (82) is in force. 
+
+Remark B.1. The following is a justification that under the mapping (11) , i.e. σ2 ∼ τ 4, the model 
+
+(9) is asymptotically equivalent to a K-view extension of the setting (3) , which would be a 2-view. Indeed, in setting (3) , after standardizing, and with the analogous reduction to Π∗ = I, we observe 
+
+X and Y
+
+√1 + σ2 = X
+
+√1 + σ2 + σ
+
+√1 + σ2 Z.
+
+On the other hand, under (82) , in (9) we equivalently observe the standardized 
+
+Y(0) 
+
+√1 + τ 2 = X
+
+√1 + τ 2 + τ
+
+√1 + τ 2 W(0) and Y(1) 
+
+√1 + τ 2 = X
+
+√1 + τ 2 + τ
+
+√1 + τ 2 W(1) .
+
+Let eY = Y/√1 + σ2 and eY(a) = Y(a)/√1 + τ 2. The pairs 
+
+
+
+X, eY
+
+
+
+and 
+
+ eY(0) , eY(1) 
+
+
+
+each have standard multivariate Gaussian marginals. The unmatched rows among each pair have zero covari-ance. The matched rows among the first pair have covariance Cov Xi, eYi
+
+ = 1√1+ σ2 Id, and among the second pair this is Cov  eY (0)  
+
+> i
+
+, eY (1) 
+
+> i
+
+ = 11+ τ 2 Id. Thus their laws agree when σ2 = 2 τ 2 + τ 4 ∼ τ 4.
+
+37 Notice that the score Ti corresponding to the true tuple ( i, . . . , i ) has mean CK d, where we denote 
+
+CK =
+
+K
+
+2
+
+
+
+.
+
+Evidently, Algorithm 1 succeeds when the score Ti,...,i defined in (12) exceeds all other scores. We now record a moderate-deviation estimate for a general score Ti that will be used in the proof. Consider a candidate tuple i = ( i0, . . . , i K−1) ∈ [n]K . Let u0(i) = i0, and write 
+
+u1(i), . . . , u r(i)(i) = {i0, . . . , i K−1} \ { i0}
+
+for the set of distinct selected labels different from i0. For s = 0 , . . . , r (i), define 
+
+S(i) = 
+
+> r(i)
+
+X
+
+> s=0
+
+ℓs(i)2
+
+
+
+, where ℓs(i) = |{ a ∈ { 0, . . . , K − 1} : ia = us(i)}| . (83) Thus S(i) counts the pairs of views in the tuple i that select the same row label. Under (82), it is exactly these pairs which contribute mean d to Ti, while pairs with different labels have mean zero; hence ETi = dS (i). 
+
+Lemma B.2. For every fixed η > 0, uniformly over i ∈ [n]K ,
+
+P [Ti ≥ dS (i) + ηd ] ≤ exp 
+
+
+
+−
+
+ η2
+
+2CK
+
++ o(1) 
+
+ dτ 4
+
+
+
+. (84) 
+
+Proof. Fix a tuple i ∈ [n]K . For each h = 1 , . . . , d , set 
+
+Gh =
+
+
+
+Y (0) 
+
+> i0,h
+
+, . . . , Y (K−1) 
+
+> iK−1,h
+
+
+
+∈ RK .
+
+Then G1, . . . , G d are i.i.d. centered Gaussian vectors. Let A ∈ RK×K be the symmetric matrix which has zeros on the diagonal and 1 /2 in every other entry. Then we may express Ti as 
+
+Ti =
+
+> d
+
+X
+
+> h=1
+
+G⊤ 
+
+> h
+
+AG h.
+
+We analyze one summand. Write G for a generic copy of Gh. Its covariance matrix has the form Σ = τ 2IK + R, 
+
+where Rab = 1 if ia = ib, and Rab = 0 otherwise. In particular, ∥R∥op = OK (1) and ∥Σ∥op =
+
+OK (τ 2), uniformly over i. Thus one coordinate of the score is 
+
+U = G⊤AG, EU = Tr (AΣ) = S(i).
+
+For a centered Gaussian quadratic form, Var (U ) = 2 Tr  (AΣ) 2 . Using Σ = τ 2IK + R and 2 Tr (A2) = CK , we obtain that uniformly over i,
+
+Var (U ) = 2 τ 4 Tr (A2) + OK (τ 2) = ( CK + o(1)) τ 4.
+
+We now bound the centered moment generating function. Put B = Σ1/2AΣ1/2, and let 
+
+θ1, . . . , θ K be its eigenvalues. Since ∥B∥op = OK (τ 2), for λ = O(τ −4) and all sufficiently large 38 τ we have |2λθ m| ≤ 1/2. Writing G = Σ 1/2g with g ∼ N (0 , I K ), diagonalizing B, and using the same chi-squared moment generating function as in (32) gives log Eeλ(U −EU ) = −λ Tr B − 12 log det( IK − 2λB ) = 
+
+> K
+
+X
+
+> m=1
+
+
+
+−λθ m − 12 log(1 − 2λθ m)
+
+
+
+.
+
+Expanding the logarithm uniformly in m,log Eeλ(U −EU ) = λ2
+
+> K
+
+X
+
+> m=1
+
+θ2 
+
+> m
+
++ OK
+
+
+
+λ3 ∥B∥3op 
+
+
+
+= Var (U )2 λ2 + OK (τ 6λ3).
+
+Applying exponential Markov’s inequality to Ti − dS (i) = Pdh=1 (Uh − EUh), where the Uh’s are independent copies of U , with λ = η/ (CK τ 4), we obtain log P [Ti ≥ dS (i) + ηd ] ≤ − ληd + d
+
+ Var (U )2 λ2 + OK (τ 6λ3)
+
+
+
+= −
+
+ η2
+
+2CK
+
++ o(1) 
+
+ dτ 4 .
+
+This proves (84) and finishes the proof. 
+
+Proof of Theorem 2.5. Recall that it suffices to prove the result under (82). Define 
+
+B = i ∈ [n] :  j⋆ 
+
+> 1
+
+(i), . . . , j ⋆K−1(i)̸ = ( i, . . . , i ) .
+
+Thus B is the set of rows i in view 0 for which the row-wise maximization step in Algorithm 1 made at least one mistake among the K − 1 other views. For each i, define the event 
+
+Ei =
+
+Ti,...,i ≤ max 
+
+> (j1,...,j K−1)∈[n]K−1
+> (j1,...,j K−1)̸=( i,...,i )
+
+Ti,j 1,...,j K−1
+
+ .
+
+If i ∈ B , then a non-identity tuple was selected by the row-wise maximization, and hence Ei occurs. Thus, by linearity of expectation and symmetry, E |B| ≤ nP(E1), and we claim that it suffices to show 
+
+PE1 = o(1) . (85) Indeed, we would have E |B| = o(n). Markov’s inequality then gives |B| = oP(n). Fix a view a
+
+and define Ga = {i : j⋆a (i) = i}. Thus Ga is the set of rows of view 0 whose row-wise choice in view 
+
+a is correct. Since [ n]\B ⊆ Ga, we have |Ga| ≥ n−|B| . The rows in Ga propose the correct diagonal matches ( i, i ) for bΠ(a). In the second stage of Algorithm 1, such a proposed diagonal match can fail to be kept only if some row i′ ∈ [n] \ Ga also proposes row i in view a, i.e. j⋆a (i′) = i. Hence at most n − | Ga| of these proposed diagonal matches can fail to be kept, and therefore 
+
+Tr bΠ(a) ≥ | Ga| − (n − | Ga|) = 2 |Ga| − n ≥ n − 2 |B| .
+
+This yields Tr bΠ(a)/n → 1 in probability, and hence almost exact recovery (13) under (82). We now prove (85). Recall that CK =  K
+
+> 2
+
+, and fix a small ϵ > 0, to be chosen below. If E1
+
+occurs and T1,..., 1 > (CK − ϵ)d, then some non-identity tuple has score at least ( CK − ϵ)d. Hence 
+
+P(E1) ≤ P [T1,..., 1 ≤ (CK − ϵ)d] + P
+
+ max 
+
+> i=(1 ,i 1,...,i K−1)
+> i̸=(1 ,..., 1)
+
+Ti ≥ (CK − ϵ)d
+
+ . (86) 39 We first control the first term in (86). The true score satisfies 
+
+ET1,..., 1 = CK d, Var (T1,..., 1) = OK (dτ 4).
+
+Since d/τ 4 ≳ log n, Chebyshev’s inequality gives 
+
+P [T1,..., 1 > (CK − ϵ)d] = 1 − o(1) . (87) We next control the second term in (86). For any non-identity i = (1 , i 1, . . . , i K−1), we have 
+
+ETi = dS (i), while the true mean is CK d. Define the gap to be 
+
+D(i) = CK − S(i).
+
+For this i, the event {Ti ≥ (CK − ϵ)d} requires a deviation of size ( D(i) − ϵ)d above its mean. Lemma B.2 controls this as 
+
+P [Ti ≥ (CK − ϵ)d] ≤ exp 
+
+
+
+−
+
+ (D(i) − ϵ)2
+
+2CK
+
++ o(1) 
+
+ dτ 4
+
+
+
+.
+
+We now sum this bound over all non-identity tuples anchored at 1. Suppose a tuple uses r distinct row labels other than the anchor label 1, and fix the multiplicities ℓ = ( ℓ0, . . . , ℓ r) with which the 
+
+K views select these r + 1 labels, as in (83). Write 
+
+Dℓ = CK −
+
+> r
+
+X
+
+> s=0
+
+ℓs
+
+2
+
+
+
+.
+
+For every tuple i with these multiplicities, D(i) = Dℓ, and there are at most C′ 
+
+> K
+
+nr such tuples. Taking a union bound over r and over the finitely many possible multiplicities ℓ gives 
+
+P
+
+ max 
+
+> i=(1 ,i 1,...,i K−1)
+> i̸=(1 ,..., 1)
+
+Ti ≥ (CK − ϵ)d
+
+ ≤
+
+> K−1
+
+X
+
+> r=1
+
+C′ 
+
+> K
+
+· nr max    
+
+> ℓ0+··· +ℓr=Kℓs≥1∀0≤s≤r
+
+exp 
+
+
+
+−
+
+ (Dℓ − ϵ)2
+
+2CK
+
++ o(1) 
+
+ dτ 4
+
+
+
+.
+
+(88) It remains to verify that the right-hand side of (88) is o(1). The most dangerous terms in the union bound arise from multiplicities making Dℓ small relative to the number r of free labels. Indeed, the factor nr counts the choices of these labels, while the deviation bound improves as the mean gap Dℓd grows. To minimize Dℓ, we equivalently maximize P
+
+> s
+
+ ℓs
+
+> 2
+
+ over the constraints. If two multiplicities satisfy 1 < ℓ s ≤ ℓt, then replacing ( ℓs, ℓ t) by ( ℓs − 1, ℓ t + 1) changes this sum by 
+
+ℓs − 12
+
+
+
++
+
+ℓt + 1 2
+
+
+
+−
+
+ℓs
+
+2
+
+
+
+−
+
+ℓt
+
+2
+
+
+
+= ℓt − ℓs + 1 ≥ 1.
+
+Thus the sum is maximized by concentrating any excess mass in one multiplicity. Hence, for fixed 
+
+r, Dℓ is minimized by a permutation of ( K − r, 1, . . . , 1), and 
+
+Dℓ ≥ CK −
+
+K − r
+
+2
+
+
+
+= r(2 K − r − 1) 2 .
+
+Consequently, 
+
+D2
+
+> ℓ
+
+2CK r ≥ r(2 K − r − 1) 2
+
+4K(K − 1) .
+
+40 The latter is at least ( K − 1) /K exactly when 
+
+r(2 K − r − 1) 2 ≥ 4( K − 1) 2,
+
+which we now verify. Viewing the left-hand side as a function of real r, its derivative is (2 K − r −
+
+1)(2 K − 3r − 1), so its minimum over 1 ≤ r ≤ K − 1 is attained at an endpoint. The endpoint values are 4( K − 1) 2 and K2(K − 1), and K2(K − 1) ≥ 4( K − 1) 2. This implies that 
+
+D2
+
+> ℓ
+
+2CK r ≥ K − 1
+
+K ,
+
+with equality only at the one-outlier tuples with multiplicities ( K − 1, 1). We now apply this deterministic lower bound to the exponent in (88). Set 
+
+αn = τ 4 log nd .
+
+The assumption τ 4 = d/ (b log n) gives αn = 1 
+
+> b
+
+. Thus the condition b > K/ (K − 1) is exactly the condition that αn < (K − 1) /K . Since d/τ 4 = α−1 
+
+> n
+
+log n, a summand in (88) with r free labels is, up to the constant C′ 
+
+> K
+
+,exp 
+
+ 
+
+r − (Dℓ − ϵ)2
+
+2CK αn
+
++ o(1) 
+
+
+
+log n
+
+
+
+.
+
+The lower bound above gives D2 
+
+> ℓ
+
+/(2 CK ) ≥ r(K − 1) /K . Combining this with αn < (K − 1) /K ,and using that there are only finitely many multiplicity patterns, we can choose ϵ > 0 sufficiently small so that, uniformly over all such choices, lim inf 
+
+> n→∞
+
+(Dℓ − ϵ)2
+
+2CK αn
+
+> r. 
+
+Using d/τ 4 = α−1 
+
+> n
+
+log n, each summand in (88) is then o(1), and the whole right-hand side is o(1). Combining this with (87) and (86), we get PE1 = o(1). This finishes the proof. 
+
+AI use declaration 
+
+ChatGPT 5.5 assisted with consistency checks. The authors assume responsibility for all content. 
+
+Acknowledgments 
+
+ZF was supported in part by NSF DMS-2142476 and a Sloan Research Fellowship. CM was sup-ported in part by NSF grant DMS-2338062. Part of this research was carried out while TW and CM were visiting the Institute for Mathematical and Statistical Innovation (IMSI), which is supported by the NSF under Grant No. DMS-2425650. 
+
+# References 
+
+[ABAL +26] Louigi Addario-Berry, Omer Angel, G´ abor Lugosi, Mikl´ os Z. R´ acz, and Tselil Schramm. The statistical threshold for planted matchings and spanning trees. arXiv preprint arXiv:2602.07669 , 2026. [BBS20] Tamir Bendory, Alberto Bartesaghi, and Amit Singer. Single-particle cryo-electron microscopy: Mathematical theory, computational challenges, and opportunities. IEEE Signal Processing Magazine , 37(2):58–76, 2020. 41 [BGG +09] Mohsen Bayati, Margot Gerritsen, David F. Gleich, Amin Saberi, and Ying Wang. Algorithms for large, sparse network alignment problems. In 2009 Ninth IEEE Inter-national Conference on Data Mining , pages 705–710. IEEE, 2009. [Chr12] Peter Christen. Data Matching: Concepts and Techniques for Record Linkage, En-tity Resolution, and Duplicate Detection . Data-Centric Systems and Applications. Springer, 2012. [CJM +22] Shuxiao Chen, Sizun Jiang, Zongming Ma, Garry P. Nolan, and Bokai Zhu. One-way matching of datasets with low rank signals. arXiv preprint arXiv:2204.13858 , 2022. [CKK +10] Michael Chertkov, Lukas Kroc, F Krzakala, M Vergassola, and L Zdeborov´ a. Inference in particle tracking experiments by passing messages between images. Proceedings of the National Academy of Sciences , 107(17):7663–7668, 2010. [DCK23] Osman Emre Dai, Daniel Cullina, and Negar Kiyavash. Gaussian database alignment and gaussian planted matching. arXiv preprint arXiv:2307.02459 , 2023. [dRSO24] Lucas da Rocha Schwengber and Roberto Imbuzeiro Oliveira. Geometric planted matchings beyond the gaussian model. arXiv preprint arXiv:2403.17469 , 2024. [DSS +22] Pinar Demetci, Rebecca Santorella, Bj¨ orn Sandstede, William Stafford Noble, and Ritambhara Singh. Scot: single-cell multi-omics alignment with optimal transport. 
+
+Journal of Computational Biology , 29(1):3–18, 2022. [DWXY23] Jian Ding, Yihong Wu, Jiaming Xu, and Dana Yang. The planted matching problem: Sharp threshold and infinite-order phase transition. Probability Theory and Related Fields , 187(1-2):1–71, 2023. [EG25] Bertrand Even and Luca Ganassali. Statistical-computational gap in multiple gaussian graph alignment. arXiv preprint arXiv:2512.00610 , 2025. [FWY26] Zhou Fan, Timothy L. H. Wee, and Kaylee Y. Yang. Bayesian inference of planted matchings: Local posterior approximation and infinite-volume limit. arXiv preprint arXiv:2603.08542 , 2026. [GSV05] Dongning Guo, Shlomo Shamai, and Sergio Verd´ u. Mutual information and minimum mean-square error in gaussian channels. IEEE Transactions on Information Theory ,51(4):1261–1282, 2005. [HL26] Zhe Hou and Jingcheng Liu. Recovery thresholds for hidden weighted sparse graphs. 
+
+arXiv preprint arXiv:2606.14335 , 2026. [HLMM18] Laleh Haghverdi, Aaron T. L. Lun, Michael D. Morgan, and John C. Marioni. Batch effects in single-cell rna-sequencing data are corrected by matching mutual nearest neighbors. Nature Biotechnology , 36(5):421–427, 2018. [KNW22] Dmitriy Kunisky and Jonathan Niles-Weed. Strong recovery of geometric planted matchings. In Proceedings of the 2022 Annual ACM-SIAM Symposium on Discrete Algorithms (SODA) , pages 834–876. SIAM, 2022. [LM00] Beatrice Laurent and Pascal Massart. Adaptive estimation of a quadratic functional by model selection. The Annals of Statistics , 28(5):1302–1338, 2000. 42 [MJF +21] Jiayi Ma, Xingyu Jiang, Aoxiang Fan, Junjun Jiang, and Junchi Yan. Image matching from handcrafted to deep features: A survey. International Journal of Computer Vision , 129(1):23–79, 2021. [MMX21] Mehrdad Moharrami, Cristopher Moore, and Jiaming Xu. The planted matching problem: Phase transitions and exact results. The Annals of Applied Probability ,31(6):2663–2720, 2021. [PCS15] Fran¸ cois Pomerleau, Francis Colas, and Roland Siegwart. A review of point cloud regis-tration algorithms for mobile robotics. Foundations and Trends in Robotics , 4(1):1–104, 2015. [SBSBS16] Adrian Sayers, Yoav Ben-Shlomo, Ashley W. Blom, and Fiona Steele. Probabilistic record linkage. International Journal of Epidemiology , 45(3):954–964, 2016. [SSZ20] Guilhem Semerjian, Gabriele Sicuro, and Lenka Zdeborov´ a. Recovery thresholds in the sparse planted matching problem. Physical Review E , 102(2):022304, 2020. [Tal10] Michel Talagrand. Mean field models for spin glasses: Volume I: Basic examples ,volume 54. Springer Science & Business Media, 2010. [Ver18] Roman Vershynin. High-dimensional probability: An introduction with applications in data science , volume 47. Cambridge university press, 2018. [vH16] Ramon van Handel. Probability in high dimension, 2016. APC 550 lecture notes. [WM25] Timothy L. H. Wee and Cheng Mao. Cluster expansion of the log-likelihood ratio: Optimal detection of planted matchings. arXiv preprint arXiv:2512.14567 , 2025. [WWXY22] Haoyu Wang, Yihong Wu, Jiaming Xu, and Israel Yolou. Random graph matching in geometric models: the case of complete graphs. In Proceedings of Thirty Fifth Confer-ence on Learning Theory , volume 178 of Proceedings of Machine Learning Research ,pages 3441–3488. PMLR, 2022. [ZK16] Lenka Zdeborov´ a and Florent Krzakala. Statistical physics of inference: Thresholds and algorithms. Advances in Physics , 65(5):453–552, 2016. 43
