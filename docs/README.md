@@ -6,58 +6,55 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-13
-- 运行时间：2026-07-13 20:52:13 UTC
+- 最新运行日期：2026-07-14
+- 运行时间：2026-07-14 21:32:01 UTC
 - 运行状态：成功
-- 本次总论文数：12
-- 精读区：8
+- 本次总论文数：11
+- 精读区：7
 - 速读区：4
 
 ### 今日简报（AI）
-今日精读多视角几何匹配与深度引导的全局SfM两大满分论文，速览多视图视频生成、VLM多视图集成基准等前沿工作。  
-最推荐关注“高维几何 planted matchings 中多视图的统计力量”与“用深度先验解决尺度漂移的结构重建”这两条核心结论。  
-建议普通读者先理解“多视角融合为何比单视角更鲁棒”，再结合《MultiView-Bench》评估当下模型的真实空间整合能力。
-- 详情：[/202607/13/README](/202607/13/README)
+今日速递：从MCMC采样式高斯分配到增量重建，3D高斯泼溅玩法再升级。
+满分推荐《SalientGS》：用重要性引导的MCMC统一完成SfM到3DGS，告别逐场景反复调参。
+想跟进的读者，可优先阅读这篇，再搭配增量在线重建一文，理解动态场景下的高效重建思路。
+- 详情：[/202607/14/README](/202607/14/README)
 
 ### 精读区论文标签
-1. [Geometric planted matchings in high dimensions: The power of multiple views](/202607/13/2607.09026v1-geometric-planted-matchings-in-high-dimensions-the-power-of-multiple-views)  
+1. [SalientGS: Unified SfM-to-3DGS with Importance-Guided MCMC Gaussian Allocation](/202607/14/2607.11285v1-salientgs-unified-sfm-to-3dgs-with-importance-guided-mcmc-gaussian-allocation)  
    标签：评分：10.0/10、query:d-gen-recon
-   evidence：多视图点云匹配，含噪声
-2. [DGSfM: Depth-Guided Scale-Aware Global Structure-from-Motion](/202607/13/2607.09507v1-dgsfm-depth-guided-scale-aware-global-structure-from-motion)  
-   标签：评分：10.0/10、query:d-gen-recon
-   evidence：深度感知的全局SfM解决尺度模糊，实现稳健精确的多视图3D重建
-3. [StereoSplat+: Feed-Forward Stereo Gaussian Splatting with Diffusion-Assisted Progressive Inference](/202607/13/2607.08808v1-stereosplat-feed-forward-stereo-gaussian-splatting-with-diffusion-assisted-progressive-inference)  
+   evidence：从无序图像中用统一的SfM到3DGS流水线重建三维场景
+2. [Incremental Online Scene Reconstruction by 3D Gaussian Triangulation](/202607/14/2607.10690v1-incremental-online-scene-reconstruction-by-3d-gaussian-triangulation)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：从单目立体对前馈重建三维高斯场景
-4. [SplatCtrl: Perception-Action Coupling via Gaussian Scene Representations and Reactive Robot Control](/202607/13/2607.08948v1-splatctrl-perception-action-coupling-via-gaussian-scene-representations-and-reactive-robot-control)  
+   evidence：通过直接三角剖分三维高斯体实现增量式在线场景重建
+3. [MAC-Splat: Multi-Attribute Consistency for High-Fidelity Sparse-View Reconstruction](/202607/14/2607.10792v1-mac-splat-multi-attribute-consistency-for-high-fidelity-sparse-view-reconstruction)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：面向机器人控制的实时三维场景重建
-5. [Glob3R: Global Structure-from-Motion with 3D Foundation Models](/202607/13/2607.09225v1-glob3r-global-structure-from-motion-with-3d-foundation-models)  
+   evidence：直接解决稀疏视图三维场景重建，利用二维对应的多属性一致性损失
+4. [AsySplat: Efficient Asymmetric 3D Gaussian Splatting for Long-Sequence Scene Modeling](/202607/14/2607.10995v1-asysplat-efficient-asymmetric-3d-gaussian-splatting-for-long-sequence-scene-modeling)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：利用密集匹配和三维基础模型从多视图图像进行全局运动恢复结构重建
-6. [AnythingReality: Robust Online Gaussian Splatting SLAM for Open-Vocabulary VR Scene Exploration](/202607/13/2607.09260v1-anythingreality-robust-online-gaussian-splatting-slam-for-open-vocabulary-vr-scene-exploration)  
+   evidence：解耦几何与外观分支实现高效多视图三维重建
+5. [Revisiting Matching Response and Swept Feature Volumes for Wide-baseline Omnidirectional Stereo](/202607/14/2607.11097v1-revisiting-matching-response-and-swept-feature-volumes-for-wide-baseline-omnidirectional-stereo)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：利用高斯溅射SLAM从多视角图像进行鲁棒在线3D场景重建
-7. [Hydra++: Real-Time Hierarchical 3D Scene Graph Construction With Object-Level Shape Estimation](/202607/13/2607.09455v1-hydra-real-time-hierarchical-3d-scene-graph-construction-with-object-level-shape-estimation)  
+   evidence：用于宽基线全向立体的置信度估计与特征体重采样
+6. [GeoGS-SLAM: Online Monocular Reconstruction Using Gaussian Splatting with Geometric Priors](/202607/14/2607.11184v1-geogs-slam-online-monocular-reconstruction-using-gaussian-splatting-with-geometric-priors)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：带物体级形状估计的层次化三维场景图
-8. [What VGGT Knows About Overlap: Probing Geometric Foundation Models for Co-Visibility](/202607/13/2607.09503v1-what-vggt-knows-about-overlap-probing-geometric-foundation-models-for-co-visibility)  
+   evidence：结合几何先验和高斯溅射的在线单目稠密三维重建
+7. [ABot-3DWorld 0: A Universal World Model to Explore Any 3D Space](/202607/14/2607.11673v1-abot-3dworld-0-a-universal-world-model-to-explore-any-3d-space)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：VGGT隐式编码共视性，后期层作为专门的共视推理器
+   evidence：利用空间生成基元和全景视频重建从文本、图像或视频生成可探索的3D世界
 
 ### 速读区论文标签
-1. [MV-Forcing: Long Multi-View Video Generation via 4D-Grounded Spatio-Temporal Self-Forcing](/202607/13/2607.05376v1-mv-forcing-long-multi-view-video-generation-via-4d-grounded-spatio-temporal-self-forcing)  
+1. [CVKD-UDA: Cross-View Knowledge Distillation for 3D Unsupervised Domain Adaptive Segmentation](/202607/14/2607.10087v1-cvkd-uda-cross-view-knowledge-distillation-for-3d-unsupervised-domain-adaptive-segmentation)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：利用自回归3D重建作为4D几何桥梁，生成多视角一致的长视频
-2. [MultiView-Bench: A Diagnostic Benchmark for World-Centric Multi-View Integration in VLMs](/202607/13/2607.08970v1-multiview-bench-a-diagnostic-benchmark-for-world-centric-multi-view-integration-in-vlms)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：评估将多视图整合到以世界为中心的三维场景理解的诊断基准
-3. [4D Human-Scene Reconstruction from Low-Overlap Captures](/202607/13/2607.09125v1-4d-human-scene-reconstruction-from-low-overlap-captures)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：从稀疏低重叠相机进行四维人-场景重建，解耦背景与人物
-4. [Geometric Reciprocity: Unlocking Self-Supervision for Stereoscopic Video Generation](/202607/13/2607.05354v1-geometric-reciprocity-unlocking-self-supervision-for-stereoscopic-video-generation)  
+   evidence：通过跨视图蒸馏实现3D无监督域自适应分割
+2. [CoSAG: Compact Semantic Anchor Gaussians via Training-Free Rate-Distortion Coding](/202607/14/2607.10237v1-cosag-compact-semantic-anchor-gaussians-via-training-free-rate-distortion-coding)  
+   标签：评分：7.0/10、query:d-gen-recon
+   evidence：通过无训练率失真编码压缩高斯特征，解决开放词汇三维语义场的存储瓶颈
+3. [3D Scene Graph Prediction: Generating Hierarchical Models from Partially Observed Environments](/202607/14/2607.10879v1-3d-scene-graph-prediction-generating-hierarchical-models-from-partially-observed-environments)  
+   标签：评分：7.0/10、query:d-gen-recon
+   evidence：从部分观察环境合成层次化三维场景图
+4. [FoundationGeo: Learning Spatial Pixel-Wise Fields for Monocular Metric Geometry](/202607/14/2607.11588v1-foundationgeo-learning-spatial-pixel-wise-fields-for-monocular-metric-geometry)  
    标签：评分：6.0/10、query:d-gen-recon
-   evidence：利用几何互易性自监督生成立体视频及处理去遮挡
+   evidence：从单目图像学习逐像素几何以生成三维点图，实现单视图三维重建
 
 
 <div class="dpr-home-promo-card">
