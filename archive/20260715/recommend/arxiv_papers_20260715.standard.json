@@ -1,0 +1,322 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-15T21:20:59.484736+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 5,
+    "quick_skim_target": 11,
+    "quick_selected": 5
+  },
+  "deep_dive": [
+    {
+      "id": "2607.11673v2",
+      "source": "arxiv",
+      "title": "ABot-3DWorld 0: A Universal World Model to Explore Any 3D Space",
+      "abstract": "We present ABot-3DWorld 0, a universal multimodal 3D world model that turns text, image, and video inputs into high-fidelity, explorable 3D worlds. At the heart of our framework is a unified Spatial Generative Primitive (SGP), a compact tuple of a high-quality panorama and a spatial point cloud that delivers an efficient description of any 3D space. Multimodal inputs are first lifted into this primitive; a 3D-consistent panoramic video generator then explores the primitive along a planned trajectory; finally, our panoramic video reconstruction engine converts the generated video into a clean, photorealistic 3D Gaussian Splatting (3DGS) world. This pipeline covers two regimes: rich inputs (multi-view sets, casual video) are lifted into the SGP through a geometry-rigorous recovery that mirrors the observed scene, while a single image or sentence is completed generatively into a creative world. The result is one low-barrier engine for general 3D content creation that further anchors generated worlds to geographic points of interest, enabling map-native spatial exploration at consumer scale. Experiments show that ABot-3DWorld 0 sets the state of the art among open-source methods and demonstrates stronger scene fidelity than Marble under rich multimodal inputs.",
+      "authors": [
+        "Mingchao Sun",
+        "Luyang Tang",
+        "Yu Liu",
+        "Xu Yan",
+        "Zhan Li",
+        "Yunwei Zhang",
+        "Fei Yu",
+        "Zengye Ge",
+        "Yumin Liu",
+        "Jiacheng Zhang",
+        "Yongchang Zhang",
+        "Jiawei Zhang",
+        "Zhicheng Liu",
+        "Zhongxu Sun",
+        "Tianjian Ouyang",
+        "Wenzheng Chen",
+        "Shixing Yang",
+        "Nianfei Fan",
+        "Guodong Sun",
+        "Huan Li",
+        "Zheng Zhou",
+        "Yongze Li",
+        "Yingliang Peng",
+        "Mengmeng Du",
+        "Yuan Liu",
+        "Haozhe Shi",
+        "Chunnuo Gong",
+        "Chengzhen Yu",
+        "Chunxue Jia",
+        "Yang Liu",
+        "Shiying Zeng",
+        "Junnan Lai",
+        "Hang Zhang",
+        "Ning Guo",
+        "Baoquan Chen",
+        "Mu Xu",
+        "Hongyu Pan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-13T15:14:48+00:00",
+      "link": "https://arxiv.org/pdf/2607.11673v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "generates explorable 3D worlds from multi-view sets, text, video",
+      "llm_evidence_cn": "从多视角集合、文本、视频生成可探索的三维世界",
+      "llm_evidence": "从多视角集合、文本、视频生成可探索的三维世界",
+      "canonical_evidence": "从多视角集合、文本、视频生成可探索的三维世界",
+      "llm_tldr_en": "ABot-3DWorld 0 builds high-fidelity explorable 3D worlds from multimodal inputs via a unified Spatial Generative Primitive and 3D-consistent panoramic video rendering, enabling diverse 3D scene generation.",
+      "llm_tldr_cn": "针对多模态输入到可探索三维世界的生成问题，本文提出ABot-3DWorld 0，利用统一的空间生成原语（SGP）将文本、图像或视频提升为高质量全景与点云，再通过三维一致的全景视频生成器和重建引擎，最终输出逼真的3D高斯泼溅场景。该方法能有效处理多视角图像、随意拍摄视频等，在生成保真度与一致性上表现优异，为从图像集合生成三维场景提供了强大范式。",
+      "llm_tldr": "针对多模态输入到可探索三维世界的生成问题，本文提出ABot-3DWorld 0，利用统一的空间生成原语（SGP）将文本、图像或视频提升为高质量全景与点云，再通过三维一致的全景视频生成器和重建引擎，最终输出逼真的3D高斯泼溅场景。该方法能有效处理多视角图像、随意拍摄视频等，在生成保真度与一致性上表现优异，为从图像集合生成三维场景提供了强大范式。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.12752v1",
+      "source": "arxiv",
+      "title": "Hallo4D: Multi-Modal Hallucination Mitigation for Consistent Spatio-Temporal Generation",
+      "abstract": "While recent advances in 3D generation have enabled impressive visual synthesis, existing methods often rely on 2D diffusion supervision without explicit mechanisms for geometric consistency, leading to spatial hallucinations such as duplicated structures and misaligned geometry. These issues become more severe in 4D generation, where maintaining consistency across viewpoints and temporal evolution introduces additional challenges, including jitter, identity flicker, and structural drift. We present \\textbf{Hallo4D}, a unified and model-agnostic framework for mitigating spatiotemporal hallucinations in 3D and 4D content generation. Hallo4D introduces a generation-detection-correction paradigm that leverages large multimodal language models (LMMs) to identify and summarize spatial and temporal inconsistencies from multi-view and multi-frame renderings. These insights guide a consensus-driven image-space consistency optimization, where an LMM-based selector evaluates candidate corrections through multi-model voting, without requiring retraining or architectural modifications. To further improve temporal consistency and optimization efficiency, Hallo4D incorporates motion-aware keyframe sampling, LMM-guided initialization, and appearance alignment. We additionally introduce exposure-aware optimization and visibility pruning to enhance robustness under challenging viewpoints. Extensive experiments demonstrate that Hallo4D consistently outperforms strong baselines across diverse 3D and 4D generation settings, providing a scalable and generalizable solution for consistency-aware content generation.",
+      "authors": [
+        "Hongbo Wang",
+        "Huaibo Huang",
+        "Jie Cao",
+        "Jin Liu",
+        "Haoyang Tong",
+        "Ran He"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-07-14T13:19:06+00:00",
+      "link": "https://arxiv.org/pdf/2607.12752v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "mitigates spatiotemporal hallucinations in 3D and 4D content generation",
+      "llm_evidence_cn": "缓解3D和4D内容生成中的时空幻觉",
+      "llm_evidence": "缓解3D和4D内容生成中的时空幻觉",
+      "canonical_evidence": "缓解3D和4D内容生成中的时空幻觉",
+      "llm_tldr_en": "Presents a framework to mitigate spatial and temporal hallucinations in 3D/4D generation by detecting and correcting geometric inconsistencies using large multimodal language models, improving visual coherence across views and time.",
+      "llm_tldr_cn": "本文针对3D/4D生成中普遍存在的几何幻觉与时空不一致问题，提出一种检测-校正范式，利用多模态大语言模型发现并修正重复结构、错位几何等现象，显著提升多视角和时间维度上的视觉连贯性。该方法与生成模型无关，可作为通用后处理步骤。",
+      "llm_tldr": "本文针对3D/4D生成中普遍存在的几何幻觉与时空不一致问题，提出一种检测-校正范式，利用多模态大语言模型发现并修正重复结构、错位几何等现象，显著提升多视角和时间维度上的视觉连贯性。该方法与生成模型无关，可作为通用后处理步骤。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.12429v1",
+      "source": "arxiv",
+      "title": "More Than Where You Are: Learning Semantics, Structure, and Geometry from Cross-View Localization",
+      "abstract": "Consistent cross-view understanding under extreme viewpoint changes is essential for spatial intelligence, as it enables models to recognize the same scene across extreme viewpoint gaps. Cross-view localization naturally provides a promising pathway toward this ability, as it requires a model to align ground-view imagery with geo-referenced satellite-view imagery despite drastic appearance changes to estimate camera poses. Recent visual foundation models have made this long-standing localization problem increasingly feasible by providing rich 2D representations for cross-view matching. However, we argue that cross-view localization should not be viewed merely as 2D matching or pose estimation. In this work, we revisit cross-view localization as more than pose estimation and investigate how it can help the model develop consistent cross-view understanding under extreme viewpoint changes, including stable semantics, reliable structure, and transferable geometry. We identify three key limitations of existing methods that prevent them from achieving this. They usually lack explicit 3D grounding, rely on strict point-wise matching that can weaken semantic consistency, and learn from an absolute objective that provides limited guidance for geometric reasoning. To address these limitations, we propose CROSS, a unified cross-view localization framework built upon 3D-grounded alignment, structure-aware matching, and hypothesis ranking. This formulation makes structure learning an intrinsic requirement, encourages semantic representations to remain stable, and enables the model to acquire transferable geometry. Extensive experiments on the KITTI and VIGOR datasets show that CROSS achieves state-of-the-art performance in cross-view localization. More importantly, CROSS effectively learns stable semantics, reliable structure, and transferable geometry across extremely different viewpoints.",
+      "authors": [
+        "Mao Chen",
+        "Xiangkai Zhang",
+        "Zhiyong Liu",
+        "Chuankai Liu",
+        "Xu Yang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-14T07:00:34+00:00",
+      "link": "https://arxiv.org/pdf/2607.12429v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "learning semantics, structure, and geometry from cross-view localization",
+      "llm_evidence_cn": "从跨视角定位中学习语义、结构、几何",
+      "llm_evidence": "从跨视角定位中学习语义、结构、几何",
+      "canonical_evidence": "从跨视角定位中学习语义、结构、几何",
+      "llm_tldr_en": "Revisits cross-view localization as a task for learning semantics, structure, and geometry, rather than just pose estimation, enabling models to acquire consistent 3D scene understanding from extreme viewpoint changes.",
+      "llm_tldr_cn": "针对跨视角定位仅被视为二维匹配或位姿估计的局限，提出利用该任务学习语义、结构与几何信息，使模型从极端视角变化中获得一致的三维场景理解。实验表明，该方法可提升对场景的语义和几何认知，为空间智能提供新途径。",
+      "llm_tldr": "针对跨视角定位仅被视为二维匹配或位姿估计的局限，提出利用该任务学习语义、结构与几何信息，使模型从极端视角变化中获得一致的三维场景理解。实验表明，该方法可提升对场景的语义和几何认知，为空间智能提供新途径。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.08879v1",
+      "source": "arxiv",
+      "title": "Decoupled Illumination Priors for Spatially Controllable Multi-View Indoor Scene Relighting",
+      "abstract": "Indoor scene relighting demands photorealism, precise spatial control, and strict multi-view consistency. While diffusion-based image editing models enable semantic lighting manipulation via text prompts, enforcing exact 3D light placement often disrupts their generative priors. We propose Lume-Palette, a progressive framework that leverages semantic lighting priors for spatially controllable multi-view indoor relighting. The approach decouples relighting into two stages: (1) illumination distillation, which extracts canonical illumination palettes from a pretrained diffusion model to preserve realistic material-light interactions, and (2) illumination casting, which explicitly maps target spatial lighting conditions defined from coarse 3D geometry. To efficiently handle dense multi-view and multi-modal inputs, we introduce an asymmetric multi-view conditioning strategy that selectively injects essential spatial context. Experiments on diverse synthetic scenes and real-world scenes demonstrate that Lume-Palette produces photorealistic, spatially controllable, and multi-view consistent relighting results. Project Page: https://cjeen.github.io/lumepalette",
+      "authors": [
+        "Chenjian Gao",
+        "Linning Xu",
+        "Tianfan Xue"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-09T19:09:48+00:00",
+      "link": "https://arxiv.org/pdf/2607.08879v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "multi-view indoor scene relighting with 3D consistency",
+      "llm_evidence_cn": "多视角室内场景重照明，保证三维一致性",
+      "llm_evidence": "多视角室内场景重照明，保证三维一致性",
+      "canonical_evidence": "多视角室内场景重照明，保证三维一致性",
+      "llm_tldr_en": "Lume-Palette decouples multi-view relighting into diffusion-based illumination distillation and explicit 3D casting, achieving spatially controllable, photorealistic, and multi-view consistent indoor relighting.",
+      "llm_tldr_cn": "针对多视角室内重照明中的光影真实性与空间一致性难题，本文提出Lume-Palette框架，将重照明分解为从扩散先验提取光照调色板的蒸馏阶段和基于目标三维条件的显式投影阶段，实现精准光照控制，在多视角下保持高度一致。方法首先从预训练扩散模型中蒸馏出规范化的光照调色板，保留真实材质-光交互；然后通过显式三维映射将目标空间光照条件投影到场景中。实验表明，Lume-Palette在保持生成先验的同时实现了空间可控的重照明，多视角一致性显著提升。该工作为三维场景生成中的可编辑性提供了有效手段。",
+      "llm_tldr": "针对多视角室内重照明中的光影真实性与空间一致性难题，本文提出Lume-Palette框架，将重照明分解为从扩散先验提取光照调色板的蒸馏阶段和基于目标三维条件的显式投影阶段，实现精准光照控制，在多视角下保持高度一致。方法首先从预训练扩散模型中蒸馏出规范化的光照调色板，保留真实材质-光交互；然后通过显式三维映射将目标空间光照条件投影到场景中。实验表明，Lume-Palette在保持生成先验的同时实现了空间可控的重照明，多视角一致性显著提升。该工作为三维场景生成中的可编辑性提供了有效手段。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.10050v1",
+      "source": "arxiv",
+      "title": "SyncSpace: Layout-Conditioned 3D Gaussian Splatting for Space Reskinning in Mixed Reality",
+      "abstract": "We present SyncSpace, a system that achieves both spatial alignment and visual consistency between a generated 3DGS world and physical space. We first scan the space via depth sensing to extract 3D bounding boxes, which we render into a layout-only panorama and feed as a geometric prior to a generative world model, producing a Gaussian splat scene in which objects are re-semantized to fit a target style without per-object control. We then align the generated scene to physical space with a coarse-to-fine registration algorithm, refined manually via pinch gestures when automatic registration does not converge. We demonstrate a hand-tracked engulfment interaction in which the virtual world rises to replace the physical space, and show a single space reskinned into multiple stylistically distinct worlds with its layout preserved.",
+      "authors": [
+        "Qinchuan Zhang",
+        "Weibo Xu",
+        "Yunge Wen"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC"
+      ],
+      "published": "2026-07-11T00:16:02+00:00",
+      "link": "https://arxiv.org/pdf/2607.10050v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "generates a Gaussian splat scene with objects re-semantized to a target style from a layout-only panorama",
+      "llm_evidence_cn": "从布局全景图生成三维高斯泼溅场景，并根据目标风格重新语义化物体",
+      "llm_evidence": "从布局全景图生成三维高斯泼溅场景，并根据目标风格重新语义化物体",
+      "canonical_evidence": "从布局全景图生成三维高斯泼溅场景，并根据目标风格重新语义化物体",
+      "llm_tldr_en": "SyncSpace generates a stylized 3DGS world aligned with a physical space using a layout-only panorama as geometric prior, enabling space reskinning in mixed reality.",
+      "llm_tldr_cn": "针对混合现实中的空间重新装饰需求，SyncSpace通过深度扫描提取三维边界框并渲染为布局全景图作为几何先验，引导生成模型产生符合目标风格的高斯泼溅场景，同时将物体重新语义化，无需逐个物体控制。通过粗到精的配准算法将生成场景与物理空间对齐，并在自动配准失败时支持手动微调。该系统实现了手势驱动的沉浸式交互，展示了在混合现实中实时生成视觉一致虚拟空间的能力，为空间计算应用提供了新思路。",
+      "llm_tldr": "针对混合现实中的空间重新装饰需求，SyncSpace通过深度扫描提取三维边界框并渲染为布局全景图作为几何先验，引导生成模型产生符合目标风格的高斯泼溅场景，同时将物体重新语义化，无需逐个物体控制。通过粗到精的配准算法将生成场景与物理空间对齐，并在自动配准失败时支持手动微调。该系统实现了手势驱动的沉浸式交互，展示了在混合现实中实时生成视觉一致虚拟空间的能力，为空间计算应用提供了新思路。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.10461v1",
+      "source": "arxiv",
+      "title": "Annotation-Free Furniture Codes: What They Encode, and How Far They Transfer",
+      "abstract": "Layout-based 3D scene synthesizers place each object using two human-annotated channels: a categorical class label and a canonical-pose convention. We ask whether a single self-supervised token derived from object geometry can replace both, and study such tokens directly as a representation, decoupled from any synthesizer. A Finite Scalar Quantization (FSQ) point-cloud autoencoder is chamfer-trained on placed 3D-FUTURE furniture with no labels or pose annotations. Diagnostic probes recover fine-category (62.6 +/- 0.5%), super-category (85.6 +/- 1.3%), and yaw (52.7 +/- 0.5 deg) from the codes alone. Swapping the chamfer target from the rotated to the un-rotated point cloud collapses the yaw signal while raising class recovery, showing the codes' rotation content can be set by the training objective. Scaling across asset libraries needs codes that transfer; on an unseen dataset (ShapeNet), alignment is category-dependent: box-like furniture transfers, organically-shaped furniture does not, and a target-blind augmentation partly closes the gap.",
+      "authors": [
+        "Benjamin Friedman"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-07-11T19:54:52+00:00",
+      "link": "https://arxiv.org/pdf/2607.10461v1",
+      "tags": [
+        "keyword:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "self-supervised 3D furniture tokens encode class and pose for layout-based 3D scene synthesis",
+      "llm_evidence_cn": "自监督3D家具令牌编码类别与姿态，用于布局式3D场景合成",
+      "llm_evidence": "自监督3D家具令牌编码类别与姿态，用于布局式3D场景合成",
+      "canonical_evidence": "自监督3D家具令牌编码类别与姿态，用于布局式3D场景合成",
+      "llm_tldr_en": "Investigates self-supervised point-cloud tokens for 3D furniture that encode class and pose, potentially replacing manual annotations in layout-based 3D scene synthesis; probes show they capture fine/super-category and yaw, enabling annotation-free scene generation.",
+      "llm_tldr_cn": "本文探索自监督点云令牌，从3D家具点云中学习编码类别与姿态的表示，旨在替代布局式3D场景合成中的人工标注。通过探针实验，令牌独立保留了细类、超类和偏航角信息，表明无标注表示可支持3D场景自动生成。",
+      "llm_tldr": "本文探索自监督点云令牌，从3D家具点云中学习编码类别与姿态的表示，旨在替代布局式3D场景合成中的人工标注。通过探针实验，令牌独立保留了细类、超类和偏航角信息，表明无标注表示可支持3D场景自动生成。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.10826v1",
+      "source": "arxiv",
+      "title": "3D-DefectBench: A Controlled Factorial Study of Vision-Language Model Evaluation Pipelines for Fine-Grained 3D Generation Defects",
+      "abstract": "Automated evaluation is essential for scaling generative 3D systems, where exhaustive human review is costly and slow. However, the reliability of an automated judge depends on the entire evaluation pipeline, not only the underlying vision-language model (VLM), but also how assets are rendered, what visual evidence is provided, how the task is specified, and how human reference labels are constructed. We introduce 3D-DefectBench, a benchmark and framework for systematic analysis of VLM-based 3D defect detection pipelines. It complements holistic ratings and pairwise preferences with nine fine-grained binary defects spanning geometry, texture, and prompt adherence, providing actionable diagnostics for generator development and judge evaluation. Using a balanced factorial design, we vary four pipeline factors, VLM, camera protocol, visual input, and prompt schema, across 84 inference designs and approximately 3.2 million scored defect decisions, followed by staged validation on a broader set of frontier models. Model choice is the largest determinant of agreement with human labels, but the remaining factors also affect performance, interact with model selection, and can change the best configuration. Within the evaluated design space, a compact six-view RGB protocol performs comparably to denser multi-view settings and inputs augmented with depth or surface normals, making it a strong cost-effective default. Under this standardized pipeline, the best of 12 VLM judges still lag behind trained human labelers, while texture agreement drops sharply when expert-consensus labels are replaced by noisier silver labels. These findings show that automated judges should be evaluated as complete pipelines and calibrated across human reference regimes, rather than benchmarked only as standalone models. We release labels, prompts, predictions, and Croissant metadata on Hugging Face.",
+      "authors": [
+        "Zhenyu Zhao",
+        "Nanshan Jia",
+        "Jihyeon Je",
+        "Yifu Tang",
+        "Alvin Chan",
+        "Michael Spedden",
+        "Michael V. Palleschi",
+        "Sui Huang",
+        "Jingshen Wang",
+        "Zeyu Zheng"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI",
+        "cs.GR"
+      ],
+      "published": "2026-07-12T16:41:24+00:00",
+      "link": "https://arxiv.org/pdf/2607.10826v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "benchmark for fine-grained 3D generation defect detection using VLMs",
+      "llm_evidence_cn": "使用视觉语言模型进行细粒度3D生成缺陷检测的基准",
+      "llm_evidence": "使用视觉语言模型进行细粒度3D生成缺陷检测的基准",
+      "canonical_evidence": "使用视觉语言模型进行细粒度3D生成缺陷检测的基准",
+      "llm_tldr_en": "Introduces 3D-DefectBench, a benchmark systematically analyzing VLM-based evaluation pipelines for 3D generation defects, covering geometry, texture, and prompt adherence, providing actionable diagnostics.",
+      "llm_tldr_cn": "针对生成式3D系统自动化评估依赖整体评分、缺乏细粒度缺陷诊断的问题，提出3D-DefectBench基准，通过受控因子实验系统地分析了基于VLM的评估管线中渲染、视觉证据、任务描述等因素对缺陷检测的影响，定义了九类细粒度二值缺陷。实验表明管线设计显著影响评估可靠性，为改进3D生成评估提供了实用指南。",
+      "llm_tldr": "针对生成式3D系统自动化评估依赖整体评分、缺乏细粒度缺陷诊断的问题，提出3D-DefectBench基准，通过受控因子实验系统地分析了基于VLM的评估管线中渲染、视觉证据、任务描述等因素对缺陷检测的影响，定义了九类细粒度二值缺陷。实验表明管线设计显著影响评估可靠性，为改进3D生成评估提供了实用指南。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
