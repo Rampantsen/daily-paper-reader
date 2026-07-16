@@ -1,0 +1,829 @@
+Title: Desc++: Efficient Descriptor Enhancement for Data Association in Existing Visual SLAM Systems
+
+URL Source: https://arxiv.org/pdf/2607.11099v1
+
+Published Time: Tue, 14 Jul 2026 02:02:13 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+# Desc++: Efficient Descriptor Enhancement for Data Association in Existing Visual SLAM Systems 
+
+Ting-Wei Ou 1, Huang-Ting Lin 2, and Kuu-Young Young 2
+
+Abstract — Reliable visual data association is fundamental to visual SLAM (V-SLAM), as it directly determines the quality of the camera pose estimation and map consistency. However, the handcrafted descriptors used by most mature real-time systems degrade under illumination and viewpoint changes, while learning-based front-ends that address this weakness typically require replacing the extraction-and-matching pipeline and introduce substantial computational overhead. Descriptor enhancement offers a compromise by refining existing de-scriptors within their original format, yet current methods rely on simplified attention mechanisms whose limited con-textual modeling constrains the achievable matching quality. To resolve this trade-off between contextual expressiveness and efficiency, we propose Desc++, a lightweight enhancement module that jointly encodes descriptor representations and keypoint geometry and aggregates spatial context through a hy-brid architecture that combines order-agnostic global attention with geometry-aware sequential modeling in linear time. The enhanced descriptors retain their original dimensionality and matching interface, enabling integration into deployed V-SLAM systems without modifying the pipeline. Experiments across descriptor matching, correspondence analysis, and system-level benchmarks with four different V-SLAM systems demonstrate that Desc++ improves matching accuracy over the state-of-the-art enhancement method, translates these gains into more accurate and stable trajectory estimation, and achieves afavorable balance between accuracy and efficiency for practical integration into existing real-time V-SLAM pipelines. The source code and pretrained model weights are available at: https://github.com/ouotingwei/DescPP.git. 
+
+I. I NTRODUCTION 
+
+Autonomous systems operating in unknown, GPS-denied environments require continuous state estimation from on-board sensing, a capability for which visual SLAM (V-SLAM) has become a core solution in robotics [45]. The per-formance of a V-SLAM system largely depends on reliable visual data association, which establishes feature correspon-dences across images for camera tracking, pose optimization, and map construction. In sparse feature-based pipelines, these correspondences are established by matching local feature descriptors extracted around detected keypoints. Con-sequently, descriptor discriminability directly affects match-ing accuracy and overall SLAM robustness. To meet the computational requirements of real-time applications, most mature V-SLAM systems [2]–[4], [41] rely on handcrafted descriptors, which are computationally efficient but remain sensitive to illumination changes and viewpoint variations, often leading to degraded data association and accumulated trajectory drift. To improve visual data association, recent studies have explored learning-based local feature extraction [8]–[10] and feature matching [12]–[14]. Although these approaches substantially improve matching robustness and accuracy, integrating them into existing V-SLAM systems generally requires replacing the original front-end pipeline, limiting their adoption in deployed real-time systems. Descriptor enhancement [7] provides an alternative design strategy by improving the discriminative capability of existing feature descriptors while preserving the original detector, descriptor format, and matching interface. Such a plug-and-play design enables deployed V-SLAM systems to benefit from learned representations with minimal system modification. Contex-tual relationships among neighboring keypoints provide com-plementary geometric and structural cues that are beneficial for descriptor discrimination. However, the state-of-the-art enhancement method [7] typically relies on lightweight, sim-plified attention mechanisms to meet real-time constraints, thereby limiting its ability to capture rich contextual rela-tionships amid challenging appearance changes. This reflects a fundamental trade-off between contextual expressiveness and computational efficiency in descriptor enhancement for V-SLAM. To address this trade-off, we propose Desc++, alightweight descriptor enhancement framework that improves descriptor discriminability while preserving the computa-tional efficiency and pipeline compatibility required by real-time V-SLAM. Desc++ jointly encodes descriptor representa-tions and keypoint geometry, and aggregates spatial context through a hybrid architecture that models both global and sequential dependencies in linear time, producing enhanced descriptors that directly replace the original ones without any modification to the downstream pipeline. This work makes three contributions toward practical de-scriptor enhancement for deployed V-SLAM systems. First, we design a hybrid context aggregation architecture that operates in parallel: an attention-free branch provides order-agnostic global context, while a Mamba branch models geometry-aware sequential dependencies along a Z-order serialized keypoint sequence. This design captures richer contextual relationships than the simplified attention used in prior enhancement methods [7] while retaining linear-time complexity, as validated on the HPatches benchmark [31], where Desc++ improves matching accuracy over the state-of-the-art enhancer across both handcrafted and learned descriptors. Second, we demonstrate that the enhanced de-scriptors function as a genuine plug-and-play component: the same module is integrated, without modifying any down-stream tracking or matching logic, into four heterogeneous systems—a stereo system (ORB-SLAM2 [2]), a stereo-inertial system (ORB-SLAM3 [3]), a visual-LiDAR sys-arXiv:2607.11099v1 [cs.RO] 13 Jul 2026 tem (RGB-L [4]), and a multi-camera visual-inertial system (MAVIS-SLAM [41])—improving trajectory accuracy on the majority of sequences across the EuRoC [33], KITTI [32], and Hilti SLAM Challenge 2023 [40] benchmarks. Third, through a correspondence-level analysis and a comparison with a learned front-end [42], we characterize when and why descriptor enhancement is effective: improved descriptor discriminability yields more tracked map points and tighter geometric constraints, achieving accuracy competitive with replacement-based learned pipelines at a fraction of their computational cost, while remaining bounded by the quality of the initial feature extraction. Overall, these results indicate that refining descriptor quality is a practical and efficient path to improving existing real-time V-SLAM systems without redesigning their front-ends. II. R ELATED WORK 
+
+This section reviews representative techniques related to feature-based visual data association, including local fea-tures, learning-based data association, and efficient visual context modeling. 
+
+A. Local Features For Visual SLAM 
+
+Local features typically consist of two components: a detector that identifies salient keypoints in an image and a de-scriptor that encodes the local appearance of these keypoints into compact representations. Traditional approaches rely on handcrafted designs with distinct trade-offs. SIFT [22] uses gradient histograms to achieve scale- and rotation-invariance, prioritizing robustness for Structure-from-Motion (SfM) [37]. In contrast, ORB [1] prioritizes computational efficiency by combining FAST detection [24] with binary intensity comparisons [23], making it suitable for real-time applications. However, both remain inherently constrained by their reliance on fixed prior knowledge. Learning-based local features have emerged as an alternative to hand-crafted ones [8]–[10], employing Convolutional Neural Net-works (CNNs) within a ”detect-and-describe” paradigm that jointly optimizes the detector and descriptor. By learning directly from large-scale data, these approaches overcome the limitations of fixed heuristics, yielding representations that are significantly more discriminative and robust under challenging conditions. Recent works have demonstrated the effectiveness of integrating learning-based features into existing SLAM systems. GCNv2-SLAM [39] redesigns the original GCN [44] into a lightweight single-frame architec-ture with binary descriptors compatible with ORB [1], en-abling real-time deployment in ORB-SLAM2 [2]. In contrast, LF2SLAM [38] replaces the ORB feature extraction module with a task-specific SuperPoint [8] network while preserving the downstream SLAM pipeline. These studies suggest that improving feature quality can translate into more accurate and robust SLAM performance. 
+
+B. Learning-based Data Association 
+
+Learning-based approaches have become an effective strat-egy for improving visual data association by incorporating contextual information beyond descriptor similarity. Exist-ing methods can be categorized into learned matching and descriptor enhancement, which differ in their integration strategy and deployment characteristics. 
+
+1) Learned Matching: Traditional feature matching relies on nearest-neighbor search followed by geometric verifica-tion, such as Lowe’s ratio test [22] and RANSAC [21]. Although computationally efficient, these methods only ex-ploit descriptor similarity and ignore contextual relation-ships among keypoints. Learned matching methods, includ-ing SuperGlue [12], LightGlue [13], and MambaGlue [14], address this limitation by jointly reasoning over feature correspondences through graph neural networks, attention mechanisms, or hybrid models. These approaches substan-tially improve the robustness of matching under challeng-ing conditions. However, they typically replace the original matching module and require additional feature interaction during inference, making integration into mature real-time V-SLAM systems more computationally demanding. 
+
+2) Descriptor Enhancement: Descriptor enhancement fol-lows a different strategy, refining existing descriptors while preserving the original feature representation and the match-ing interface. Early work [36] projected handcrafted descrip-tors into more discriminative embedding spaces, followed by context-aware refinement methods such as ContextDesc [11] and FeatureBooster [7], which introduced contextual aggre-gation to improve descriptor quality. Unlike learned matching methods that jointly optimize feature correspondence during inference, descriptor enhancement improves data association by refining descriptors while retaining the original matching pipeline. However, existing approaches still face a trade-off between contextual modeling capability and computational efficiency, motivating the development of more effective lightweight context aggregation architectures. 
+
+C. Efficient Visual Context Modeling 
+
+Transformer-based architectures have demonstrated re-markable capability in modeling long-range visual context and have been widely adopted in vision tasks ranging from image understanding to feature matching [12], [13], [15], [25], [26]. However, their quadratic computational com-plexity and large Key-Value memory footprint limit their applicability to real-time and resource-constrained systems. To address these, Mamba [17] leverages a Selective Scan Mechanism to model long-range dependencies with linear complexity. Meanwhile, the inherent autoregressive nature of State Space Models (SSMs) poses challenges for processing visual data, where spatial relationships are noncausal. Pure Mamba-based approaches often struggle to capture a compre-hensive global context in a single forward pass, necessitating multi-directional scanning strategies (e.g., bidirectional [18] or cross-scan [27]) to restore spatial integrity. However, these strategies inevitably introduce additional latency and computational overhead. Recent hybrid architectures [14], [19] attempt to mitigate these limitations by combining SSMs with attention mechanisms. While promising, cou-pling Mamba with standard Transformer attention layers im-Fig. 1. The overall pipeline of Desc++ . First, unstructured keypoints extracted from an image are spatially organized via z-ordering. In the Local Fusion Stage, the geometry and original descriptor of each keypoint are fused to enrich the local representation with geometric priors. These features are then processed by the Context Aggregation Stage, where the hybrid Mamba–AFTs Block performs relation-aware modeling to capture interdependencies among features. Finally, the enhanced descriptors are used for robust matching and tracking in downstream V-SLAM tasks. 
+
+poses a computational bottleneck by reintroducing quadratic complexity, thereby undermining the linear-time advantages intrinsic to SSMs. In contrast to these designs, Desc++ avoids both the latency of multi-directional scanning and the quadratic cost of serial Mamba–attention coupling. It employs a single Z-order serialization to preserve spatial locality for the SSM branch, and pairs it in parallel with an attention-free transformer branch [16] that supplies an order-agnostic global receptive field, compensating for the directional bias of sequential scanning while keeping the overall complexity linear. III. T HE DESC ++ A RCHITECTURE 
+
+In this section, we introduce Desc++, a lightweight de-scriptor enhancement module designed to balance match-ing robustness with low-latency inference on embedded platforms. We first formulate the descriptor enhancement problem, then detail the two-stage architecture consisting of a Local Fusion stage and a Context Aggregation stage, fol-lowed by the training objective and implementation details. 
+
+A. Problem Formulation 
+
+Given an input image I, a feature detector extracts N
+
+keypoints, represented by their geometries K = {ki ∈
+
+RG}Ni=1 and corresponding handcrafted descriptors D =
+
+{di ∈ RD }Ni=1 . Specifically, ki captures G geometric at-tributes (e.g., coordinates, scale, orientation), while di is a D-dimensional feature vector. The goal of descriptor enhancement is to learn a lightweight mapping fθ :
+
+fθ : ( D, K) → ˆD, (1) where ˆD = { ˆdi ∈ RD }Ni=1 is the set of enhanced descriptors. Note that ˆdi retains the same dimensionality D as the input, but incorporates global/local context information. The goal is to let ˆD exhibit higher discriminability and stability under illumination or viewpoint changes. In SLAM or matching tasks, ˆD can directly replace D, ensuring plug-and-play compatibility. To realize fθ , we propose Desc++, a lightweight module designed to enhance existing feature descriptors. The archi-tecture follows a two-stage enhancement strategy: a Local Fusion stage that integrates descriptor and geometric rep-resentations, and a Context Aggregation stage that captures inter-keypoint relations through the proposed Mamba-AFTs Block, shown in Fig. 1, which illustrates the overall pipeline of the proposed descriptor enhancement process. 
+
+B. Z-order Spatial Serialization 
+
+The extracted feature sets K and D are initially un-structured collections that lack the sequential organization mandated by the causal nature of SSMs. To address this, we restructure the input using Z-order serialization [28], sorting the keypoints by Morton codes derived from their pixel coordinates. This mapping projects the 2D layout onto a 1D sequence, ensuring that geometric neighbors appear in close proximity in the index. Consequently, the serialized input preserves strong local correlations, enabling the subsequent Mamba block to efficiently aggregate spatial context. 
+
+C. Local Fusion Stage 
+
+For each keypoint ki detected in the image with its handcrafted descriptor di, the Local Fusion stage fuses the descriptor and its keypoint geometry to generate a geometry-aware embedding. 
+
+Descriptor Encoder : To refine the handcrafted descriptor di,we utilize a dedicated Multi-Layer Perceptron (MLP) as an encoder. It performs a non-linear transformation, projecting fixed-function features into a learnable latent space to extract a higher-level semantic embedding edesc  
+
+> i
+
+:
+
+edesc  
+
+> i
+
+= MLP desc (di). (2) 
+
+Geometric Encoder : To capture fine-grained spatial struc-tures, we map the keypoint geometry ki to high-dimensional feature embeddings via Learnable Fourier Fea-tures (LFF) [20]. This is achieved by projecting geometric attributes into a frequency-based representation, followed by a sinusoidal mapping ΦLFF (·). An MLP then processes these embeddings to obtain the geometric representation egeo  
+
+> i
+
+:
+
+egeo  
+
+> i
+
+= MLP geo 
+
+ ΦLFF (ki). (3) Next, the geometry and descriptor embeddings are fused via element-wise summation to obtain the intermediate fused feature zi:
+
+zi = edesc  
+
+> i
+
++ egeo  
+
+> i
+
+. (4) Fig. 2. Detailed diagrams of (a) AFT-Simple [16] vs. (b) Mamba–AFTs Block. 
+
+D. Context Aggregation Stage 
+
+Taking the fused features Z = {zi}Ni=1 as input, we design the Mamba-AFTs Block to model contextual dependencies with minimal overhead. As illustrated in Fig. 2, the block operates in two parallel branches to leverage the comple-mentary strengths of sequence-sensitive state-space models and order-agnostic attention. 
+
+AFT-Simple Branch: To capture global context without the path dependency of SSMs or the quadratic bottleneck of standard Transformers, we employ the AFT-Simple mech-anism [16]. Unlike Multi-Head Attention, AFT decouples the interaction between queries and keys. It serves as a permutation-invariant global memory that allows each key-point to instantaneously incorporate context from the entire feature set. To formalize this process, the global context is computed through a weighted aggregation of the key-value pairs as follows. Given the input features X ∈ RN ×D , we project them into queries Q, keys K, and values V. The operation for the i-th feature index YAFT ,i is described as 
+
+YAFT ,i = σ(Qi) ⊙
+
+PNj=1 exp( Kj ) ⊙ Vj
+
+PNj=1 exp( Kj ) , (5) where N denotes the sequence length, σ(·) is the sigmoid gate, and ⊙ represents element-wise multiplication. This formulation allows each query to interact with the global context in O(N D ) time complexity, providing a global context that complements the local focus of the Mamba branch. 
+
+Mamba Branch: To efficiently capture local and structural dependencies along the serialized path, we utilize a Mamba block [17]. Its core lies in a selective scan mechanism, in which the state-transition parameters ( ¯A, ¯B) become input-dependent, where ¯A and ¯B denote the discretized state transition and input matrices, respectively. This allows the model to selectively propagate geometric priors or reset context based on the current input. The underlying recurrence for the t-th step in the sequence is described as 
+
+ht = ¯Atht−1 + ¯Btxt
+
+YMamba ,t = ¯Ctht, (6) where ht is the hidden state, and the matrices ¯At, ¯Bt, ¯Ct
+
+are derived from the input xt. This content-aware recur-rence enables precise modeling of the geometric continuity preserved by the Z-order serialization. The two branches are then fused through a lightweight per-keypoint gating mechanism. Specifically, for each keypoint i, the outputs of the two branches are concatenated and projected by a learned linear layer into two logits, which a softmax normalizes into a pair of complementary scalar weights wAFT ,i and wMamba ,i 
+
+with wAFT ,i + wMamba ,i = 1 . The final enhanced descriptor is then obtained as their convex combination: 
+
+Yout ,i = wAFT ,i YAFT ,i + wMamba ,i YMamba ,i . (7) This content-dependent gating allows each keypoint to adaptively balance order-agnostic global context from the AFT branch against sequence-sensitive local geometric de-pendencies captured by the Mamba branch. Each Context Aggregation layer wraps the Mamba-AFTs block with a residual connection, layer normalization, and a position-wise feed-forward network, and multiple such layers are stacked as specified in Table I. The output of the final Context Aggregation layer, after a linear projection and the format-specific activation described in the Training Details, constitutes the enhanced descriptor ˆdi defined in Eq. (1). 
+
+E. Loss Function 
+
+As in previous work [7], we treat the descriptor matching task as a nearest-neighbor retrieval problem and design the training objective accordingly. It is guided by a composite loss based on FastAP [29], a differentiable implementation of the Average Precision (AP) metric. The total loss, Ltotal ,consists of two components: a primary matching loss ( Lmatch )and a booster loss ( Lboost ). The former aims to enhance the discriminative capability of the refined descriptors ˆd,while the latter encourages consistent improvement over the original descriptors d. The overall objective is expressed as the sum of the two terms: 
+
+Ltotal = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+(1 − AP ( ˆdi)) 
+
+| {z }
+
+> Lmatch
+
++ 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+max 0, AP (di)
+
+AP ( ˆdi) − 1
+
+!| {z }
+
+> Lboost
+
+.
+
+(8) Ground-truth correspondences are obtained by warping keypoints across views using the provided depth and camera poses. For each anchor descriptor, keypoints within a 3-pixel radius of the warped location are treated as positives and those beyond 16 pixels as negatives, while the intermediate region is excluded from supervision to avoid label ambiguity; anchors without any positive are discarded, and the loss is accumulated over both matching directions of each image pair. Regarding numerical stability, AP is computed via a soft-histogram approximation with B = 10 distance bins and guarded normalization, and since every retained anchor has at least one positive falling into a valid bin, the per-descriptor AP is strictly positive. Consequently, the denom-TABLE I ARCHITECTURAL HYPERPARAMETERS FOR DESC ++                
+
+> Feature Type Desc. Dim LFF Group Freq. # CA Layers
+> ORB [1] 256 [64, 32, 32] 2SIFT [22] 128 [64, 32, 32] 2SuperPoint [8] 256 [64, 64] 2ALIKE [9] 128 [64, 64] 6
+
+inator AP ( ˆdi) in Lboost is bounded away from zero, and the ratio remains well-defined throughout training. 
+
+F. Training Details 
+
+Training Process: Desc++ was trained on the MegaDepth dataset [30], following a training protocol similar to Fea-tureBooster [7] and utilizing the same training scenes as DISK [10]. For each scene, 300 image pairs were randomly sampled, with overlapping scores ranging from 0.1 to 1, as determined by D2-Net [35]. From each image pair, corre-sponding 512 × 512 patches were cropped, and up to 2048 features per image were extracted. Specifically, we employed the ORB-SLAM’s extractor [2] for ORB [1] features, the COLMAP framework [6], [37] for SIFT [22] features, and official pre-trained weights for SuperPoint [8] and ALIKE-L [9]. The training objective was to optimize the ranking capability of the enhanced descriptors by maximizing the Average Precision (AP) for geometrically consistent ground-truth matches. 
+
+Model Details: Table I summarizes the architectural config-urations tailored for each feature type. Regarding keypoint geometry, we partition pixel coordinates and other geometric attributes into independent groups, which are then projected into a 128-dimensional latent space using Learnable Fourier Features [20]. For the Context Aggregation stage, we employ two layers for ORB [1], SIFT [22], and SuperPoint [8]. For ALIKE [9], the number of layers is increased to six to maintain a model capacity comparable to FeatureBooster [7], ensuring a fair comparison rather than introducing additional capacity. To maintain compatibility with the Hamming-distance matching used by binary descriptors, the enhanced ORB descriptors are constrained by a Tanh activation and binarized to {− 1, +1 } via a sign function. Crucially, this binarization is applied during training as well, using astraight-through estimator (STE): the forward pass operates on the quantized descriptors, so the FastAP loss is computed directly on Hamming distances, while gradients bypass the non-differentiable sign operation and flow through the Tanh-constrained outputs. This ensures that the training objective and the inference-time matching metric are identical, elim-inating any quantization-induced train–test mismatch. The Tanh activation further bounds the pre-quantization values to [−1, 1] , keeping the quantization error bounded and sta-bilizing training. In contrast, floating-point descriptors (e.g., SIFT, SuperPoint) undergo L2 normalization. This preserves the original metric properties and ensures optimal perfor-mance when using Euclidean distance or cosine similarity for matching. 
+
+Training Setup: The model is optimized using the AdamW [43] optimizer with a batch size of 16. We employ a cosine learning rate schedule, starting at 1 × 10 −3 after a 500-step linear warmup, and train it for 50 epochs. The entire training process for the final model required approximately 2 days on a single NVIDIA RTX 4090 GPU. IV. E XPERIMENT 
+
+To validate the effectiveness of Desc++, we conduct exper-iments from both algorithmic and system perspectives. We first evaluate descriptor enhancement performance, followed by an analysis of its impact on visual data association. We then assess the resulting SLAM performance across multiple public benchmarks and compare the proposed method with representative learning-based front-ends in terms of both localization accuracy and deployment efficiency. 
+
+A. Experiment Setup 
+
+This section introduces the datasets, evaluation metrics, and baseline methods used to comprehensively evaluate Desc++ at the descriptor, data association, and system levels. 
+
+1) Dataset: To evaluate whether improved descriptor quality translates into better visual data association and system-level SLAM performance, we conducted experiments on one descriptor benchmark and four representative SLAM benchmarks. Descriptor enhancement performance was first evaluated on the HPatches benchmark [31], which is astandard benchmark for assessing local descriptor robust-ness under significant viewpoint and illumination changes. Following the evaluation protocol of [7], [35], eight high-resolution sequences were excluded to ensure a fair compar-ison with previous descriptor enhancement methods. To eval-uate the system-level impact of improved data association, experiments were further conducted on three widely used V-SLAM benchmarks. The EuRoC MAV dataset [33] was used to evaluate performance in indoor environments. The KITTI Odometry dataset [32] was adopted to assess large-scale outdoor localization. Finally, the Hilti SLAM Challenge 2023 dataset [40] was included to evaluate robustness in challenging industrial environments with multi-camera con-figurations and large viewpoint changes. 
+
+2) Evaluation Metrics: We evaluate Desc++ from three complementary perspectives: descriptor quality, data asso-ciation quality, and system-level SLAM performance. De-scriptor enhancement performance is evaluated using the Mean Matching Accuracy (MMA) [5] on the HPatches benchmark [31], which measures the percentage of cor-rectly matched correspondences under different pixel error thresholds. A higher MMA indicates more discriminative and robust feature descriptors. To directly assess the impact on visual data association, we report the average number of Tracked MapPoints (TMP), defined as the number of local map points that are successfully associated with the current frame after descriptor matching and geometric verification. A higher TMP indicates more reliable visual data association and provides additional geometric constraints for down-stream SLAM optimization, which may contribute to more Fig. 3. MMA curves and quantitative results on the HPatches dataset. We compare Desc++ against the original descriptors and FeatureBooster. The table details MMA at 3px and 5px thresholds, with RG indicating the Relative Gain at 5px.   
+
+> Fig. 4. Qualitative comparison of mutual nearest neighbor matching under illumination and viewpoint variations. Green and red lines denote correct (dist.
+> ≤5px) and incorrect correspondences, respectively.
+
+robust camera tracking and pose estimation. System-level localization performance is evaluated using the Absolute Trajectory Error (ATE) Root Mean Square Error (RMSE) on all SLAM benchmarks with the EVO tool [34], where lower values indicate higher localization accuracy. Since modern V-SLAM systems exhibit stochastic behavior due to multi-thread scheduling, random initialization, and asynchronous optimization, each experiment is repeated five times. We report both the mean and standard deviation of the ATE RMSE to evaluate not only localization accuracy but also system robustness and run-to-run stability. 
+
+3) Baselines: We compare Desc++ with representative methods from three categories. First, we evaluate against the original feature-based V-SLAM systems, including ORB-SLAM2 [2], ORB-SLAM3 [3], RGB-L [4], and MAVIS-SLAM [41], which serve as the deployment baselines without descriptor enhancement. Second, FeatureBooster [7], the current state-of-the-art descriptor enhancement method, is adopted to evaluate improvements over existing descriptor refinement approaches under the same SLAM pipelines. Finally, Rover-SLAM [42], which employs SuperPoint [8] and LightGlue [13] to replace the origin front-end, is in-cluded as a representative learning-based V-SLAM system for analyzing the trade-off between localization accuracy, computational efficiency, and deployment cost. 
+
+B. Descriptor Matching Accuracy 
+
+Figure 3 presents the quantitative descriptor matching performance on the HPatches benchmark [31], while Fig. 4 provides qualitative matching examples under challenging viewpoint and illumination changes. Desc++ consistently outperformed both the original descriptors and the previous descriptor enhancement method, FeatureBooster [7], across all evaluated descriptors. Notable improvements were ob-served for handcrafted features, where Desc++ achieved relative gains (RG@5) of 19.0% and 12.7% for ORB and SIFT, respectively, substantially exceeding those of Fea-tureBooster (10.2% and 9.5%). Desc++ also consistently improved learning-based descriptors, increasing SuperPoint’s MMA@5 to 0.770 (+4.4%) and ALIKE’s to 0.771 (+1.0%). TABLE II TRACKED MAP POINTS UNDER DIFFERENT CAMERA CONFIGURATIONS . C AMERA -L, C AMERA -LS, AND CAMERA -RS DENOTE THE LEFT STEREO CAMERA , THE LEFT -SIDE CAMERA , AND THE RIGHT -SIDE CAMERA OF THE MULTI -CAMERA RIG , RESPECTIVELY ; E UROC AND KITTI PROVIDE ONLY THE STEREO PAIR , SO RESULTS ARE REPORTED ON CAMERA -L. F: F EATURE BOOSTER [7]; D: D ESC ++.                                                                                                           
+
+> EuRoC MH01 EuRoC V103 KITTI 01 KITTI 06 Hilti-S1-H1 Hilti-S3-H1 Method Camera-L Camera-L Camera-L Camera-L Camera-L Camera-LS Camera-RS Camera-L Camera-LS Camera-RS Origin 270 ±86 212 ±55 342 ±63 321 ±101 282 ±148 90 ±65 79 ±59 389 ±134 109 ±73 128 ±63
+> w/ F [7] 279 ±85 213 ±56 345 ±63 342 ±104 246 ±125 121 ±81 103 ±71 335 ±110 163 ±97 174 ±74
+> w/ D 281 ±82 216 ±55 353 ±59 370 ±96 274 ±134 150 ±94 127 ±86 349 ±110 189 ±107 203 ±88
+> Fig. 5. Qualitative feature correspondences on the Hilti sequences. Desc++ preserves more valid feature-to-map associations under large cross-camera viewpoint changes.
+
+As illustrated in Fig. 4, the enhanced ORB produced denser and more reliable correspondences under severe viewpoint and illumination variations, qualitatively demonstrating the improved descriptor discriminability achieved by Desc++. 
+
+C. Data Association Analysis 
+
+To investigate whether improved descriptor quality trans-lates into more reliable visual data association, we analyze the number of Tracked MapPoints (TMPs) across repre-sentative operating scenarios. The selected sequences cover diverse environments across three public SLAM datasets, including a machine hall (EuRoC MH01), an indoor room (EuRoC V103), highway driving (KITTI-01), urban driv-ing (KITTI-06), a construction site (Hilti S1-H1), and a warehouse environment (Hilti S3-H1). These scenarios span different sensing configurations and environmental character-istics, providing representative evidence of data association quality. As summarized in Table II, Desc++ generally increases the number of TMP across the evaluated scenarios com-pared with both the original SLAM systems and Feature-Booster [7]. The improvement is most pronounced in the Hilti multi-camera sequences, where adjacent cameras ob-serve the scene from approximately orthogonal viewpoints. For example, on Hilti S1-H1, Desc++ increases the average TMP from 90 to 150 on Camera-LS and from 79 to 127 on Camera-RS, with similar trends on S3-H1. Fig. 5 qualita-tively illustrates this behavior, where the enhanced descrip-tors preserve more valid feature-to-map associations across cameras with substantially different viewpoints. Interestingly, the gains concentrate on the side cameras, while the TMP on the primary camera (Camera-L) of the Hilti sequences remains comparable to or slightly below the original system. We attribute this to the primary camera observing the scene from viewpoints close to those from which the map points were created, so the original descriptors already suffice for association; the marginal benefit of enhancement thus concentrates where the viewpoint discrepancy is largest. This pattern is consistent with the HPatches results, where the gains of Desc++ are most significant under strong viewpoint changes. These results suggest that improving descriptor discrim-inability facilitates more reliable feature-to-map associations, particularly under large viewpoint changes, allowing a larger number of map points to be successfully tracked in the current frame. Although TMP is an intermediate indicator rather than a direct measure of localization accuracy, the observed improvements suggest that enhanced descriptors impose richer geometric constraints on subsequent SLAM optimization. This trend is further reflected in the trajectory accuracy reported in the following subsection. 
+
+D. SLAM Evaluation 1) EuRoC Dataset: Table III reports the results on the Eu-RoC [33] dataset under both stereo (ORB-SLAM2 [2]) and stereo-inertial (ORB-SLAM3 [3]) configurations. In stereo mode, Desc++ reduced the ATE RMSE relative to ORB-SLAM2 [2] on all ten sequences that the systems completed, achieving the best result on eight of them. Notably, all methods, including the baseline and FeatureBooster [7], failed on V203 due to severe motion blur, which prevented the feature extractor from detecting meaningful patterns; we TABLE III ATE RMSE ( CM ) ON THE EUROC [33] DATASET . T HE VALUE BELOW EACH RESULT INDICATES THE RELATIVE GAIN OVER ORB-SLAM2 [2] (STEREO MODE ) AND ORB-SLAM3 [3] ( STEREO -INERTIAL MODE ). L OWER VALUES INDICATE BETTER PERFORMANCE . OS2: ORB-SLAM2 [2]; OS3: ORB-SLAM3 [3]; F: F EATURE BOOSTER [7]; D: D ESC ++; RS: R OVER -SLAM [42]. B OLD AND UNDERLINED VALUES DENOTE THE BEST AND SECOND -BEST RESULTS , RESPECTIVELY .
+
+Method MH01 MH02 MH03 MH04 MH05 V101 V102 V103 V201 V202 V203 OS2 [2] 3.69 ± 0.12 
+
+> –
+
+3.88 ± 0.17 
+
+> –
+
+4.04 ± 0.08 
+
+> –
+
+10 .11 ± 2.52 
+
+> –
+
+5.18 ± 0.39 
+
+> –
+
+8.72 ± 0.08 
+
+> –
+
+6.48 ± 0.09 
+
+> –
+
+7.90 ± 0.69 
+
+> –
+
+6.57 ± 0.55 
+
+> –
+
+5.94 ± 0.50 
+
+> –
+
+X
+
+> –
+
+w/ F [7] 3.62 ± 0.20  
+
+> ↑1.92%
+
+3.87 ± 0.23  
+
+> ↑0.37%
+
+4.24 ± 0.66  
+
+> ↓4.97%
+
+10 .02 ± 4.37  
+
+> ↑0.91%
+
+4.32 ± 0.27  
+
+> ↑16.66%
+
+8.71 ± 0.09  
+
+> ↑0.06%
+
+6.32 ± 0.06  
+
+> ↑2.42%
+
+7.73 ± 0.82  
+
+> ↑2.19%
+
+6.70 ± 0.34  
+
+> ↓2.07%
+
+6.48 ± 0.90  
+
+> ↓9.09%
+
+X
+
+> –
+
+w/ D 3.47 ± 0.17  
+
+> ↑5.84%
+
+3.48 ± 0.18  
+
+> ↑10.40%
+
+3.86 ± 0.28  
+
+> ↑4.38%
+
+9.15 ± 2.17  
+
+> ↑9.46%
+
+4.73 ± 0.43  
+
+> ↑8.61%
+
+8.65 ± 0.08  
+
+> ↑0.78%
+
+6.44 ± 0.62  
+
+> ↑0.57%
+
+7.50 ± 1.36  
+
+> ↑5.03%
+
+6.02 ± 0.44  
+
+> ↑8.33%
+
+5.63 ± 0.31  
+
+> ↑5.14%
+
+X
+
+> –
+
+OS3 [3] 4.27 ± 0.29 
+
+> –
+
+3.67 ± 0.51 
+
+> –
+
+3.29 ± 0.18 
+
+> –
+
+4.58 ± 0.12 
+
+> –
+
+5.27 ± 0.45 
+
+> –
+
+3.73 ± 0.14 
+
+> –
+
+1.79 ± 0.06 
+
+> –
+
+2.55 ± 0.14 
+
+> –
+
+3.56 ± 0.35 
+
+> –
+
+1.46 ± 0.36 
+
+> –
+
+4.17 ± 0.88 
+
+> –
+
+w/ F [7] 4.27 ± 0.50  
+
+> ↑0.14%
+
+2.81 ± 0.58  
+
+> ↑23.25%
+
+3.28 ± 0.17  
+
+> ↑0.12%
+
+4.60 ± 0.42  
+
+> ↓0.44%
+
+5.56 ± 0.71  
+
+> ↓5.58%
+
+3.75 ± 0.05  
+
+> ↓0.58%
+
+1.83 ± 0.19  
+
+> ↓2.34%
+
+2.54 ± 0.16  
+
+> ↑0.55%
+
+3.65 ± 0.26  
+
+> ↓2.45%
+
+1.24 ± 0.07  
+
+> ↑15.00%
+
+3.27 ± 2.12  
+
+> ↑21.66%
+
+w/ D 4.16 ± 0.26  
+
+> ↑2.57%
+
+2.96 ± 0.24  
+
+> ↑19.21%
+
+3.22 ± 0.16  
+
+> ↑1.89%
+
+4.37 ± 0.14  
+
+> ↑4.53%
+
+5.39 ± 0.64  
+
+> ↓2.37%
+
+3.77 ± 0.06  
+
+> ↓0.96%
+
+1.74 ± 0.10  
+
+> ↑2.55%
+
+2.33 ± 0.10  
+
+> ↑8.68%
+
+3.47 ± 0.24  
+
+> ↑2.54%
+
+1.31 ± 0.07  
+
+> ↑10.70%
+
+3.19 ± 1.07  
+
+> ↑23.64%
+
+RS [42] 2.65 ± 0.34  
+
+> ↑37.90%
+
+2.99 ± 1.09  
+
+> ↑18.52%
+
+3.00 ± 0.71  
+
+> ↑8.66%
+
+4.91 ± 0.24  
+
+> ↓7.10%
+
+5.04 ± 1.00  
+
+> ↑4.32%
+
+3.44 ± 0.12  
+
+> ↑7.72%
+
+1.55 ± 0.20  
+
+> ↑13.40%
+
+2.07 ± 0.25  
+
+> ↑18.76%
+
+2.14 ± 0.51  
+
+> ↑39.89%
+
+1.47 ± 0.22  
+
+> ↓0.24%
+
+3.01 ± 1.14  
+
+> ↑27.85%
+
+TABLE IV ATE RMSE ( M) ON THE KITTI ODOMETRY DATASET [32]. T HE VALUE BELOW EACH RESULT INDICATES THE RELATIVE GAIN OVER RGB-L [4] (STEREO -L IDAR MODE ). L OWER VALUES INDICATE BETTER PERFORMANCE . LS: RGB-L [4]; F: F EATURE BOOSTER [7]; D: D ESC ++. B OLD AND UNDERLINED VALUES DENOTE THE BEST AND SECOND -BEST RESULTS , RESPECTIVELY .
+
+Method 00 01 02 03 04 05 06 07 08 09 10 LS [4] 5.47 ± 0.25 
+
+> –
+
+110 .44 ± 36 .64 
+
+> –
+
+10 .86 ± 1.67 
+
+> –
+
+15 .33 ± 0.19 
+
+> –
+
+2.31 ± 0.63 
+
+> –
+
+2.74 ± 0.20 
+
+> –
+
+4.23 ± 0.26 
+
+> –
+
+0.84 ± 0.04 
+
+> –
+
+16 .86 ± 0.95 
+
+> –
+
+6.49 ± 0.61 
+
+> –
+
+7.54 ± 0.57 
+
+> –
+
+w/ F [7] 5.44 ± 0.16  
+
+> ↑0.63%
+
+104 .35 ± 18 .47  
+
+> ↑5.52%
+
+8.94 ± 0.96  
+
+> ↑17.68%
+
+16 .54 ± 0.16  
+
+> ↓7.93%
+
+1.69 ± 0.34  
+
+> ↑26.55%
+
+2.64 ± 0.09  
+
+> ↑3.51%
+
+4.30 ± 0.33  
+
+> ↓1.61%
+
+0.81 ± 0.06  
+
+> ↑3.34%
+
+16 .59 ± 0.67  
+
+> ↑1.58%
+
+5.54 ± 0.20  
+
+> ↑14.62%
+
+6.37 ± 0.31  
+
+> ↑15.54%
+
+w/ D 5.47 ± 0.15  
+
+> ↑0.16%
+
+99 .85 ± 13 .33  
+
+> ↑9.59%
+
+7.87 ± 0.98  
+
+> ↑27.55%
+
+16 .79 ± 0.12  
+
+> ↓9.55%
+
+1.45 ± 0.12  
+
+> ↑37.19%
+
+2.45 ± 0.24  
+
+> ↑10.52%
+
+3.54 ± 0.48  
+
+> ↑16.31%
+
+0.80 ± 0.05  
+
+> ↑5.52%
+
+16 .44 ± 0.96  
+
+> ↑2.45%
+
+5.83 ± 0.51  
+
+> ↑10.11%
+
+5.71 ± 0.53  
+
+> ↑24.20%
+
+TABLE V ATE RMSE ( M) ON THE HILTI SLAM CHALLENGE [40]. T HE VALUE BELOW EACH RESULT INDICATES THE RELATIVE GAIN OVER 
+
+MAVIS-SLAM [41] ( MULTI -CAM INERTIAL MODE ). L OWER VALUES INDICATE BETTER PERFORMANCE . MS: MAVIS-SLAM [41]; F: FEATURE BOOSTER [7]; D: D ESC ++. B OLD AND UNDERLINED VALUES DENOTE THE BEST AND SECOND -BEST RESULTS , RESPECTIVELY .
+
+Method S1-H1 S1-H2 S1-H3 S1-H4 S1-H5 S3-H1 S3-H2 S3-H3 S3-H4 MS [41] 0.37 ± 0.03 
+
+> –
+
+0.23 ± 0.02 
+
+> –
+
+0.34 ± 0.02 
+
+> –
+
+0.23 ± 0.04 
+
+> –
+
+0.41 ± 0.02 
+
+> –
+
+0.15 ± 0.02 
+
+> –
+
+0.32 ± 0.01 
+
+> –
+
+0.28 ± 0.03 
+
+> –
+
+0.23 ± 0.03 
+
+> –
+
+w/ F [7] 0.33 ± 0.06  
+
+> ↑11.93%
+
+0.18 ± 0.03  
+
+> ↑20.97%
+
+0.37 ± 0.03  
+
+> ↓10.39%
+
+0.22 ± 0.03  
+
+> ↑4.65%
+
+0.37 ± 0.05  
+
+> ↑10.36%
+
+0.16 ± 0.02  
+
+> ↓5.81%
+
+0.31 ± 0.01  
+
+> ↑3.39%
+
+0.27 ± 0.02  
+
+> ↑4.64%
+
+0.26 ± 0.03  
+
+> ↓13.58%
+
+w/ D 0.23 ± 0.03  
+
+> ↑37.31%
+
+0.17 ± 0.02  
+
+> ↑28.39%
+
+0.34 ± 0.02  
+
+> ↑0.87%
+
+0.20 ± 0.04  
+
+> ↑14.79%
+
+0.34 ± 0.02  
+
+> ↑18.24%
+
+0.13 ± 0.01  
+
+> ↑12.76%
+
+0.30 ± 0.01  
+
+> ↑5.91%
+
+0.26 ± 0.01  
+
+> ↑6.85%
+
+0.22 ± 0.01  
+
+> ↑2.36%
+
+analyze this boundary case in Section IV-G. The purely visual configuration also highlights the stability benefit of Desc++: whereas FeatureBooster [7] degraded the baseline on MH03, V201, and V202, Desc++ improved every com-pleted sequence. In stereo-inertial mode, Desc++ reduced the ATE RMSE relative to ORB-SLAM3 [3] on 9 of the 11 sequences, with relative improvements ranging from 1.9% to 23.6%; the largest gains were observed on MH02, V103, V202, and V203. Compared with FeatureBooster [7], Desc++ produced lower trajectory errors on 8 of the 11 sequences and ex-hibited more consistent behavior: it avoids the degradation of FeatureBooster on V201 ( +2 .54% versus −2.45% ), re-duces the regression on MH05 ( −2.37% versus −5.58% ), and shows substantially lower run-to-run variance on V203 (±1.07 versus ±2.12 ). The only Desc++ regressions relative to the baseline occurred on MH05 and V101 ( −2.37% 
+
+and −0.96% , respectively), both minor compared with the improvements on the remaining sequences, indicating that Desc++ improves localization accuracy overall. The smaller margins in this mode are expected, as inertial fusion already compensates for some visual matching errors, partially mask-ing the contribution of descriptor quality; the stereo-only results above therefore reflect this contribution more directly. 
+
+2) KITTI Dataset: As shown in Table IV, Desc++ achieved the lowest ATE RMSE on 8 of the 11 KITTI [32] sequences and outperformed FeatureBooster [7] on 8 se-quences. The most pronounced improvements were observed on the long open-loop trajectories (Sequences 01, 04, and 10), where relative gains of 9.59%, 37.19%, and 24.20% were obtained over RGB-L [4]. Since these trajectories contain no loop closures, the accumulated drift is largely determined by the quality of local feature associations, and the results suggest that improved descriptor discriminability provides more reliable geometric constraints against long-term drift. Sequence 01 deserves particular attention: this highway sequence combines high vehicle speed with sparse, distant features and is known to be challenging for feature-based systems, as reflected by the large baseline error and run-to-run variance ( 110 .44 ± 36 .64 m). While the absolute error remains large, Desc++ not only reduced the mean drift but also substantially reduced the variance across runs ( ±13 .33 m versus ±36 .64 m), indicating more stable data association under these adverse conditions. The main regression occurred on Sequence 03, where Desc++ fell behind the RGB-L baseline by 9.55%; FeatureBooster [7] shows a comparable regression (7.93%), suggesting this sequence is less favorable to descriptor enhancement in general. The gap corresponds to only 1.46 m in absolute terms, and Desc++ attains the lowest run-to-run variance among all three methods ( ±0.12 m), indicating consistent rather than unstable behavior. Nevertheless, the overall trend across the benchmark remained positive, demonstrating that the proposed enhancement generalizes to large-scale outdoor environments. 
+
+3) Hilti SLAM Challenge 2023: As shown in Table V, Desc++ achieved the lowest ATE RMSE on all nine Hilti Challenge [40] sequences, outperforming both the origi-nal MAVIS-SLAM [41] and the FeatureBooster-enhanced version. Relative improvements over MAVIS-SLAM [41] ranged from 0.9% to 37.3%, with particularly large gains on S1-H1, S1-H2, and S1-H5. While the margins on some sequences are within the run-to-run variance, Desc++ is the only method that improves upon the baseline on ev-ery sequence, whereas FeatureBooster [7] degrades perfor-mance on S1-H3, S3-H1, and S3-H4. Compared with the EuRoC [33] and KITTI [32] benchmarks, the Hilti Chal-lenge [40] poses a more demanding multi-camera SLAM scenario, where feature correspondences must be established across cameras with substantially different viewpoints and smaller overlapping fields of view. Under these conditions, the quality of local descriptors plays a more critical role in maintaining reliable data association, consistent with the TMP analysis in Table II. The improved localization accu-racy across all sequences, therefore, suggests that enhancing descriptor discriminability is particularly beneficial for multi-camera visual-inertial SLAM, where robust feature matching across heterogeneous viewpoints is essential for accurate state estimation. 
+
+E. Comparison with learning-based front-ends 
+
+To further position the proposed approach with respect to recent learning-based SLAM systems, we compare Desc++ with Rover-SLAM [42], a representative learning-based front-end built upon SuperPoint [8] and LightGlue [13]. Un-like the previous experiments, this comparison evaluates the trade-off between localization accuracy and computational cost rather than directly comparing individual descriptors; since Rover-SLAM supports only visual-inertial input, the comparison is conducted on EuRoC. As shown in Table III, Rover-SLAM achieved the lowest ATE RMSE on several                              
+
+> TABLE VI FRONT -END COMPUTATIONAL COST IN THE INTEGRATED SLAM
+> SYSTEM ,MEASURED ON EUROC MH01 ( STEREO -INERTIAL )WITH A DESKTOP PLATFORM (I NTEL I 9-12900K, 128 GB RAM, NVIDIA RTX 4090). L ATENCY IS AVERAGED PER FRAME OVER THE SEQUENCE . GV:
+> GEOMETRIC VERIFICATION ; SP: S UPER POINT [8]; LG: LIGHT GLUE [13].
+> Method Front-end type Latency (ms) GPU Mem. (MiB) FPS OS3 [3] ORB + GV 27 .2±1.8–37 OS3 w/ D ORB + D + GV 32 .5±2.5544 30 RS [42] SP [8] + LG [13] 71 .9±24 .56130 14
+
+sequences, demonstrating the strong localization capability of modern learning-based front-ends. Nevertheless, Desc++ remained competitive, obtaining comparable accuracy on multiple sequences while outperforming the original ORB-SLAM3 [3] by a clear margin. Rover-SLAM’s accuracy advantage, however, comes at a substantially higher com-putational cost. As summarized in Table VI, measured on a desktop platform, Desc++ adds only 5.3 ms to the front-end latency of ORB-SLAM3 and maintains real-time perfor-mance at 30 FPS, whereas Rover-SLAM requires 71.9 ms per frame and operates at 14 FPS even on high-end hardware. The memory footprint differs by an order of magnitude: 544 MiB for Desc++ versus 6130 MiB for Rover-SLAM. The latter alone approaches the total memory of typical embedded platforms such as the Jetson Orin NX (8 GB), which needs be shared between the GPU and the rest of the SLAM system, suggesting that replacement-based learned front-ends remain difficult to deploy on the resource-constrained hardware targeted in this work. Overall, Desc++ bridges the gap between conventional handcrafted front-ends and fully learning-based approaches, achieving a favorable balance between localization accuracy, computational cost, and ease of integration. 
+
+F. Ablation Study 
+
+We first compare the Mamba-AFTs block against al-ternative context aggregation architectures under a similar parameter budget ( ≈2.6M). As shown in Table VII, Mamba-AFTs achieved higher ORB matching accuracy than AFT-Simple (FeatureBooster) [7], the Vanilla Transformer [15], and pure Mamba [17], while using slightly fewer parameters. Notably, it outperformed not only the AFT-only design of FeatureBooster but also the pure Mamba variant, indicating that the two branches capture complementary context: neither order-agnostic global attention nor sequential state-space modeling alone matches their parallel combination. In terms of runtime, Mamba-AFTs exhibited favorable linear scalabil-ity across hardware platforms. On an RTX 4090, it processed 8,000 keypoints in 2.5 ms, whereas the Vanilla Transformer incurred substantially higher latency (51.9 ms) due to its quadratic attention complexity. Similar trends were observed on the Jetson Orin NX, where Mamba-AFTs maintained real-time performance ( >30 FPS) under typical SLAM workloads (1k–2k keypoints), while the Transformer-based model en-countered out-of-memory (OOM) failures. The component-wise ablation in Table VIII examines the Local Fusion and Context Aggregation stages. Introducing the geometry encoder ( MLP geo ) improved matching performance by in-corporating geometric cues, and replacing it with Learnable Fourier Features ( LFF -MLP geo ) provided additional gains. The Context Aggregation stage contributed the largest single improvement, raising MMA@3 and MMA@5 to 0.459 and 0.534, respectively. These results indicate that each com-ponent contributes positively to the overall enhancement quality. Finally, the serialization study in Table IX shows that Z-ordering yields a modest but consistent improvement over unordered input, suggesting that preserving spatial locality during sequence construction facilitates context modeling in the Mamba branch, while the parallel AFT branch keeps the architecture robust even without spatial ordering. 
+
+G. Discussion 1) Plug-and-play compatibility: A design goal of Desc++ is compatibility with existing feature-based pipelines, and the system-level experiments provide evidence for this property. The same enhancement module was integrated, without any modification to the downstream tracking, mapping, or matching logic, into four heterogeneous systems: a stereo system (ORB-SLAM2 [2]), a stereo-inertial system (ORB-SLAM3 [3]), a visual-LiDAR system (RGB-L [4]), and a multi-camera visual-inertial system (MAVIS-SLAM [41]), improving trajectory accuracy on the majority of sequences relative to each base system (9 of 11 on EuRoC stereo-inertial, 10 of 11 on KITTI, and 9 of 9 on Hilti). This portability contrasts with replacement-based front-ends: as shown in Table VI, adopting a learned matching pipeline such as Rover-SLAM [42] achieves higher accuracy on several sequences but requires restructuring the front-end and an order of magnitude more GPU memory, whereas Desc++ attains competitive accuracy while preserving the original architecture with only a marginal runtime overhead. Compatibility, however, also implies inheritance: by retaining the original extractor and matcher, Desc++ is bound by their failure modes, which motivates the limitations discussed next. 
+
+2) Limitation: Since Desc++ refines descriptors after fea-ture extraction, its effectiveness is inherently bounded by the information content of the input features. When the extractor itself fails to detect meaningful patterns—as in the severe motion blur of EuRoC V203 under a purely visual configuration—no enhancement can recover the miss-ing information, and tracking failure occurs regardless of the enhancer. Notably, the baseline and FeatureBooster [7] fail on this sequence as well, indicating a boundary of the descriptor enhancement paradigm rather than a deficiency of the proposed module. This limitation can be mitigated at the system level: with inertial fusion, motion predictions bridge the blurred segments, allowing Desc++ to re-establish reliable associations once features stabilize (Table III). To further characterize this operating boundary under real sens-ing degradations, we deployed the system on a custom mobile platform equipped with an Intel RealSense D435i camera, which captures synchronized 30 Hz RGB-D streams and 200 Hz IMU data, with all onboard processing performed on an NVIDIA Jetson Orin NX (8 GB). The evaluation targeted two scenarios prone to tracking failure: (1) a long texture-less corridor involving a 90 ◦ turn, and (2) a room with severe illumination changes. In contrast to the motion-blur case, features in these scenarios remain detectable but lack discriminability—conditions that fall within the scope of descriptor enhancement. As shown in Fig. 6, Desc++ maintained sufficient feature matches and continuous data association in both scenarios, whereas the baseline suffered from track loss. Together, these results delineate the operat-ing regime of descriptor enhancement: it is effective when features are degraded yet present, but cannot compensate for failures at the extraction stage. A second consideration is that Desc++ enhances all descriptors uniformly, without assessing the reliability of the underlying image content. A natural extension is therefore to predict a per-descriptor confidence alongside the enhanced representation, allowing the SLAM back-end to down-weight potentially unreliable associations; we leave this joint enhancement-and-confidence design to future work. V. C ONCLUSION 
+
+In this paper, we have presented Desc++, a lightweight descriptor enhancement module that improves visual data association in existing V-SLAM systems without modifying their feature extraction or matching pipelines. By combin-ing sequential state-space modeling over Z-order serialized keypoints with attention-free global context aggregation in a parallel hybrid architecture, Desc++ captures richer con-textual relationships than prior enhancement methods while retaining linear-time complexity. Experiments across descrip-tor matching, data association, and system-level benchmarks showed that the enhanced descriptors improve matching accuracy on HPatches, increase the number of tracked map points, and reduce trajectory errors across four heterogeneous SLAM systems on the EuRoC, KITTI, and Hilti benchmarks, with the largest gains under large viewpoint changes in multi-camera settings. Compared with a replacement-based learned front-end, Desc++ achieves competitive accuracy at an order of magnitude lower memory cost while sustaining real-time performance on embedded hardware. Our analysis further delineates the operating regime of descriptor enhancement: while it is bounded by failures at the extraction stage, it is effective whenever features are degraded yet still detectable, making it a practical path to improving deployed real-time V-SLAM systems. ACKNOWLEDGMENT 
+
+This work was financially supported in part by the Na-tional Science and Technology Council of Taiwan and also by the Taiwan Centers of Excellence in Intelligent Team Robotics of the Ministry of Education of Taiwan. Fig. 6. Robot configuration (left) and qualitative tracking comparisons in a textureless corridor (middle) and a room with varying illumination (right). Desc++ maintains continuous data association in both scenarios, whereas the ORB baseline loses tracking. TABLE VII MODULE -LEVEL COMPARISON OF DESCRIPTOR ENHANCEMENT ACCURACY AND INFERENCE LATENCY ON RTX 4090 AND JETSON ORIN NX.                       
+
+> Descriptor Enhancer MMA ↑
+> @3 / @5 #Params ↓RTX 4090 Runtime (ms) ↓
+> #500 / #1k / #2k / #4k / #8k Jetson Orin NX Runtime (ms) ↓
+> #500 / #1k / #2k / #4k / #8k
+> AFT-Simple (FeatureBooster [7]) 0.436 / 0.495 2.61M 0.6 / 0.7 / 1.0 / 1.5 / 2.7 7.0 / 9.7 / 18.9 / 35.4 / 67.7 Vanilla Transformer [15] 0.437 / 0.500 2.61M 0.9 / 1.4 / 4.0 / 13.9 / 51.9 11.2 / 35.6 / 93.3 / 340.0 / OOM Mamba [17] 0.443 / 0.510 2.60M 1.2 / 1.2 / 1.2 / 1.5 / 2.9 9.0 / 11.8 / 21.8 / 41.6 / 80.6
+> Mamba-AFTs 0.459 / 0.534 2.44M 1.1 / 1.1 / 1.1 / 1.1 / 2.5 10.1 / 11.3 / 21.0 / 40.4 / 77.5
+
+Note: Blue text indicates real-time performance ( >30 FPS), Red text indicates sub-real-time performance ( <30 FPS), and OOM denotes out-of-memory. TABLE VIII ABLATION ON ORB [1] USING HP ATCHES [31]. 
+
+Local Stage Context Stage MMA ↑
+
+Descriptor MLP geo LFF-MLP geo @3 @5 
+
+✓ 0.403 0.448 
+
+✓ ✓ 0.427 0.488 
+
+✓ ✓ 0.431 0.491 
+
+✓ ✓ ✓ 0.448 0.519 
+
+✓ ✓ ✓ 0.459 0.534 
+
+TABLE IX EFFECT OF Z -ORDERING USING HP ATCHES [31]. 
+
+Setting MMA @ 3 ↑ MMA @ 5 ↑
+
+w/o z-ordering 0.453 0.528 w/ z-ordering 0.459 0.534 
+
+REFERENCES [1] E. Rublee, V. Rabaud, K. Konolige, and G. Bradski, ”ORB: An efficient alternative to SIFT or SURF,” in Proc. IEEE/CVF Int. Conf. Comput. Vis. , pp. 2564–2571, 2011. [2] R. Mur-Artal and J. D. Tard´ os, ”ORB-SLAM2: An open-source SLAM system for monocular, stereo, and RGB-D Cameras,” IEEE Trans. Robot. , vol. 33, no. 5, pp. 1255–1262, 2017. [3] C. Campos, R. Elvira, J. J. G. Rodr´ ıguez, J. M. M. Montiel, and J. D. Tard´ os, ”ORB-SLAM3: An accurate open-source library for visual, visual–inertial, and multimap SLAM,” IEEE Trans. Robot. , vol. 37, no. 6, pp. 1874–1890, 2021. [4] F. Sauerbeck, B. Obermeier, M. Rudolph and J. Betz, ”RGB-L: Enhancing indirect visual SLAM using LiDAR-based dense depth maps,” in Proc. Int. Conf. Comput., Control Robot. , pp. 95–100, 2023. [5] K. Mikolajczyk and C. Schmid, ”A performance evaluation of local descriptors,” IEEE Trans. Pattern Anal. Mach. Intell. , vol. 27, no. 10, pp. 1615–1630, 2005. [6] J. L. Sch¨ onberger, E. Zheng, M. Pollefeys, and J. -M. Frahm, ”Pixel-wise view selection for unstructured multi-view stereo,” in Proc. Eur. Conf. Comput. Vis. , pp. 501–518, 2016. [7] X. Wang, et al. , ”FeatureBooster: Boosting feature descriptors with a lightweight neural network,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. , pp. 7630–7639, 2023. [8] D. DeTone, T. Malisiewicz, and A. Rabinovich, ”Superpoint: Self-supervised interest point detection and description,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. Workshops , pp. 224– 236, 2018. [9] X. Zhao, et al. , ”ALIKE: Accurate and lightweight keypoint detection and descriptor extraction,” IEEE Trans. Multimedia , vol. 25, pp. 3101– 3112, 2022. [10] M. Tyszkiewicz, P. Fua, and E. Trulls, ”DISK: Learning local features with policy gradient,” in Proc. Adv. Neural Inf. Process. Syst. , vol. 33, pp. 14254–14265, 2020. [11] Z. Luo et al. , ”ContextDesc: Local descriptor augmentation with cross-modality context,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. , pp. 2527–2536, 2019. [12] P.-E. Sarlin et al. , ”SuperGlue: Learning feature matching with graph neural networks,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. , pp. 4938–4947, 2020. [13] P. Lindenberger, P.-E. Sarlin, and M. Pollefeys, ”LightGlue: Local feature matching at light speed,” in Proc. IEEE/CVF Int. Conf. Comput. Vis. , pp. 17627–17638, 2023. [14] K. Ryoo, H. Lim and H. Myung, ”MambaGlue: Fast and Robust Local Feature Matching with Mamba,” in Proc. IEEE Int. Conf. Robot. Autom. , pp. 5758–5765, 2025. [15] A. Vaswani, et al. , ”Attention is all you need,” in Proc. Adv. Neural Inf. Process. Syst. , vol. 30, pp. 6000–6010, 2017. [16] S. Zhai et al. , ”An attention-free transformer,” arXiv preprint arXiv:2105.14103 , 2021. [17] A. Gu, and T. Dao, ”Mamba: Linear-time sequence modeling with selective state spaces,” arXiv preprint arXiv:2312.00752 , 2023. [18] L. Zhu et al. , ”Vision Mamba: Efficient visual representation learning with bidirectional state space model,” in Proc. Int. Conf. Mach. Learn. ,pp. 62429–62442, 2024. [19] A. Hatamizadeh and J. Kautz, ”MambaVision: A hybrid mamba-transformer vision backbone,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. , pp. 25261–25270, 2025. [20] Y. Li et al. , ”Learnable Fourier features for multi-dimensional spatial positional encoding,” in Proc. Adv. Neural Inf. Process. Syst. , vol. 34, pp. 15816–15829, 2021. [21] M. A. Fischler and R. C. Bolles, ”Random sample consensus: a paradigm for model fitting with applications to image analysis and automated cartography,” Commun. ACM , vol. 24, no. 6, pp. 381–395, 1981. [22] D. G. Lowe, ”Distinctive image features from scale-invariant key-points,” Int. J. Comput. Vis. , vol. 60, no. 2, pp. 91–110, 2004. [23] M. Calonder, V. Lepetit, C. Strecha, and P. Fua, ”BRIEF: Binary robust independent elementary features,” in Proc. Eur. Conf. Comput. Vis. ,vol. 6314, pp. 778–792, 2010. [24] E. Rosten and T. Drummond, ”Machine learning for high-speed corner detection,” in Proc. Eur. Conf. Comput. Vis. , vol. 3951, pp. 430–443, 2006. [25] N. Carion, et al. , ”End-to-end object detection with Transformers,” in 
+
+Proc. Eur. Conf. Comput. Vis. , vol. 12346, pp. 213–229, 2020. [26] A. Dosovitskiy, et al. , ”An image is worth 16 ×16 words: Transformers for image recognition at scale,” in Proc. Int. Conf. Learn. Represent. ,2021. [27] Y. Liu et al. , ”VMamba: Visual state space model,” in Proc. Adv. Neural Inf. Process. Syst. , vol. 37, pp. 103031–103063, 2024. [28] G. M. Morton, ”A computer oriented geodetic data base; and a new technique in file sequencing,” Tech. Rep., IBM, 1966. [29] F. Cakir, K. He, X. Xia, B. Kulis, and S. Sclaroff, ”Deep metric learning to rank,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. , pp. 1861–1870, 2019. [30] Z. Li and N. Snavely, ”MegaDepth: Learning single-view depth prediction from internet photos,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. , pp. 2041–2050, 2018. [31] V. Balntas, et al. , ”HPatches: A benchmark and evaluation of hand-crafted and learned local descriptors,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. , pp. 5173–5182, 2017. [32] A. Geiger, P. Lenz, C. Stiller, and R. Urtasun, ”Vision meets robotics: The KITTI dataset,” Int. J. Robot. Res. , vol. 32, no. 11, pp. 1231–1237, 2013. [33] M. Burri et al. , ”The EuRoC micro aerial vehicle datasets,” Int. J. Robot. Res. , vol. 35, no. 10, pp. 1157–1163, 2016. [34] M. Grupp, ”evo: Python package for the evaluation of odom-etry and SLAM,” 2017. Available: https://github.com/ MichaelGrupp/evo 
+
+[35] M. Dusmanu et al. , ”D2-Net: A trainable CNN for joint description and detection of local features,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. , pp. 8092–8101, 2019. [36] J. Philbin, M. Isard, J. Sivic, and A. Zisserman, ”Descriptor learning for efficient retrieval,” in Proc. Eur. Conf. Comput. Vis. , vol. 6316, pp. 677–691, 2010. [37] J. L. Sch¨ onberger and J. -M. Frahm, ”Structure-from-motion revisited,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. , pp. 4104– 4113, 2016. [38] M. Legittimo, F. Crocetti, M. L. Fravolini, G. Mollica and G. Costante, ”LF2SLAM: Learning-based Features For visual SLAM,” in Proc. IEEE/RSJ Int. Conf. Intell. Robots Syst. , pp. 5648–5655, 2024. [39] J. Tang, L. Ericson, J. Folkesson and P. Jensfelt, ”GCNv2: Efficient Correspondence Prediction for Real-Time SLAM,” IEEE Robot. Au-tom. Lett. , vol. 4, no. 4, pp. 3505–3512, 2019. [40] A. D. Nair, J. Kindle, P. Levchev, and D. Scaramuzza, ”Hilti SLAM Challenge 2023: Benchmarking Single + Multi-Session SLAM Across Sensor Constellations in Construction,” IEEE Robot. Autom. Lett. , vol. 9, no. 8, pp. 7286–7293, 2024. [41] Y. Wang et al ., ”MAVIS: Multi-Camera Augmented Visual-Inertial SLAM using SE2(3) Based Exact IMU Pre-integration,” in Proc. IEEE Int. Conf. Robot. Autom. , pp. 1694–1700, 2024. [42] X. Zhang et al ., ”A Real-Time, Robust, and Versatile Visual-SLAM Framework Based on Deep Learning Networks,” IEEE Trans. Instrum. Meas. , vol. 74, pp. 1–13, 2025. [43] I. Loshchilov and F. Hutter, ”Decoupled weight decay regularization,” arXiv preprint arXiv:1711.05101, 2017. [44] J. Tang, J. Folkesson and P. Jensfelt, ”Geometric Correspondence Network for Camera Motion Estimation,” IEEE Robot. Autom. Lett. ,vol. 3, no. 2, pp. 1010–1017, 2018. [45] C. Cadena et al., ”Past, Present, and Future of Simultaneous Localiza-tion and Mapping: Toward the Robust Perception Age,” IEEE Trans. Robot. , vol. 32, no. 6, pp. 1309–1332, 2016.

@@ -1,0 +1,452 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-16T21:02:04.915754+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 9,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 5,
+    "quick_skim_target": 11,
+    "quick_selected": 5
+  },
+  "deep_dive": [
+    {
+      "id": "2607.13492v1",
+      "source": "arxiv",
+      "title": "CASA-SDF: Curriculum-Aware Spatial Adaptation with Curvature-Guided Density for Neural Implicit Surface Reconstruction",
+      "abstract": "Neural implicit representations have emerged as a powerful paradigm for 3D reconstruction. However, high-fidelity indoor surface reconstruction remains a significant challenge, primarily due to the pronounced \\emph{geometric heterogeneity} of indoor scenes. Large texture-less planar regions typically require stronger regularization to suppress high-frequency artifacts, while thin structures demand sharper, more adaptive representations to mitigate the spectral bias of multi-layer perceptrons (MLPs) and prevent over-smoothing. Existing approaches often rely on spatially indiscriminate prior supervision and a scene-global SDF-to-density transformation, which constrains their ability to balance planar smoothness and detail preservation. In this paper, we propose CASA-SDF (Curriculum-Aware Spatial Adaptation for SDF), a unified framework that addresses this challenge via complementary adaptations of supervision and representation capacity. Specifically, Hybrid Spatially-Adaptive Uncertainty Annealing (SAUA) fuses semantic and photometric uncertainties to construct a pixel-wise curriculum for monocular prior supervision. This strategy maintains regularization in reliable regions while attenuating unreliable supervision early in training to enable data-driven photometric refinement. Meanwhile, Curvature-Aware Locally Adaptive Density Transformation (CALADT) progressively modulates the sharpness of the SDF-to-density mapping via a curvature proxy to enhance the representation of thin structures. Extensive experiments on benchmark indoor datasets demonstrate that CASA-SDF improves surface completeness and detail recovery on high-frequency structures, without compromising the stability of planar surfaces.",
+      "authors": [
+        "Lei Yang",
+        "Weiqing Li",
+        "Zhiyong Su",
+        "Liang Xiao"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR"
+      ],
+      "published": "2026-07-15T06:38:23+00:00",
+      "link": "https://arxiv.org/pdf/2607.13492v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "curriculum-aware spatial adaptation with curvature-guided density for high-fidelity indoor surface reconstruction from images",
+      "llm_evidence_cn": "课程感知空间自适应与曲率引导密度，用于图像的高保真室内表面重建",
+      "llm_evidence": "课程感知空间自适应与曲率引导密度，用于图像的高保真室内表面重建",
+      "canonical_evidence": "课程感知空间自适应与曲率引导密度，用于图像的高保真室内表面重建",
+      "llm_tldr_en": "CASA-SDF addresses geometric heterogeneity in indoor surface reconstruction by spatially adapting regularization and using curvature-guided density, improving fidelity.",
+      "llm_tldr_cn": "针对室内场景几何异质性导致神经隐式重建保真度低的问题，提出CASA-SDF，通过课程式空间自适应正则化和曲率引导SDF-密度变换，平衡大平面平滑与薄结构细节，提升多视图室内表面重建质量。",
+      "llm_tldr": "针对室内场景几何异质性导致神经隐式重建保真度低的问题，提出CASA-SDF，通过课程式空间自适应正则化和曲率引导SDF-密度变换，平衡大平面平滑与薄结构细节，提升多视图室内表面重建质量。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.11285v2",
+      "source": "arxiv",
+      "title": "SalientGS: Unified SfM-to-3DGS with Importance-Guided MCMC Gaussian Allocation",
+      "abstract": "Reconstructing 3D scenes from unordered images remains bottlenecked by expensive Structure-from-Motion (SfM) preprocessing and frozen pose interfaces. We present SalientGS, a unified SfM-to-3D Gaussian Splatting (3DGS) pipeline. Its central contribution is importance-guided Markov Chain Monte Carlo (MCMC) Gaussian allocation, which aggregates multi-view residuals into per-Gaussian underfit and redundancy signals. These signals define a smooth importance-weighted sampling distribution that biases both birth and relocation toward underfit regions. This reallocates capacity from well-fit areas without altering the underlying stochastic gradient Langevin dynamics (SGLD). SalientGS achieves end-to-end reconstruction in 15 minutes with state-of-the-art perceptual quality. The supplementary material provides dedicated sections for Per-Scene Qualitative Comparisons and Per-Image Learned Perceptual Image Patch Similarity (LPIPS) Analysis, including failure cases. Code and evaluation scripts are available at https://github.com/Six-Bit-TX/SalientGS.",
+      "authors": [
+        "Tianyu Xiong",
+        "Rui Li",
+        "Suning Ge",
+        "Jiaqi Yang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-13T09:06:49+00:00",
+      "link": "https://arxiv.org/pdf/2607.11285v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "unified pipeline reconstructs 3D scenes from unordered multi-view images",
+      "llm_evidence_cn": "从无序多视图图像统一重建3D场景",
+      "llm_evidence": "从无序多视图图像统一重建3D场景",
+      "canonical_evidence": "从无序多视图图像统一重建3D场景",
+      "llm_tldr_en": "SalientGS proposes a unified SfM-to-3DGS pipeline that uses importance-guided MCMC sampling to allocate Gaussians where needed, enabling fast end-to-end 3D reconstruction from unordered images in 15 minutes with state-of-the-art quality.",
+      "llm_tldr_cn": "为解决从无序图像重建3D场景时SfM预处理昂贵且相机位姿接口僵化的问题，本文提出SalientGS，通过重要性引导的MCMC高斯分配策略，将多视图残差作为信号引导高斯向欠拟合区域分配，实现15分钟内端到端的重建，质量达到最新水平。",
+      "llm_tldr": "为解决从无序图像重建3D场景时SfM预处理昂贵且相机位姿接口僵化的问题，本文提出SalientGS，通过重要性引导的MCMC高斯分配策略，将多视图残差作为信号引导高斯向欠拟合区域分配，实现15分钟内端到端的重建，质量达到最新水平。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.13365v1",
+      "source": "arxiv",
+      "title": "DiffGI: Differentiable Geometry Images for High-Fidelity Thin-Shell 3D Generation",
+      "abstract": "Existing 3D generative models predominantly rely on implicit volumetric representations, which enforce watertight topology and struggle to represent thin-shell and non-manifold geometries such as garments. Geometry image-based approaches offer a surface-centric alternative, but existing methods rely on discrete binary occupancy maps whose resolution-dependent boundary encoding causes staircase artifacts and information loss upon downsampling, while surface reconstruction remains a non-differentiable post-processing step disconnected from the learning pipeline. To address this, we propose Differentiable Geometry Image (DiffGI), an end-to-end 3D-to-2D mapping framework that seamlessly integrates surface representation and geometric optimization. DiffGI replaces binary maps with a continuous 2D Truncated Signed Distance Function (TSDF), which encodes boundary position at subpixel precision within a fixed grid resolution, eliminating resolution-dependent staircase artifacts even under aggressive downsampling. Building on this continuous field, we introduce a differentiable Marching Squares algorithm based on analytical linear interpolation, allowing gradients from 3D surface losses to propagate back to the 2D latent space. Leveraging this differentiable pipeline, we train a DiffGI-VAE augmented with a geometry-aware normal rendering loss to compress complex 3D surfaces into an ultra-compact 32X32 latent space, and instantiate a transformer-based latent diffusion model with a flow-matching objective on top of this space for conditional 3D generation. Extensive experiments on garment and object datasets demonstrate that our method achieves superior reconstruction fidelity and boundary precision compared to prior geometry-image and voxel-based approaches, while requiring significantly fewer computational resources.",
+      "authors": [
+        "Eungjune Shim",
+        "Hansol Lee",
+        "Eunjung Ju"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-15T01:00:01+00:00",
+      "link": "https://arxiv.org/pdf/2607.13365v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Thin-shell 3D object generation via differentiable geometry images",
+      "llm_evidence_cn": "通过可微几何图像的薄壳三维物体生成",
+      "llm_evidence": "通过可微几何图像的薄壳三维物体生成",
+      "canonical_evidence": "通过可微几何图像的薄壳三维物体生成",
+      "llm_tldr_en": "DiffGI proposes a differentiable geometry image framework for high-fidelity thin-shell 3D generation, addressing staircase artifacts and enabling end-to-end learning.",
+      "llm_tldr_cn": "针对隐式体积表示难以生成薄壳非流形几何的问题，提出DiffGI可微几何图像框架，将曲面表示为连续可微的几何图像，消除阶梯伪影并实现端到端优化，在衣物等薄壳物体生成上取得高保真效果。",
+      "llm_tldr": "针对隐式体积表示难以生成薄壳非流形几何的问题，提出DiffGI可微几何图像框架，将曲面表示为连续可微的几何图像，消除阶梯伪影并实现端到端优化，在衣物等薄壳物体生成上取得高保真效果。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.13481v1",
+      "source": "arxiv",
+      "title": "GPOcc++: Unified Sparse Gaussian Occupancy Prediction with Visual Geometry Priors",
+      "abstract": "Accurate 3D scene understanding is fundamental to embodied intelligence and autonomous driving, where 3D occupancy provides a unified representation of objects, structures, and free space. However, recovering such a complete volumetric representation from visual observations remains challenging, particularly in occluded and unobserved regions. Visual geometry priors offer strong and generalizable geometric cues for addressing this challenge, but their outputs are inherently surface-centric, whereas occupancy prediction requires reasoning about volumetric interiors and free space. To bridge this gap, we introduce GPOcc, which transforms visual geometry priors into occupancy-aware sparse Gaussian representations for efficient and expressive volumetric scene modeling. Building on GPOcc, GPOcc++ models multi-view observations and temporal sequences within a unified framework, allowing spatial and temporal evidence to be handled through the same representation. We further extend GPOcc++ from indoor scenes to outdoor occupancy prediction. Extensive experiments on both indoor and outdoor benchmarks demonstrate consistently strong performance across both multi-view and temporal settings, together with favorable efficiency and generalization. Code will be released at https://github.com/JuIvyy/GPOcc.",
+      "authors": [
+        "Changqing Zhou",
+        "Yueru Luo",
+        "Yulan Guo",
+        "Bing Wang",
+        "Jie Qin",
+        "Changhao Chen"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-15T06:21:25+00:00",
+      "link": "https://arxiv.org/pdf/2607.13481v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "transforms visual geometry priors into sparse Gaussian occupancy for complete volumetric reconstruction from multi-view images",
+      "llm_evidence_cn": "将视觉几何先验转化为稀疏高斯占用，从多视图图像实现完整体积重建",
+      "llm_evidence": "将视觉几何先验转化为稀疏高斯占用，从多视图图像实现完整体积重建",
+      "canonical_evidence": "将视觉几何先验转化为稀疏高斯占用，从多视图图像实现完整体积重建",
+      "llm_tldr_en": "GPOcc++ introduces sparse Gaussian occupancy prediction using visual geometry priors to recover complete 3D scenes from images, addressing occluded regions.",
+      "llm_tldr_cn": "针对视觉观测重建被遮挡区域的难题，提出GPOcc++方法，将表面几何先验转化为面向占用的稀疏高斯表示，从多视图图像中高效推理完整体积场景结构，提升自动驾驶等场景理解的完整性。",
+      "llm_tldr": "针对视觉观测重建被遮挡区域的难题，提出GPOcc++方法，将表面几何先验转化为面向占用的稀疏高斯表示，从多视图图像中高效推理完整体积场景结构，提升自动驾驶等场景理解的完整性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.13674v1",
+      "source": "arxiv",
+      "title": "WAVE-Stereo: Warp-Aligned Volume Encoding for Stereo Matching",
+      "abstract": "Existing iterative stereo matching methods primarily adopt two types of correspondence representation: explicit matching search via correlation volumes and local residual refinement via warped features, yet the two remain separately modeled. We propose WAVE-Stereo, built on a core insight: correlation volumes and feature warping provide complementary matching cues. \\textbf{GeoWarp Correspondence Encoder (GWCE)} encodes matching search, residual alignment, and disparity prior in parallel at the ConvGRU input. To mitigate matching degradation in textureless regions, we propose \\textbf{Periodic Global Context Propagation (PGCP)}, which propagates global spatial information in a periodic manner. On five real-world benchmarks -- Middlebury, ETH3D, KITTI 2012, KITTI 2015, and Booster -- WAVE-Stereo achieves competitive zero-shot generalization accuracy without any external foundation model prior, achieving 3.18\\% D1-all on KITTI 2015, 4.42\\% Bad-2.0 on Booster, and 66ms real-time inference, striking a favorable balance between accuracy and efficiency. Our code is available at https://github.com/yamanoko-do/WAVE-Stereo.",
+      "authors": [
+        "Zehan Liu",
+        "Yage He",
+        "Xianwu Gong"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.RO"
+      ],
+      "published": "2026-07-15T10:15:05+00:00",
+      "link": "https://arxiv.org/pdf/2607.13674v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Enhances stereo matching with complementary correlation and warping, directly benefiting multi-view stereo reconstruction.",
+      "llm_evidence_cn": "通过互补的相关性体积和特征扭曲增强立体匹配，直接服务于多视角立体三维重建",
+      "llm_evidence": "通过互补的相关性体积和特征扭曲增强立体匹配，直接服务于多视角立体三维重建",
+      "canonical_evidence": "通过互补的相关性体积和特征扭曲增强立体匹配，直接服务于多视角立体三维重建",
+      "llm_tldr_en": "Introduces WAVE-Stereo which combines correlation volumes and feature warping in a unified encoder for improved stereo matching, achieving state-of-the-art results on multiple real-world benchmarks.",
+      "llm_tldr_cn": "现有迭代立体匹配方法将相关性搜索与特征扭曲分开建模，导致纹理缺失区域匹配精度下降。本文提出WAVE-Stereo，通过GeoWarp Correspondence Encoder并行编码匹配搜索、残差对齐和视差先验，并引入周期全局上下文传播缓解退化。在Middlebury、ETH3D等多个真实场景基准上取得领先性能，展示了互补线索融合对立体匹配的有效性，为三维重建提供更准确的深度估计。",
+      "llm_tldr": "现有迭代立体匹配方法将相关性搜索与特征扭曲分开建模，导致纹理缺失区域匹配精度下降。本文提出WAVE-Stereo，通过GeoWarp Correspondence Encoder并行编码匹配搜索、残差对齐和视差先验，并引入周期全局上下文传播缓解退化。在Middlebury、ETH3D等多个真实场景基准上取得领先性能，展示了互补线索融合对立体匹配的有效性，为三维重建提供更准确的深度估计。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "multi-view stereo 3D reconstruction",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.11099v1",
+      "source": "arxiv",
+      "title": "Desc++: Efficient Descriptor Enhancement for Data Association in Existing Visual SLAM Systems",
+      "abstract": "Reliable visual data association is fundamental to visual SLAM (V-SLAM), as it directly determines the quality of the camera pose estimation and map consistency. However, the handcrafted descriptors used by most mature real-time systems degrade under illumination and viewpoint changes, while learning-based front-ends that address this weakness typically require replacing the extraction-and-matching pipeline and introduce substantial computational overhead. Descriptor enhancement offers a compromise by refining existing descriptors within their original format, yet current methods rely on simplified attention mechanisms whose limited contextual modeling constrains the achievable matching quality. To resolve this trade-off between contextual expressiveness and efficiency, we propose Desc++, a lightweight enhancement module that jointly encodes descriptor representations and keypoint geometry and aggregates spatial context through a hybrid architecture that combines order-agnostic global attention with geometry-aware sequential modeling in linear time. The enhanced descriptors retain their original dimensionality and matching interface, enabling integration into deployed V-SLAM systems without modifying the pipeline. Experiments across descriptor matching, correspondence analysis, and system-level benchmarks with four different V-SLAM systems demonstrate that Desc++ improves matching accuracy over the state-of-the-art enhancement method, translates these gains into more accurate and stable trajectory estimation, and achieves a favorable balance between accuracy and efficiency for practical integration into existing real-time V-SLAM pipelines.",
+      "authors": [
+        "Ting-Wei Ou",
+        "Huang-Ting Lin",
+        "Kuu-Young Young"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-07-13T05:15:13+00:00",
+      "link": "https://arxiv.org/pdf/2607.11099v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Improves visual descriptor matching quality for SLAM, enhancing multi-view feature association.",
+      "llm_evidence_cn": "改进视觉描述符匹配质量，增强多视角特征关联",
+      "llm_evidence": "改进视觉描述符匹配质量，增强多视角特征关联",
+      "canonical_evidence": "改进视觉描述符匹配质量，增强多视角特征关联",
+      "llm_tldr_en": "Proposes Desc++ to enhance handcrafted descriptors with efficient contextual modeling, bridging the gap between real-time SLAM and learning-based matching without heavy computation.",
+      "llm_tldr_cn": "现有实时视觉SLAM系统的手工描述符在光照和视角变化下匹配性能不佳，而学习型前端计算开销大。本文提出Desc++，增强现有描述符的上下文建模能力，在不替换提取-匹配流程的前提下提升匹配质量。实验表明，该方法在保持效率的同时显著改善多视角数据关联，为鲁棒的3D场景重建提供了更可靠的特征匹配基础。",
+      "llm_tldr": "现有实时视觉SLAM系统的手工描述符在光照和视角变化下匹配性能不佳，而学习型前端计算开销大。本文提出Desc++，增强现有描述符的上下文建模能力，在不替换提取-匹配流程的前提下提升匹配质量。实验表明，该方法在保持效率的同时显著改善多视角数据关联，为鲁棒的3D场景重建提供了更可靠的特征匹配基础。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.12372v1",
+      "source": "arxiv",
+      "title": "UMSS: Towards Unsupervised Multi-modal Semantic Segmentation",
+      "abstract": "Multimodal semantic segmentation (MSS) is essential for robust perception in complex environments, yet its potential remains largely untapped because of the prohibitive cost of human annotations. While unsupervised semantic segmentation (USS) has achieved strong results on a single RGB modality, its naive extension to multimodal data is often hindered by fusion degradation. This occurs because, without explicit supervision, existing frameworks struggle to reconcile the heterogeneous structural patterns captured by different sensors and therefore fail to effectively exploit their complementary information. In this paper, we make the first attempt to address the novel problem of Unsupervised Multimodal Semantic Segmentation (UMSS), aiming to effectively exploit complementary sensor information in a fully label free setting. To this end, we propose UniM2 (Unified Multimodal), a novel framework built on DINOv3 that transforms conventional fusion methods into consistent performance gains. Our key idea is to learn a unified latent space driven by Cross Modal Correspondence Synergy (CMCS) to extract intrinsic shared semantic cues, bypassing the need for label guided adaptive fusion. To mitigate inherent intermodal conflicts, we introduce a Cross Modal Harmonizer (CMH) that designates RGB as a stable reference, effectively suppressing inconsistent relational supervision while guiding the model to exploit complementary structural features. Extensive experimental results on NYU Depth v2 and MFNet show that UniM2 improves mIoU by 6.4% and 9.8%, respectively, demonstrating clear advantages over existing frameworks for UMSS.",
+      "authors": [
+        "Haitian Zhang",
+        "Thai Duy Nguyen",
+        "Xiangyuan Wang",
+        "Mohan Liu",
+        "Lin Wang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-14T05:44:29+00:00",
+      "link": "https://arxiv.org/pdf/2607.12372v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "first unsupervised multimodal semantic segmentation, exploiting complementary information across sensors",
+      "llm_evidence_cn": "首个无监督多模态语义分割，利用传感器互补信息",
+      "llm_evidence": "首个无监督多模态语义分割，利用传感器互补信息",
+      "canonical_evidence": "首个无监督多模态语义分割，利用传感器互补信息",
+      "llm_tldr_en": "UMSS tackles unsupervised multimodal semantic segmentation to avoid expensive annotations, addressing fusion degradation with cross-modal consistency.",
+      "llm_tldr_cn": "针对多模态语义标注成本高的问题，提出首个无监督多模态语义分割方法UMSS。通过显式建模跨模态互补性，解决无监督下异质传感器结构模式难以融合的退化问题，在复杂环境中实现鲁棒分割，为多模态感知降低对人工标注的依赖。",
+      "llm_tldr": "针对多模态语义标注成本高的问题，提出首个无监督多模态语义分割方法UMSS。通过显式建模跨模态互补性，解决无监督下异质传感器结构模式难以融合的退化问题，在复杂环境中实现鲁棒分割，为多模态感知降低对人工标注的依赖。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2607.09629v1",
+      "source": "arxiv",
+      "title": "4DR360: State Reasoning for Joint 3D Detection and Occupancy Prediction in 4D Radar-Camera Full-Scene Perception",
+      "abstract": "Reliable autonomous driving requires full-scene perception that couples foreground objects with dense semantic layout. Recently, 4D millimeter-wave radar has emerged as a robust and affordable sensor, yet its sparse returns make radar-camera fusion necessary for comprehensive scene understanding. Existing radar-camera methods mainly optimize detection, while dual-task systems usually decode boxes and occupancy with limited interaction. To address this gap and advance radar-based multi-task learning, we propose \\method, a 4D radar-camera framework for 360$^\\circ$ full-scene perception, which models semantic occupancy as a persistent scene state rather than a terminal output. \\method{} follows a cross-modal state reasoning paradigm, where the occupancy state is modeled and propagated through stages for coarse-to-fine feature aggregation. Specifically, State-guided BEV Enhancement (SBE) strengthens intra-frame BEV representation, while Doppler-guided Temporal Fusion (DTF) preserves state evidence over longer temporal horizons. Beyond the model, we further extend ManTruckScenes with satellite-map-based generated occupancy labels and pair it with OmniHD-Scenes in a unified cross-dataset detection-and-occupancy protocol. The resulting experiments cover accuracy, robustness, ablation, and efficiency under one radar-camera multi-task evaluation framework. Code and labels will be released upon acceptance.",
+      "authors": [
+        "Xiaokai Bai",
+        "Lianqing Zheng",
+        "Runwei Guan",
+        "Songkai Wang",
+        "Siyuan Cao",
+        "Hui-liang Shen"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-07-10T17:26:19+00:00",
+      "link": "https://arxiv.org/pdf/2607.09629v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "models semantic occupancy as persistent scene state in radar-camera fusion for 3D scene segmentation",
+      "llm_evidence_cn": "在雷达-相机融合中将语义占用建模为持久场景状态，实现3D场景分割",
+      "llm_evidence": "在雷达-相机融合中将语义占用建模为持久场景状态，实现3D场景分割",
+      "canonical_evidence": "在雷达-相机融合中将语义占用建模为持久场景状态，实现3D场景分割",
+      "llm_tldr_en": "4DR360 jointly performs 3D detection and semantic occupancy prediction with 4D radar-camera fusion, treating occupancy as a persistent scene state.",
+      "llm_tldr_cn": "为提升4D雷达-相机全场景感知，提出4DR360框架，将语义占用建模为持久场景状态而非终端输出，联合进行360度3D目标检测与占用预测，增强多任务学习中的交互与推理能力。",
+      "llm_tldr": "为提升4D雷达-相机全场景感知，提出4DR360框架，将语义占用建模为持久场景状态而非终端输出，联合进行360度3D目标检测与占用预测，增强多任务学习中的交互与推理能力。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.12752v2",
+      "source": "arxiv",
+      "title": "Hallo4D: Multi-Modal Hallucination Mitigation for Consistent Spatio-Temporal Generation",
+      "abstract": "While recent advances in 3D generation have enabled impressive visual synthesis, existing methods often rely on 2D diffusion supervision without explicit mechanisms for geometric consistency, leading to spatial hallucinations such as duplicated structures and misaligned geometry. These issues become more severe in 4D generation, where maintaining consistency across viewpoints and temporal evolution introduces additional challenges, including jitter, identity flicker, and structural drift. We present \\textbf{Hallo4D}, a unified and model-agnostic framework for mitigating spatiotemporal hallucinations in 3D and 4D content generation. Hallo4D introduces a generation-detection-correction paradigm that leverages large multimodal language models (LMMs) to identify and summarize spatial and temporal inconsistencies from multi-view and multi-frame renderings. These insights guide a consensus-driven image-space consistency optimization, where an LMM-based selector evaluates candidate corrections through multi-model voting, without requiring retraining or architectural modifications. To further improve temporal consistency and optimization efficiency, Hallo4D incorporates motion-aware keyframe sampling, LMM-guided initialization, and appearance alignment. We additionally introduce exposure-aware optimization and visibility pruning to enhance robustness under challenging viewpoints. Extensive experiments demonstrate that Hallo4D consistently outperforms strong baselines across diverse 3D and 4D generation settings, providing a scalable and generalizable solution for consistency-aware content generation.",
+      "authors": [
+        "Hongbo Wang",
+        "Huaibo Huang",
+        "Jie Cao",
+        "Jin Liu",
+        "Haoyang Tong",
+        "Ran He"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-07-14T13:19:06+00:00",
+      "link": "https://arxiv.org/pdf/2607.12752v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Mitigates geometric hallucinations in 3D/4D generation to ensure multi-view consistency",
+      "llm_evidence_cn": "抑制三维/四维生成中的几何幻觉，确保多视角一致性",
+      "llm_evidence": "抑制三维/四维生成中的几何幻觉，确保多视角一致性",
+      "canonical_evidence": "抑制三维/四维生成中的几何幻觉，确保多视角一致性",
+      "llm_tldr_en": "Hallo4D proposes a generation-detection-correction framework that uses large multimodal language models to identify and fix spatial and temporal inconsistencies in 3D and 4D content, improving the quality of generated objects and scenes.",
+      "llm_tldr_cn": "针对三维/四维生成中缺乏显式几何一致性约束导致的重复结构和几何错位等空间幻觉问题，Hallo4D提出生成-检测-校正范式。利用大语言模型检测并修正不合理的几何伪影，无需针对特定模型训练，适用于多种三维生成方法。实验表明该方法能有效提升生成内容的时空一致性，为从文本或图像生成高质量三维物体和场景提供了保障。",
+      "llm_tldr": "针对三维/四维生成中缺乏显式几何一致性约束导致的重复结构和几何错位等空间幻觉问题，Hallo4D提出生成-检测-校正范式。利用大语言模型检测并修正不合理的几何伪影，无需针对特定模型训练，适用于多种三维生成方法。实验表明该方法能有效提升生成内容的时空一致性，为从文本或图像生成高质量三维物体和场景提供了保障。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2607.13449v1",
+      "source": "arxiv",
+      "title": "DreamSat-Pose: Spacecraft Pose Estimation from Single-View 3D Reconstructions and Learned 2D-3D Feature Matching",
+      "abstract": "6-DoF pose estimation is a critical task in autonomous rendezvous and proximity operations. In the case of an unknown target, this task becomes challenging as it shall be paired with the reconstruction of the target shape model. In this article, we propose a novel framework for single-shot shape and pose estimation of unknown spacecraft objects. Given a single image, we first reconstruct a 3D shape model of the target, then estimate the relative six-degrees-of-freedom pose by learning dense 2D-3D correspondences. The image features are extracted using a frozen DINOv3 vision transformer, while the geometric features are computed from the reconstructed point cloud using a trainable dynamic graph convolutional neural network encoder. A dual-stream transformer matcher refines descriptors through alternating self- and cross-attention, producing soft correspondences that are passed to a Perspective-$n$-Point solver for pose recovery. We evaluate the method on the SPE3R dataset and consider FoundationPose as a representative baseline for current state-of-the-art capabilities. Results show reliable pose estimates achieving 0.157 degrees mean pointing error using only a single image and reconstructed geometry, demonstrating strong generalization to unseen spacecraft.",
+      "authors": [
+        "Josiane Uwumukiza",
+        "Jocelyn Zhao",
+        "Giovanni Lavezzi",
+        "Giacomo Battaglia",
+        "Paolo Panicucci",
+        "Minduli C. Wijayatunga",
+        "Victor Rodriguez-Fernandez",
+        "Richard Linares"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-07-15T05:12:48+00:00",
+      "link": "https://arxiv.org/pdf/2607.13449v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Single-view 3D object reconstruction and 2D-3D feature matching for pose estimation",
+      "llm_evidence_cn": "单视图三维物体重建与2D-3D特征匹配用于位姿估计",
+      "llm_evidence": "单视图三维物体重建与2D-3D特征匹配用于位姿估计",
+      "canonical_evidence": "单视图三维物体重建与2D-3D特征匹配用于位姿估计",
+      "llm_tldr_en": "DreamSat-Pose reconstructs a 3D shape from a single spacecraft image and estimates pose via learned dense 2D-3D correspondences.",
+      "llm_tldr_cn": "针对未知航天器的形状重建与位姿估计挑战，提出从单图像出发，先重建目标三维形状，再通过学习密集的2D-3D特征匹配来估计六自由度位姿，实现了单次拍摄下的形状与位姿联合推断，为空间任务提供了有效解决方案。",
+      "llm_tldr": "针对未知航天器的形状重建与位姿估计挑战，提出从单图像出发，先重建目标三维形状，再通过学习密集的2D-3D特征匹配来估计六自由度位姿，实现了单次拍摄下的形状与位姿联合推断，为空间任务提供了有效解决方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.13468v1",
+      "source": "arxiv",
+      "title": "HIVE-3D: Hierarchical Voxel Enhancement for High-Quality 3D Scene Generation",
+      "abstract": "Recently, a line of works can generate impressive 3D objects from a single image, but they are limited by restricted representation resolution, making them unsuitable for 3D scene generation. In this work, we introduce HIVE-3D, a novel method for high-quality 3D scene generation based on hierarchical voxel enhancement framework. Specifically, given a single scene image as input, we first produce a coarse initial scene, then introduce image segmentation and attention-based retrieval to align 2D image components with 3D scene components. Subsequently, we organize these scene relations into a hierarchical component tree, where nodes closer to the leaves denote finer-grained components. Finally, we propose a voxel super-resolution model that generates refined voxels for the target instance while maintaining strong consistency with the coarse voxels. Equipped with this model, we perform coarse-to-fine hierarchical super-resolution on images and voxels for each component, producing a high-resolution and high-quality 3D scene. Extensive experiments demonstrate that our method significantly outperforms previous approaches, achieving state-of-the-art performance.",
+      "authors": [
+        "Bin Zang",
+        "Wenting Zheng",
+        "Xiaoliang Luo",
+        "Zhiyuan Fang",
+        "Shi Li",
+        "Lvchun Wang",
+        "Wei Yu",
+        "Yi Zhao",
+        "Tian Xie",
+        "Yuchi Huo",
+        "Rengan Xie"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-07-15T05:56:34+00:00",
+      "link": "https://arxiv.org/pdf/2607.13468v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "high-quality 3D scene generation from a single image using hierarchical voxel enhancement",
+      "llm_evidence_cn": "基于层次体素增强的单图生成高质量3D场景",
+      "llm_evidence": "基于层次体素增强的单图生成高质量3D场景",
+      "canonical_evidence": "基于层次体素增强的单图生成高质量3D场景",
+      "llm_tldr_en": "HIVE-3D generates high-quality 3D scenes from a single image by aligning 2D components with 3D scene components via a hierarchical component tree and voxel super-resolution.",
+      "llm_tldr_cn": "HIVE-3D针对单图生成3D场景分辨率受限的问题，提出层次体素增强框架。先粗生成初始场景，再利用图像分割和注意力检索对齐2D与3D组件，组织为层次组件树，最后通过体素超分模型生成精细场景。该方法实现了单图输入下的高质量3D场景生成。",
+      "llm_tldr": "HIVE-3D针对单图生成3D场景分辨率受限的问题，提出层次体素增强框架。先粗生成初始场景，再利用图像分割和注意力检索对齐2D与3D组件，组织为层次组件树，最后通过体素超分模型生成精细场景。该方法实现了单图输入下的高质量3D场景生成。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    }
+  ]
+}
