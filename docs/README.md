@@ -6,55 +6,52 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-16
-- 运行时间：2026-07-16 21:12:07 UTC
+- 最新运行日期：2026-07-17
+- 运行时间：2026-07-17 21:33:41 UTC
 - 运行状态：成功
-- 本次总论文数：11
+- 本次总论文数：10
 - 精读区：6
-- 速读区：5
+- 速读区：4
 
 ### 今日简报（AI）
-今日聚焦神经隐式重建与3D高斯泼溅的前沿演进，特别精读了《CASA-SDF》和《SalientGS》两篇高分突破。  
-最值得关注的是用课程感知空间自适应的曲率引导密度优化隐表面，以及将SfM到3DGS流程统一于重要性MCMC高斯分配的新思路。  
-建议普通读者从这两篇入手，实验曲率感知密度策略或重要性采样高斯分配，能显著提升重建细节与效率。
-- 详情：[/202607/16/README](/202607/16/README)
+今日精读几何重建与3D生成前沿，聚焦高斯表面重建与分层体素增强技术。  
+最值得看的是满分的G²SR：用几何方法实现快速省内存的高斯重建；以及HIVE-3D：分层体素增强生成高质量3D场景。  
+建议跟进轻量高效重建框架，并留意事件相机引导的去模糊（JADE-GS）在动态场景中的应用潜力。
+- 详情：[/202607/17/README](/202607/17/README)
 
 ### 精读区论文标签
-1. [CASA-SDF: Curriculum-Aware Spatial Adaptation with Curvature-Guided Density for Neural Implicit Surface Reconstruction](/202607/16/2607.13492v1-casa-sdf-curriculum-aware-spatial-adaptation-with-curvature-guided-density-for-neural-implicit-surface-reconstruction)  
+1. [G$^2$SR: Geometric Methods for Fast and Memory-Efficient Gaussian-based Surface Reconstruction](/202607/17/2607.14470v1-g2sr-geometric-methods-for-fast-and-memory-efficient-gaussian-based-surface-reconstruction)  
    标签：评分：10.0/10、query:d-gen-recon
-   evidence：课程感知空间自适应与曲率引导密度，用于图像的高保真室内表面重建
-2. [SalientGS: Unified SfM-to-3DGS with Importance-Guided MCMC Gaussian Allocation](/202607/16/2607.11285v2-salientgs-unified-sfm-to-3dgs-with-importance-guided-mcmc-gaussian-allocation)  
+   evidence：利用几何高斯方法从少量视图图像重建三维表面，实现高效多视图立体
+2. [HIVE-3D: Hierarchical Voxel Enhancement for High-Quality 3D Scene Generation](/202607/17/2607.13468v1-hive-3d-hierarchical-voxel-enhancement-for-high-quality-3d-scene-generation)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：从无序多视图图像统一重建3D场景
-3. [DiffGI: Differentiable Geometry Images for High-Fidelity Thin-Shell 3D Generation](/202607/16/2607.13365v1-diffgi-differentiable-geometry-images-for-high-fidelity-thin-shell-3d-generation)  
+   evidence：通过分层体素增强从单张图像生成三维场景
+3. [Immediate 3D Gaussian Splat Reconstruction of Unordered Input with Global Consistency](/202607/17/2607.14481v1-immediate-3d-gaussian-splat-reconstruction-of-unordered-input-with-global-consistency)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：通过可微几何图像的薄壳三维物体生成
-4. [GPOcc++: Unified Sparse Gaussian Occupancy Prediction with Visual Geometry Priors](/202607/16/2607.13481v1-gpocc-unified-sparse-gaussian-occupancy-prediction-with-visual-geometry-priors)  
+   evidence：利用无序多视图图像进行3D场景重建并提供即时反馈
+4. [MAGiSt3R: Multi-Agent Feed-forward 3D Reconstruction from Monocular RGB Videos](/202607/17/2607.15211v1-magist3r-multi-agent-feed-forward-3d-reconstruction-from-monocular-rgb-videos)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：将视觉几何先验转化为稀疏高斯占用，从多视图图像实现完整体积重建
-5. [WAVE-Stereo: Warp-Aligned Volume Encoding for Stereo Matching](/202607/16/2607.13674v1-wave-stereo-warp-aligned-volume-encoding-for-stereo-matching)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：通过互补的相关性体积和特征扭曲增强立体匹配，直接服务于多视角立体三维重建
-6. [Desc++: Efficient Descriptor Enhancement for Data Association in Existing Visual SLAM Systems](/202607/16/2607.11099v1-desc-efficient-descriptor-enhancement-for-data-association-in-existing-visual-slam-systems)  
+   evidence：通过前馈多智能体框架从单目视频进行3D重建
+5. [ThinkBLOX: 3D Indoor Scene Generation with Progressive Reasoning](/202607/17/2607.13539v1-thinkblox-3d-indoor-scene-generation-with-progressive-reasoning)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：改进视觉描述符匹配质量，增强多视角特征关联
+   evidence：基于渐进推理的3D室内场景生成
+6. [SeeSE3: Emergence of 3D Space in Vision Features](/202607/17/2607.14228v1-seese3-emergence-of-3d-space-in-vision-features)  
+   标签：评分：8.0/10、query:d-gen-recon
+   evidence：探针视觉特征中的三维欧氏几何，表明特征邻域与空间拓扑对齐
 
 ### 速读区论文标签
-1. [UMSS: Towards Unsupervised Multi-modal Semantic Segmentation](/202607/16/2607.12372v1-umss-towards-unsupervised-multi-modal-semantic-segmentation)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：首个无监督多模态语义分割，利用传感器互补信息
-2. [Hallo4D: Multi-Modal Hallucination Mitigation for Consistent Spatio-Temporal Generation](/202607/16/2607.12752v2-hallo4d-multi-modal-hallucination-mitigation-for-consistent-spatio-temporal-generation)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：抑制三维/四维生成中的几何幻觉，确保多视角一致性
-3. [HIVE-3D: Hierarchical Voxel Enhancement for High-Quality 3D Scene Generation](/202607/16/2607.13468v1-hive-3d-hierarchical-voxel-enhancement-for-high-quality-3d-scene-generation)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：基于层次体素增强的单图生成高质量3D场景
-4. [4DR360: State Reasoning for Joint 3D Detection and Occupancy Prediction in 4D Radar-Camera Full-Scene Perception](/202607/16/2607.09629v1-4dr360-state-reasoning-for-joint-3d-detection-and-occupancy-prediction-in-4d-radar-camera-full-scene-perception)  
+1. [TOLiD: Bridging the Architecture Gap in Vision Foundation Model to LiDAR Pretraining via Token Lifting for Distillation](/202607/17/2607.10762v1-tolid-bridging-the-architecture-gap-in-vision-foundation-model-to-lidar-pretraining-via-token-lifting-for-distillation)  
    标签：评分：7.0/10、query:d-gen-recon
-   evidence：在雷达-相机融合中将语义占用建模为持久场景状态，实现3D场景分割
-5. [DreamSat-Pose: Spacecraft Pose Estimation from Single-View 3D Reconstructions and Learned 2D-3D Feature Matching](/202607/16/2607.13449v1-dreamsat-pose-spacecraft-pose-estimation-from-single-view-3d-reconstructions-and-learned-2d-3d-feature-matching)  
+   evidence：通过跨模态蒸馏进行3D场景理解的自监督预训练
+2. [OASIS-Map: Object-Level Change Detection in Multi-Session Mapping using Semantic Correspondence Matching](/202607/17/2607.14899v1-oasis-map-object-level-change-detection-in-multi-session-mapping-using-semantic-correspondence-matching)  
    标签：评分：7.0/10、query:d-gen-recon
-   evidence：单视图三维物体重建与2D-3D特征匹配用于位姿估计
+   evidence：利用语义对应匹配实现多会话建图中的物体关联
+3. [JADE-GS: Joint Alternating Deblurring Guided by Events in 3D Gaussian Splatting](/202607/17/2607.14990v1-jade-gs-joint-alternating-deblurring-guided-by-events-in-3d-gaussian-splatting)  
+   标签：评分：7.0/10、query:d-gen-recon
+   evidence：与3D高斯泼溅流水线耦合的去模糊方法，恢复清晰场景
+4. [SceneBind: Binding What and Where Across Vision, Audio and Language](/202607/17/2607.15265v1-scenebind-binding-what-and-where-across-vision-audio-and-language)  
+   标签：评分：6.0/10、query:d-gen-recon
+   evidence：具有语义-空间槽的场景表示，用于联合三维语义理解
 
 
 <div class="dpr-home-promo-card">
