@@ -1,0 +1,54 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-18T21:11:10.424220+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2607.14513v1",
+      "source": "arxiv",
+      "title": "Compression of 3D Gaussian Splatting Data Using GPU-friendly Graphics Texture Coding",
+      "abstract": "Techniques for modeling 3D scenes from image collections, such as 3D Gaussian Splatting (3DGS), are capable of generating high-quality novel views by leveraging graphics primitives with view-dependent appearance. In 3DGS, spherical harmonic (SH) are employed to model view-dependent color, resulting in a large number of SH coefficients per primitive and large memory requirements. While compression approaches have been proposed to mitigate this problem, they do not exploit the capabilities of modern Graphics Processing Units (GPUs) for parallel decoding and rendering. In this paper, we propose a method for compressing SH color coefficients using texture compression schemes specifically designed for efficient parallel GPU decoding and supported by dedicated hardware acceleration. It is shown that those methods can compress color coefficients more effectively than 2D textures by exploiting the fact that primitives can be locally grouped and reordered according to color. Furthermore, we introduce a bit-rate control strategy that preserves random access, enabling large-scale parallelization without compromising rendering performance. Experimental results using BC1 and BC7 texture compression formats show that GPU-based decompression can be achieved with negligible or imperceptible degradation in the visual quality of rendered 3DGS scenes.",
+      "authors": [
+        "Amir Said",
+        "Randall Rauwendaal"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "eess.IV"
+      ],
+      "published": "2026-07-16T03:10:27+00:00",
+      "link": "https://arxiv.org/pdf/2607.14513v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "compressing spherical harmonics for 3D Gaussian Splatting, a method for modeling 3D scenes from image collections",
+      "llm_evidence_cn": "压缩三维高斯泼溅中的球谐系数，该技术用于从图像集合建模三维场景",
+      "llm_evidence": "压缩三维高斯泼溅中的球谐系数，该技术用于从图像集合建模三维场景",
+      "canonical_evidence": "压缩三维高斯泼溅中的球谐系数，该技术用于从图像集合建模三维场景",
+      "llm_tldr_en": "The paper addresses the large memory footprint of 3D Gaussian Splatting by compressing spherical harmonic coefficients using GPU-friendly texture compression, enabling efficient storage and parallel decoding for real-time rendering.",
+      "llm_tldr_cn": "三维高斯泼溅在从图像集合重建场景时面临球谐系数占用的高存储压力。本文提出一种利用图形纹理压缩方案压缩SH系数的方法，充分利用GPU并行解码与渲染能力，在保持渲染质量的同时大幅减少内存需求，促进了三维场景的高效存储与实时应用。",
+      "llm_tldr": "三维高斯泼溅在从图像集合重建场景时面临球谐系数占用的高存储压力。本文提出一种利用图形纹理压缩方案压缩SH系数的方法，充分利用GPU并行解码与渲染能力，在保持渲染质量的同时大幅减少内存需求，促进了三维场景的高效存储与实时应用。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

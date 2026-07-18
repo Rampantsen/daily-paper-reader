@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-07-18 <!--dpr-date:20260718-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202607/18/2607.14513v1-compression-of-3d-gaussian-splatting-data-using-gpu-friendly-graphics-texture-coding" data-sidebar-item="{&quot;title&quot;: &quot;Compression of 3D Gaussian Splatting Data Using GPU-friendly Graphics Texture Coding&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.14513v1-compression-of-3d-gaussian-splatting-data-using-gpu-friendly-graphics-texture-coding&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;d-gen-recon&quot;}], &quot;evidence&quot;: &quot;压缩三维高斯泼溅中的球谐系数，该技术用于从图像集合建模三维场景&quot;}">Compression of 3D Gaussian Splatting Data Using GPU-friendly Graphics Texture Coding</a>
   * 2026-07-17 <!--dpr-date:20260717-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202607/17/2607.14470v1-g2sr-geometric-methods-for-fast-and-memory-efficient-gaussian-based-surface-reconstruction" data-sidebar-item="{&quot;title&quot;: &quot;G$^2$SR: Geometric Methods for Fast and Memory-Efficient Gaussian-based Surface Reconstruction&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.14470v1-g2sr-geometric-methods-for-fast-and-memory-efficient-gaussian-based-surface-reconstruction&quot;, &quot;score&quot;: &quot;10.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;d-gen-recon&quot;}], &quot;evidence&quot;: &quot;利用几何高斯方法从少量视图图像重建三维表面，实现高效多视图立体&quot;}">G$^2$SR: Geometric Methods for Fast and Memory-Efficient Gaussian-based Surface Reconstruction</a>

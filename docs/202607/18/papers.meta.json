@@ -1,0 +1,24 @@
+{
+  "label": "2026-07-18",
+  "date": "2026-07-18",
+  "generated_at": "2026-07-18T21:12:16",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202607/18/2607.14513v1-compression-of-3d-gaussian-splatting-data-using-gpu-friendly-graphics-texture-coding",
+      "section": "quick",
+      "title_en": "Compression of 3D Gaussian Splatting Data Using GPU-friendly Graphics Texture Coding",
+      "authors": "Amir Said, Randall Rauwendaal",
+      "date": "2026-07-16",
+      "pdf": "https://arxiv.org/pdf/2607.14513v1",
+      "score": "7.0",
+      "evidence": "压缩三维高斯泼溅中的球谐系数，该技术用于从图像集合建模三维场景",
+      "tldr": "3D高斯泼溅（3DGS）能生成高质量新视角，但通过球谐函数建模视角相关颜色，每个基元存储大量球谐系数，导致内存占用高。已有压缩方案未充分利用现代GPU的并行解码与渲染能力。本文提出利用GPU友好的纹理压缩格式（如BC1、BC7）来压缩球谐颜色系数，并通过局部颜色分组基元重排序提升压缩效率，同时引入保持随机访问的码率控制，实现大规模并行解码。实验显示，该方法在GPU上解压缩几乎无视觉质量损失，显著降低存储需求并维持渲染性能，为3DGS高效压缩与实时渲染提供了新方向。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Techniques for modeling 3D scenes from image collections, such as 3D Gaussian Splatting (3DGS), are capable of generating high-quality novel views by leveraging graphics primitives with view-dependent appearance. In 3DGS, spherical harmonic (SH) are employed to model view-dependent color, resulting in a large number of SH coefficients per primitive and large memory requirements. While compression approaches have been proposed to mitigate this problem, they do not exploit the capabilities of modern Graphics Processing Units (GPUs) for parallel decoding and rendering. In this paper, we propose a method for compressing SH color coefficients using texture compression schemes specifically designed for efficient parallel GPU decoding and supported by dedicated hardware acceleration. It is shown that those methods can compress color coefficients more effectively than 2D textures by exploiting the fact that primitives can be locally grouped and reordered according to color. Furthermore, we introduce a bit-rate control strategy that preserves random access, enabling large-scale parallelization without compromising rendering performance. Experimental results using BC1 and BC7 texture compression formats show that GPU-based decompression can be achieved with negligible or imperceptible degradation in the visual quality of rendered 3DGS scenes.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
