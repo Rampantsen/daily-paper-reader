@@ -1,0 +1,208 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-19T20:55:24.622179+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2607.12193v1",
+      "source": "arxiv",
+      "title": "Compos3D: Interactive Part-Based Composition for Creative Control in Generative 3D Models",
+      "abstract": "While generative AI has unlocked new opportunities for 3D content creation, current workflows often rely on multiple regenerations, which provides limited control and unpredictable outcomes. We present Compos3D, a system that introduces a compositional workflow for generative 3D modeling through remixing. Instead of repeatedly regenerating models, users generate multiple candidates from text or image prompts, select parts of interest via 2D image regions or 3D mesh segments, and assemble them into a coherent design. The system synthesizes these compositions into a refined 3D model, preserving high-level intent while resolving low-level geometry. To evaluate this approach, we conducted a controlled user study comparing remixing and regeneration workflows across both 2D and 3D modalities. Results show that the remixing workflow provides participants with greater creative control, stronger alignment with their intent, and higher satisfaction. We conclude with design recommendations for future AI-assisted 3D modeling workflows.",
+      "authors": [
+        "Faraz Faruqi",
+        "Sean J. Liu",
+        "George Fitzmaurice",
+        "Justin Matejka"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC",
+        "cs.CV"
+      ],
+      "published": "2026-07-13T22:24:26+00:00",
+      "link": "https://arxiv.org/pdf/2607.12193v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Generates 3D objects from text or image prompts via part-based composition.",
+      "llm_evidence_cn": "通过部件组合从文本或图像提示生成3D对象。",
+      "llm_evidence": "通过部件组合从文本或图像提示生成3D对象。",
+      "canonical_evidence": "通过部件组合从文本或图像提示生成3D对象。",
+      "llm_tldr_en": "Compos3D enables interactive 3D model creation by composing parts from multiple generations, given text or image prompts. Users select parts of interest and the system synthesizes them into a coherent 3D model, providing creative control beyond repeated regeneration.",
+      "llm_tldr_cn": "针对现有生成式3D建模缺乏可控性和可预测性的问题，Compos3D提出基于部件重组的交互式生成方法。用户从文本或图像提示生成多个候选，选择感兴趣的部分，系统将其合成为连贯的3D模型。实验表明，该方法在保持高层次设计意图的同时，有效提升了创作控制能力，为3D内容创作提供了更灵活的范式。",
+      "llm_tldr": "针对现有生成式3D建模缺乏可控性和可预测性的问题，Compos3D提出基于部件重组的交互式生成方法。用户从文本或图像提示生成多个候选，选择感兴趣的部分，系统将其合成为连贯的3D模型。实验表明，该方法在保持高层次设计意图的同时，有效提升了创作控制能力，为3D内容创作提供了更灵活的范式。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.12495v1",
+      "source": "arxiv",
+      "title": "RealSkin: Spatio-Spectral Partial Neural Adjoint Maps for Image-to-3D Attribute Transfer",
+      "abstract": "Creating photorealistic 3D assets requires bridging the appearance gap between real-world observations and synthetic models. A promising approach is to transfer visual attributes from real images onto synthetic 3D surfaces. Traditional methods struggle with resolution mismatch and the inherent discreteness of point correspondences. In contrast, resolution-robust functional maps enable smooth attribute propagation but rely on near-isometry assumptions and topological consistency. To address these limitations, we propose RealSkin, a self-supervised framework that performs correspondence optimization in a learned spectral domain, guided by spatial correspondences. We first introduce a spatial-guided registration algorithm to establish coarse correspondences under severe topological discrepancies. To relax strict isometric assumptions and handle partial correspondences, we further design a spectral-aware neural adjoint network that incorporates partial correspondences into a neural function space and models non-isometric residuals for correspondence refinement. Experimental results demonstrate that our method achieves state-of-the-art performance on challenging real-to-synthetic scenarios. The code will be publicly released.",
+      "authors": [
+        "Jing Li",
+        "Yawei Luo",
+        "Xiangze Meng",
+        "Ying Li",
+        "Tieru Wu",
+        "Rui Ma"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-14T08:27:28+00:00",
+      "link": "https://arxiv.org/pdf/2607.12495v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Self-supervised framework for transferring image attributes to 3D surfaces, enabling 3D object generation from images",
+      "llm_evidence_cn": "自监督框架，将图像属性迁移到三维表面，实现从图像生成三维物体",
+      "llm_evidence": "自监督框架，将图像属性迁移到三维表面，实现从图像生成三维物体",
+      "canonical_evidence": "自监督框架，将图像属性迁移到三维表面，实现从图像生成三维物体",
+      "llm_tldr_en": "RealSkin performs image-to-3D attribute transfer via learned spectral correspondences, bridging the appearance gap between real images and synthetic 3D models for photorealistic asset creation.",
+      "llm_tldr_cn": "为弥合真实图像与合成三维模型的外观差异，提出RealSkin自监督框架。通过空间引导的配准建立对应，在学习的频谱域进行对应优化与光滑属性传播，克服了传统方法对点对应和等距假设的局限。实验表明该方法能生成高真实感的三维资产，为从单张图像快速生成带纹理的3D物体提供了有效途径。",
+      "llm_tldr": "为弥合真实图像与合成三维模型的外观差异，提出RealSkin自监督框架。通过空间引导的配准建立对应，在学习的频谱域进行对应优化与光滑属性传播，克服了传统方法对点对应和等距假设的局限。实验表明该方法能生成高真实感的三维资产，为从单张图像快速生成带纹理的3D物体提供了有效途径。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.13524v1",
+      "source": "arxiv",
+      "title": "COLMAR: Cooperative View Policy Learning for Multi-Agent Active 3D Reconstruction",
+      "abstract": "Active 3D reconstruction requires selecting informative viewpoints under limited sensing budgets. In multi-agent settings, coordination inefficiencies such as redundant observations and spatial clustering can significantly reduce reconstruction quality. We present COLMAR, a cooperative view policy learning framework for multi-agent active 3D reconstruction. COLMAR formulates viewpoint allocation as a shared policy optimization over map-centric observations and introduces a reconstruction-aware objective that promotes overlap-aware coverage, team-level discovery, and collision-safe exploration. Dense feedback derived from incremental reconstruction updates aligns exploration behavior with downstream geometric quality. The policy is trained using parameter-sharing Proximal Policy Optimization (PPO) with independent per-agent action selection at deployment, conditioned on a fused team map and without inter-agent message passing for decision making. Selected viewpoints are then reconstructed with 3D Gaussian Splatting (3DGS) for high-fidelity photometric evaluation. Experiments on GLEAM and Replica demonstrate consistent improvements over heuristic and non-cooperative baselines, achieving up to 54% higher reconstruction accuracy and 49% greater coverage under matched sensing budgets.",
+      "authors": [
+        "Phu Pham",
+        "Damon Conover",
+        "Aniket Bera"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-07-15T07:24:05+00:00",
+      "link": "https://arxiv.org/pdf/2607.13524v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "multi-agent active 3D reconstruction from selected viewpoints",
+      "llm_evidence_cn": "多智能体主动视角选择的三维重建",
+      "llm_evidence": "多智能体主动视角选择的三维重建",
+      "canonical_evidence": "多智能体主动视角选择的三维重建",
+      "llm_tldr_en": "COLMAR learns a cooperative view policy for multi-agent active 3D reconstruction, optimizing viewpoint selection to maximize coverage and geometric quality.",
+      "llm_tldr_cn": "针对多智能体主动三维重建中的协调低效问题，COLMAR提出协作视角策略学习框架，将视角分配形式化为共享策略优化，引入重建感知目标促进重叠覆盖、团队发现和无碰撞探索，利用增量重建的密集反馈对齐探索行为与几何质量，在多智能体环境中显著提升重建效率与完整性。",
+      "llm_tldr": "针对多智能体主动三维重建中的协调低效问题，COLMAR提出协作视角策略学习框架，将视角分配形式化为共享策略优化，引入重建感知目标促进重叠覆盖、团队发现和无碰撞探索，利用增量重建的密集反馈对齐探索行为与几何质量，在多智能体环境中显著提升重建效率与完整性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.11118v1",
+      "source": "arxiv",
+      "title": "GHOST: Geometry-Guided Hallucination of Opaque Surface Textures",
+      "abstract": "Transparent objects pose a fundamental challenge for depth estimation and 3D reconstruction due to their violation of Lambertian assumptions, leading to severe geometry degradation in downstream tasks. To address this, we propose a novel geometry-guided preprocessing framework \\textbf{GHOST} that leverages visual foundation models to transform transparent regions into opaque, structurally consistent representations without requiring downstream model retraining. Specifically, our pipeline utilizes (1) \\textbf{TransDINO} and (2) \\textbf{TransDecomp} to disentangle masks and transparency physical properties, while (3) \\textbf{DAF-Net} recovers surface normal priors to encode geometric curvature. Subsequently, (4) \\textbf{GeoSemTransNet} integrates these multi-modal cues to synthesize a texture-rich opaque RGB image that preserves the transparent object's 3D structure. Extensive experiments demonstrate that our method significantly enhances the accuracy of state-of-the-art depth estimation and reconstruction models on transparent objects by restoring essential photometric cues.",
+      "authors": [
+        "Langxu Zhao",
+        "Zuan Gu",
+        "Tianhan Gao"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-13T05:50:19+00:00",
+      "link": "https://arxiv.org/pdf/2607.11118v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Geometry-guided preprocessing to improve 3D reconstruction of transparent objects by hallucinating opaque textures",
+      "llm_evidence_cn": "几何引导的预处理方法，通过幻觉不透明纹理改进透明物体的三维重建",
+      "llm_evidence": "几何引导的预处理方法，通过幻觉不透明纹理改进透明物体的三维重建",
+      "canonical_evidence": "几何引导的预处理方法，通过幻觉不透明纹理改进透明物体的三维重建",
+      "llm_tldr_en": "GHOST is a preprocessing framework that leverages visual foundation models to transform transparent regions into opaque, structurally consistent representations, improving depth estimation and 3D reconstruction without retraining downstream models.",
+      "llm_tldr_cn": "针对透明物体违反朗伯假设导致深度估计与三维重建严重退化的问题，提出几何引导的预处理框架GHOST。它利用视觉基础模型将透明区域转换为不透明且结构一致的表示，无需下游模型重训练。该方法通过TransDINO和TransDecomp解耦掩膜与透明度，DAF-Net恢复法线，最终由GeoSemTransNet融合多模态信息生成高质量纹理，显著提升了透明场景的重建精度。",
+      "llm_tldr": "针对透明物体违反朗伯假设导致深度估计与三维重建严重退化的问题，提出几何引导的预处理框架GHOST。它利用视觉基础模型将透明区域转换为不透明且结构一致的表示，无需下游模型重训练。该方法通过TransDINO和TransDecomp解耦掩膜与透明度，DAF-Net恢复法线，最终由GeoSemTransNet融合多模态信息生成高质量纹理，显著提升了透明场景的重建精度。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.13808v1",
+      "source": "arxiv",
+      "title": "Bake It Till You Make It: Ultrafast Spatial Texture-Atlas Splatting",
+      "abstract": "Recent extensions of 3D Gaussian Splatting (3DGS) capture fine color details using hash-grid-based appearance parameterization but incur high computational cost during fragment rendering. We introduce a decoupled radiance representation that models low-frequency geometry and view dependent appearance features with 2D surfels while representing high-frequency textures via a view-independent spatial hash grid that is baked into a compact texture atlas. By including sparsity-enhancing optimizations that penalize semi-transparency and per-primitive falloff, our method aggressively prunes insignificant surfels and achieves significantly faster and sparser reconstructions than prior work. Exploiting geometric sparsity and efficient GPU texture mapping, our approach achieves up to a fivefold speedup over 3DGS while preserving state-of-the-art visual fidelity, enabling real-time 4K rendering at 60 FPS on consumer hardware.",
+      "authors": [
+        "Neel Kelkar",
+        "Simon Niedermayr",
+        "Kaloian Petkov",
+        "Klaus Engel",
+        "Rüdiger Westermann"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR"
+      ],
+      "published": "2026-07-15T13:12:31+00:00",
+      "link": "https://arxiv.org/pdf/2607.13808v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Ultrafast reconstruction from image collections using decoupled radiance representation with texture atlas splatting",
+      "llm_evidence_cn": "使用解耦辐射表示与纹理图集泼溅的超快速图像集合重建",
+      "llm_evidence": "使用解耦辐射表示与纹理图集泼溅的超快速图像集合重建",
+      "canonical_evidence": "使用解耦辐射表示与纹理图集泼溅的超快速图像集合重建",
+      "llm_tldr_en": "This paper accelerates 3D Gaussian Splatting reconstruction by decoupling low-frequency geometry and high-frequency textures into a compact texture atlas, achieving faster and sparser reconstructions from images.",
+      "llm_tldr_cn": "为解决3DGS扩展方法中哈希网格外观参数化导致的高计算开销，提出解耦辐射表示。将低频几何与视角相关外观用2D surfels建模，高频纹理通过视角无关的空间哈希网格烘焙为紧凑纹理图集。通过优化半透明度和衰减惩罚实现激进剪枝，在保持质量的同时大幅提升重建速度与稀疏性。",
+      "llm_tldr": "为解决3DGS扩展方法中哈希网格外观参数化导致的高计算开销，提出解耦辐射表示。将低频几何与视角相关外观用2D surfels建模，高频纹理通过视角无关的空间哈希网格烘焙为紧凑纹理图集。通过优化半透明度和衰减惩罚实现激进剪枝，在保持质量的同时大幅提升重建速度与稀疏性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
