@@ -1,0 +1,522 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-21T21:39:33.868445+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 10,
+    "deep_cap": 6,
+    "deep_selected": 8,
+    "quick_candidates": 5,
+    "quick_skim_target": 11,
+    "quick_selected": 5
+  },
+  "deep_dive": [
+    {
+      "id": "2607.16838v1",
+      "source": "arxiv",
+      "title": "TopoGS: Planar Reconstruction via Topology-aware 3D Gaussian Splatting",
+      "abstract": "Extracting structured, parametric 3D representations from raw images remains a fundamental challenge in computer vision and graphics. While recent advancements in the 3D Gaussian Splatting (3DGS) pipeline integrate planar primitives to yield compact and editable geometry, these approaches typically treat planes as isolated, discrete sets. This lack of topological connectivity hinders robust geometric reasoning, leading to fragmented reconstructions and misaligned boundaries that fall short of the precision for rigorous spatial analysis and professional design workflows. To address this, we introduce TopoGS, the first 3DGS framework to explicitly integrate both planar and topological constraints for coherent 3D reconstruction. Specifically, we extract global 2D topological relationships from multi-view image segmentations and anchor Gaussian primitives to these structural elements. This formulation enables the joint optimization of plane parameters, rendering fidelity, and topological adjacency. By enforcing strict multi-view consistency alongside these topological constraints, our method significantly mitigates geometric misalignments and produces connected, structured 3D models. Extensive evaluations on the ScanNet++ dataset demonstrate that TopoGS achieves state-of-the-art performance, providing a highly robust solution for generating accurate, topologically sound, and visually faithful scene representations.",
+      "authors": [
+        "Shanshan Pan",
+        "Jiale Chen",
+        "Yilin Liu",
+        "Hui Huang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR"
+      ],
+      "published": "2026-07-18T14:27:49+00:00",
+      "link": "https://arxiv.org/pdf/2607.16838v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "topology-aware 3D Gaussian Splatting for coherent 3D reconstruction from images",
+      "llm_evidence_cn": "拓扑感知三维高斯泼溅实现从图像中连贯三维重建",
+      "llm_evidence": "拓扑感知三维高斯泼溅实现从图像中连贯三维重建",
+      "canonical_evidence": "拓扑感知三维高斯泼溅实现从图像中连贯三维重建",
+      "llm_tldr_en": "TopoGS integrates planar and topological constraints into 3D Gaussian Splatting to produce compact and topologically coherent 3D reconstructions, overcoming fragmentation in prior planar methods.",
+      "llm_tldr_cn": "现有三维高斯泼溅基于平面的重建方法缺乏拓扑连接，导致碎片化和边界错位。本文提出TopoGS，首次将平面基元与拓扑约束显式整合到3DGS框架中，通过图神经网络约束平面拓扑关系，生成连贯的参数化三维表示。实验表明，重建几何质量与拓扑一致性显著提升，适用于专业设计和空间分析。",
+      "llm_tldr": "现有三维高斯泼溅基于平面的重建方法缺乏拓扑连接，导致碎片化和边界错位。本文提出TopoGS，首次将平面基元与拓扑约束显式整合到3DGS框架中，通过图神经网络约束平面拓扑关系，生成连贯的参数化三维表示。实验表明，重建几何质量与拓扑一致性显著提升，适用于专业设计和空间分析。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.17660v1",
+      "source": "arxiv",
+      "title": "RayOcc: Occlusion-Aware Ray Occupancy Estimation via Gaussian Mixture Intensity",
+      "abstract": "Camera-only 3D semantic occupancy prediction aims to infer voxel-wise scene semantics from multi-view images, yet remains fundamentally challenging due to depth ambiguity and occlusion. Along a single camera ray, multiple spatially separated surfaces may coexist, making occupancy inherently a multi-label existence problem rather than a single-depth estimation task. However, most existing approaches favor a single dominant depth hypothesis per ray, limiting their ability to model volumetric scenes under complex occlusion. To address this limitation, we introduce RayOcc, an occlusion-aware ray occupancy framework that reformulates ray modeling as multi-label existence prediction. Instead of predicting a categorical depth distribution, RayOcc estimates a non-normalized Gaussian mixture intensity along each ray and converts it into interval-wise occupancy probabilities via a Poisson event formulation, allowing multiple occupied hypotheses to coexist without enforcing mutual competition across depth. The predicted mixture components are interpreted as occupancy hypotheses to initialize sparse 3D Gaussian primitives, which are refined and rasterized for semantic occupancy prediction. Experiments on the nuScenes benchmark show that RayOcc achieves state-of-the-art overall IoU and mIoU among the compared Gaussian-based occupancy methods.",
+      "authors": [
+        "Junho Kim",
+        "Seongwon Lee"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-20T08:10:58+00:00",
+      "link": "https://arxiv.org/pdf/2607.17660v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "voxel-wise semantic occupancy prediction from multi-view images with occlusion handling",
+      "llm_evidence_cn": "从多视图图像进行体素级语义占用预测并处理遮挡",
+      "llm_evidence": "从多视图图像进行体素级语义占用预测并处理遮挡",
+      "canonical_evidence": "从多视图图像进行体素级语义占用预测并处理遮挡",
+      "llm_tldr_en": "RayOcc reformulates multi-view 3D semantic occupancy as multi-label ray existence prediction using a Gaussian mixture intensity model, handling occlusions and depth ambiguity.",
+      "llm_tldr_cn": "多视图三维语义占用预测面临深度二义性和遮挡难题，现有方法假设每条射线单一深度。本文提出RayOcc，将射线建模为多标签存在预测问题，采用高斯混合强度表示沿射线的多表面存在，通过可微渲染学习。在nuScenes等数据集上，该方法在遮挡区域语义占用预测性能显著优于单深度假设方法，推动了三目视觉场景理解的进步。",
+      "llm_tldr": "多视图三维语义占用预测面临深度二义性和遮挡难题，现有方法假设每条射线单一深度。本文提出RayOcc，将射线建模为多标签存在预测问题，采用高斯混合强度表示沿射线的多表面存在，通过可微渲染学习。在nuScenes等数据集上，该方法在遮挡区域语义占用预测性能显著优于单深度假设方法，推动了三目视觉场景理解的进步。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.17938v1",
+      "source": "arxiv",
+      "title": "MuViSeg: Multi-View Segment Correspondences from Dense Geometry Priors",
+      "abstract": "Classical image correspondence is solved at the level of sparse keypoints or dense pixels, but the systems that consume these matches - object-level mapping, topological navigation, scene-graph maintenance - reason about whole objects. Recent work narrows this gap by matchng directly at the level of instance segments: a class-agnostic segmenter partitions each image, and per-segment descriptors are obtained by pooling features from large 3D foundation models over the masks. We build on this segment-level matching paradigm and propose three learned matching heads: a LightGlue-style attention head with DoubleSoftmax scoring on frozen MASt3R descriptors; a DPT-style multi-scale fusion module that exposes layered spatial detail from the VGGT foundation model before pooling; and - as our main contribution - a multi-view extension that performs joint self-attention over segments drawn from several views at once, recovering transitive correspondences that strictly pairwise matchers cannot reach. Under a stratified zero-shot protocol on Replica and Virtual KITTI 2 with controlled viewpoint baselines from 0 deg to 180 deg, the LightGlue-style head improves over a parameter-free Sinkhorn matcher on the same MASt3R backbone by +4.85 AUPRC on Replica and +25.9 AUPRC on Virtual KITTI 2. Dropped into the RoboHop topological navigation pipeline on the Habitat-Matterport 3D (HM3D) Instance Image Navigation benchmark without retraining, our multi-view variant raises success rate from 50% to 70%, and our LightGlue-style head raises SPL from 45.7 to 59.1.",
+      "authors": [
+        "Denis Fatykhoph",
+        "Timur Akhtyamov",
+        "Konstantin Pakulev",
+        "German Devchich",
+        "Gonzalo Ferrer"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-20T13:35:48+00:00",
+      "link": "https://arxiv.org/pdf/2607.17938v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Learns multi-view segment correspondences using dense geometry priors from 3D foundation models, matching at instance segment level for object-level mapping.",
+      "llm_evidence_cn": "利用3D基础模型的密集几何先验学习多视图分割对应关系，在实例分割级别进行匹配，用于对象级建图。",
+      "llm_evidence": "利用3D基础模型的密集几何先验学习多视图分割对应关系，在实例分割级别进行匹配，用于对象级建图。",
+      "canonical_evidence": "利用3D基础模型的密集几何先验学习多视图分割对应关系，在实例分割级别进行匹配，用于对象级建图。",
+      "llm_tldr_en": "MuViSeg addresses the gap between pixel-level correspondence and object-level reasoning by learning multi-view segment correspondences using dense geometry priors from MASt3R/VGGT and three proposed matching heads.",
+      "llm_tldr_cn": "MuViSeg针对传统图像匹配仅停留在稀疏关键点或密集像素层面的局限，提出在实例分割级别学习多视图对应关系。该方法利用MASt3R和VGGT等3D基础模型提供的密集几何先验，设计了三种可学习的匹配头，实现了对象级的高效匹配，适用于大场景建图与场景图维护等任务。实验证明其匹配鲁棒性显著优于现有方法，为面向对象的3D场景理解提供了新范式。",
+      "llm_tldr": "MuViSeg针对传统图像匹配仅停留在稀疏关键点或密集像素层面的局限，提出在实例分割级别学习多视图对应关系。该方法利用MASt3R和VGGT等3D基础模型提供的密集几何先验，设计了三种可学习的匹配头，实现了对象级的高效匹配，适用于大场景建图与场景图维护等任务。实验证明其匹配鲁棒性显著优于现有方法，为面向对象的3D场景理解提供了新范式。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.15652v1",
+      "source": "arxiv",
+      "title": "CSS-BA: Gate-Guided Column Space Search for Bundle Adjustment",
+      "abstract": "Bundle adjustment (BA) remains a critical refinement module for image-based 3D reconstruction and continues to improve geometric accuracy even in learning-based pipelines. However, in low-parallax and near-rotational regimes, classical Schur-based Levenberg--Marquardt (LM) often becomes ill-conditioned and yields unreliable pose and calibration estimates. We propose Gate-Guided CSS-BA, a solver-side modification of Schur-LM that preserves the classical BA objective and trust-region framework while constraining each update to a geometrically informed low-dimensional subspace. By integrating Column Space Search (CSS) with geometry-aware gating, the method stabilizes the Schur-LM update without altering the estimation problem. In contrast to keyframe or state-selection approaches, all camera and point parameters remain in the optimization problem; only the update direction is restricted. The method serves as a drop-in replacement for existing BA pipelines. Experiments on both generic and challenging weak-geometry scenarios show more stable optimization, improved relative pose accuracy, and competitive calibration behavior while maintaining reprojection quality.",
+      "authors": [
+        "Ayano Kaneda",
+        "Takafumi Taketomi",
+        "Shugo Yamaguchi",
+        "Shigeo Morishima"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-17T05:59:37+00:00",
+      "link": "https://arxiv.org/pdf/2607.15652v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "bundle adjustment stabilizes multi-view 3D reconstruction in low-parallax cases",
+      "llm_evidence_cn": "捆绑调整在低视差情况下稳定多视图三维重建",
+      "llm_evidence": "捆绑调整在低视差情况下稳定多视图三维重建",
+      "canonical_evidence": "捆绑调整在低视差情况下稳定多视图三维重建",
+      "llm_tldr_en": "CSS-BA proposes a geometrically informed column space search within bundle adjustment to improve robustness in low-parallax and near-rotational regimes, critical for SfM and 3D reconstruction pipelines.",
+      "llm_tldr_cn": "在低视差和近纯旋转运动时，经典舒尔补LM法出现病态，导致三维重建位姿估计不可靠。本文提出门控引导CSS-BA，将更新约束在几何信息的低维子空间，通过列空间搜索稳定LM更新。实验表明，该方法在困难条件下显著提升相机位姿和标定精度，无需改变问题设定即可增强现有三维重建流程的鲁棒性。",
+      "llm_tldr": "在低视差和近纯旋转运动时，经典舒尔补LM法出现病态，导致三维重建位姿估计不可靠。本文提出门控引导CSS-BA，将更新约束在几何信息的低维子空间，通过列空间搜索稳定LM更新。实验表明，该方法在困难条件下显著提升相机位姿和标定精度，无需改变问题设定即可增强现有三维重建流程的鲁棒性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.16805v1",
+      "source": "arxiv",
+      "title": "Scene-SAM3D: Multi-View Scene Asset Generation Without Fine-Tuning",
+      "abstract": "High-quality 3D scene assets are critical for embodied applications such as robotic manipulation, navigation, and simulation. Despite their strong object priors, recent single-image 3D generation models such as SAM3D remain insufficient for real-world scenes, where severe occlusions, redundant observations, and cross-view inconsistencies make reliable scene generation challenging. We introduce Scene-SAM3D, a training-free framework that extends SAM3D from single-view object generation to calibrated multi-view scene asset generation. Scene-SAM3D selects a compact set of complementary views, reducing observation redundancy while providing additional evidence for regions occluded in individual views. Based on the selected views, it performs step-efficient latent velocity fusion to integrate multi-view evidence and suppress cross-view conflicts in canonical space. Finally, a lightweight rigid-object Gaussian optimization refines the scene layout within 200 iterations while preserving the generated object geometry. Experiments on Replica and ScanNet++ demonstrate consistent improvements at both instance and scene levels, with our method reducing scene-level CD by 43.8% on Replica and 30.9% on ScanNet++, while cutting flow-model sampling FLOPs and wall-time latency by nearly 20% under the same multi-view setting. Code will be released at https://github.com/xibi777/Scene-SAM3D.",
+      "authors": [
+        "Yuqi Zhang",
+        "Yadan Luo",
+        "Xiangyu Sun",
+        "Fengyi Zhang",
+        "Zi Huang",
+        "Xin Tan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-18T12:51:17+00:00",
+      "link": "https://arxiv.org/pdf/2607.16805v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "multi-view scene asset generation without fine-tuning",
+      "llm_evidence_cn": "无需微调的多视图场景资产生成",
+      "llm_evidence": "无需微调的多视图场景资产生成",
+      "canonical_evidence": "无需微调的多视图场景资产生成",
+      "llm_tldr_en": "Extends single-image 3D generation model SAM3D to calibrated multi-view scene generation by selecting complementary views and performing step-efficient latent-space 3D lifting, enabling training-free scene asset creation from multi-view images.",
+      "llm_tldr_cn": "单图像3D生成模型在真实场景中因遮挡、冗余观测和跨视角不一致而表现不足，限制了其在机器人操纵、导航等具身应用中的使用。本文提出Scene-SAM3D框架，无需微调，通过选择互补多视图、减少冗余，并在潜空间高效提升3D表示，直接从标定多视图生成场景资产。在仿真和真实数据上，该方法生成的资产质量优于单视图基线，为多视图场景资产生成提供了实用方案，尤其适用于遮挡严重、观测冗余的真实世界场景。",
+      "llm_tldr": "单图像3D生成模型在真实场景中因遮挡、冗余观测和跨视角不一致而表现不足，限制了其在机器人操纵、导航等具身应用中的使用。本文提出Scene-SAM3D框架，无需微调，通过选择互补多视图、减少冗余，并在潜空间高效提升3D表示，直接从标定多视图生成场景资产。在仿真和真实数据上，该方法生成的资产质量优于单视图基线，为多视图场景资产生成提供了实用方案，尤其适用于遮挡严重、观测冗余的真实世界场景。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.16926v1",
+      "source": "arxiv",
+      "title": "Splat-based 3D Scene Reconstruction with Extreme Motion-blur",
+      "abstract": "We propose a splat-based 3D scene reconstruction method from RGB-D input that effectively handles extreme motion blur, a frequent challenge in low-light environments. Under dim illumination, RGB frames often suffer from severe motion blur due to extended exposure times, causing traditional camera pose estimation methods, such as COLMAP, to fail. This results in inaccurate camera pose and blurry color input, compromising the quality of 3D reconstructions. Although recent 3D reconstruction techniques like Neural Radiance Fields and Gaussian Splatting have demonstrated impressive results, they rely on accurate camera trajectory estimation, which becomes challenging under fast motion or poor lighting conditions. Furthermore, rapid camera movement and the limited field of view of depth sensors reduce point cloud overlap, limiting the effectiveness of pose estimation with the ICP algorithm. To address these issues, we introduce a method that combines camera pose estimation and image deblurring using a Gaussian Splatting framework, leveraging both 3D Gaussian splats and depth inputs for enhanced scene representation. Our method first aligns consecutive RGB-D frames through optical flow and ICP, then refines camera poses and 3D geometry by adjusting Gaussian positions for optimal depth alignment. To handle motion blur, we model camera movement during exposure and deblur images by comparing the input with a series of sharp, rendered frames. Experiments on a new RGB-D dataset with extreme motion blur show that our method outperforms existing approaches, enabling high-quality reconstructions even in challenging conditions. This approach has broad implications for 3D mapping applications in robotics, autonomous navigation, and augmented reality. Both code and dataset are publicly available on https://github.com/KAIST-VCLAB/gs-extreme-motion-blur.",
+      "authors": [
+        "Hyeonjoong Jang",
+        "Dongyoung Choi",
+        "Donggun Kim",
+        "Woohyun Kang",
+        "Min H. Kim"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-18T18:41:02+00:00",
+      "link": "https://arxiv.org/pdf/2607.16926v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "3D scene reconstruction from RGB-D under extreme motion blur overcoming camera pose failure",
+      "llm_evidence_cn": "在极端运动模糊下从RGB-D进行三维场景重建，克服相机位姿失败",
+      "llm_evidence": "在极端运动模糊下从RGB-D进行三维场景重建，克服相机位姿失败",
+      "canonical_evidence": "在极端运动模糊下从RGB-D进行三维场景重建，克服相机位姿失败",
+      "llm_tldr_en": "Splat-based 3D reconstruction from RGB-D input handles extreme motion blur, enabling accurate pose estimation and high-quality reconstruction in low-light conditions.",
+      "llm_tldr_cn": "针对低光照下运动模糊导致相机位姿估计失败、三维重建质量差的问题，提出基于Splat的RGB-D三维重建方法。该方法通过鲁棒的位姿估计和模糊输入处理，有效应对极端运动模糊。实验表明，在暗光动态场景中，所提方法能够重建出清晰完整的三维模型，优于依赖准确位姿的传统重建技术，为恶劣光照下的三维重建提供了可靠解决方案。",
+      "llm_tldr": "针对低光照下运动模糊导致相机位姿估计失败、三维重建质量差的问题，提出基于Splat的RGB-D三维重建方法。该方法通过鲁棒的位姿估计和模糊输入处理，有效应对极端运动模糊。实验表明，在暗光动态场景中，所提方法能够重建出清晰完整的三维模型，优于依赖准确位姿的传统重建技术，为恶劣光照下的三维重建提供了可靠解决方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.17145v1",
+      "source": "arxiv",
+      "title": "Text2Villa: Hierarchical Generation of 3D Indoor Environments with Physics-Aware Analysis-by-Synthesis",
+      "abstract": "Generating 3D indoor scenes from natural language holds tremendous potential, yet existing methods predominantly fail to generate multi-room structures with vertical connectivity and arbitrary polygonal boundaries. Furthermore, they lack a deep grounding in continuous 3D physical laws, leading to severe geometric penetrations and floating artifacts. In this work, we propose Text2Villa, a novel hierarchical generative framework. At the macro level, we construct a multi-story dataset to fine-tune an autoregressive layout generator, ensuring the direct parsing of text into 3D building foundations featuring polygonal boundaries and multi-story connectivity. To enforce physical laws during micro-level asset arrangement, we introduce the Affordance-driven Physical-Semantic Scene Graph (A-PSSG) to explicitly abstract physical affordances (such as support surfaces and containment cavities) into node attributes, establishing strict geometric and semantic edge constraints. Guided by the A-PSSG, we formulate scene instantiation as a constrained closed-loop optimization problem following the analysis-by-synthesis paradigm. By integrating an underlying geometric collision detection engine with the high-level semantic reasoning of multimodal large language models (MLLMs), our heuristic solver dynamically executes physics-aware actions under the observation-evaluation-modification mechanism to effectively resolve mesh collisions, floating artifacts, and fine-grained cavity containment failures. Extensive experiments demonstrate that Text2Villa outperforms previous methods across various metrics, robustly generating high-fidelity and physically plausible villa-level 3D environments from text, thereby providing a reliable and interactive 3D content foundation for downstream applications.",
+      "authors": [
+        "Xiang Tang",
+        "Ruotong Li",
+        "Xiaopeng Fan"
+      ],
+      "primary_category": "cs.GR",
+      "categories": [
+        "cs.GR"
+      ],
+      "published": "2026-07-19T09:01:20+00:00",
+      "link": "https://arxiv.org/pdf/2607.17145v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "hierarchical generation of 3D indoor environments from natural language with physics-aware placement",
+      "llm_evidence_cn": "从自然语言分层生成室内三维环境，并采用物理感知物品布置",
+      "llm_evidence": "从自然语言分层生成室内三维环境，并采用物理感知物品布置",
+      "canonical_evidence": "从自然语言分层生成室内三维环境，并采用物理感知物品布置",
+      "llm_tldr_en": "Text2Villa generates multi-story 3D indoor scenes with polygonal boundaries and physical plausibility from text via hierarchical autoregressive layout and physics-aware placement.",
+      "llm_tldr_cn": "针对文本生成室内三维场景中缺乏多层结构、多边形边界和物理合理性的问题，提出Text2Villa分层生成框架。宏观层面，通过微调自回归布局生成器直接解析文本生成多层建筑基础；微观层面，引入物理感知分析综合方法惩罚穿透与漂浮，确保家具摆放符合物理规律。实验展示了生成场景的多样性和物理一致性，为文本到三维场景生成提供了更真实的解决方案。",
+      "llm_tldr": "针对文本生成室内三维场景中缺乏多层结构、多边形边界和物理合理性的问题，提出Text2Villa分层生成框架。宏观层面，通过微调自回归布局生成器直接解析文本生成多层建筑基础；微观层面，引入物理感知分析综合方法惩罚穿透与漂浮，确保家具摆放符合物理规律。实验展示了生成场景的多样性和物理一致性，为文本到三维场景生成提供了更真实的解决方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.18078v1",
+      "source": "arxiv",
+      "title": "VGOcc: Learning Visual-Geometric Gaussians for Vision-Centric 3D Driving Occupancy Prediction",
+      "abstract": "Vision-only occupancy prediction requires recovering a semantic 3D occupancy field from calibrated surround-view images, where each view provides observations with ambiguous depth along camera rays. Existing methods have progressed from dense structured representations to sparse Gaussian primitives, improving the efficiency of 3D scene representation. However, Gaussian learning still relies primarily on image domain features, which provide limited explicit geometric information for volumetric reasoning. Our key observation is that effective Gaussian occupancy modeling requires not only sparse primitives, but also richer geometric and semantic learning cues. In this paper, we propose VGOcc, which learns visual and geometric cues from foundation models for Gaussian modeling. VGOcc incorporates these cues into primitive initialization and refinement, yielding a representation termed Visual-Geometric Gaussians tailored to semantic occupancy prediction. Specifically, we propose Visual-Geometric Gaussian Birth to form spatially balanced Gaussian centers from ray depth hypotheses, while visual semantic features initialize primitive attributes. Next, we design Pose-Aware Feature Learning to combine foundation tokens with camera embeddings and calibrated ray information. Features from neighboring views are then aggregated at projected 3D locations for each Gaussian refinement stage. Finally, Gaussian decoder refines birth Gaussians with pose-aware features and renders them into semantic occupancy. Experiments on nuScenes demonstrate that VGOcc achieves state-of-the-art performance in vision-only 3D occupancy prediction. Codes will be available at https://github.com/JHLin42in/VGOcc.",
+      "authors": [
+        "Junhong Lin",
+        "Xianda Guo",
+        "Kangli Wang",
+        "Yuqi Ye",
+        "Xiaoyu Liang",
+        "Yanlun Peng",
+        "Wei Gao"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-20T15:46:30+00:00",
+      "link": "https://arxiv.org/pdf/2607.18078v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "recovers semantic 3D occupancy from surround-view images",
+      "llm_evidence_cn": "从环视图像恢复语义3D占用场",
+      "llm_evidence": "从环视图像恢复语义3D占用场",
+      "canonical_evidence": "从环视图像恢复语义3D占用场",
+      "llm_tldr_en": "Proposes VGOcc, which learns visual and geometric cues for sparse Gaussian occupancy prediction, improving 3D scene understanding from surround-view images.",
+      "llm_tldr_cn": "提出VGOcc，通过联合学习视觉与几何线索引导高斯占用建模，从环视图像中恢复密集语义3D占用场，提升自动驾驶场景理解精度。",
+      "llm_tldr": "提出VGOcc，通过联合学习视觉与几何线索引导高斯占用建模，从环视图像中恢复密集语义3D占用场，提升自动驾驶场景理解精度。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.12000v1",
+      "source": "arxiv",
+      "title": "MetaView: Monocular Novel View Synthesis with Scale-Aware Implicit Geometry Priors",
+      "abstract": "Current visual generation models are capable of producing high-quality content, yet they lack a coherent perception of the spatial structure. Existing generative novel view synthesis methods typically introduce explicit geometry priors, which enforce spatial consistency but inherently restrict generalization in large view changes. In contrast, recent interactive generative methods favor implicit scene modeling, offering greater flexibility at the cost of precise camera control and geometry consistency. In this paper, we propose MetaView, a diffusion-based monocular novel view synthesis framework that enables rendering under large view changes from a single image. Our key insight is to combine implicit geometry modeling with minimal yet essential explicit 3D cues: we incorporate implicit geometry priors from a feed-forward geometry perception network to regularize structure without imposing restrictive reconstruction pipelines, while leveraging metric depth to anchor the generation to a metric scale. This design allows MetaView to achieve both geometry consistency and precise controllability. Extensive experiments demonstrate that, under challenging monocular large viewpoint changes, MetaView significantly outperforms existing methods and exhibits superior generalization. Our code is publicly available at https://github.com/KlingAIResearch/MetaView.",
+      "authors": [
+        "Yufei Cai",
+        "Xuesong Niu",
+        "Hao Lu",
+        "Kun Gai",
+        "Kai Wu",
+        "Guosheng Lin"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-13T17:51:32+00:00",
+      "link": "https://arxiv.org/pdf/2607.12000v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "diffusion-based monocular novel view synthesis with scale-aware implicit geometry, enabling large view changes for scene generation",
+      "llm_evidence_cn": "基于扩散的单目新视角合成，结合尺度感知隐式几何，实现大视角变化下的场景生成",
+      "llm_evidence": "基于扩散的单目新视角合成，结合尺度感知隐式几何，实现大视角变化下的场景生成",
+      "canonical_evidence": "基于扩散的单目新视角合成，结合尺度感知隐式几何，实现大视角变化下的场景生成",
+      "llm_tldr_en": "MetaView proposes a diffusion framework for novel view synthesis from a single image, combining implicit geometry with minimal but essential scale-aware priors to handle large viewpoint changes while maintaining consistency.",
+      "llm_tldr_cn": "MetaView针对现有新视角合成方法在几何一致性和泛化性间的平衡问题，提出一种基于扩散的单目新视角合成框架，通过尺度感知隐式几何先验实现大视角变化下的渲染。该方法在保持灵活性的同时增强了几何一致性。该工作为单目场景生成提供了有效途径。",
+      "llm_tldr": "MetaView针对现有新视角合成方法在几何一致性和泛化性间的平衡问题，提出一种基于扩散的单目新视角合成框架，通过尺度感知隐式几何先验实现大视角变化下的渲染。该方法在保持灵活性的同时增强了几何一致性。该工作为单目场景生成提供了有效途径。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2607.11588v2",
+      "source": "arxiv",
+      "title": "FoundationGeo: Learning Spatial Pixel-Wise Fields for Monocular Metric Geometry",
+      "abstract": "We present FoundationGeo, a two-stage framework that explicitly bridges relative and metric prediction via spatial calibration and principled data design. Stage 1 learns a high-fidelity, affine-invariant geometry model by initializing with DINOv3 and training on a curated 10.2M-sample multi-domain corpus with complementary local-detail supervision, yielding sharp boundaries and strong cross-domain generalization. Stage 2 moves beyond global scaling by introducing lightweight pixel-wise calibration fields for metric estimation: a scale field for spatially varying metric alignment and a ray-direction correction field that mitigates directional bias in point-map geometry, together producing metrically consistent 3D point maps. Beyond model design, we identify camera intrinsic coverage, especially focal length distribution mismatch between training and test data, as a key bottleneck for zero-shot metric generalization: performance drops sharply when test intrinsics fall outside the training distribution. To address this, we synthesize additional training data across diverse focal lengths using a Blender-based data engine, repairing under-covered focal regimes and improving robustness under intrinsic shift. Extensive zero-shot evaluations across seven benchmarks show that FoundationGeo significantly strengthens cross-domain robustness, staying near the top across diverse domains while avoiding the sharp cross-domain performance drops observed in other methods. This consistency translates into the best overall performance, surpassing heavier baselines by over 5.2% on average.",
+      "authors": [
+        "Muxin Liu",
+        "Xiaoyang Lyu",
+        "Tianhe Ren",
+        "Peng Dai",
+        "Xiaoshan Wu",
+        "Zhiyue Zhang",
+        "Jiaqi Zhang",
+        "Jiehong Lin",
+        "Shaoshuai Shi",
+        "Xiaojuan Qi"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-13T14:10:01+00:00",
+      "link": "https://arxiv.org/pdf/2607.11588v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "monocular metric 3D point map estimation with pixel-wise calibration for 3D reconstruction",
+      "llm_evidence_cn": "单目度量三维点云估计，逐像素标定用于三维重建",
+      "llm_evidence": "单目度量三维点云估计，逐像素标定用于三维重建",
+      "canonical_evidence": "单目度量三维点云估计，逐像素标定用于三维重建",
+      "llm_tldr_en": "FoundationGeo produces metrically accurate 3D point maps from monocular images by learning pixel-wise scale and ray correction fields, improving reconstruction quality.",
+      "llm_tldr_cn": "为解决单目几何估计中尺度模糊和全局缩放无法处理空间变化偏差的问题，提出FoundationGeo两阶段框架。首先训练仿射不变的高保真模型，然后引入逐像素标定场：尺度场用于空间各异度量对齐，射线方向校正场缓解点云几何方向偏差。在10.2M样本上训练后，模型生成度量一致的三维点云，边界清晰且泛化性强，为单目三维重建提供了可靠几何先验。",
+      "llm_tldr": "为解决单目几何估计中尺度模糊和全局缩放无法处理空间变化偏差的问题，提出FoundationGeo两阶段框架。首先训练仿射不变的高保真模型，然后引入逐像素标定场：尺度场用于空间各异度量对齐，射线方向校正场缓解点云几何方向偏差。在10.2M样本上训练后，模型生成度量一致的三维点云，边界清晰且泛化性强，为单目三维重建提供了可靠几何先验。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.17778v1",
+      "source": "arxiv",
+      "title": "CDIS: Cross-Dimensional Class-Agnostic 3D Instance Segmentation via 2D Mask Tracking and 3D-2D Projection Merging",
+      "abstract": "Class-agnostic 3D instance segmentation is critical for robotic systems operating in unknown environments, enabling perception of previously unseen objects for reliable manipulation and navigation. Existing approaches typically project per-frame 2D instance masks into 3D and merge them, which often breaks object identities across time and yields fragmented 3D instances. We introduce Cross-Dimensional Class-Agnostic 3D Instance Segmentation (CDIS), a zero-shot framework that explicitly tracks 2D instance masks across frames and associates them with 3D superpoints, creating a feedback loop between 2D and 3D. This cross-dimensional reasoning links temporally stable 2D tracks with spatially coherent 3D regions, producing globally consistent 3D instance labels without any 3D-specific training. Experiments on benchmark datasets demonstrate that CDIS achieves higher accuracy and consistency than state-of-the-art zero-shot methods, while remaining efficient and scalable to diverse real-world environments.",
+      "authors": [
+        "Juno Kim",
+        "Hye-Jung Yoon",
+        "Yesol Park",
+        "Byoung-Tak Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-07-20T10:09:12+00:00",
+      "link": "https://arxiv.org/pdf/2607.17778v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "class-agnostic 3D instance segmentation using 2D mask tracking across frames",
+      "llm_evidence_cn": "利用跨帧2D掩码跟踪实现类别无关的3D实例分割",
+      "llm_evidence": "利用跨帧2D掩码跟踪实现类别无关的3D实例分割",
+      "canonical_evidence": "利用跨帧2D掩码跟踪实现类别无关的3D实例分割",
+      "llm_tldr_en": "Introduces CDIS, a zero-shot framework that tracks 2D instance masks across frames and associates them with 3D superpoints for class-agnostic 3D instance segmentation, reducing fragmentation.",
+      "llm_tldr_cn": "提出CDIS，一种零样本框架，通过跨帧跟踪2D实例掩码并将其与3D超点关联，实现类别无关的3D实例分割，解决了现有方法中目标身份断裂和碎片化的问题。",
+      "llm_tldr": "提出CDIS，一种零样本框架，通过跨帧跟踪2D实例掩码并将其与3D超点关联，实现类别无关的3D实例分割，解决了现有方法中目标身份断裂和碎片化的问题。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2607.17967v1",
+      "source": "arxiv",
+      "title": "Fine-Detail Monocular Geometry Estimation with Self-Guided Sparse Volumetric Refinement",
+      "abstract": "Monocular geometry estimation has recently achieved impressive performance across diverse scenes. However, state-of-the-art models still face notable distortion in local 3D structure, especially in fine details, like thin structures and small objects. We attribute this limitation to an architectural mismatch: most current models decode 3D geometry within a 2D parameterization, where feature interactions are governed by image-plane proximity rather than true 3D spatial relationships. This inadvertently mixes features from geometrically distant surfaces, resulting in over-smoothed geometry particularly around thin or elongated structure. In this paper, we propose a fine-detail monocular geometry estimation with Self-Guided Sparse 3D Refinement (SSR) that lifts monocular geometry modeling from 2D image space to 3D space for high-fidelity metric-scale point maps. Our model lifts the coarse point map from a foundation base model onto a sparse voxel shell and refines it via SSR. The SSR employs sparse convolutions that aggregate features based on 3D spatial locality, avoiding feature mixing across depth discontinuities. Extensive experiments on diverse datasets demonstrate that our method significantly outperforms existing approaches in recovering fine detailed 3D geometry across both quantitative metrics and qualitative visualizations.",
+      "authors": [
+        "Lingyu Kong",
+        "Ruicheng Li",
+        "Ruicheng Wang",
+        "Sicheng Xu",
+        "Chengtang Yao",
+        "Jianfeng Xiang",
+        "Jiaolong Yang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-20T14:07:32+00:00",
+      "link": "https://arxiv.org/pdf/2607.17967v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "monocular geometry estimation reconstructs fine 3D details from a single image",
+      "llm_evidence_cn": "单目几何估计从单张图像重建精细三维细节",
+      "llm_evidence": "单目几何估计从单张图像重建精细三维细节",
+      "canonical_evidence": "单目几何估计从单张图像重建精细三维细节",
+      "llm_tldr_en": "This paper addresses fine-detail distortion in monocular 3D reconstruction by proposing a self-guided sparse volumetric refinement that operates in true 3D space, significantly improving thin structures.",
+      "llm_tldr_cn": "当前单目几何估计在细节上存在扭曲，根源在于二维参数化解码忽视真实三维空间关系。本文提出自引导稀疏三维体素细化方法，在三维空间中利用自注意力引导稀疏特征聚合，避免跨表面特征混合。实验表明，在细薄结构等细节区域重建质量显著提升，为单目三维重建提供了更高保真度的方案。",
+      "llm_tldr": "当前单目几何估计在细节上存在扭曲，根源在于二维参数化解码忽视真实三维空间关系。本文提出自引导稀疏三维体素细化方法，在三维空间中利用自注意力引导稀疏特征聚合，避免跨表面特征混合。实验表明，在细薄结构等细节区域重建质量显著提升，为单目三维重建提供了更高保真度的方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.18153v1",
+      "source": "arxiv",
+      "title": "Robust Multimodal Dynamic Object Segmentation",
+      "abstract": "Dynamic object segmentation plays a critical role in many visual applications such as static scene reconstruction from dynamic videos. However, existing optical flow-based methods fail to ensure consistent static/dynamic segmentation along object boundaries, while 3D reconstruction-based approaches are highly sensitive to reconstruction errors. To address these limitations, we present a dynamic object segmentation framework that can generate both precise and complete dynamic masks by integrating multimodal cues including 2D point tracks, 3D reconstruction, and semantic information. We design a network combining Transformer architectures with feature clustering aggregation modules to perform static/dynamic classification of multimodal feature trajectories. It enables the model to adaptively determine which type of feature should dominate based on the characteristics of each scene, while also mitigating the impact of feature degradation. Additionally, we introduce a novel point-query-based SAM post-processing method capable of handling multiple objects within a single mask. Extensive experiments demonstrate that our approach achieves state-of-the-art performance in both dynamic object segmentation and static scene reconstruction tasks.",
+      "authors": [
+        "Zhe Xin",
+        "Hanzhi Chang",
+        "Penghui Huang",
+        "Yinian Mao",
+        "Guoquan Huang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-20T16:51:48+00:00",
+      "link": "https://arxiv.org/pdf/2607.18153v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "static scene reconstruction from dynamic videos via multimodal dynamic segmentation",
+      "llm_evidence_cn": "通过多模态动态分割实现动态视频的静态场景重建",
+      "llm_evidence": "通过多模态动态分割实现动态视频的静态场景重建",
+      "canonical_evidence": "通过多模态动态分割实现动态视频的静态场景重建",
+      "llm_tldr_en": "A dynamic object segmentation framework using 2D tracks, 3D reconstruction, and semantics for precise static scene reconstruction.",
+      "llm_tldr_cn": "针对动态视频中静态场景重建时动态分割边界不完整和不准确的问题，提出融合2D点轨迹、3D重建和语义信息的多模态分割框架。利用Transformer与特征聚类聚合模块进行动静分类，生成精确完整的动态掩码。实验表明该方法有效提升了分割精度，为后续静态场景三维重建提供了高质量的预处理。",
+      "llm_tldr": "针对动态视频中静态场景重建时动态分割边界不完整和不准确的问题，提出融合2D点轨迹、3D重建和语义信息的多模态分割框架。利用Transformer与特征聚类聚合模块进行动静分类，生成精确完整的动态掩码。实验表明该方法有效提升了分割精度，为后续静态场景三维重建提供了高质量的预处理。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
