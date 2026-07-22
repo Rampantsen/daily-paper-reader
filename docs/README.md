@@ -6,61 +6,41 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-21
-- 运行时间：2026-07-21 21:49:02 UTC
+- 最新运行日期：2026-07-22
+- 运行时间：2026-07-22 21:27:48 UTC
 - 运行状态：成功
-- 本次总论文数：13
-- 精读区：8
-- 速读区：5
+- 本次总论文数：7
+- 精读区：5
+- 速读区：2
 
 ### 今日简报（AI）
-今日聚焦3D高斯泼溅与单目几何：从拓扑平面重建、占用估计到底层几何先验的精读探索。
-最值得关注的方向是TopoGS用拓扑感知优化结构化平面重建，以及RayOcc通过高斯混合提升遮挡场景的占用估计精度。
-建议读者优先阅读两篇满分精读论文，并尝试将高斯泼溅的拓扑与占用思想结合到自己的单目重建任务中。
-- 详情：[/202607/21/README](/202607/21/README)
+今日聚焦3D视觉前沿，精读两篇高分论文，速读两篇实用方案。最值得深入的方向是“先感知再重建”的思路和零样本3D分割的突破。建议读者重点关注对象感知对生成式重建的增强逻辑，以及如何将零样本能力拓展到更多3D理解任务。
+- 详情：[/202607/22/README](/202607/22/README)
 
 ### 精读区论文标签
-1. [TopoGS: Planar Reconstruction via Topology-aware 3D Gaussian Splatting](/202607/21/2607.16838v1-topogs-planar-reconstruction-via-topology-aware-3d-gaussian-splatting)  
-   标签：评分：10.0/10、query:d-gen-recon
-   evidence：拓扑感知三维高斯泼溅实现从图像中连贯三维重建
-2. [RayOcc: Occlusion-Aware Ray Occupancy Estimation via Gaussian Mixture Intensity](/202607/21/2607.17660v1-rayocc-occlusion-aware-ray-occupancy-estimation-via-gaussian-mixture-intensity)  
-   标签：评分：10.0/10、query:d-gen-recon
-   evidence：从多视图图像进行体素级语义占用预测并处理遮挡
-3. [MuViSeg: Multi-View Segment Correspondences from Dense Geometry Priors](/202607/21/2607.17938v1-muviseg-multi-view-segment-correspondences-from-dense-geometry-priors)  
-   标签：评分：10.0/10、query:d-gen-recon
-   evidence：利用3D基础模型的密集几何先验学习多视图分割对应关系，在实例分割级别进行匹配，用于对象级建图。
-4. [CSS-BA: Gate-Guided Column Space Search for Bundle Adjustment](/202607/21/2607.15652v1-css-ba-gate-guided-column-space-search-for-bundle-adjustment)  
+1. [Seeing Before Generating: Object Perception Enhances Single-View 3D Reconstruction](/202607/22/2607.18630v1-seeing-before-generating-object-perception-enhances-single-view-3d-reconstruction)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：捆绑调整在低视差情况下稳定多视图三维重建
-5. [Scene-SAM3D: Multi-View Scene Asset Generation Without Fine-Tuning](/202607/21/2607.16805v1-scene-sam3d-multi-view-scene-asset-generation-without-fine-tuning)  
+   evidence：利用物体感知增强单视图三维物体重建
+2. [ZeroSplat: Generalized Referring Segmentation in 3D Gaussian Splatting](/202607/22/2607.18801v1-zerosplat-generalized-referring-segmentation-in-3d-gaussian-splatting)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：无需微调的多视图场景资产生成
-6. [Splat-based 3D Scene Reconstruction with Extreme Motion-blur](/202607/21/2607.16926v1-splat-based-3d-scene-reconstruction-with-extreme-motion-blur)  
+   evidence：三维高斯泼溅中的通用指代分割，实现语义理解
+3. [Latent Riemannian Flow Matching for Geometry-Grounded 3D Foundation Models](/202607/22/2607.19120v1-latent-riemannian-flow-matching-for-geometry-grounded-3d-foundation-models)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：在极端运动模糊下从RGB-D进行三维场景重建，克服相机位姿失败
-7. [Text2Villa: Hierarchical Generation of 3D Indoor Environments with Physics-Aware Analysis-by-Synthesis](/202607/21/2607.17145v1-text2villa-hierarchical-generation-of-3d-indoor-environments-with-physics-aware-analysis-by-synthesis)  
+   evidence：在几何扎根的潜在空间中通过流匹配从稀疏输入生成3D场景，桥接了确定性与生成式3D模型。
+4. [IGGT4D: Streaming 4D Instance-Grounded Geometry Transformer](/202607/22/2607.19228v1-iggt4d-streaming-4d-instance-grounded-geometry-transformer)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：从自然语言分层生成室内三维环境，并采用物理感知物品布置
-8. [VGOcc: Learning Visual-Geometric Gaussians for Vision-Centric 3D Driving Occupancy Prediction](/202607/21/2607.18078v1-vgocc-learning-visual-geometric-gaussians-for-vision-centric-3d-driving-occupancy-prediction)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：从环视图像恢复语义3D占用场
+   evidence：从视频流进行在线4D场景几何与实例分割
+5. [GEAR: Reconstruction of Classical Paintings via Geometry Grounding and Appearance Restitution](/202607/22/2607.17519v1-gear-reconstruction-of-classical-paintings-via-geometry-grounding-and-appearance-restitution)  
+   标签：评分：8.0/10、query:d-gen-recon
+   evidence：从单幅古典绘画重建3D场景，推动了从艺术图像进行3D场景重建。
 
 ### 速读区论文标签
-1. [MetaView: Monocular Novel View Synthesis with Scale-Aware Implicit Geometry Priors](/202607/21/2607.12000v1-metaview-monocular-novel-view-synthesis-with-scale-aware-implicit-geometry-priors)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：基于扩散的单目新视角合成，结合尺度感知隐式几何，实现大视角变化下的场景生成
-2. [CDIS: Cross-Dimensional Class-Agnostic 3D Instance Segmentation via 2D Mask Tracking and 3D-2D Projection Merging](/202607/21/2607.17778v1-cdis-cross-dimensional-class-agnostic-3d-instance-segmentation-via-2d-mask-tracking-and-3d-2d-projection-merging)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：利用跨帧2D掩码跟踪实现类别无关的3D实例分割
-3. [FoundationGeo: Learning Spatial Pixel-Wise Fields for Monocular Metric Geometry](/202607/21/2607.11588v2-foundationgeo-learning-spatial-pixel-wise-fields-for-monocular-metric-geometry)  
+1. [UVFaceFusion: Fast Multi-view Topologically Consistent Face Reconstruction in the Wild via UV-space Neural Fusion](/202607/22/2607.18798v1-uvfacefusion-fast-multi-view-topologically-consistent-face-reconstruction-in-the-wild-via-uv-space-neural-fusion)  
    标签：评分：7.0/10、query:d-gen-recon
-   evidence：单目度量三维点云估计，逐像素标定用于三维重建
-4. [Fine-Detail Monocular Geometry Estimation with Self-Guided Sparse Volumetric Refinement](/202607/21/2607.17967v1-fine-detail-monocular-geometry-estimation-with-self-guided-sparse-volumetric-refinement)  
-   标签：评分：7.0/10、query:d-gen-recon
-   evidence：单目几何估计从单张图像重建精细三维细节
-5. [Robust Multimodal Dynamic Object Segmentation](/202607/21/2607.18153v1-robust-multimodal-dynamic-object-segmentation)  
-   标签：评分：7.0/10、query:d-gen-recon
-   evidence：通过多模态动态分割实现动态视频的静态场景重建
+   evidence：从日常多视图图像重建人脸
+2. [GS-RealBlur: A Flexible Data Acquisition Framework for Real-World Image Deblurring](/202607/22/2607.15401v1-gs-realblur-a-flexible-data-acquisition-framework-for-real-world-image-deblurring)  
+   标签：评分：6.0/10、query:d-gen-recon
+   evidence：提出一种数据采集框架，利用3D场景重建生成去模糊的锐利参考，涉及多视图3D重建。
 
 
 <div class="dpr-home-promo-card">

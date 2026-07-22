@@ -1,0 +1,293 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-22T21:21:54.024325+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2607.18630v1",
+      "source": "arxiv",
+      "title": "Seeing Before Generating: Object Perception Enhances Single-View 3D Reconstruction",
+      "abstract": "The relationship between object perception and reconstruction is well established in human vision, yet remains underexplored in computer vision. In this paper, we demonstrate that learnt object perception can significantly enhance 3D reconstruction. Focusing on the challenging task of single-view 3D object reconstruction, we propose a method that leverages perceptual signals extracted from pretrained perception models capturing semantic and geometric information to drive the reconstruction of an object from its single image. Our approach is model-agnostic and can be integrated into various reconstruction methods in a plug-and-play manner. Experiments with two state-of-the-art single-view 3D reconstruction pipelines in a benchmark dataset show consistent and substantial improvements achieved by our method, validating the effectiveness of incorporating perception into generation. We provide in-depth analysis of various aspects of our method and its application. Our project page is at https://ynhuhuynh.github.io/perception-3d/.",
+      "authors": [
+        "Y Huynh",
+        "Duc Thanh Nguyen",
+        "Mohamed Abdelrazek"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-21T01:55:24+00:00",
+      "link": "https://arxiv.org/pdf/2607.18630v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "uses object perception to enhance single-view 3D object reconstruction",
+      "llm_evidence_cn": "利用物体感知增强单视图三维物体重建",
+      "llm_evidence": "利用物体感知增强单视图三维物体重建",
+      "canonical_evidence": "利用物体感知增强单视图三维物体重建",
+      "llm_tldr_en": "Proposes a method that leverages semantic and geometric signals from pretrained perception models to improve single-view 3D object reconstruction, showing plug-and-play compatibility and significant gains.",
+      "llm_tldr_cn": "单视图三维物体重建是计算机视觉的挑战性任务。本文受人类视觉中感知与重建紧密关联的启发，证明学习到的物体感知能显著增强三维重建。提出从预训练感知模型捕捉语义和几何信息，作为额外条件驱动重建。实验表明，在两个前沿重建流水线上，该方法均带来一致且显著的性能增益。这项工作揭示了感知与重建的协同效应，推动了从图像生成三维物体的研究。",
+      "llm_tldr": "单视图三维物体重建是计算机视觉的挑战性任务。本文受人类视觉中感知与重建紧密关联的启发，证明学习到的物体感知能显著增强三维重建。提出从预训练感知模型捕捉语义和几何信息，作为额外条件驱动重建。实验表明，在两个前沿重建流水线上，该方法均带来一致且显著的性能增益。这项工作揭示了感知与重建的协同效应，推动了从图像生成三维物体的研究。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.18801v1",
+      "source": "arxiv",
+      "title": "ZeroSplat: Generalized Referring Segmentation in 3D Gaussian Splatting",
+      "abstract": "Recent advancements in 3D Gaussian Splatting (3DGS) have enabled language-guided scene understanding. However, existing Referring 3D Gaussian Splatting (R3DGS) methods are fundamentally restricted to single-target queries. To reflect the ambiguity of real-world instructions, we introduce the Generalized Referring 3D Gaussian Splatting Segmentation (GR3DGS) task, which requires dynamically segmenting an arbitrary number of targets (0, 1, or $N$). To facilitate comprehensive evaluation of this new task, we construct two new benchmarks: GR-LERF and GR-ScanNet. Crucially, existing R3DGS paradigms exhibit fundamental technical bottlenecks that severely limit their performance on the GR3DGS task: they lack intrinsic 3D point-level understanding by operating merely on 2D rendered pixels, and they incur prohibitive computational overhead by requiring per-scene optimization to embed heavy semantic features. To dismantle these bottlenecks, we propose ZeroSplat, a novel training-free and zero-feature framework. ZeroSplat lifts 2D Vision-Language Model (VLM) priors into 3D space through robust multi-view geometric constraints. This strategy enables intrinsic point-level understanding without incurring any additional feature storage. Extensive experiments demonstrate that ZeroSplat significantly outperforms state-of-the-art methods across generalized and single-target scenarios while maintaining exceptional efficiency. Project Page: https://inkmind-ai.github.io/ZeroSplat",
+      "authors": [
+        "Jiayu Ding",
+        "Meilu Song",
+        "Xiaoyi Zhang",
+        "Hongbo Jin",
+        "Yichen Jin",
+        "Xiangtian Si"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-21T07:27:10+00:00",
+      "link": "https://arxiv.org/pdf/2607.18801v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "generalized referring segmentation in 3D Gaussian Splatting for semantic understanding",
+      "llm_evidence_cn": "三维高斯泼溅中的通用指代分割，实现语义理解",
+      "llm_evidence": "三维高斯泼溅中的通用指代分割，实现语义理解",
+      "canonical_evidence": "三维高斯泼溅中的通用指代分割，实现语义理解",
+      "llm_tldr_en": "Proposes the GR3DGS task for segmenting arbitrary numbers of targets in 3DGS scenes based on language, with new benchmarks and a method that achieves improved segmentation by leveraging 3D point-level understanding.",
+      "llm_tldr_cn": "现有语言引导的三维场景理解方法限于单目标查询。本文引入通用指代三维高斯泼溅分割任务，支持任意数量目标的分割。构建了GR-LERF和GR-ScanNet两个新基准，并提出利用内在三维点级理解的方法。实验表明，该方法在复杂指代下性能优于现有范式，推动了三维场景语义分割的发展。",
+      "llm_tldr": "现有语言引导的三维场景理解方法限于单目标查询。本文引入通用指代三维高斯泼溅分割任务，支持任意数量目标的分割。构建了GR-LERF和GR-ScanNet两个新基准，并提出利用内在三维点级理解的方法。实验表明，该方法在复杂指代下性能优于现有范式，推动了三维场景语义分割的发展。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.19120v1",
+      "source": "arxiv",
+      "title": "Latent Riemannian Flow Matching for Geometry-Grounded 3D Foundation Models",
+      "abstract": "Geometric foundation models, such as the Visual Geometry Grounded Transformer (VGGT), provide strong 3D priors from unposed images. However, such models operate purely in a feed-forward, deterministic regime, \\ie~they cannot generate plausible geometry beyond what the input views directly support. Generative models for 3D scenes, on the other hand, must rely on strong geometric priors to produce coherent outputs from sparse inputs. We bridge these two paradigms by performing flow matching directly in VGGT's latent space, leveraging its learned 3D priors without committing to any explicit downstream representation such as Gaussians, meshes, or video-VAE latents. This requires respecting the latent geometry: VGGT tokens occupy a product of high-dimensional hyperspheres on which standard Euclidean flow matching fails. We address this with a Riemannian Flow Matching framework defined on a product manifold of four hyperspheres, aligned with VGGT's multi-scale encoder, which keeps generated tokens on the valid data manifold required by the frozen decoding heads. On RealEstate10K, ScanNet++ and ETH3D, our method achieves strong performance against recent scene generation baselines in both per-view appearance and aggregated 3D geometry, establishing latent-space flow matching on geometric foundation models as a viable paradigm for 3D generation. The project page can be found $\\href{https://lisaweijler.github.io/geometry-grounded-rfm/}{\\text{here}}$.",
+      "authors": [
+        "Lisa Weijler",
+        "Irene Ballester",
+        "Guofeng Mei",
+        "Tolga Birdal",
+        "Pedro Hermosilla"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-21T14:06:04+00:00",
+      "link": "https://arxiv.org/pdf/2607.19120v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Generates 3D scenes from sparse inputs by flow matching in a geometry-grounded latent space, bridging deterministic and generative 3D models.",
+      "llm_evidence_cn": "在几何扎根的潜在空间中通过流匹配从稀疏输入生成3D场景，桥接了确定性与生成式3D模型。",
+      "llm_evidence": "在几何扎根的潜在空间中通过流匹配从稀疏输入生成3D场景，桥接了确定性与生成式3D模型。",
+      "canonical_evidence": "在几何扎根的潜在空间中通过流匹配从稀疏输入生成3D场景，桥接了确定性与生成式3D模型。",
+      "llm_tldr_en": "Performs Riemannian flow matching in the latent space of a 3D foundation model to generate plausible 3D geometry beyond observed views, enabling generative 3D scene modeling with strong geometric priors.",
+      "llm_tldr_cn": "在视觉几何扎根变换器(VGGT)的潜在空间中执行黎曼流匹配，利用学习到的3D先验生成输入视图之外的合理几何结构，实现了具备强几何先验的生成式3D场景建模，无需依赖显式表示即可从稀疏观测生成连贯的3D内容。",
+      "llm_tldr": "在视觉几何扎根变换器(VGGT)的潜在空间中执行黎曼流匹配，利用学习到的3D先验生成输入视图之外的合理几何结构，实现了具备强几何先验的生成式3D场景建模，无需依赖显式表示即可从稀疏观测生成连贯的3D内容。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.19228v1",
+      "source": "arxiv",
+      "title": "IGGT4D: Streaming 4D Instance-Grounded Geometry Transformer",
+      "abstract": "Real-world spatial intelligence requires agents to understand scenes from continuous video streams, where objects move, persist, disappear, and reappear over time. While recent spatial foundation models have enabled generalizable feed-forward 3D reconstruction, most streaming methods remain geometry-centric and lack temporally consistent object-level understanding. Meanwhile, existing semantic reconstruction and 3D-aware vision-language methods largely rely on externally extracted 2D semantic cues or loosely coupled geometry inputs, limiting unified geometry-instance learning in long dynamic scenes. In this paper, we propose IGGT4D, a streaming instance-grounded geometry Transformer for online 4D scene understanding. IGGT4D processes video frames sequentially, reuses historical context through causal spatial-temporal modeling, and incrementally updates a unified representation of camera motion, geometry, and object identity. This enables long-sequence feed-forward reconstruction with geometry-instance consistency in dynamic environments. To address the lack of high-quality 4D supervision, we further construct InsScene4D-147K, a large-scale dataset spanning real/synthetic and static/dynamic scenes, with RGB images, depth, poses, and temporally consistent instance masks generated by an automated geometry-guided annotation pipeline. Experiments on 3D reconstruction, pose estimation, instance spatial tracking, and open-vocabulary segmentation demonstrate that IGGT4D outperforms existing streaming baselines while maintaining scalable online inference for long dynamic sequences.",
+      "authors": [
+        "Zhengyu Zou",
+        "Hao Li",
+        "Kuixuan Jiao",
+        "Liu Liu",
+        "Tingyang Xiao",
+        "Xiaolin Zhou",
+        "Fangzhou Hong",
+        "Zhizhong Su",
+        "Dingwen Zhang",
+        "Ziwei Liu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-21T16:00:01+00:00",
+      "link": "https://arxiv.org/pdf/2607.19228v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "streaming geometry and instance segmentation from video for online 4D scene understanding",
+      "llm_evidence_cn": "从视频流进行在线4D场景几何与实例分割",
+      "llm_evidence": "从视频流进行在线4D场景几何与实例分割",
+      "canonical_evidence": "从视频流进行在线4D场景几何与实例分割",
+      "llm_tldr_en": "IGGT4D processes video frames sequentially to reconstruct 3D geometry and instance segmentation, enabling temporally consistent object-level 4D scene understanding in real time.",
+      "llm_tldr_cn": "现有流式重建方法缺少时序一致的对象级理解。IGGT4D提出流式实例化几何Transformer，在线处理视频帧，联合重建3D几何与实例分割，实现4D场景理解。实验表明其能在长序列中保持时空一致性，为具身智能提供了从视频到4D场景的在线理解能力。",
+      "llm_tldr": "现有流式重建方法缺少时序一致的对象级理解。IGGT4D提出流式实例化几何Transformer，在线处理视频帧，联合重建3D几何与实例分割，实现4D场景理解。实验表明其能在长序列中保持时空一致性，为具身智能提供了从视频到4D场景的在线理解能力。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.17519v1",
+      "source": "arxiv",
+      "title": "GEAR: Reconstruction of Classical Paintings via Geometry Grounding and Appearance Restitution",
+      "abstract": "Classical paintings preserve rich spatial, cultural, and historical content, making their reconstruction as explorable 3D scenes valuable for digital preservation, immersive exhibition, and cultural engagement. Yet, unlike photographs, they often depict scenes in a single-view, stylized manner, with weak perspective, lighting, and depth cues. Existing 3D reconstruction methods are largely built on natural-image priors, making it difficult to recover geometrically plausible and visually faithful 3D representations from such inputs. To address this challenge, we introduce Classical Painting-to-3D (CP3D), a new task that aims to recover a 3D representation from a single classical painting while jointly ensuring geometric plausibility, appearance fidelity to the source artwork, and plausible novel-view synthesis. We further propose GeAR, a training-free two-stage framework for Geometry Grounding and Appearance Restitution. GeAR first converts the input painting into a geometry-grounded representation with more coherent shading and illumination cues, improving the stability of 3D Gaussian reconstruction. It then restores artwork-faithful appearance across views under spatial constraints and multi-view consistency, recovering the painterly textures and details weakened during grounding. In addition, we construct HeriArch, a curated benchmark of 10,160 high-resolution classical artworks for systematic evaluation of CP3D. Extensive experiments and user studies show that GeAR consistently outperforms strong baselines in geometric plausibility, appearance fidelity, and human preference. Code and dataset will be released publicly.",
+      "authors": [
+        "Qinyu Zhang",
+        "Xinda Liu",
+        "Yunchen Li",
+        "Yunzhuo Liu",
+        "Chenxi Hu",
+        "Kang Li",
+        "Guohua Geng"
+      ],
+      "primary_category": "cs.MM",
+      "categories": [
+        "cs.MM"
+      ],
+      "published": "2026-07-20T03:53:52+00:00",
+      "link": "https://arxiv.org/pdf/2607.17519v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Reconstructs 3D scenes from single classical paintings, advancing 3D scene reconstruction from artistic images.",
+      "llm_evidence_cn": "从单幅古典绘画重建3D场景，推动了从艺术图像进行3D场景重建。",
+      "llm_evidence": "从单幅古典绘画重建3D场景，推动了从艺术图像进行3D场景重建。",
+      "canonical_evidence": "从单幅古典绘画重建3D场景，推动了从艺术图像进行3D场景重建。",
+      "llm_tldr_en": "GEAR introduces the Classical Painting-to-3D task and a method that recovers geometrically plausible and visually faithful 3D representations from a single painting, enabling immersive cultural experiences.",
+      "llm_tldr_cn": "GEAR针对古典绘画单视图、风格化且透视、光照线索弱的问题，提出首个绘画到3D重建任务CP3D，通过几何扎根和外观还原恢复兼具几何合理性与视觉保真度的3D场景。该方法为数字保存、沉浸式展览等文化遗产应用提供了新途径。",
+      "llm_tldr": "GEAR针对古典绘画单视图、风格化且透视、光照线索弱的问题，提出首个绘画到3D重建任务CP3D，通过几何扎根和外观还原恢复兼具几何合理性与视觉保真度的3D场景。该方法为数字保存、沉浸式展览等文化遗产应用提供了新途径。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.18798v1",
+      "source": "arxiv",
+      "title": "UVFaceFusion: Fast Multi-view Topologically Consistent Face Reconstruction in the Wild via UV-space Neural Fusion",
+      "abstract": "Reconstructing high-fidelity facial geometry with an assigned topology is essential for digital avatar creation and animation, yet existing automated methods often trade off geometric fidelity and in-the-wild generalization. We present UVFaceFusion, a feed-forward framework for multi-view, fixed-topology face reconstruction from daily images. Our key idea is to replace heuristic topological optimization with learnable neural fusion in a canonical UV space. Given multi-view images, we first obtain dense point maps and facial UV correspondences of each view using VGGT and Pixel3DMM, respectively. Then, the view-specific point maps are lifted into the canonical UV domain and fused with a novel mask-aware neural fusion network. The network predicts a complete UV-space point map, from which a fixed-topology mesh is directly sampled. Although trained only on Ava-256, UVFaceFusion generalizes well to multiple public benchmarks and in-the-wild captures, benefiting from its canonical UV-space geometry-to-geometry fusion that reduces dependence on dataset-specific appearance and capture conditions. Experiments on various benchmarks show that UVFaceFusion achieves state-of-the-art reconstruction accuracy while reconstructing a mesh from 16 input views in less than 3 seconds on a single RTX 4090. Code is available at https://github.com/grignarder/UVFaceFusion.",
+      "authors": [
+        "Xin Ming",
+        "Yuxuan Han",
+        "Junhai Yong",
+        "Feng Xu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR"
+      ],
+      "published": "2026-07-21T07:24:42+00:00",
+      "link": "https://arxiv.org/pdf/2607.18798v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Multi-view face reconstruction from daily images",
+      "llm_evidence_cn": "从日常多视图图像重建人脸",
+      "llm_evidence": "从日常多视图图像重建人脸",
+      "canonical_evidence": "从日常多视图图像重建人脸",
+      "llm_tldr_en": "Proposes UVFaceFusion, a feed-forward multi-view face reconstruction method using UV-space neural fusion from daily images, achieving fixed-topology high-fidelity face geometry.",
+      "llm_tldr_cn": "针对自动人脸重建中几何保真度与泛化性难以兼顾的问题，提出UVFaceFusion方法，通过在多视图图像上提取密集点图和UV对应，在规范UV空间中进行掩码感知神经融合，实现拓扑固定且高保真的快速人脸重建，为数字角色创建提供了高效工具。",
+      "llm_tldr": "针对自动人脸重建中几何保真度与泛化性难以兼顾的问题，提出UVFaceFusion方法，通过在多视图图像上提取密集点图和UV对应，在规范UV空间中进行掩码感知神经融合，实现拓扑固定且高保真的快速人脸重建，为数字角色创建提供了高效工具。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.15401v1",
+      "source": "arxiv",
+      "title": "GS-RealBlur: A Flexible Data Acquisition Framework for Real-World Image Deblurring",
+      "abstract": "High-quality, large-scale paired data is essential for training learning-based image deblurring models. However, synthetic blurry images generally lack realism, while real-world captured images require complex and inflexible camera systems. In this work, we propose GS-RealBlur, a data acquisition framework for real-world image deblurring, achieving both blur realism and acquisition flexibility. Specifically, we use a handheld camera to capture blurry images, and deploy a gimbal to densely capture sharp images of the same scene. We reconstruct the 3D representation of sharp images and calibrate the camera pose of each blurry frame within this 3D. The image rendered from this 3D according to the pose serves as the sharp counterpart. To better align the rendered image with the blurry image, we introduce a Blur-aware Pose Refinement (BPR) module that refines the pose using appearance consistency and centroid alignment constraints. Leveraging GS-RealBlur, we construct a high-quality and diverse dataset. Extensive experiments demonstrate that a deblurring model trained on our dataset achieves superior generalization performance across various real-world deblurring benchmarks, consistently outperforming models trained on existing synthetic and real-world datasets. The code and dataset will be made publicly available.",
+      "authors": [
+        "Mingyang Chen",
+        "Zhilu Zhang",
+        "Honglei Xu",
+        "Renlong Wu",
+        "Xiaohe Wu",
+        "Wangmeng Zuo"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-16T18:59:01+00:00",
+      "link": "https://arxiv.org/pdf/2607.15401v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Proposes a data acquisition framework that uses 3D scene reconstruction to generate sharp references for deblurring, involving multi-view 3D reconstruction.",
+      "llm_evidence_cn": "提出一种数据采集框架，利用3D场景重建生成去模糊的锐利参考，涉及多视图3D重建。",
+      "llm_evidence": "提出一种数据采集框架，利用3D场景重建生成去模糊的锐利参考，涉及多视图3D重建。",
+      "canonical_evidence": "提出一种数据采集框架，利用3D场景重建生成去模糊的锐利参考，涉及多视图3D重建。",
+      "llm_tldr_en": "GS-RealBlur uses a gimbal-captured multi-view sharp image set to reconstruct a 3D scene (Gaussian Splatting), then renders sharp counterparts for blurry handheld images, providing realistic paired deblurring data.",
+      "llm_tldr_cn": "GS-RealBlur通过云台密集采集多视角清晰图像重建3D场景，再根据模糊帧的相机位姿在3D中渲染锐利对应图像，从而获取真实配对的去模糊训练数据。该框架兼顾了模糊真实性和采集灵活性，避免了复杂相机系统。",
+      "llm_tldr": "GS-RealBlur通过云台密集采集多视角清晰图像重建3D场景，再根据模糊帧的相机位姿在3D中渲染锐利对应图像，从而获取真实配对的去模糊训练数据。该框架兼顾了模糊真实性和采集灵活性，避免了复杂相机系统。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
