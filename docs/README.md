@@ -6,41 +6,38 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-22
-- 运行时间：2026-07-22 21:27:48 UTC
+- 最新运行日期：2026-07-23
+- 运行时间：2026-07-23 21:36:53 UTC
 - 运行状态：成功
-- 本次总论文数：7
+- 本次总论文数：6
 - 精读区：5
-- 速读区：2
+- 速读区：1
 
 ### 今日简报（AI）
-今日聚焦3D视觉前沿，精读两篇高分论文，速读两篇实用方案。最值得深入的方向是“先感知再重建”的思路和零样本3D分割的突破。建议读者重点关注对象感知对生成式重建的增强逻辑，以及如何将零样本能力拓展到更多3D理解任务。
-- 详情：[/202607/22/README](/202607/22/README)
+今日聚焦3D视觉前沿，精读2篇高分论文并速览1篇，覆盖几何基础模型与全景分割。最值得关注的是将黎曼流形与流匹配引入3D基础模型，以及大视角合成模型向多视图全景分割的巧妙拓展。建议读者从《Latent Riemannian Flow Matching》入手，理解几何先验如何重塑生成式3D智能。
+- 详情：[/202607/23/README](/202607/23/README)
 
 ### 精读区论文标签
-1. [Seeing Before Generating: Object Perception Enhances Single-View 3D Reconstruction](/202607/22/2607.18630v1-seeing-before-generating-object-perception-enhances-single-view-3d-reconstruction)  
+1. [Latent Riemannian Flow Matching for Geometry-Grounded 3D Foundation Models](/202607/23/2607.19120v1-latent-riemannian-flow-matching-for-geometry-grounded-3d-foundation-models)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：利用物体感知增强单视图三维物体重建
-2. [ZeroSplat: Generalized Referring Segmentation in 3D Gaussian Splatting](/202607/22/2607.18801v1-zerosplat-generalized-referring-segmentation-in-3d-gaussian-splatting)  
+   evidence：在VGGT潜空间中进行流匹配从稀疏图像生成3D几何
+2. [Extending a Large View Synthesis Model for Multi-view Panoptic Segmentation](/202607/23/2607.19765v1-extending-a-large-view-synthesis-model-for-multi-view-panoptic-segmentation)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：三维高斯泼溅中的通用指代分割，实现语义理解
-3. [Latent Riemannian Flow Matching for Geometry-Grounded 3D Foundation Models](/202607/22/2607.19120v1-latent-riemannian-flow-matching-for-geometry-grounded-3d-foundation-models)  
+   evidence：利用视图合成对应关系跨视图传播全景标签实现多视图三维分割
+3. [STEREOFLOW: Progressive Stereo Matching with StereoDiT and Transition Flow Matching](/202607/23/2607.19986v1-stereoflow-progressive-stereo-matching-with-stereodit-and-transition-flow-matching)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：在几何扎根的潜在空间中通过流匹配从稀疏输入生成3D场景，桥接了确定性与生成式3D模型。
-4. [IGGT4D: Streaming 4D Instance-Grounded Geometry Transformer](/202607/22/2607.19228v1-iggt4d-streaming-4d-instance-grounded-geometry-transformer)  
+   evidence：用于三维重建的先验引导生成式立体匹配
+4. [ATSplat: Compact Feed-forward 3D Gaussian Splatting with Adaptive Token Expansion](/202607/23/2607.20417v1-atsplat-compact-feed-forward-3d-gaussian-splatting-with-adaptive-token-expansion)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：从视频流进行在线4D场景几何与实例分割
-5. [GEAR: Reconstruction of Classical Paintings via Geometry Grounding and Appearance Restitution](/202607/22/2607.17519v1-gear-reconstruction-of-classical-paintings-via-geometry-grounding-and-appearance-restitution)  
+   evidence：前馈式3D高斯泼溅从稀疏视图重建场景
+5. [Odin: Primitive-Level Synchronization for Distributed Point-Based Neural Rendering](/202607/23/2607.19893v1-odin-primitive-level-synchronization-for-distributed-point-based-neural-rendering)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：从单幅古典绘画重建3D场景，推动了从艺术图像进行3D场景重建。
+   evidence：分布式点基神经渲染训练系统实现大规模3D重建
 
 ### 速读区论文标签
-1. [UVFaceFusion: Fast Multi-view Topologically Consistent Face Reconstruction in the Wild via UV-space Neural Fusion](/202607/22/2607.18798v1-uvfacefusion-fast-multi-view-topologically-consistent-face-reconstruction-in-the-wild-via-uv-space-neural-fusion)  
+1. [GaussianSeed: Hierarchical Gaussian Seeding for High-Resolution 3D Occupancy Prediction](/202607/23/2607.20071v1-gaussianseed-hierarchical-gaussian-seeding-for-high-resolution-3d-occupancy-prediction)  
    标签：评分：7.0/10、query:d-gen-recon
-   evidence：从日常多视图图像重建人脸
-2. [GS-RealBlur: A Flexible Data Acquisition Framework for Real-World Image Deblurring](/202607/22/2607.15401v1-gs-realblur-a-flexible-data-acquisition-framework-for-real-world-image-deblurring)  
-   标签：评分：6.0/10、query:d-gen-recon
-   evidence：提出一种数据采集框架，利用3D场景重建生成去模糊的锐利参考，涉及多视图3D重建。
+   evidence：从视觉多视图输入进行高分辨率三维占用预测
 
 
 <div class="dpr-home-promo-card">
