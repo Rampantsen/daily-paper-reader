@@ -1,0 +1,333 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-24T21:29:16.241136+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2607.20660v1",
+      "source": "arxiv",
+      "title": "Axolotl3D: a Unified Framework for Faithful 3D Shape Completion",
+      "abstract": "Recent 3D generative models produce high-quality geometry from a single image using large-scale priors and diffusion architectures. However, they assume complete visibility and single-view inputs, limiting applicability in multi-view, occluded, or editing scenarios. Although prior works address these challenges individually, they lack a unified framework for controllable 3D completion under diverse conditioning signals. We present Axolotl3D, a multi-modal and occlusion-aware 3D generation model that jointly conditions on images, visibility masks, camera parameters, and a partial point cloud. The point cloud serves as a geometric anchor promoting faithful shape completion, while camera parameters ensure consistent multi-view alignment in a shared 3D coordinate system. A unified training strategy synthesizes diverse conditioning regimes from large-scale 3D data, enabling robust cross-modal reasoning. Experiments on Toys4K and OmniObject3D demonstrate state-of-the-art performance under both clean and occluded settings, as well as strong results in real-world reconstruction and geometry-consistent editing.",
+      "authors": [
+        "Anita Hu",
+        "Maria Shugrina"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-22T18:38:20+00:00",
+      "link": "https://arxiv.org/pdf/2607.20660v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "3D shape completion from multi-modal inputs including images",
+      "llm_evidence_cn": "从多模态输入包括图像进行三维形状补全",
+      "llm_evidence": "从多模态输入包括图像进行三维形状补全",
+      "canonical_evidence": "从多模态输入包括图像进行三维形状补全",
+      "llm_tldr_en": "A unified model for faithful 3D shape completion under occlusion, conditioning on images, masks, camera, and partial point cloud to ensure multi-view consistency.",
+      "llm_tldr_cn": "现有3D生成模型依赖单一完整视图，无法处理多视图遮挡场景。本文提出Axolotl3D，一个多模态和遮挡感知的三维生成模型，联合图像、可见性掩码、相机参数和部分点云作为条件，利用点云锚点保证形状忠实度，相机参数确保多视图一致。实验表明，该方法在各种条件信号下均能生成高质量完整形状，统一了多模态可控补全框架。",
+      "llm_tldr": "现有3D生成模型依赖单一完整视图，无法处理多视图遮挡场景。本文提出Axolotl3D，一个多模态和遮挡感知的三维生成模型，联合图像、可见性掩码、相机参数和部分点云作为条件，利用点云锚点保证形状忠实度，相机参数确保多视图一致。实验表明，该方法在各种条件信号下均能生成高质量完整形状，统一了多模态可控补全框架。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.20889v1",
+      "source": "arxiv",
+      "title": "Engine-Native Editable 3D World Reconstruction with Objects and Lighting",
+      "abstract": "Editable 3D scene creation requires object instances and lights that can be inspected, moved, and imported into standard engines, yet existing single-image methods largely stop at room-scale geometry, baked/global illumination, or text-driven generation. We introduce Lumera (Light-aware Unified Engine-native Reconstruction and Assembly), a benchmark and reference pipeline for engine-native, light-aware 3D scene parsing from a single image. Lumera-2K is built from 2,513 UE5 projects and provides 3.73M components, 63M object instances, 102.6K engine-native parametric lights, and 95.1K camera views. On this data, Lumera-Box and Lumera-Light adapt VLM to parse object boxes and parametric light tuples (x,y,z,r,g,b,I), which are assembled with per-object mesh reconstruction, HDR environment estimation, and a bounded agentic refinement loop. In a sanitized box benchmark against DetAny3D, SpatialLM, N3D-VLM, and WildDet3D, Lumera-Box obtains the strongest overall detection, geometry, semantic, and layout scores (merged mAP 0.1141, IoU-B 0.2472, F-score 0.2762), while WildDet3D remains stronger on anchor recall. For lights, Lumera-Light recovers almost all non-empty scenes (recall 0.998) but remains limited at individual-light localization (F1 0.209 at 0.5 m); matched lights have median position error 0.261 m, median ΔE2000 4.59, and intensity Pearson r=0.628. These results establish parametric lights as a measurable editable-scene target and expose remaining bottlenecks in relation structure, light recall/intensity, and cross-engine generalization.",
+      "authors": [
+        "Junhao Chen",
+        "Xinghao Chen",
+        "Henghaofan Zhang",
+        "Zihao Qiao",
+        "Saining Zhang",
+        "Yongzhi Li",
+        "Ruqi Huang",
+        "Sisi Li",
+        "Yimin Sheng",
+        "Jianyi Zhu",
+        "Hao Zhao"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-23T03:26:02+00:00",
+      "link": "https://arxiv.org/pdf/2607.20889v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "engine-native 3D scene parsing, object and light instance segmentation",
+      "llm_evidence_cn": "引擎原生3D场景解析，分割物体与光源实例",
+      "llm_evidence": "引擎原生3D场景解析，分割物体与光源实例",
+      "canonical_evidence": "引擎原生3D场景解析，分割物体与光源实例",
+      "llm_tldr_en": "Introduces Lumera, a benchmark and pipeline for single-image 3D scene parsing into object instances and lights, enabling editable engine-native reconstruction.",
+      "llm_tldr_cn": "针对单图像三维场景中物体与光照联合解析的不足，提出Lumera基准和重建流程，利用视觉语言模型从单张图像中预测物体包围盒和参数化光源，并装配为引擎可编辑的3D场景。在自建的2,513个UE5项目数据集上验证，实现了高质量实例分割和光照恢复，推动了从图像到可编辑3D环境的端到端创建。",
+      "llm_tldr": "针对单图像三维场景中物体与光照联合解析的不足，提出Lumera基准和重建流程，利用视觉语言模型从单张图像中预测物体包围盒和参数化光源，并装配为引擎可编辑的3D场景。在自建的2,513个UE5项目数据集上验证，实现了高质量实例分割和光照恢复，推动了从图像到可编辑3D环境的端到端创建。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.21023v1",
+      "source": "arxiv",
+      "title": "WAT3R: Feedforward Underwater 3D Reconstruction",
+      "abstract": "Reliable feedforward underwater 3D reconstruction remains challenging due to severe light attenuation and backscattering, which degrade visual quality and disrupt feature consistency across views, leading to inaccurate multi-view geometry. To address this issue, we propose WAT3R, a feed-forward framework for reconstructing 3D scenes directly from underwater images. By leveraging degradation adaptation as a geometry-constrained process, WAT3R integrates a lightweight neural adaptation module to flexibly account for these underwater imaging effects, thereby improving multi-view reconstruction quality. Implemented in a single forward pass, WAT3R directly and efficiently outputs pixel-aligned 3D point maps and camera poses from underwater videos, allowing a high-quality underwater 3D reconstruction. Experiments conducted on the FLSea, SQUID, and USOD10K datasets show that our method consistently outperforms state-of-the-art approaches on 3D reconstruction tasks, including multi-view/monocular depth estimation and camera pose estimation.",
+      "authors": [
+        "Jiayi Xu",
+        "Jiahao Lu",
+        "Ziqiang Zheng",
+        "Yihao Tan",
+        "Yaolong Zhu",
+        "Yuan Liu",
+        "Sai-Kit Yeung"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-23T08:07:43+00:00",
+      "link": "https://arxiv.org/pdf/2607.21023v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "feed-forward multi-view 3D reconstruction from underwater images",
+      "llm_evidence_cn": "前馈式水下多视角三维场景重建",
+      "llm_evidence": "前馈式水下多视角三维场景重建",
+      "canonical_evidence": "前馈式水下多视角三维场景重建",
+      "llm_tldr_en": "A feed-forward framework for 3D scene reconstruction from underwater images, using a lightweight neural module to adapt to degradation and improve multi-view geometry accuracy.",
+      "llm_tldr_cn": "水下多视角三维重建受光衰减和后向散射影响，导致视图间特征不一致。本文提出WAT3R，一种前馈式框架，将退化适应建模为几何约束过程，通过轻量神经模块增强水下图像的多视图几何一致性。仅需单次前向即可输出像素对齐的3D点图与相机位姿，大幅提升了水下场景重建的质量和效率，为海洋探索与机器人视觉提供了实用工具。",
+      "llm_tldr": "水下多视角三维重建受光衰减和后向散射影响，导致视图间特征不一致。本文提出WAT3R，一种前馈式框架，将退化适应建模为几何约束过程，通过轻量神经模块增强水下图像的多视图几何一致性。仅需单次前向即可输出像素对齐的3D点图与相机位姿，大幅提升了水下场景重建的质量和效率，为海洋探索与机器人视觉提供了实用工具。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.21089v1",
+      "source": "arxiv",
+      "title": "Loss Landscape Topology Reveals Why Simple Baselines are Competitive at 3D Point Cloud Segmentation Under Class Imbalance",
+      "abstract": "Semantic segmentation of 3D point clouds faces severe class imbalance, yet the effectiveness of specialized imbalance-aware methods from 2D computer vision remains unclear in 3D contexts. We systematically evaluate 11 imbalance mitigation approaches across datasets with extreme (641:1) and moderate (56:1) imbalance ratios, revealing a surprising finding: standard cross-entropy with uniform weighting achieves competitive performance, typically within 0.8-3.3% mIoU of specialized methods across architectures and datasets. Through multifaceted mechanistic analysis of error patterns, decision boundaries, and the geometry of the optimization landscape, our analyses suggest that imbalance severity shapes the topology, creating narrow solution basins under extreme imbalance and flat plateaus under moderate imbalance. This appears to constrain the effectiveness of loss-level modifications, as all methods must navigate these geometric constraints. Our findings offer practical guidance; standard cross-entropy provides a robust baseline, with specialized methods offering modest improvements (0.8-3.3% mIoU) that vary by architecture and dataset but risk substantial degradation if poorly tuned. This work provides the first mechanistic explanation for why techniques proven effective in 2D do not readily transfer to point-based 3D point cloud segmentation, validated across two representative architectures.",
+      "authors": [
+        "Antonis Savva",
+        "Christos Kyrkou",
+        "Theocharis Theocharides"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-23T09:19:31+00:00",
+      "link": "https://arxiv.org/pdf/2607.21089v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Analyzing class imbalance in 3D point cloud semantic segmentation",
+      "llm_evidence_cn": "分析3D点云语义分割中的类别不平衡问题",
+      "llm_evidence": "分析3D点云语义分割中的类别不平衡问题",
+      "canonical_evidence": "分析3D点云语义分割中的类别不平衡问题",
+      "llm_tldr_en": "Standard cross-entropy is competitive for 3D point cloud segmentation under class imbalance, and loss landscape topology explains why.",
+      "llm_tldr_cn": "针对3D点云语义分割中类别不平衡问题，系统评估11种方法后发现标准交叉熵损失意外具有很强的竞争力，性能差距不到3.3% mIoU。通过损失景观拓扑分析揭示了不平衡严重程度塑造优化景观的机理，解释了简单基线的有效性。该工作为3D点云分割提供了新见解。",
+      "llm_tldr": "针对3D点云语义分割中类别不平衡问题，系统评估11种方法后发现标准交叉熵损失意外具有很强的竞争力，性能差距不到3.3% mIoU。通过损失景观拓扑分析揭示了不平衡严重程度塑造优化景观的机理，解释了简单基线的有效性。该工作为3D点云分割提供了新见解。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.21416v1",
+      "source": "arxiv",
+      "title": "GLAM-SLAM: Real-time Gaussian Large-scale Mapping via Flow Densification and Spatial Decomposition",
+      "abstract": "Existing Gaussian-splatting-based monocular Simultaneous Localization and Mapping (SLAM) systems are either tailored to short sequences, are not real-time, or suffer from prohibitive GPU memory requirements, limiting their applicability in realistic, long-horizon scenarios. To address this, we present GLAM-SLAM, a real-time, decoupled Gaussian-splatting SLAM system designed for large-scale outdoor scenes. We ensure lightweight tracking using a robust, feature-based SLAM frontend, while for mapping, we adopt a structured, sparse anchor grid representation that ensures scalable operation and maintains scene coherence across long-term sequences. To satisfy the dense initialization requirements of 3D Gaussian Splatting (3DGS), we introduce a geometry-based flow-densification anchoring strategy using epipolar constraints. Furthermore, by treating mapping as a multi-scene problem, we propose a scene-partitioning strategy that introduces a strong spatial inductive bias via MLP initializations to generate localized Gaussians. We evaluate our system on the challenging, long-sequence KITTI Odometry, Oxford RobotCar, and M'alaga datasets. Extensive ablations and comparisons demonstrate a 15% improvement in reconstruction quality over the second-best performer, while maintaining real-time performance and the ability to scale to longer sequences. Code is publicly available for the benefit of the community.",
+      "authors": [
+        "Panagiotis Mermigkas",
+        "Argyris Manetas",
+        "Petros Maragos"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-07-23T15:22:42+00:00",
+      "link": "https://arxiv.org/pdf/2607.21416v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "real-time SLAM system for large-scale outdoor scene reconstruction using Gaussian splatting",
+      "llm_evidence_cn": "利用高斯泼溅的实时SLAM系统进行大规模室外场景重建",
+      "llm_evidence": "利用高斯泼溅的实时SLAM系统进行大规模室外场景重建",
+      "canonical_evidence": "利用高斯泼溅的实时SLAM系统进行大规模室外场景重建",
+      "llm_tldr_en": "GLAM-SLAM is a real-time Gaussian-splatting SLAM system for large-scale outdoor mapping, using flow densification and sparse anchor grids for scalable scene reconstruction.",
+      "llm_tldr_cn": "针对现有高斯泼溅SLAM系统难以处理长时间、大场景的问题，提出GLAM-SLAM，通过光流稠密化与空间分解实现实时大规模建图。该方法采用稀疏锚网格表示和特征前端跟踪，确保了室外场景的高效重建与一致性，推动了广域实时3D地图构建。",
+      "llm_tldr": "针对现有高斯泼溅SLAM系统难以处理长时间、大场景的问题，提出GLAM-SLAM，通过光流稠密化与空间分解实现实时大规模建图。该方法采用稀疏锚网格表示和特征前端跟踪，确保了室外场景的高效重建与一致性，推动了广域实时3D地图构建。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.20789v1",
+      "source": "arxiv",
+      "title": "3D-GIMP: When 3D Gaussian Inpainting Meets PatchMatch",
+      "abstract": "Recent advances in 3D scene editing have leveraged iterative diffusion models to update input views. However, this process is computationally expensive and struggles to produce sharp details. Meanwhile, ``hallucination drift'' frequently introduces multi-view inconsistencies, leading to structural artifacts when rendering novel viewpoints. To address this problem, we present 3D-GIMP (3D Gaussian Inpainting Meets Patch Matching), a novel hybrid paradigm designed for high-fidelity object removal in 3D Gaussian Splatting. Instead of diffusing every view, 3D-GIMP performs a single generative inpainting on a key reference view, which serves as an appearance prior. We then introduce a 3D-aware PatchMatch algorithm to propagate these reference textures across all remaining views via correspondence matching, effectively bypassing the stochastic nature of frame-by-frame diffusion. By prioritizing reconstructive consistency over iterative generation, 3D-GIMP maintains high-frequency details across arbitrary resolutions while ensuring a mathematically consistent 3D reconstruction. Our experiments demonstrate that 3D-GIMP not only achieves competitive inpainting quality as previous methods using diffusion in multiple views, but also outperforms these methods in rendering speed and view consistency.",
+      "authors": [
+        "Xuening Tian",
+        "Dieter Schmalstieg",
+        "Shohei Mori"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR"
+      ],
+      "published": "2026-07-22T23:27:20+00:00",
+      "link": "https://arxiv.org/pdf/2607.20789v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "3D-aware PatchMatch for multi-view texture propagation",
+      "llm_evidence_cn": "用于多视图纹理传播的3D感知PatchMatch",
+      "llm_evidence": "用于多视图纹理传播的3D感知PatchMatch",
+      "canonical_evidence": "用于多视图纹理传播的3D感知PatchMatch",
+      "llm_tldr_en": "3D-GIMP performs object removal in 3D Gaussian splatting by inpainting a single reference view and propagating textures to all views via a 3D-aware PatchMatch algorithm, ensuring multi-view consistency.",
+      "llm_tldr_cn": "针对3D场景编辑中多视图不一致和计算成本高的问题，3D-GIMP提出混合范式：对关键参考视图进行一次生成修补作为外观先验，然后利用3D感知的PatchMatch算法将纹理传播到所有剩余视图，在高斯泼溅表示中实现高保真物体移除，有效避免了多视图不一致导致的渲染伪影。",
+      "llm_tldr": "针对3D场景编辑中多视图不一致和计算成本高的问题，3D-GIMP提出混合范式：对关键参考视图进行一次生成修补作为外观先验，然后利用3D感知的PatchMatch算法将纹理传播到所有剩余视图，在高斯泼溅表示中实现高保真物体移除，有效避免了多视图不一致导致的渲染伪影。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.19100v1",
+      "source": "arxiv",
+      "title": "FlexiAvatar: Unified 3D Gaussian Human Avatars Under Arbitrary Body Visibility",
+      "abstract": "Reconstructing animatable 3D human avatars from monocular video is a fundamental problem in computer vision with broad applications in AR/VR and digital content creation. Existing approaches typically couple parametric body models with neural rendering or 3D Gaussian splatting and optimize all body regions jointly from short videos, which often degrades fidelity in the visible areas. To overcome this limitation, we introduce FlexiAvatar, a unified framework that explicitly optimizes only the visible body regions, effectively eliminating artifacts arising from unobserved limbs. Our method integrates occlusion-robust SMPL-X tracking with part-specific residual refinement to capture high-frequency geometric and appearance details. To complete entirely unseen regions (e.g., back views), we leverage a diffusion-based approach to generate texture consistent with the observed appearance. Experiments on full-body (NeuMan, ZJU-MoCap, WildAvatar), upper/half-body (talk-show clips), and head-only (INSTA) inputs show that FlexiAvatar delivers consistently higher reconstruction quality, outperforming state-of-the-art methods by an average PSNR improvement of approximately 3% across datasets. Finally, by restricting optimization to observed regions, our method reduces the effective number of Gaussians that must be optimized and rendered, leading to reduced runtime and memory overhead in partial-visibility scenarios.",
+      "authors": [
+        "Yihalem Yimolal Tiruneh",
+        "Muhammad Salman Ali",
+        "Uyoung Jeong",
+        "Muneeb A. Khan",
+        "MD Khalequzzaman Chowdhury Sayem",
+        "Allanur Bayramgeldiyev",
+        "Binod Bhattarai",
+        "Seungryul Baek"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-21T13:43:31+00:00",
+      "link": "https://arxiv.org/pdf/2607.19100v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "reconstructing animatable 3D human avatars from monocular video",
+      "llm_evidence_cn": "从单目视频重建可动画的3D人体化身",
+      "llm_evidence": "从单目视频重建可动画的3D人体化身",
+      "canonical_evidence": "从单目视频重建可动画的3D人体化身",
+      "llm_tldr_en": "FlexiAvatar reconstructs animatable 3D human avatars from monocular video by optimizing only visible body regions and integrating occlusion-robust SMPL-X tracking, improving fidelity in visible areas and completing unseen parts.",
+      "llm_tldr_cn": "为解决单目视频人体重建中未观测区域伪影问题，提出FlexiAvatar仅优化可见区域并集成抗遮挡SMPL-X跟踪，结合部分特定残差精化捕捉高频细节，有效提升可见区域保真度，为增强现实和数字内容创作提供高质量人体化身重建。",
+      "llm_tldr": "为解决单目视频人体重建中未观测区域伪影问题，提出FlexiAvatar仅优化可见区域并集成抗遮挡SMPL-X跟踪，结合部分特定残差精化捕捉高频细节，有效提升可见区域保真度，为增强现实和数字内容创作提供高质量人体化身重建。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.21448v1",
+      "source": "arxiv",
+      "title": "GrainGS: Gradient-Decoupled Gaussian Splatting for Efficient Dynamic Novel View Synthesis",
+      "abstract": "Dynamic scene reconstruction with 3D Gaussian Splatting requires a balance between fine-grained motion modeling, structural stability, and compact representation. Existing per-primitive methods provide flexible local deformation but often suffer from redundant primitive growth, while anchor-based methods improve spatial regularity at the cost of suppressing locally varying motion. To address these issues, we present GrainGS, a dynamic Gaussian framework that combines a hierarchical anchor scaffold with per-Gaussian deformation. A static warm-up stage first establishes a time-invariant canonical representation from observations across all timestamps. During joint training, a stop-gradient operation blocks the deformation-mediated gradient pathway to the canonical positions while preserving their direct refinement through the reconstruction objective. Each Gaussian then predicts independent temporal offsets for position, rotation, and scale, enabling detailed local motion within a structurally constrained scaffold. A canonical-residual appearance decomposition further models frame-dependent photometric changes without forcing them into geometric deformation. Experiments on synthetic monocular and real-world multiview benchmarks show that GrainGS achieves high reconstruction quality, real-time novel view synthesis, and compact storage. Under the synthetic benchmark setting, it reaches an average peak signal-to-noise ratio of 36.98 decibels, renders at 435.6 frames per second, and requires 4.67 megabytes of storage.",
+      "authors": [
+        "Jiahao He",
+        "Yihua Shao",
+        "Zhengkai Zhao",
+        "Pan Gao",
+        "Fei Ma",
+        "Jingcai Guo",
+        "Hao Tang",
+        "Nicu Sebe",
+        "Qi Tian"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-23T15:52:35+00:00",
+      "link": "https://arxiv.org/pdf/2607.21448v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "dynamic scene reconstruction with 3D Gaussian Splatting",
+      "llm_evidence_cn": "使用3D高斯溅射进行动态场景重建",
+      "llm_evidence": "使用3D高斯溅射进行动态场景重建",
+      "canonical_evidence": "使用3D高斯溅射进行动态场景重建",
+      "llm_tldr_en": "GrainGS combines a hierarchical anchor scaffold with per-Gaussian deformation for efficient dynamic novel view synthesis, balancing motion modeling and compact representation.",
+      "llm_tldr_cn": "针对动态场景重建中细粒度运动建模与结构稳定性之间的矛盾，GrainGS结合层次锚点骨架与逐高斯变形，通过静态预热和梯度停止策略实现紧凑的动态高斯表示，提升动态新视角合成的效率与质量。",
+      "llm_tldr": "针对动态场景重建中细粒度运动建模与结构稳定性之间的矛盾，GrainGS结合层次锚点骨架与逐高斯变形，通过静态预热和梯度停止策略实现紧凑的动态高斯表示，提升动态新视角合成的效率与质量。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

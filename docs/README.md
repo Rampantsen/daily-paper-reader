@@ -6,38 +6,46 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-23
-- 运行时间：2026-07-23 21:36:53 UTC
+- 最新运行日期：2026-07-24
+- 运行时间：2026-07-24 21:38:23 UTC
 - 运行状态：成功
-- 本次总论文数：6
+- 本次总论文数：8
 - 精读区：5
-- 速读区：1
+- 速读区：3
 
 ### 今日简报（AI）
-今日聚焦3D视觉前沿，精读2篇高分论文并速览1篇，覆盖几何基础模型与全景分割。最值得关注的是将黎曼流形与流匹配引入3D基础模型，以及大视角合成模型向多视图全景分割的巧妙拓展。建议读者从《Latent Riemannian Flow Matching》入手，理解几何先验如何重塑生成式3D智能。
-- 详情：[/202607/23/README](/202607/23/README)
+今日聚焦3D内容生成与重建，精读两篇9分工作：形状补全统一框架Axolotl3D与原生编辑的3D世界重建，并速览高斯修补、动态视图合成等新尝试。  
+最值得关注的是“几何保真”与“可编辑世界”的融合——Axolotl3D让补全不再丢失细节，Engine-Native方案则将物体与光照分离，直接补全可用的3D场景。  
+建议读者优先体验这两项工作的开源代码，动手尝试在局部扫描或游戏资产场景中验证形状补全与编辑流水线。
+- 详情：[/202607/24/README](/202607/24/README)
 
 ### 精读区论文标签
-1. [Latent Riemannian Flow Matching for Geometry-Grounded 3D Foundation Models](/202607/23/2607.19120v1-latent-riemannian-flow-matching-for-geometry-grounded-3d-foundation-models)  
+1. [Axolotl3D: a Unified Framework for Faithful 3D Shape Completion](/202607/24/2607.20660v1-axolotl3d-a-unified-framework-for-faithful-3d-shape-completion)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：在VGGT潜空间中进行流匹配从稀疏图像生成3D几何
-2. [Extending a Large View Synthesis Model for Multi-view Panoptic Segmentation](/202607/23/2607.19765v1-extending-a-large-view-synthesis-model-for-multi-view-panoptic-segmentation)  
+   evidence：从多模态输入包括图像进行三维形状补全
+2. [Engine-Native Editable 3D World Reconstruction with Objects and Lighting](/202607/24/2607.20889v1-engine-native-editable-3d-world-reconstruction-with-objects-and-lighting)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：利用视图合成对应关系跨视图传播全景标签实现多视图三维分割
-3. [STEREOFLOW: Progressive Stereo Matching with StereoDiT and Transition Flow Matching](/202607/23/2607.19986v1-stereoflow-progressive-stereo-matching-with-stereodit-and-transition-flow-matching)  
+   evidence：引擎原生3D场景解析，分割物体与光源实例
+3. [WAT3R: Feedforward Underwater 3D Reconstruction](/202607/24/2607.21023v1-wat3r-feedforward-underwater-3d-reconstruction)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：用于三维重建的先验引导生成式立体匹配
-4. [ATSplat: Compact Feed-forward 3D Gaussian Splatting with Adaptive Token Expansion](/202607/23/2607.20417v1-atsplat-compact-feed-forward-3d-gaussian-splatting-with-adaptive-token-expansion)  
+   evidence：前馈式水下多视角三维场景重建
+4. [Loss Landscape Topology Reveals Why Simple Baselines are Competitive at 3D Point Cloud Segmentation Under Class Imbalance](/202607/24/2607.21089v1-loss-landscape-topology-reveals-why-simple-baselines-are-competitive-at-3d-point-cloud-segmentation-under-class-imbalance)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：前馈式3D高斯泼溅从稀疏视图重建场景
-5. [Odin: Primitive-Level Synchronization for Distributed Point-Based Neural Rendering](/202607/23/2607.19893v1-odin-primitive-level-synchronization-for-distributed-point-based-neural-rendering)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：分布式点基神经渲染训练系统实现大规模3D重建
+   evidence：分析3D点云语义分割中的类别不平衡问题
+5. [GLAM-SLAM: Real-time Gaussian Large-scale Mapping via Flow Densification and Spatial Decomposition](/202607/24/2607.21416v1-glam-slam-real-time-gaussian-large-scale-mapping-via-flow-densification-and-spatial-decomposition)  
+   标签：评分：9.0/10、query:d-gen-recon
+   evidence：利用高斯泼溅的实时SLAM系统进行大规模室外场景重建
 
 ### 速读区论文标签
-1. [GaussianSeed: Hierarchical Gaussian Seeding for High-Resolution 3D Occupancy Prediction](/202607/23/2607.20071v1-gaussianseed-hierarchical-gaussian-seeding-for-high-resolution-3d-occupancy-prediction)  
+1. [3D-GIMP: When 3D Gaussian Inpainting Meets PatchMatch](/202607/24/2607.20789v1-3d-gimp-when-3d-gaussian-inpainting-meets-patchmatch)  
    标签：评分：7.0/10、query:d-gen-recon
-   evidence：从视觉多视图输入进行高分辨率三维占用预测
+   evidence：用于多视图纹理传播的3D感知PatchMatch
+2. [GrainGS: Gradient-Decoupled Gaussian Splatting for Efficient Dynamic Novel View Synthesis](/202607/24/2607.21448v1-graings-gradient-decoupled-gaussian-splatting-for-efficient-dynamic-novel-view-synthesis)  
+   标签：评分：7.0/10、query:d-gen-recon
+   evidence：使用3D高斯溅射进行动态场景重建
+3. [FlexiAvatar: Unified 3D Gaussian Human Avatars Under Arbitrary Body Visibility](/202607/24/2607.19100v1-flexiavatar-unified-3d-gaussian-human-avatars-under-arbitrary-body-visibility)  
+   标签：评分：6.0/10、query:d-gen-recon
+   evidence：从单目视频重建可动画的3D人体化身
 
 
 <div class="dpr-home-promo-card">
