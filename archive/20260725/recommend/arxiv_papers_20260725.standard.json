@@ -1,0 +1,176 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-25T21:15:07.091089+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2607.19777v1",
+      "source": "arxiv",
+      "title": "Look Before You Edit: Attention-Guided Camera Placement and Multi-View Alignment for 3D Gaussian Splatting Editing",
+      "abstract": "Text-driven 3D scene editing with 3D Gaussian Splatting (3DGS) typically applies a 2D diffusion editor to views rendered from fixed training cameras, limiting both the spatial coverage of edits and the user's freedom to target specific objects in complex scenes. We present LB-Edit, a framework that addresses two coupled problems: where to place editing cameras for localized edits, and how to make per-view edits agree with one another so that the 3D scene remains consistent after fine-tuning. First, Attention-Guided Editing Camera Placement (ACP) probes the diffusion model's self- and cross-attention at multiple candidate camera distances to find where attention is well-contained in the region of interest, then places a compact, geometrically diverse editing camera set at that attention-optimal distance. Second, Multi-view Attention Alignment (MAA) steers the editor toward the same edit across views along two axes: it aligns appearance by sharing self-attention features via token-level correspondence, and aligns spatial location by lifting cross-attention maps onto the 3D Gaussians as a shared 3D attention field, suppressing both appearance and spatial drift. Experiments on multi-object and single-object scenes show that our method achieves the highest user preference in instruction fidelity, multi-view consistency, and editing locality, using as few as 5 editing views and reducing latency by up to 7x over existing methods.",
+      "authors": [
+        "Jaeyeon Park",
+        "Taeho Kang",
+        "Youngki Lee"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-22T05:51:10+00:00",
+      "link": "https://arxiv.org/pdf/2607.19777v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "multi-view alignment for consistent 3D scene editing with Gaussian Splatting",
+      "llm_evidence_cn": "多视图对齐实现一致的三维场景高斯散点编辑",
+      "llm_evidence": "多视图对齐实现一致的三维场景高斯散点编辑",
+      "canonical_evidence": "多视图对齐实现一致的三维场景高斯散点编辑",
+      "llm_tldr_en": "LB-Edit framework uses attention-guided camera placement and multi-view alignment to enable localized edits in 3D scenes while maintaining cross-view consistency, addressing the limitations of fixed-camera editing in 3D Gaussian Splatting.",
+      "llm_tldr_cn": "现有3D高斯散点编辑方法受限于固定相机视图，难以定位特定物体且编辑一致性差。本文提出LB-Edit，通过注意力驱动编辑相机放置（ACP）选择最佳视角，并利用多视图对齐保证编辑后微调的场景一致。实验表明该方法能更精确地实现局部编辑，并保持整体场景的视觉连贯性。",
+      "llm_tldr": "现有3D高斯散点编辑方法受限于固定相机视图，难以定位特定物体且编辑一致性差。本文提出LB-Edit，通过注意力驱动编辑相机放置（ACP）选择最佳视角，并利用多视图对齐保证编辑后微调的场景一致。实验表明该方法能更精确地实现局部编辑，并保持整体场景的视觉连贯性。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.17200v1",
+      "source": "arxiv",
+      "title": "Cross-Coordinate Correspondence Pruning for Image-to-Point Cloud Registration",
+      "abstract": "Recent detection-free approaches have shown significant efficacy in image-to-point cloud (I2P) registration by employing a coarse-to-fine matching pipeline. In the coarse stage, down-sampled image features and voxelized point cloud features are typically fused to establish initial coarse correspondences for subsequent refinement. However, existing methods largely overlook the critical role of point cloud density, which fundamentally dictates the quality of coarse correspondences and the final registration results. Specifically, excessively sparse point clouds lead to an insufficient number of inliers, while overly dense ones often introduce a high outlier ratio. Consequently, this creates an inherent density trade-off, thereby significantly limiting the registration accuracy of current approaches. For mitigating this trade-off, we propose a novel Cross-Coordinate Correspondences Pruning (CCP) strategy to acquire sufficient inliers while ensuring a low outlier ratio. To minimize interference from inter-modal coordinate discrepancies, we first project cross-coordinate coarse correspondences to the 2D image coordinate system for spatial unification. Subsequently, a lightweight pruning network is responsible for predicting the inlier confidences, which are used to filter coarse outliers, from coordinate geometric and modal feature dimensions. To maximize inlier recall, we further design a Multi-Density Point Ensemble (MDPE) strategy that consolidates and deduplicates pruned coarse correspondences across varying point cloud densities. Our method achieves a significant performance improvement, surpassing existing state-of-the-art methods by at least 8.6% in Registration Recall across various benchmarks.",
+      "authors": [
+        "Xin Liu",
+        "Rong Qin",
+        "Huipeng Lin",
+        "Leizhi Shu",
+        "Jin Wu",
+        "Chi-Man Vong",
+        "Liang Lin",
+        "Jufeng Yang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-19T11:45:14+00:00",
+      "link": "https://arxiv.org/pdf/2607.17200v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "correspondence pruning for image-to-point cloud registration, involving cross-modality feature matching",
+      "llm_evidence_cn": "图像到点云配准中的对应关系修剪，涉及跨模态特征匹配",
+      "llm_evidence": "图像到点云配准中的对应关系修剪，涉及跨模态特征匹配",
+      "canonical_evidence": "图像到点云配准中的对应关系修剪，涉及跨模态特征匹配",
+      "llm_tldr_en": "A cross-coordinate pruning method addresses density trade-off in image-to-point cloud registration, improving coarse-to-fine matching for 3D alignment.",
+      "llm_tldr_cn": "图像到点云配准中点云密度影响粗对应质量。本文提出跨坐标对应关系修剪，在粗匹配阶段动态平衡内点与外点，解决稀疏-密集密度权衡，提升跨模态配准的鲁棒性和精度，为三维重建中的多传感器融合提供基础。",
+      "llm_tldr": "图像到点云配准中点云密度影响粗对应质量。本文提出跨坐标对应关系修剪，在粗匹配阶段动态平衡内点与外点，解决稀疏-密集密度权衡，提升跨模态配准的鲁棒性和精度，为三维重建中的多传感器融合提供基础。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.20326v1",
+      "source": "arxiv",
+      "title": "Toward Reliable RGB-D Semantic Segmentation: Handling Missing Modalities via Condition Dropout",
+      "abstract": "RGB-D semantic segmentation has achieved remarkable progress, yet most models assume that RGB and depth are always available. In practice, failures or occlusions of surveillance sensors often remove one modality. Although RGB or depth alone can contain sufficient cues, models trained only on full-modality inputs fail to exploit the remaining modality once one is missing, causing severe degradation. We tackle this issue with a simple continued-training paradigm, \\emph{Condition Dropout (ConD)}, which mitigates degradation while preserving full-modality accuracy. Starting from a pretrained RGB-D model, ConD adds a second stage that randomly simulates complete, RGB-missing, and depth-missing inputs, freezes the original encoders, and trains copied encoders with zero-initialized feature injection. Experiments on NYU-Depth V2 and SUN RGB-D show that ConD improves robustness under missing modalities and even yields slight gains when modalities are complete. Our code will be made publicly available upon acceptance.",
+      "authors": [
+        "Xuchen Zhu",
+        "Yajuan Wei",
+        "Shuang Hao",
+        "Jiwei Jiang",
+        "Guanxiang Mao",
+        "Fang Ren"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-07-22T16:12:27+00:00",
+      "link": "https://arxiv.org/pdf/2607.20326v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "robust RGB-D semantic segmentation handling missing modalities for 3D scene understanding",
+      "llm_evidence_cn": "鲁棒的RGB-D语义分割处理缺失模态以支持3D场景理解",
+      "llm_evidence": "鲁棒的RGB-D语义分割处理缺失模态以支持3D场景理解",
+      "canonical_evidence": "鲁棒的RGB-D语义分割处理缺失模态以支持3D场景理解",
+      "llm_tldr_en": "This paper proposes Condition Dropout (ConD), a continued-training method that makes RGB-D semantic segmentation models robust to missing modalities (RGB or depth), preserving full-modality accuracy while enabling inference with partial inputs.",
+      "llm_tldr_cn": "实际应用中RGB或深度传感器可能失效，导致预训练模型性能骤降。本文提出条件丢弃（ConD）策略，在继续训练阶段随机模拟全模态、缺RGB、缺深度输入，冻结原始编码器并微调，使模型能够利用剩余模态进行分割。实验表明，ConD在保持全模态精度的同时显著缓解了缺失模态下的退化。该方法为三维场景语义分割提供了更可靠的解决方案。",
+      "llm_tldr": "实际应用中RGB或深度传感器可能失效，导致预训练模型性能骤降。本文提出条件丢弃（ConD）策略，在继续训练阶段随机模拟全模态、缺RGB、缺深度输入，冻结原始编码器并微调，使模型能够利用剩余模态进行分割。实验表明，ConD在保持全模态精度的同时显著缓解了缺失模态下的退化。该方法为三维场景语义分割提供了更可靠的解决方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.21592v1",
+      "source": "arxiv",
+      "title": "Unified Video Dense Prediction from Disjoint Data",
+      "abstract": "Scene understanding requires simultaneous prediction about geometry, appearance, and semantics. However, existing task-specific annotations are fragmented across incompatible, domain-specific datasets. Current unified systems circumvent this by restricting training to fully co-annotated data, or by incurring the large computational cost of pseudo-labeling. To mitigate this, we introduce UniD, a unified video model that jointly predicts eight dense scene properties-depth, surface normals, semantic segmentation, boundaries, human parts, albedo, shading, and materials-all learned from disjoint, domain-specific datasets. We propose a simple yet effective distillation step in which per-task experts supervise a unified backbone through lightweight task projectors, eliminating the need for annotation overlap or pseudo-labeling. Our key insight is that the strong visual priors of a pretrained diffusion model are sufficient to bridge the domain gaps introduced by disjoint training sources, enabling robust generalization to scene-task combinations never seen during training. UniD achieves competitive performance against per-task specialists and multi-task baselines, with strong generalization to out-of-distribution scenarios and enhanced temporal and cross-task consistency. Code and video results are available at https://unid-video.github.io/.",
+      "authors": [
+        "Yihong Sun",
+        "Seoung Wug Oh",
+        "Jiahui Huang",
+        "Bharath Hariharan",
+        "Joon-Young Lee"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-23T17:59:50+00:00",
+      "link": "https://arxiv.org/pdf/2607.21592v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "dense prediction of scene geometry from video, enabling 3D scene reconstruction",
+      "llm_evidence_cn": "从视频中密集预测场景几何，支持3D场景重建",
+      "llm_evidence": "从视频中密集预测场景几何，支持3D场景重建",
+      "canonical_evidence": "从视频中密集预测场景几何，支持3D场景重建",
+      "llm_tldr_en": "UniD introduces a unified video model that predicts eight dense properties including depth and semantics from disjoint datasets via distillation. It jointly outputs rich 3D geometry and scene understanding. Experiments show competitive performance across tasks, providing a versatile foundation for multi-view 3D reconstruction and scene analysis.",
+      "llm_tldr_cn": "该论文提出统一视频模型UniD，通过蒸馏训练从分离的数据集中同时预测深度、语义、法向等八种密集属性，实现三维几何与场景理解。在多个基准上取得了与专用模型相当的性能，为从视频进行多视角三维重建提供了灵活的基础模型。",
+      "llm_tldr": "该论文提出统一视频模型UniD，通过蒸馏训练从分离的数据集中同时预测深度、语义、法向等八种密集属性，实现三维几何与场景理解。在多个基准上取得了与专用模型相当的性能，为从视频进行多视角三维重建提供了灵活的基础模型。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

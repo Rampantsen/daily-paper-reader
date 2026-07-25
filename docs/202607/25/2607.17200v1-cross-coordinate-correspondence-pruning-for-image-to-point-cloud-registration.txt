@@ -1,0 +1,495 @@
+Title: Cross-Coordinate Correspondence Pruning for Image-to-Point Cloud Registration
+
+URL Source: https://arxiv.org/pdf/2607.17200v1
+
+Published Time: Tue, 21 Jul 2026 01:05:13 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# Cross-Coordinate Correspondence Pruning for Image-to-Point Cloud Registration 
+
+## Xin Liu 1,∗, Rong Qin 1*, Huipeng Lin 1, Leizhi Shu 4, Jin Wu 5, Chi-Man Vong 6, Liang Lin 2,7, Jufeng Yang 1,2,3† 
+
+> 1
+
+VCIP & TMCC & DISSec, College of Computer Science, Nankai University, Tianjin, China.  
+
+> 2
+
+Pengcheng Laboratory, Shenzhen, China.  
+
+> 3
+
+Nankai International Advanced Research Institute (SHENZHEN·FUTIAN), Shenzhen, China.  
+
+> 4
+
+AutoCity (Shenzhen) Autonomous Driving Co., Ltd, Shenzhen, China.  
+
+> 5
+
+School of Intelligent Science and Technology, University of Science and Technology Beijing, Beijing, China.  
+
+> 6
+
+Department of Computer and Information Science, University of Macau, Macau, China  
+
+> 7
+
+School of Computer Science and Engineering, Sun Yat-sen University, Guangzhou, China 
+
+## Abstract 
+
+Recent detection-free approaches have shown significant ef-ficacy in image-to-point cloud (I2P) registration by employ-ing a coarse-to-fine matching pipeline. In the coarse stage, down-sampled image features and voxelized point cloud features are typically fused to establish initial coarse cor-respondences for subsequent refinement. However, exist-ing methods largely overlook the critical role of point cloud density, which fundamentally dictates the quality of coarse correspondences and the final registration results. Specifi-cally, excessively sparse point clouds lead to an insufficient number of inliers, while overly dense ones often introduce a high outlier ratio. Consequently, this creates an inherent density trade-off, thereby significantly limiting the registra-tion accuracy of current approaches. For mitigating this trade-off, we propose a novel Cross-Coordinate Correspon-dences Pruning (CCP) strategy to acquire sufficient inliers while ensuring a low outlier ratio. To minimize interference from inter-modal coordinate discrepancies, we first project cross-coordinate coarse correspondences to the 2D image coordinate system for spatial unification. Subsequently, a lightweight pruning network is responsible for predict-ing the inlier confidences, which are used to filter coarse outliers, from coordinate geometric and modal feature di-mensions. To maximize inlier recall, we further design a Multi-Density Point Ensemble (MDPE) strategy that con-solidates and deduplicates pruned coarse correspondences across varying point cloud densities. Our method achieves a significant performance improvement, surpassing existing state-of-the-art methods by at least 8.6% in Registration Re-call across various benchmarks. 
+
+> *Both authors contributed equally to this research.
+> †Corresponding author.
+
+## 1. Introduction 
+
+Image-to-point cloud (I2P) registration serves as a funda-mental task across various domains, such as autonomous driving [4], robot navigation [30], and simultaneous local-ization and mapping [19]. It aims to determine an opti-mal rigid transformation for accurately aligning the 2D im-ages and 3D point clouds of the same scene, where the accurate establishment of cross-modal correspondences is paramount. Existing methods tackle this problem in two ways: detection-based and detection-free paradigms [12]. The former [5, 22, 28] adopts a detect-then-match strategy to obtain sparse pixel-to-point matches, which suffers from low inlier ratios due to the phased design. While the lat-ter [9, 12, 33] directly generates dense correspondences by aligning 2D and 3D patches at a coarse level and subse-quently refining them, achieving improved performance. Detection-free methods [3, 9, 12, 31] generally adopt a coarse-to-fine paradigm that involves image downsam-pling and point cloud voxelization in the coarse stage, fol-lowed by cross-modal feature alignment. As the pioneer, 2D3D-Matr [12] adopts a U-Net structure via attention to learn cross-modality correlations, with coarse matching per-formed at the deepest feature layers. Along this line, sub-sequent methods [3, 9, 31] further enhance performance by focusing on cross-modality fusion and alignment. For ex-ample, CA-I2P [3] uses two enhanced modules to improve feature quality and mitigate matching errors. Diff 2I2P [18] bridges the modality gap by utilizing diffusion prior ob-tained from the depth-conditioned diffusion model. Crucially, our empirical analysis reveals that the point cloud density employed during the coarse stage serves as a more crucial factor for both coarse correspondence qual-ity and final registration accuracy than the aligning designs. arXiv:2607.17200v1 [cs.CV] 19 Jul 2026 (a) Performance Comparison  
+
+> Registration Recall (%)
+> Layer Index
+> (b) Comparison of Coarse Correspondences Before and After Pruning Figure 1. (a) Sensitivity analysis of coarse-stage point density. We evaluate the registration performance on the RGB-D Scenes V2 [10] by adjusting the density of matchable points across various feature layers. (b) Visualization of coarse correspondences before and after applying the proposed CCP. The inlier ratio is shown top-right.
+
+As illustrated in Fig 1 (a), all methods demonstrate sub-stantial performance gains when the density of matchable point clouds is appropriately increased at the coarse stages (e.g. , at level indices 2 or 3). Nevertheless, as the density of matchable points increases, the proportion of outliers within the coarse correspondences also rises (see ablation study). These excessive outliers introduce substantial noise and in-terference into the subsequent matching pipeline, ultimately precipitating performance degradation. Consequently, point clouds that are either excessively sparse or overly dense may result in insufficient or unreliable inliers within the coarse correspondences, thereby negatively impacting the refinement process. To overcome this limitation, it is imper-ative to develop a strategy that leverages appropriate point cloud density to maximize inlier recall while maintaining a relatively low outlier ratio. We characterize this inherent conflict as the density trade-off. To mitigate this density trade-off, we develop a novel Cross-Coordinate Correspondence Pruning (CCP) strategy that effectively eliminates outliers from coarse correspon-dences across varying point cloud densities, while retaining a sufficient number of inliers. Specifically, CCP first es-tablishes initial coarse correspondences between the down-sampled image and the voxelized point cloud. To unify the spatial representation, we project 3D point cloud coordi-nates onto the 2D image plane and fuse them with image coordinates, thereby deriving robust geometric information. Subsequently, a lightweight MLP architecture functions as the core inference engine of CCP, performing end-to-end learning to predict inlier confidence scores by jointly uti-lizing coordinate geometry and multi-modal feature repre-sentations. As illustrated in Fig 1(b), CCP effectively sup-presses coarse outliers and enhances inlier precision based on the confidence scores and a predefined threshold. Com-plementing this pruning mechanism, we introduce a Multi-Density Point Ensemble (MDPE) strategy to maximize in-lier recall. MDPE aggregates coarse correspondences de-rived from varying point cloud densities, which are subse-quently filtered via CCP, and then merges and deduplicates the results for optimal downstream refinement. Empirical evaluations show that our method consistently outperforms state-of-the-art methods, improving Registration Recall by at least 8.6% across diverse benchmarks. Our contributions are threefold: 1) We introduce a novel CCP strategy designed to mitigate the inherent density trade-off. By integrating fused 2D-3D coordinate geomet-ric cues with multi-modal features, CCP performs end-to-end inlier confidence prediction, effectively filtering out-liers from coarse correspondences while preserving suf-ficient inliers 2) We devise an MDPE strategy to maxi-mize inlier recall. It aggregates coarse correspondences de-rived from varying point cloud densities, utilizing a robust merge-and-deduplication process to provide high-fidelity inputs for downstream refinement. 3) Extensive experi-ments demonstrate that our method outperforms state-of-the-art approaches on multiple benchmarks, yielding sig-nificant gains in registration performance. 
+
+## 2. Related Work 
+
+2.1. Image-to-Point Cloud Registration 
+
+Compared with same-modality registration, I2P registra-tion is more challenging due to substantial cross-modal discrepancies. Early studies [5, 22, 28] similarly adopted a detect-then-match pipeline to establish cross-modal cor-respondences. For example, 2D3D-Matchnet [5] extracts SIFT [16] from images and ISS [24] from point clouds, respectively, to perform matching based on the similar-ity of descriptors. Unfortunately, this strategy often re-sults in a low inlier ratio due to the inherent inconsis-tency between 2D and 3D keypoint detection mechanisms. More recently, detection-free 2D3D-Matr [12] employs a Transformer-based [27] architecture to enable cross-modal interaction and coarse-to-fine matching, leading to no-table performance gains. Subsequent approaches [3, 9, 29, 31, 33] mainly concentrate on developing strong learn-ing paradigms and network modules to improve accuracy. FreeReg [29] unifies heterogeneous modalities through the pre-trained models, which leverages semantically consis-tent diffusion representations and geometric features, with-out requiring task-specific training. Diff-Reg [31] intro-duces a denoising diffusion process in the space of doubly stochastic matrices to achieve robust correspondence esti-mation. CA-I2P [3] utilizes the channel adaptive adjust-ment module to enhance intra-modal features and suppress cross-modal sensitivity. Nonetheless, existing approaches often neglect a simple yet important factor: the influence of point cloud density during the coarse stage. We further examine the role of point cloud density in I2P registration and propose an effective pruning mechanism to improve the registration robustness. 
+
+2.2. Correspondence Pruning 
+
+Correspondence pruning aims at distilling accurate in-liers from initial correspondences. Ranging from classical geometry-based verification [2, 14, 17] to learning-based paradigms [1, 15, 34, 35], these methods have proven highly effective as a post-processing step for robust registration. For example, LFGC [34] reformulates the problem as a classification task and employs an MLP-based neural net-work to estimate inlier weights. NCMNet [15] investi-gates the synergy among three types of neighbors to en-hance the discriminability. PointDSC [1] further extends this paradigm to point clouds, and explicitly incorporates spatial consistency to enhance feature correlations. Subse-quent approaches [21, 32, 36] have explored diverse learn-ing paradigms or architectural modules to enhance the clas-sification reliability. Motivated by these insights, we in-corporate correspondence pruning into the I2P registration framework to achieve superior registration performance. Notably, while existing pruning methods predominantly operate within intra-modal settings, we propose a cross-coordinate projection mechanism to mitigate the structural discrepancy across modalities, which significantly enhances pruning accuracy. 
+
+## 3. Methodology 
+
+3.1. Preliminaries 
+
+Problem formulation. Given the overlapped image I ∈
+
+RH×W ×3 and point cloud P ∈ RN ×3, I2P registration aims to estimate the relative rigid transformation T = [ R|t] for aligning the two modalities, where rotation R ∈ SO (3) 
+
+and translation t ∈ R3. Based on the estimated pixel-to-point correspondences C = {(xi, yi)|xi ∈ R2, yi ∈ R3},the transformation T is recovered through the minimization of the 2D projection error: 
+
+min 
+
+> R,t
+
+X
+
+> (xi,yi)∈C
+
+|K (Ry i + t, K) − xi|2 , (1) where K denotes the camera intrinsic matrix and K repre-sents the 3D-to-2D projection function. The optimization problem is efficiently solved via the PnP-RANSAC algo-rithm [11]. In this process, the accurate estimation of corre-spondences is of paramount importance and is the focus of this work. 
+
+Overview of coarse-to-fine matching framework. 
+
+Here, we review the widely applied coarse-to-fine match-ing framework [12] in I2P registration. Specifically, in this framework, the image is first processed by a four-stage ResNet [7] equipped with FPN [13] to generate multi-resolution 2D features FIs ∈ RHs×Ws×Cs and correspond-ing coordinate matrices QIs ∈ RHs×Ws×2. Here, s de-notes the pyramid level (usually set to 4) and Cs repre-sents the number of channels. Meanwhile, a four-stage KPFCNN [26] is employed to voxelize the 3D points PPs ∈
+
+RNs×3 and obtain multi-scale features FPs ∈ RNs×Cs . In the coarse stage, it typically perform patch matching be-tween the lowest resolution of 2D features ( i.e. , FI4, QI4) and the coarsest scale of 3D features ( i.e. , FP4 , PP4 ). To enhance the cross-modal correlations, a Transformer-based [27] fea-ture fusion module equipped with positional information is used. Then, the coarse correspondence set Cc is established by mutual top-k similarity:                
+
+> Cc={(ˆ xi,ˆyi)|ˆxi∈QI4,ˆyi∈PP4}=topk (d( ˆFI4,ˆFP4)≤τc),
+> (2)
+
+ˆFI4, ˆFP4 = Att (FI4, QI4, FP4 , PP4 ), (3) in which ˆFI4 and ˆFP4 denote the enhanced 2D and 3D fea-tures, respectively. d(·, ·) measures the feature similarity, and τc is the similarity threshold in the coarse stage. Feature fusion module Att (·) contains both self-attention and cross-attention operations. Finally, in the fine stage, it further extracts the local dense correspondences in each (ˆ xi, ˆyi)
+
+by leveraging the fine-level 2D and 3D features and mutual top-k selection scheme. This process can be formulated as: 
+
+Cf = {(xi, yi) | xi ∈ QI
+
+> 1
+
+, yi ∈ PP 
+
+> 1
+
+}
+
+= topk( d(FI1, FP1 ) ≤ τf ), ∀(xi, yi) ∈ Cc, (4) where τf is the similarity threshold in the fine stage. Cf is the fine pixel-to-point correspondence set. 
+
+3.2. Limitation of Coarse-to-Fine Matching 
+
+Based on the Eq. 4, the effectiveness of the coarse-to-fine matching framework is built upon a high-quality coarse cor-respondence set, i.e. , Cc. A commonly overlooked lim-itation is that, to meet efficiency requirements, excessive downsampling or voxelization of the input data leads to ResNet 
+
+> DINO
+> …
+> Fine Matching
+> 𝐶 !
+> Feature
+> Embedding
+> Geometry
+> Embedding
+> F"#$
+> F%#&
+> E"
+> E%
+> LN &  ReLU
+> MLP Layer
+
+Residual Block ×3    
+
+> LN &  ReLU
+> MLP Layer
+> Scoring Head
+> F$'( 𝑤
+> Coordinate
+> Transform
+> Q)
+> *
+> P+
+> ,
+> 𝐶 !
+> Semantic feature input
+> Coordinate -consistent input
+> Linear Layer
+> 𝑠
+> 𝐶 !
+> -
+> Image 𝐈
+> Point cloud 𝐏
+> KPFCNN
+> Coarse Matching
+> CCP
+> Layer index = 4
+
+Multi -Density Point Ensemble 
+
+> CCP
+> Layer index = 2
+
+Figure 2. Overview of our proposed pipeline. The framework consists of three core stages [12]: (1) Feature Extraction, where the image I
+
+and point cloud P are encoded into multi-scale 2D and 3D features via ResNet [7] and KPFCNN [26], respectively; (2) Coarse Matching, leveraging the proposed CCP and MDPE strategies to maximize the acquisition of robust coarse correspondences; and (3) Fine Matching, which refines the initial matches to produce high-fidelity, fine-grained correspondences. 
+
+the loss of local context and structure, thereby undermin-ing the reliability of coarse correspondences. This prob-lem becomes even more pronounced for unordered point clouds, as voxelization is inherently more prone to irre-versible structural loss compared to regular image down-sampling. To mitigate this problem, raising the point cloud density at the coarse stage appears to be a more feasible solution than attempting to increase the image resolution. Nevertheless, while this manner will increase the number of inliers in coarse correspondences, it unavoidably brings in additional outliers, which introduces more noise and in-terference for the subsequent fine stage. This new challenge can be concluded as the density trade-off. Fundamentally, we attribute this density trade-off to the degraded filtering capability of cross-modal feature similar-ity, driven by growing spatial overlap of receptive fields as voxel size decreases. Specifically, let v denote the voxel size, which bounds the spatial distance d between adjacent voxel-sampled 3D candidates yi and yj (d ∝ v). Cross-modal feature extraction relies on a fixed spherical receptive neighborhood Ω( yi) = {y | ∥ y − yi∥ ≤ r} with search ra-dius r ≫ d. We formally quantify the neighborhood over-lap degree λ(v, yi, yj ) between yi and yj via the standard Jaccard similarity for 3D spatial overlap: 
+
+λ(v, yi, yj ) = |Ω( yi) ∩ Ω( yj )||Ω( yi) ∪ Ω( yj )| . (5) Via spherical cap volume calculation and first-order Taylor expansion, we derive the closed-form approximation: 
+
+λ(v, yi, yj ) ≈ 1 − 32
+
+dr . (6) This derivation shows λ(v, yi, yj ) rises sharply with smaller v, causing high overlap and feature homogeniza-tion. Thus, the filtering capability S(v, yi, yj ) of feature similarity is bounded by non-overlapping proportion and degrades with v:
+
+S(v, yi, yj ) ∝ 1 − λ(v, yi, yj ) ≈ 32
+
+dr ∝ vr . (7) This formulation reveals the core challenge that smaller voxels preserve fine geometric details but collapse feature discriminative margin, introducing massive outliers into coarse correspondences. It is thus imperative to propose a novel filtering strategy tailored for coarse correspondences in dense point clouds. 
+
+3.3. Cross-Coordinate Correspondence Pruning 
+
+To alleviate the aforementioned density trade-off, we pro-pose a cross-coordinate correspondence pruning (CCP) strategy, aimed at retaining sufficient inliers while effec-tively suppressing outliers. Following the coarse-to-fine framework [12], we additionally employ DINOv2 [20] as the coarse encoder to capture pixel-level similarities [31] and establish an initial correspondence set Cc via Eq. (2). As mentioned in Sec. 3.2, the essential challenge of den-sity trade-off arises from the increased overlap of point cloud neighborhoods when the voxel size decreases. This leads to a decline in the filtering ability of feature similarity. To overcome this challenge, our CCP strategy introduces a learning-based pruning scheme to provide a new filter from the geometric view and adaptively prune outliers. As illustrated in Fig. 2, CCP takes the set Cc as input ,and outputs the inlier confidence of all coarse correspon-dences. The input Cc = (ˆ x, ˆy) ∈ RNc×5 comprises Nc
+
+correspondences, each associating a 2D image patch coor-dinate ˆxi ∈ [0 , 1] 2 with a corresponding 3D point cloud co-ordinate ˆyi ∈ RNc×3. However, the structural discrepancy between heterogeneous modalities makes it difficult for the model to leverage correspondence consistency to distin-guish inliers from outliers. Therefore, we first compute the projected 2D coordinate ˜yi for each yi = ( y1 
+
+> i
+
+, y 2 
+
+> i
+
+, y 3 
+
+> i
+
+)
+
+through the perspective transformation P(·):
+
+˜yi = P(yi) = 
+
+ f1 y1
+
+> i
+> y3
+> i
+
++ z1
+
+W − 1 , f2 y2
+
+> i
+> y3
+> i
+
++ z2
+
+H − 1
+
+ , (8) where fi and zi represent the focal lengths and principal point offsets, respectively. W and H denote the width and height of the image, respectively. For 3D points projecting outside the visible camera frustum, we map their coordi-nates to the image center: 
+
+ˆy′ 
+
+> i
+
+=
+
+(
+
+˜yi, if ˜yi ∈ [0 , 1] 2
+
+[0 .5, 0.5] , otherwise . (9) Then, to enhance discrimination, we design a dual-branch fusion module to integrate both coordinate geometric and modal feature. For input correspondences, we construct two distinct input vectors: a coordinate-consistent vector 
+
+Fgeo = (ˆ x, ˆy′) ∈ RNc×4 and a corresponding semantic feature vector Ff ea = ( FIs, FPs ) ∈ RNc×2Cs . Both inputs are independently projected into the geometry embedding 
+
+Eg ∈ RNc×dm and feature embedding Ef ∈ RNc×dm :
+
+Eg = σ(LN (Wg Fgeo +bg )) , Ef = σ(LN (Wf Ff ea +bf )) ,
+
+(10) in which LN (·) stands for Layer Normalization and σ(·)
+
+denotes the ReLU activation function. Next, we utilize the lightweight pruning structure Fθ (·), which contains three residual blocks based on MLP, to effectively learn their interaction and obtain the fused representation Fout ∈
+
+RNc×dm :
+
+Fout = Fθ (Eg + Ef ). (11) Finally, the refined features are passed through a scoring head to produce the matching logits s ∈ RNc and inlier confidence w ∈ RNc :
+
+s = Fl(Fout ), w = Sigmoid (s) ∈ (0 , 1) , (12) where linear mapping Fl(·) maps the channel dimension to 1. The confidence represents the likelihood of a corre-spondence being an inlier. Coarse correspondences with in-lier confidence scores below the threshold ϵp are discarded, effectively suppressing outliers and facilitating the subse-quent fine-matching stage. 
+
+3.4. Multi-Density Point Ensemble 
+
+To retain as many inliers as possible and enhance the robust-ness of the matching process, we further design a multi-density point ensemble (MDPE) strategy. Meanwhile, MDPE also consolidates and removes duplicate pruned fine correspondences across different point cloud densities. During the coarse matching stage, we consistently employ the enhanced lowest-resolution 2D feature ˆFI4 and corre-sponding coordinate matrix QI4 to avoid expensive compu-tational overhead. For the point cloud modality, we note that aggressive voxelization may cause irreversible struc-tural degradation. Hence, we perform voxelization in a con-servative multi-density manner to preserve geometric de-tails. To be specific, we can obtain the multi-density points 
+
+{PPs }Ss=2 and corresponding improved features { ˆFPs }Ss=2 
+
+using four-stage KPFCNN, where s denotes the index of the layer. For each layer index s, an initial coarse correspon-dence set can be established based on Eq. (2). However, although this strategy improves inlier recall, it inevitably introduces a larger number of potential outliers. To mitigate this, we deploy the CCP strategy for optimization. Then, the pruned multi-density correspondence set C′ 
+
+> c
+
+is formed by aggregating the high-confidence pairs across all scales. Fi-nally, based on C′
+
+> c
+
+, MDPE further removes duplicate pixel-to-point correspondences during the fine-matching stage. The overall correspondence estimation process can be re-formulated as: 
+
+C′ 
+
+> c
+
+= {(ˆ x′
+
+> i
+
+, ˆy′
+
+> i
+
+) | ˆx′ 
+
+> i
+
+∈ QI
+
+> 4
+
+, ˆy′ 
+
+> i
+
+∈ PPs , s ∈ { 2, . . . , S }} 
+
+=
+
+> S
+
+[
+
+> s=2
+
+CCP(topk( d( ˆFI
+
+> 4
+
+, ˆFPs ) ≤ τc)) ,
+
+(13) 
+
+C′ 
+
+> f
+
+= {(x′
+
+> i
+
+, y′
+
+> i
+
+) | x′ 
+
+> i
+
+∈ QI
+
+> 1
+
+, y′ 
+
+> i
+
+∈ PP 
+
+> 1
+
+}
+
+= Φ(topk( d(FI1, FP1 ) ≤ τf ), ∀(x′
+
+> i
+
+, y′
+
+> i
+
+) ∈ C′
+
+> c
+
+), (14) where CCP (·) and Φ( ·) represents our CCP strategy and de-duplication operation. Overall, the coarse-to-fine frame-work, strengthened by our multi-density CCP, yields a highly filtered and reliable candidate set. This optimiza-tion substantially reduces both the search space and error propagation in the subsequent fine-grained matching stage, thereby enhancing final registration accuracy. Table 1. Quantitative comparison on both the RGB-D Scenes V2 [10] and 7Scenes [6] datasets. Best results are highlighted in bold .
+
+Datasets RGB-D Scenes V2 7Scenes Classes S-11 S-12 S-13 S-14 Mean Che. Fire Hea. Off. Pum. Kit. Sta. Mean Depth 1.74 1.66 1.18 1.39 1.49 1.78 1.55 0.80 2.03 2.25 2.13 1.84 1.77 Methods Inlier Ratio (%) ↑
+
+P2-Net [28] 9.7 12.8 17.0 9.3 12.2 55.2 46.7 13.0 36.2 32.0 32.8 5.8 31.7 Pre-2D3D [8] 17.7 19.4 17.2 8.4 15.7 34.7 33.8 16.6 25.9 23.1 22.2 7.5 23.4 2D3D-Matr [12] 32.8 34.4 39.2 23.3 32.4 72.1 66.0 31.3 60.7 50.2 52.5 18.1 50.1 Diff-Reg [31] 47.2 48.7 32.9 22.4 37.8 57.2 49.8 42.1 49.7 38.0 41.4 14.5 41.8 CA-I2P [3] 38.6 40.6 38.9 24.0 35.5 73.6 66.4 34.5 62.4 52.1 52.8 19.1 51.6 Diff 2I2P [18] - - - - 36.8 74.1 68.8 39.2 65.6 52.1 54.2 18.1 53.2 Ours 56.6 58.9 63.9 51.3 57.7 70.4 64.3 66.0 62.1 51.3 54.1 35.0 57.7 
+
+Methods Feature Matching Recall (%) ↑
+
+P2-Net [28] 48.6 65.7 82.5 41.6 59.6 100.0 99.3 58.9 99.1 87.2 92.2 16.2 79.0 Pre-2D3D [8] 86.1 89.2 63.9 24.3 65.9 91.3 95.1 76.7 88.6 79.2 80.6 31.1 77.5 2D3D-Matr [12] 98.6 98.0 88.7 77.9 90.8 100.0 99.6 98.6 100.0 92.4 95.9 58.1 92.1 Diff-Reg [31] 100.0 100.0 88.7 77.0 91.4 100.0 98.0 98.6 100.0 86.5 96.9 47.3 89.6 CA-I2P [3] 100.0 100.0 91.8 82.7 93.6 100.0 100.0 98.6 100.0 92.0 95.5 60.8 92.4 Diff 2I2P [18] - - - - 77.1 100.0 100.0 100.0 100.0 93.4 96.2 55.4 92.2 Ours 100.0 100.0 100.0 99.1 99.8 100.0 100.0 98.6 99.8 96.2 99.6 78.4 96.1 
+
+Methods Registration Recall (%) ↑
+
+P2-Net [28] 40.3 40.2 41.2 31.9 38.4 96.9 86.5 20.5 91.7 75.3 85.2 4.1 65.7 Pre-2D3D [8] 44.4 41.2 21.6 13.7 30.2 69.6 60.7 17.8 62.9 56.2 62.6 9.5 48.5 2D3D-Matr [12] 63.9 53.9 58.8 49.1 56.4 96.9 90.7 52.1 95.5 80.9 86.1 28.4 75.8 Diff-Reg [31] 95.2 95.1 85.6 64.6 85.1 99.7 90.9 59.0 96.7 79.9 90.9 25.8 77.5 CA-I2P [3] 68.1 73.5 63.9 47.8 63.3 99.0 90.7 68.5 96.2 83.0 88.1 31.1 79.5 Diff 2I2P [18] - - - - 60.5 99.0 95.6 74.0 98.9 86.8 90.2 36.5 83.0 Ours 98.6 98.0 97.9 83.2 94.4 100.0 97.4 98.6 99.3 86.5 97.2 62.2 91.6 
+
+3.5. Loss Functions 
+
+Following [12], a scaled circle loss [25] Lc at different scales is applied to supervise the coarse-level features, and a standard circle loss Lf is used to optimize dense fine-level image and point cloud features. Meanwhile, we utilize bi-nary cross-entropy loss Lp to supervise our pruning struc-ture. The total loss is calculated as a weighted combination of the three loss terms: Lall = Lc + Lf + βLp, where β is a weight. 
+
+## 4. Experiments 
+
+4.1. Datasets and Metrics. 
+
+Datasets. Following [12], we conducted extensive experi-ments and ablation studies to evaluate our method on two widely used indoor benchmarks: RGB-D Scenes V2 [10] and 7-Scenes [6] The former comprises 11,427 RGB-D frames captured across 14 indoor scenes, following the stan-dard split where scenes 1 to 8 serve as the training set and scenes 11 to 14 are used for testing. The latter follows its of-ficial sequence partitioning protocol, containing 2,304 test pairs, 4,048 training pairs, and 1,011 validation pairs 
+
+Metrics. We evaluate I2P registration performance us-ing three primary metrics: (1) Inlier Ratio (IR): The fraction of fine-level pixel-to-point correspondences with a 3D Eu-clidean distance below 5 cm. (2) Feature Matching Recall (FMR): The proportion of pairs yielding an IR greater than 0.1. (3) Registration Recall (RR): This core metric quan-tifies the proportion of test pairs for which the recovered transformation yields an RMSE lower than 0.1 m. 
+
+4.2. Implementation Details. 
+
+We build our entire framework with PyTorch, and all train-ing experiments are conducted on an NVIDIA RTX 3090 GPU. For the point cloud backbone, we adopt a four-layer KPFCNN [26] architecture with the initial voxel size of 2.5 cm, which is progressively doubled at each stage to extract multi-density 3D features. As the 2D feature extractor, we employ a four-layer ResNet [7] with a kernel size of 7 to (c) Ours (b) Diff 2I2P (a) 2D3D -Matr Original matching pair Figure 3. Qualitative visualization of the top 500 estimated fine correspondences on the RGB-D Scenes V2 [10] (top two rows) and 7Scenes datasets. Green lines denote inliers, while red lines indicate outliers retained by the networks, respectively. Table 2. Quantitative comparative results of cross-generalization capabilities across various methods on both the RGB-D Scenes V2 [10] and 7Scenes [6] datasets. Datasets RGB-D Scenes V2 7Scenes Methods RR FMR IR RR FMR IR                        
+
+> 2D3D-Matr 16.3 34.9 8.5 0.1 3.4 2.3 2D3D-Matr(DINOv2) 25.8 56.8 15.9 2.0 17.5 5.3 Diff-Reg 17.6 44.1 12.3 1.0 1.7 1.6 Diff 2I2P 11.9 0.5 10.3 5.4 33.7 8.0 Ours 54.4 89.4 35.1 33.6 82.5 50.6
+
+capture multi-resolution 2D features. The input image is first cropped to 476 × 630 and subsequently downsampled to 34 × 45 at the coarse stage to ensure compatibility with DINOv2 [20]. The similarity threshold τc and τf are set to 0.95 and 0.75. In CCP, we adopt three residual blocks with channel dimension dm = 256 as the core component. The pruning threshold ϵp is set to 0.6, and the loss weight β is set to 0.5. In MDPE, we leverage the second- and third-level point cloud features ( i.e. , s = 2 , 3) to construct the multi-density points. We adopt the Adam optimizer to train our network for 30 epochs with a batch size of 1. The learn-ing rate is initialized as 1e − 4, and decays by a factor of 0.05 at each training epoch. 
+
+4.3. Comparative Results 
+
+Evaluations on RGB-D Scenes V2. As illustrated in the left half of Table 1, our method attains the most signifi-cant performance gains compared to the baselines across three key evaluation metrics. Specifically, in terms of IR ,it achieves a mean score of 57.7%, representing a signifi-cant margin over Diff-Reg and Diff 2I2P. Regarding FMR ,IN : 61.2   
+
+> IR : 5.66 %
+> IN : 40.7
+> IR : 55.22 %
+> ON : 1020.6
+> OR : 94.34 %
+> ON : 33.0
+> OR : 44.78 %
+> CCP
+> Before Pruning After Pruning
+> Figure 4. The mean of inlier/outlier number (IN/ON) and ratio (IR/OR) before and after pruning on the 7Scenes [6].
+
+our method maintains a near-perfect mean accuracy of 99.8%, consistently outperforming CA-I2P (93.6%) and showing remarkable stability across all scene categories. Fi-nally, benefiting from the accurate fine correspondences, it achieves a superior average RR of 94.4%, representing a sig-nificant improvement over the 85.1% reported by Diff-Reg. Notably, even in the most challenging S-14 scene where baseline performances typically degrade, our approach re-tains high accuracy. 
+
+Evaluations on 7Scenes. The results on the 7Scenes dataset further validate the superior robustness of our pro-posed method in more complex and diverse indoor environ-ments as shown in the right half of Table 1. Compared to the RGB-D Scenes V2, the 7Scenes dataset poses significant challenges due to its varying scene scales and intricate ge-ometric structures. Despite these difficulties, our approach consistently achieves state-of-the-art results across all seven scenes. Specifically, for IR , it attains a mean of 57.7%, no-tably excelling in the highly challenging Heads and Stairs 
+
+scenes where baselines struggle to maintain precision. This consistent performance extends to FMR , where we achieve Table 3. Ablation studies regarding the gains of key components in the proposed CCP and MDPE strategies. 
+
+Datasets RGB-D Scenes V2 7Scenes Methods RR FMR IR RR FMR IR 
+
+(a.1) Ours w/ 3D CT, GE, FE, layer index s = 2, 3 94.4 99.8 57.7 91.6 96.1 57.7 (a.2) Ours (w/o DINOv2) w/ 3D CT, GE, FE, layer index s = 2, 3 91.4 97.9 55.4 89.7 95.9 59.2 (b.1) 2D3D-Matr (raw) w/ layer index s = 4 56.4 90.8 32.4 75.8 92.1 50.1 (b.2) 2D3D-Matr (DINOv2) w/ layer index s = 4 62.4 94.0 37.3 79.0 91.6 51.8 (b.3) 2D3D-Matr (DINOv2) w/ layer index s = 3 82.1 95.2 47.3 83.7 91.4 52.8 (b.4) 2D3D-Matr (DINOv2) w/ layer index s = 2 75.8 92.6 34.2 83.8 90.7 63.4 Cross-Coordinate Correspondence Pruning (c.1) CCP w/ 2D Coordinate Transform (2D CT) 86.7 96.1 42.7 87.2 91.6 54.8 (c.2) CCP w/o 3D Coordinate Transform (3D CT) 86.7 95.4 46.1 86.8 91.2 53.2 (c.3) CCP w/o Geometry Embedding (GE) 86.1 96.2 40.3 86.4 91.7 53.9 (c.4) CCP w/o Feature Embedding (FE) 92.5 98.8 53.0 90.3 94.4 54.2 Multi-Density Point Ensemble (d.1) MDPE w/ layer index s = 2, 3, 4 92.0 99.9 55.3 90.3 97.0 56.2 (d.2) MDPE w/ layer index s = 4 74.9 97.2 46.8 85.7 95.4 52.7 (d.3) MDPE w/ layer index s = 3 91.1 99.7 55.9 89.9 96.8 59.5 (d.4) MDPE w/ layer index s = 2 90.9 99.9 62.6 90.4 95.1 63.7 2 3 4 2 w. 3         
+
+> Layer Index
+> 0
+> 300
+> 600
+> 900
+> 1200
+> 1500
+> 1800
+> Coarse Correspondence Count
+> 156.8 137.6
+> 413.3
+> 44.8
+> 264.4 245.5
+> 485.0
+> 81.8
+> 116.4 106.3
+> 230.6 38.9 518.1
+> 320.5
+> 1102.5
+> 55.9
+> Before Pruning (Inlier)
+> Before Pruning (Outlier)
+> After Pruning (Inlier)
+> After Pruning (Outlier)
+> 2342 w. 3
+> Layer Index
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> Inlier Ratio (%)
+> 27.5%
+> 75.4%
+> 35.3%
+> 75.0%
+> 33.5%
+> 73.2%
+> 32.0%
+> 85.1%
+> Before Pruning
+> After Pruning
+
+Figure 5. Ablation analysis of feature layer indices in KPFCNN [26] on the RGB-D Scenes V2 [10] dataset. Comparison of the mean number of coarse correspondences and the inlier ratio at the coarse stage before and after applying our CCP. 
+
+a mean of 96.1%, underscoring the robustness of our ap-proach across diverse categories. Most importantly, our method realizes a significant leap in RR , reaching a mean of 91.6%—an 8.6% absolute improvement over the best base-line Diff 2I2P. 
+
+Visualization. Qualitative results in Fig. 3 show that our method achieves superior correspondence accuracy with significantly fewer outliers compared to state-of-the-art baselines. This visual evidence directly corroborates the substantial quantitative performance gains across both benchmarks reported in Table 1. 
+
+Generalization. To further validate the generalization capability of our framework, we conducted cross-dataset experiments by evaluating models reciprocally on the RGB-D V2 and 7Scenes datasets. As illustrated in Table 2, exist-ing methods often struggle with cross-domain generaliza-tion. In contrast, our pruning strategy leverages inherent geometric constraints, which generally exhibit strong gen-eralization capability [1, 23]. Consequently, our method ef-fectively filters out the majority of outliers, thereby enabling robust registration performance. Our method maintains ro-bust registration performance across all metrics compared to existing baselines. We further quantify the distribution of inliers and outliers before and after our CCP as illustrated in Fig. 4. Notably, the inlier ratio improves substantially from 5.66% to 55.22% after pruning. 
+
+4.4. Ablation Study 
+
+The CCP strategy. Compared with density-varied base-lines (b.2–b.4), our CCP pruning strategy (d.2–d.4) substan-tially improves registration accuracy, verifying CCP’s effec-tiveness. Proper coordinate transformation is critical for op-timal CCP performance. Removing the 3D transform (c.2, Sec. 3.3) reduces RR by 7.3% on RGB-D V2 and 4.8% on 7Scenes, confirming that unifying cross-view geometric coordinates into a shared metric space is necessary to mit-igate structural discrepancy. Conversely, projecting image coordinates to 3D space as CCP input (c.1) also severely degrades performance, caused by inherent depth ambigu-ity that undermines geometric reliability for pruning. Fur-thermore, geometric embedding plays a more dominant role than feature embedding (c.3, c.4), indicating correspon-dence pruning is primarily driven by geometric structural consistency, consistent with prior 2D/3D studies [1, 15, 34]. 
+
+The MDPE strategy . Point cloud density is critical to registration performance. Extracting features from differ-ent KPFCNN layers (varying point densities) in the coarse stage causes notable performance gaps, consistent across both baselines (b.2–b.4) and our approach (d.2–d.4). Ex-cessive voxelization ( e.g. , s = 4) severely degrades registra-tion, underscoring the need for optimal density configura-tion. To maximize inlier recall and robustness, our MDPE aggregates coarse correspondences across multiple densi-ties. Combined with our CCP strategy (s = 2, 3), it delivers the highest coarse inlier ratio and best overall performance (a.1). Furthermore, adding DINOv2 to the 2D3D-Matr baseline (b.1–b.4) yields smaller gains than density adjust-ment — our core focus. Removing DINOv2 from our full pipeline (a.2) only causes marginal performance drop, em-pirically confirming that primary improvements come from our proposed strategies. 
+
+Numerical analysis . Finally, Fig. 5 further illustrates the quantitative impact of CCP pruning on both mean coarse correspondence count and inlier ratio. It is evident that the inlier ratio within the initial coarse correspondences, derived via mutual top-k similarity, before pruning is rel-atively low. The proposed CCP effectively removes the majority of outliers while preserving most inliers. Mean-while, when combined with MDPE (column 4), both the cardinality and the quality of the inliers are substantially improved. Consequently, our approach achieves significant performance gains over the baselines. 
+
+## 5. Conclusion 
+
+Motivated by the inherent limitation of the coarse-to-fine matching pipeline in I2P registration, we propose two core strategies to alleviate the density trade-off. Specifically, the proposed CCP significantly improves the quality of coarse correspondences by estimating reliable inlier confidences via a lightweight pruning network. Concurrently, by pro-jecting geometric embedding into the 2D image coordi-nate space, we effectively mitigate the modal discrepancies inherent in cross-modal registration. Complementary to this, MDPE optimizes inlier recall through the aggregation and deduplication of fine correspondences across diverse point cloud densities. The synergistic integration of CCP and MDPE enables our framework to generate high-fidelity coarse correspondences, thereby establishing a robust foun-dation for subsequent fine-grained refinement. Extensive experiments on challenging benchmarks demonstrate the superior robustness and generalization capability of the pro-posed approach. 
+
+## References 
+
+[1] Xuyang Bai, Zixin Luo, Lei Zhou, Hongkai Chen, Lei Li, Zeyu Hu, Hongbo Fu, and Chiew-Lan Tai. Pointdsc: Ro-bust point cloud registration using deep spatial consistency. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 15859–15869, 2021. 3, 8, 9 [2] JiaWang Bian, Wen-Yan Lin, Yasuyuki Matsushita, Sai-Kit Yeung, Tan-Dat Nguyen, and Ming-Ming Cheng. Gms: Grid-based motion statistics for fast, ultra-robust feature correspondence. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition , pages 4181– 4190, 2017. 3 [3] Zhixin Cheng, Jiacheng Deng, Xinjun Li, Xiaotian Yin, Bo-hao Liao, Baoqun Yin, Wenfei Yang, and Tianzhu Zhang. Ca-i2p: Channel-adaptive registration network with global optimal selection. In Proceedings of the IEEE/CVF Interna-tional Conference on Computer Vision , pages 27739–27749, 2025. 1, 3, 6 [4] Pranav Singh Chib and Pravendra Singh. Recent advance-ments in end-to-end autonomous driving using deep learn-ing: A survey. IEEE Transactions on Intelligent Vehicles , 9 (1):103–118, 2023. 1 [5] Mengdan Feng, Sixing Hu, Marcelo H Ang, and Gim Hee Lee. 2d3d-matchnet: Learning to match keypoints across 2d image and 3d point cloud. In International Conference on Robotics and Automation , pages 4790–4796. IEEE, 2019. 1, 2[6] Ben Glocker, Shahram Izadi, Jamie Shotton, and Antonio Criminisi. Real-time rgb-d camera relocalization. In Inter-national Symposium on Mixed and Augmented Reality , pages 173–179. IEEE, 2013. 6, 7 [7] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for image recognition. In Proceed-ings of the IEEE Conference on Computer Vision and Pattern Recognition , pages 770–778, 2016. 3, 4, 6 [8] Shengyu Huang, Zan Gojcic, Mikhail Usvyatsov, Andreas Wieser, and Konrad Schindler. Predator: Registration of 3d point clouds with low overlap. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 4267–4276, 2021. 6 [9] Shuhao Kang, Youqi Liao, Jianping Li, Fuxun Liang, Yuhao Li, Xianghong Zou, Fangning Li, Xieyuanli Chen, Zhen Dong, and Bisheng Yang. Cofii2p: Coarse-to-fine correspondences-based image to point cloud registration. 
+
+IEEE Robotics and Automation Letters , 2024. 1, 3 [10] Kevin Lai, Liefeng Bo, and Dieter Fox. Unsupervised feature learning for 3d scene labeling. In International Conference on Robotics and Automation , pages 3050–3057. IEEE, 2014. 2, 6, 7, 8 [11] Vincent Lepetit, Francesc Moreno-Noguer, and Pascal Fua. Ep n p: An accurate o (n) solution to the p n p problem. Inter-national Journal of Computer Vision , 81(2):155–166, 2009. 3[12] Minhao Li, Zheng Qin, Zhirui Gao, Renjiao Yi, Chenyang Zhu, Yulan Guo, and Kai Xu. 2d3d-matr: 2d-3d matching transformer for detection-free registration between images and point clouds. In Proceedings of the IEEE/CVF Interna-tional Conference on Computer Vision , pages 14128–14138, 2023. 1, 2, 3, 4, 6 [13] Tsung-Yi Lin, Piotr Doll´ ar, Ross Girshick, Kaiming He, Bharath Hariharan, and Serge Belongie. Feature pyramid networks for object detection. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition ,pages 2117–2125, 2017. 3 [14] Wen-Yan Lin, Fan Wang, Ming-Ming Cheng, Sai-Kit Yeung, Philip HS Torr, Minh N Do, and Jiangbo Lu. Code: Coher-ence based decision boundaries for feature correspondence. 
+
+IEEE Transactions on Pattern Analysis and Machine Intelli-gence , 40(1):34–47, 2017. 3 [15] Xin Liu, Rong Qin, Junchi Yan, and Jufeng Yang. Ncmnet: Neighbor consistency mining network for two-view corre-spondence pruning. IEEE Transactions on Pattern Analysis and Machine Intelligence , 46(12):11254 – 11272, 2024. 3, 9 [16] David G Lowe. Distinctive image features from scale-invariant keypoints. International Journal of Computer Vi-sion , 60(2):91–110, 2004. 2 [17] Jiayi Ma, Ji Zhao, Junjun Jiang, Huabing Zhou, and Xiaojie Guo. Locality preserving matching. International Journal of Computer Vision , 127(5):512–531, 2019. 3 [18] Juncheng Mu, Chengwei Ren, Weixiang Zhang, Liang Pan, Xiao-Ping Zhang, and Yue Gao. Diff2i2p: Differentiable image-to-point cloud registration with diffusion prior. In 
+
+Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 25777–25787, 2025. 1, 6 [19] Raul Mur-Artal, Jose Maria Martinez Montiel, and Juan D Tardos. Orb-slam: a versatile and accurate monocular slam system. IEEE Transactions on Robotics , 31(5):1147–1163, 2015. 1 [20] Maxime Oquab, Timoth´ ee Darcet, Th´ eo Moutakanni, Huy Vo, Marc Szafraniec, Vasil Khalidov, Pierre Fernandez, Daniel Haziza, Francisco Massa, Alaaeldin El-Nouby, et al. Dinov2: Learning robust visual features without supervision. 
+
+arXiv preprint arXiv:2304.07193 , 2023. 4, 7 [21] G Dias Pais, Srikumar Ramalingam, Venu Madhav Govindu, Jacinto C Nascimento, Rama Chellappa, and Pedro Miraldo. 3dregnet: A deep neural network for 3d point registration. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 7193–7203, 2020. 3 [22] Quang-Hieu Pham, Mikaela Angelina Uy, Binh-Son Hua, Duc Thanh Nguyen, Gemma Roig, and Sai-Kit Yeung. Lcd: Learned cross-domain descriptors for 2d-3d matching. In 
+
+AAAI Conference on Artificial Intelligence , pages 11856– 11864, 2020. 1, 2 [23] Zheng Qin, Hao Yu, Changjian Wang, Yulan Guo, Yuxing Peng, Slobodan Ilic, Dewen Hu, and Kai Xu. Geotrans-former: Fast and robust point cloud registration with geo-metric transformer. IEEE Transactions on Pattern Analysis and Machine Intelligence , 45(8):9806–9821, 2023. 8 [24] Eduardo D Sontag. Comments on integral variants of iss. 
+
+Systems & Control Letters , 34(1-2):93–100, 1998. 2 [25] Yifan Sun, Changmao Cheng, Yuhan Zhang, Chi Zhang, Liang Zheng, Zhongdao Wang, and Yichen Wei. Circle loss: A unified perspective of pair similarity optimization. In Pro-ceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 6398–6407, 2020. 6 [26] Hugues Thomas, Charles R Qi, Jean-Emmanuel Deschaud, Beatriz Marcotegui, Franc ¸ois Goulette, and Leonidas J Guibas. Kpconv: Flexible and deformable convolution for point clouds. In Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 6411–6420, 2019. 3, 4, 6, 8 [27] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszko-reit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. In Advances in Neural Information Processing Systems , pages 5998–6008, 2017. 2, 3[28] Bing Wang, Changhao Chen, Zhaopeng Cui, Jie Qin, Chris Xiaoxuan Lu, Zhengdi Yu, Peijun Zhao, Zhen Dong, Fan Zhu, Niki Trigoni, et al. P2-net: Joint description and detection of local features for pixel and point matching. In 
+
+Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 16004–16013, 2021. 1, 2, 6 [29] Haiping Wang, Yuan Liu, Bing Wang, Yujing Sun, Zhen Dong, Wenping Wang, and Bisheng Yang. Freereg: Image-to-point cloud registration leveraging pretrained diffusion models and monocular depth estimators. In International Conference on Learning Representations , pages 150–161. Springer, 2024. 3 [30] Li Wang, Xinyu Zhang, Wenyuan Qin, Xiaoyu Li, Jinghan Gao, Lei Yang, Zhiwei Li, Jun Li, Lei Zhu, Hong Wang, et al. Camo-mot: Combined appearance-motion optimiza-tion for 3d multi-object tracking with camera-lidar fusion. 
+
+IEEE Transactions on Intelligent Transportation Systems , 24 (11):11981–11996, 2023. 1 [31] Qianliang Wu, Haobo Jiang, Lei Luo, Jun Li, Yaqing Ding, Jin Xie, and Jian Yang. Diff-reg: Diffusion model in dou-bly stochastic matrix space for registration problem. In 
+
+European Conference on Computer Vision , pages 160–178. Springer, 2024. 1, 3, 4, 6 [32] Shaocheng Yan, Pengcheng Shi, Zhenjun Zhao, Kaixin Wang, Kuang Cao, Ji Wu, and Jiayuan Li. Turboreg: Tur-boclique for robust and efficient point cloud registration. In 
+
+Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 26371–26381, 2025. 3 [33] Gongxin Yao, Yixin Xuan, Yiwei Chen, and Yu Pan. Quantity-aware coarse-to-fine correspondence for image-to-point cloud registration. IEEE Sensors Journal , 2024. 1, 3 [34] Kwang Moo Yi, Eduard Trulls, Yuki Ono, Vincent Lepetit, Mathieu Salzmann, and Pascal Fua. Learning to find good correspondences. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition , pages 2666– 2674, 2018. 3, 9 [35] Jiahui Zhang, Dawei Sun, Zixin Luo, Anbang Yao, Lei Zhou, Tianwei Shen, Yurong Chen, Long Quan, and Hongen Liao. Learning two-view correspondences and geometry us-ing order-aware network. In Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 5845– 5854, 2019. 3 [36] Xiyu Zhang, Jiaqi Yang, Shikun Zhang, and Yanning Zhang. 3d registration with maximal cliques. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 17745–17754, 2023. 3
