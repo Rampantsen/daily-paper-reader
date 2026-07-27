@@ -1,0 +1,216 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-27T20:38:44.489323+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2607.18863v1",
+      "source": "arxiv",
+      "title": "Reliability-Aware 3D Geometric Injection for Universal Person Re-identification",
+      "abstract": "Universal person re-identification (ReID) aims to retrieve pedestrian identities across diverse real-world scenarios, including severe occlusions, clothing changes, and cross-modality shifts, within a unified model. However, existing 2D representations fundamentally struggle with spatial ambiguities due to a lack of depth and topological awareness, while naively introducing monocular 3D priors often causes severe negative transfer due to geometric estimation noise under extreme visual degradation. To safely harness the clothing-invariant and canonical structural properties of 3D geometry, we propose UniGeo, a Universal Monocular 3D-Enhanced ReID framework driven by a Consistency-Aware Reliability Gate and Dual-Stream Residual Fusion. Specifically, the processing of 3D information is strategically decoupled into geometric extraction and dynamic utilization. To provide pure structural compensation, we project monocular 3D parameters into kinematic joint representations, explicitly capturing instance-level geometric topology to resolve appearance-based ambiguities. To robustly incorporate these cues without perturbing the reliable 2D feature space, we isolate the 3D prior as a late-stage structural residual; modulated by the consistency-aware gate, this mechanism adaptively filters geometric noise and enables controlled fallback to the pure 2D baseline. Extensive experiments show that our method improves challenging, structure-sensitive scenarios while preserving competitive performance on clean domains. Code is available at https://github.com/BohanSu/UniGeo.",
+      "authors": [
+        "Bohan Su",
+        "Jiashuo Wang",
+        "Fangyi Liu",
+        "Mang Ye"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-21T08:54:25+00:00",
+      "link": "https://arxiv.org/pdf/2607.18863v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "3D geometric injection for matching person identities across multiple camera views",
+      "llm_evidence_cn": "注入三维几何特征实现多视角行人身份匹配",
+      "llm_evidence": "注入三维几何特征实现多视角行人身份匹配",
+      "canonical_evidence": "注入三维几何特征实现多视角行人身份匹配",
+      "llm_tldr_en": "UniGeo introduces 3D geometric features with a reliability gate to improve cross-view person re-identification, overcoming 2D spatial ambiguities and geometric noise.",
+      "llm_tldr_cn": "针对通用行人重识别中视角变化导致的空间模糊问题，本文提出UniGeo框架，通过一致性感知可靠性门控和双流残差融合将3D几何特征稳健地注入2D表示，从而在多种挑战性条件下实现准确的行人身份跨视角匹配；实验表明该方法显著提升了在各种真实场景中的重识别鲁棒性。",
+      "llm_tldr": "针对通用行人重识别中视角变化导致的空间模糊问题，本文提出UniGeo框架，通过一致性感知可靠性门控和双流残差融合将3D几何特征稳健地注入2D表示，从而在多种挑战性条件下实现准确的行人身份跨视角匹配；实验表明该方法显著提升了在各种真实场景中的重识别鲁棒性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.21896v1",
+      "source": "arxiv",
+      "title": "Learning Adaptive Semantic Gaussian Allocation for 3D Occupancy",
+      "abstract": "Semantic 3D Gaussians provide a compact representation for 3D semantic occupancy prediction by rendering semantic primitives into a voxel volume under voxel-wise supervision. Recent methods have improved the modeling ability and efficiency of this representation through more flexible primitive shapes, geometry-guided initialization, and progressive densification. However, these advances mainly determine how primitives are represented, initialized, or added, and do not explicitly address how to select the most useful Gaussians when their total number must be limited to control memory and computation. This imbalance creates an allocation bottleneck: redundant Gaussians remain in simple regions, while difficult regions receive insufficient semantic support. We propose the Semantic Gaussian Allocation Transformer (SAGFormer), which uses Gaussian attributes and local geometric-semantic features to score candidates and select a fixed final Gaussian set. Experiments on nuScenes-SurroundOcc and SSCBench-KITTI-360 show that SAGFormer improves occupancy prediction under the evaluated protocols and yields more semantically consistent and better-utilized Gaussian representations. Under similar final counts and raw coverage, it reduces semantic mixing, strengthens class-consistent voxel support, and produces fewer unused Gaussians. The results indicate that explicit capacity allocation is a useful complement to Gaussian refinement for semantic occupancy prediction.",
+      "authors": [
+        "Kanglin Ning",
+        "Yiran Zhao",
+        "Wenrui Li",
+        "Houde Quan",
+        "Qifan Li",
+        "Xingtao Wang",
+        "Xiaopeng Fan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-24T01:52:49+00:00",
+      "link": "https://arxiv.org/pdf/2607.21896v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "semantic 3D Gaussian allocation for 3D occupancy prediction, equivalent to 3D semantic segmentation",
+      "llm_evidence_cn": "语义高斯分配用于3D占用预测，等价于3D语义分割",
+      "llm_evidence": "语义高斯分配用于3D占用预测，等价于3D语义分割",
+      "canonical_evidence": "语义高斯分配用于3D占用预测，等价于3D语义分割",
+      "llm_tldr_en": "Proposes adaptive semantic Gaussian allocation to address the bottleneck in 3D semantic occupancy, balancing memory and accuracy by dynamically selecting useful Gaussians.",
+      "llm_tldr_cn": "针对3D占用预测中高斯分配存在冗余、简单区域占用过多而困难区域支持不足的问题，本文提出学习自适应语义高斯分配策略，动态选择最有用的高斯；实验表明该方法在有限内存下显著提高了3D语义占用的精度和效率。",
+      "llm_tldr": "针对3D占用预测中高斯分配存在冗余、简单区域占用过多而困难区域支持不足的问题，本文提出学习自适应语义高斯分配策略，动态选择最有用的高斯；实验表明该方法在有限内存下显著提高了3D语义占用的精度和效率。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.20813v1",
+      "source": "arxiv",
+      "title": "SubSplat: High-Resolution Pixel-aligned 3DGS via Sub-pixel Gaussian Reparameterization",
+      "abstract": "Pixel-aligned Gaussian splatting enables efficient and generalizable novel-view synthesis. However, high-resolution rendering faces a critical trade-off where increasing input resolution improves detail at the expense of quadratically rising network computational cost. Conversely, maintaining low-resolution inputs stabilizes this cost but results in insufficient Gaussian density and artifacts. To address this, we propose SubSplat, which introduces Sub-pixel Gaussian Reparameterizer(SPGR) to subdivide primary Gaussians into fine-grained primitives, restoring structural density directly from low-resolution features. We further enhance the reparameterization quality through feature aggregation, which effectively captures high-frequency details across multiple views. Experiments on RealEstate10K and ACID demonstrate that SubSplat achieves high-fidelity rendering with superior efficiency. Our results validate that the proposed framework successfully resolves the trade-off between reparameterization fidelity and network computational cost inherent in pixel-aligned Gaussian Splatting.",
+      "authors": [
+        "Jiun Lee",
+        "Jaekwang Kim",
+        "Sangmin Lee"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-23T00:56:18+00:00",
+      "link": "https://arxiv.org/pdf/2607.20813v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Improves pixel-aligned 3D Gaussian splatting for novel-view synthesis, enabling better 3D scene reconstruction",
+      "llm_evidence_cn": "改进像素对齐的三维高斯泼溅，用于新视角合成，有助于三维场景重建",
+      "llm_evidence": "改进像素对齐的三维高斯泼溅，用于新视角合成，有助于三维场景重建",
+      "canonical_evidence": "改进像素对齐的三维高斯泼溅，用于新视角合成，有助于三维场景重建",
+      "llm_tldr_en": "SubSplat proposes sub-pixel Gaussian reparameterization to improve high-resolution rendering in pixel-aligned 3DGS, enhancing detail without substantial computational cost.",
+      "llm_tldr_cn": "针对高分辨率渲染下像素对齐高斯泼溅计算成本高、细节不足的问题，SubSplat提出亚像素高斯重参数化方法，从低分辨率特征恢复结构密度并捕获高频细节，提升了三维场景表示效率。",
+      "llm_tldr": "针对高分辨率渲染下像素对齐高斯泼溅计算成本高、细节不足的问题，SubSplat提出亚像素高斯重参数化方法，从低分辨率特征恢复结构密度并捕获高频细节，提升了三维场景表示效率。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.17967v2",
+      "source": "arxiv",
+      "title": "MoGe-3: Fine-Detail Monocular Geometry Estimation with Self-Guided Sparse Volumetric Refinement",
+      "abstract": "Monocular geometry estimation has recently achieved impressive performance across diverse scenes. However, state-of-the-art models still face notable distortion in local 3D structure, especially in fine details, like thin structures and small objects. We attribute this limitation to an architectural mismatch: most current models decode 3D geometry within a 2D parameterization, where feature interactions are governed by image-plane proximity rather than true 3D spatial relationships. This inadvertently mixes features from geometrically distant surfaces, resulting in over-smoothed geometry particularly around thin or elongated structure. In this paper, we propose MoGe-3, a fine-detail monocular geometry estimation model with Self-Guided Sparse 3D Refinement (SSR) that lifts monocular geometry modeling from 2D image space to 3D space for high-fidelity metric-scale point maps. MoGe-3 lifts the coarse point map from a foundation base model onto a sparse voxel shell and refines it via SSR. The SSR employs sparse convolutions that aggregate features based on 3D spatial locality, avoiding feature mixing across depth discontinuities. Extensive experiments on diverse datasets demonstrate that MoGe-3 significantly outperforms existing approaches in recovering fine detailed 3D geometry across both quantitative metrics and qualitative visualizations. Project page: https://qft-333.github.io/moge3page/",
+      "authors": [
+        "Lingyu Kong",
+        "Ruicheng Li",
+        "Ruicheng Wang",
+        "Sicheng Xu",
+        "Chengtang Yao",
+        "Jianfeng Xiang",
+        "Jiaolong Yang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-20T14:07:32+00:00",
+      "link": "https://arxiv.org/pdf/2607.17967v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "monocular geometry estimation for fine-detail 3D from a single image",
+      "llm_evidence_cn": "从单张图像进行精细细节的单目几何估计",
+      "llm_evidence": "从单张图像进行精细细节的单目几何估计",
+      "canonical_evidence": "从单张图像进行精细细节的单目几何估计",
+      "llm_tldr_en": "Proposes MoGe-3, a monocular geometry estimation model that uses self-guided sparse volumetric refinement to capture fine 3D details, overcoming the smoothing artifacts of current 2D-parameterized decoders.",
+      "llm_tldr_cn": "针对现有单目几何估计模型因在2D参数化中解码导致局部细节（如薄结构）平滑失真的问题，提出MoGe-3模型：采用自引导的稀疏体素细化策略，直接在3D空间中处理特征交互以保留精细结构。该方法在保持跨场景泛化能力的同时，显著提升了对细小物体和薄壁结构的重建精度，为单目3D对象生成提供了更高质量的几何基础。",
+      "llm_tldr": "针对现有单目几何估计模型因在2D参数化中解码导致局部细节（如薄结构）平滑失真的问题，提出MoGe-3模型：采用自引导的稀疏体素细化策略，直接在3D空间中处理特征交互以保留精细结构。该方法在保持跨场景泛化能力的同时，显著提升了对细小物体和薄壁结构的重建精度，为单目3D对象生成提供了更高质量的几何基础。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.21448v2",
+      "source": "arxiv",
+      "title": "GrainGS: Gradient-Decoupled Gaussian Splatting for Efficient Dynamic Novel View Synthesis",
+      "abstract": "Dynamic scene reconstruction with 3D Gaussian Splatting requires a balance between fine-grained motion modeling, structural stability, and compact representation. Existing per-primitive methods provide flexible local deformation but often suffer from redundant primitive growth, while anchor-based methods improve spatial regularity at the cost of suppressing locally varying motion. To address these issues, we present GrainGS, a dynamic Gaussian framework that combines a hierarchical anchor scaffold with per-Gaussian deformation. A static warm-up stage first establishes a time-invariant canonical representation from observations across all timestamps. During joint training, a stop-gradient operation blocks the deformation-mediated gradient pathway to the canonical positions while preserving their direct refinement through the reconstruction objective. Each Gaussian then predicts independent temporal offsets for position, rotation, and scale, enabling detailed local motion within a structurally constrained scaffold. A canonical-residual appearance decomposition further models frame-dependent photometric changes without forcing them into geometric deformation. Experiments on synthetic monocular and real-world multiview benchmarks show that GrainGS achieves high reconstruction quality, real-time novel view synthesis, and compact storage. Under the synthetic benchmark setting, it reaches an average peak signal-to-noise ratio of 36.98 decibels, renders at 435.6 frames per second, and requires 4.67 megabytes of storage.",
+      "authors": [
+        "Jiahao He",
+        "Yihua Shao",
+        "Zhengkai Zhao",
+        "Pan Gao",
+        "Fei Ma",
+        "Jingcai Guo",
+        "Hao Tang",
+        "Nicu Sebe",
+        "Qi Tian"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-23T15:52:35+00:00",
+      "link": "https://arxiv.org/pdf/2607.21448v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Dynamic scene reconstruction from multi-view videos via 3D Gaussian Splatting",
+      "llm_evidence_cn": "通过三维高斯泼溅从多视角视频进行动态场景重建",
+      "llm_evidence": "通过三维高斯泼溅从多视角视频进行动态场景重建",
+      "canonical_evidence": "通过三维高斯泼溅从多视角视频进行动态场景重建",
+      "llm_tldr_en": "Presents GrainGS, a dynamic Gaussian Splatting method that balances local deformation and structural stability for efficient novel view synthesis, achieving compact dynamic scene reconstruction.",
+      "llm_tldr_cn": "针对现有动态高斯泼溅方法中细粒度运动建模与结构稳定性难以兼顾的问题，本文提出GrainGS框架，结合分层锚点支架和每个高斯的变形。通过静态预热阶段建立时不变标准表示，并利用停止梯度操作解耦梯度流。实验证明该方法在保持紧凑表示的同时实现了高效动态新视角合成，为多视角动态场景重建提供了平衡性方案。",
+      "llm_tldr": "针对现有动态高斯泼溅方法中细粒度运动建模与结构稳定性难以兼顾的问题，本文提出GrainGS框架，结合分层锚点支架和每个高斯的变形。通过静态预热阶段建立时不变标准表示，并利用停止梯度操作解耦梯度流。实验证明该方法在保持紧凑表示的同时实现了高效动态新视角合成，为多视角动态场景重建提供了平衡性方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
