@@ -1,0 +1,421 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-28T21:01:34.737859+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 7,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2607.24024v1",
+      "source": "arxiv",
+      "title": "A Unified Stereo Geometry Estimation Framework for Disparity and Surface Normal",
+      "abstract": "Stereo matching and surface normal estimation are fundamental tasks in 3D vision. However, existing feed-forward stereo methods still struggle to produce reliable predictions in challenging regions, mainly due to the lack of strong geometric priors. In this paper, we propose $\\textbf{GeoStereo}$, a unified stereo geometry estimation framework that leverages powerful diffusion priors to jointly predict disparity and surface normals. Specifically, GeoStereo couples a feed-forward stereo matching pipeline with a diffusion-based normal estimation branch. To enable effective interaction between the two tasks, we introduce a disparity to normal initialization strategy and construct a warp to left-view condition for the diffusion process. This coupled design allows the diffusion branch to provide strong structural priors that enhance disparity estimation in ill-posed regions, while the feed-forward branch offers reliable geometric guidance for accurate normal prediction. Extensive experiments show that GeoStereo performs reliably in challenging scenarios, including low-light environments, highly reflective surfaces, and transparent objects. Under zero-shot settings, it achieves Rank-1 disparity estimation on multiple benchmarks, including KITTI and NYUv2, and delivers the best normal estimation accuracy on many real indoor benchmarks, such as iBims-1 and ScanNet. Project page: https://qz-wei.github.io/GeoStereo.github.io/",
+      "authors": [
+        "Qizhe Wei",
+        "Xianda Guo",
+        "Shaocong Xu",
+        "Hong Li",
+        "Runyi Yang",
+        "Hao Zhao"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-27T05:40:25+00:00",
+      "link": "https://arxiv.org/pdf/2607.24024v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Directly performs multi-view stereo to estimate disparity and surface normals from two views.",
+      "llm_evidence_cn": "直接从两个视图进行多视图立体估计视差和表面法向。",
+      "llm_evidence": "直接从两个视图进行多视图立体估计视差和表面法向。",
+      "canonical_evidence": "直接从两个视图进行多视图立体估计视差和表面法向。",
+      "llm_tldr_en": "GeoStereo integrates a feed-forward stereo matching network with a diffusion-based normal estimation, using disparity-to-normal initialization and warp conditioning to jointly predict disparity and normals, boosting stereo geometry estimation.",
+      "llm_tldr_cn": "现有前馈立体方法在挑战区域缺乏几何先验，导致预测不可靠。GeoStereo提出一种统一立体几何估计框架，将前馈立体匹配与基于扩散的法向估计分支耦合，通过视差至法向初始化策略和左视图条件扭曲实现有效交互。该联合预测框架显著提升了视差和法向的估计精度。实验表明，GeoStereo在标准立体基准上优于现有方法，为三维重建提供了更强的几何约束。",
+      "llm_tldr": "现有前馈立体方法在挑战区域缺乏几何先验，导致预测不可靠。GeoStereo提出一种统一立体几何估计框架，将前馈立体匹配与基于扩散的法向估计分支耦合，通过视差至法向初始化策略和左视图条件扭曲实现有效交互。该联合预测框架显著提升了视差和法向的估计精度。实验表明，GeoStereo在标准立体基准上优于现有方法，为三维重建提供了更强的几何约束。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "multi-view stereo 3D reconstruction",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.24298v1",
+      "source": "arxiv",
+      "title": "UMI3D: Robust 3D Generation on Unconstrained Multi-Image Inputs via Simultaneous Focus Cross-Attention Routing",
+      "abstract": "Recent 3D foundation models can generate high-quality assets from a single image, but degrade markedly on unconstrained multi-image inputs, often producing distorted geometry, over-smoothed textures, and chaotic colors. We argue that this failure stems not from limited model capacity, but from a mismatch between single-image cross-attention and the multi-image setting: existing models lack a principled way to decide which image each 3D voxel should trust at each denoising step. Revisiting recent single-image 3D foundation models, we show that explicitly routing each voxel to its most informative image is sufficient to unlock strong performance on inconsistent multi-image inputs. Based on this observation, we propose UMI3D, a training-free and plug-and-play framework that restructures cross-attention for unconstrained multi-image 3D generation. Its core, Simultaneous Focus Cross-Attention (SFC-Attn), activates all conditioning images at each denoising step while allowing each voxel to focus on the single image that best explains it. To enable this routing, we derive the Voxel Reference Score (VRS), a model-intrinsic metric for voxel--image affinity that requires no external matching, segmentation, or correspondence models. Extensive experiments show that UMI3D unlocks the multi-image potential of single-image 3D generation frameworks across diverse tasks. Project Page: UMI3D-Project.github.io.",
+      "authors": [
+        "Zefan Qu",
+        "Zhenwei Wang",
+        "Gerhard Petrus Hancke",
+        "Rynson W. H. Lau"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-27T11:44:05+00:00",
+      "link": "https://arxiv.org/pdf/2607.24298v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "robust 3D generation from unconstrained multi-image inputs, directly addresses generating 3D scenes from image collections",
+      "llm_evidence_cn": "从无约束多图像输入进行鲁棒三维生成，直接致力于从图像集合生成三维场景",
+      "llm_evidence": "从无约束多图像输入进行鲁棒三维生成，直接致力于从图像集合生成三维场景",
+      "canonical_evidence": "从无约束多图像输入进行鲁棒三维生成，直接致力于从图像集合生成三维场景",
+      "llm_tldr_en": "UMI3D improves 3D generation from multiple inconsistent images by routing each 3D voxel to its most informative image via simultaneous focus cross-attention, avoiding distorted geometry.",
+      "llm_tldr_cn": "现有三维基础模型在处理无约束多图像输入时性能严重退化，常产生扭曲几何与混沌色彩。本文认为根本原因在于缺乏跨图像信息路由机制，因此提出UMI3D方法，通过同步聚焦交叉注意力路由，使每个三维体素在去噪步骤中选择最可信的图像。实验证明，该方法显著提升了多图像输入下的三维生成质量，解决了多视图不一致导致的失真问题，为从真实图像集合生成三维资产提供了鲁棒方案。",
+      "llm_tldr": "现有三维基础模型在处理无约束多图像输入时性能严重退化，常产生扭曲几何与混沌色彩。本文认为根本原因在于缺乏跨图像信息路由机制，因此提出UMI3D方法，通过同步聚焦交叉注意力路由，使每个三维体素在去噪步骤中选择最可信的图像。实验证明，该方法显著提升了多图像输入下的三维生成质量，解决了多视图不一致导致的失真问题，为从真实图像集合生成三维资产提供了鲁棒方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.24431v1",
+      "source": "arxiv",
+      "title": "InterOCF: Spatio-Temporal 2D-3D Interaction for Camera-Only 4D Occupancy Forecasting",
+      "abstract": "Camera-only 4D occupancy forecasting enables autonomous vehicles to predict future 3D semantic scenes solely from historical multi-view images, which is critical for driving safety. Even though current methods have achieved good performance, the strong spatial-temporal modeling between the input multi-view frames is still underexplored, which limits the performance of those methods in future 4D forecasting. To address this gap, we introduce a novel framework, InterOCF, for 4D occupancy forecasting that jointly models temporal dynamics in both 3D voxel-based representations and multi-view segmentation sequences, while explicitly incorporating feature interaction between the 2D and 3D branches. Our framework incorporates three core components: 1) A 3D Spatio-Temporal (3DST) module that learns volumetric dynamics from historical voxel states to predict future voxel states; 2) A 2D Spatio-Temporal (2DST) module employing an auxiliary multi-view temporal segmentation forecasting task to enhance temporal semantic dynamics; 3) A Spatio-Temporal Interaction Modeling (STIM) module that enables feature interaction between 2D and 3D representations. Experiments on the nuScenes, Lyft-Level5, and nuScenes-Occupancy datasets show that InterOCF consistently outperforms existing baseline approaches.",
+      "authors": [
+        "Qi Zhang",
+        "Xinquan Yu",
+        "Kaiyi Zhang",
+        "Hui Huang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-27T13:43:37+00:00",
+      "link": "https://arxiv.org/pdf/2607.24431v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Predicts semantic 3D occupancy from multi-view images, a direct form of 3D scene semantic segmentation.",
+      "llm_evidence_cn": "从多视图图像预测语义三维占用，是三维场景语义分割的直接形式。",
+      "llm_evidence": "从多视图图像预测语义三维占用，是三维场景语义分割的直接形式。",
+      "canonical_evidence": "从多视图图像预测语义三维占用，是三维场景语义分割的直接形式。",
+      "llm_tldr_en": "InterOCF forecasts future semantic 3D occupancy from multi-view images by jointly modeling 3D voxels and 2D segmentation with spatio-temporal 2D-3D interaction, improving 4D occupancy prediction for autonomous driving.",
+      "llm_tldr_cn": "现有纯视觉四维占用预测方法对多帧时空建模不足。InterOCF提出了一种新框架，联合建模三维体素表示和多视角分割序列的时序动态，并显式引入二维三维特征交互。该框架包含三个核心组件，有效提升了未来语义场景预测的准确性和一致性。实验表明，InterOCF在4D占用预测基准上达到了最先进性能，为自动驾驶安全提供了关键的预测能力。",
+      "llm_tldr": "现有纯视觉四维占用预测方法对多帧时空建模不足。InterOCF提出了一种新框架，联合建模三维体素表示和多视角分割序列的时序动态，并显式引入二维三维特征交互。该框架包含三个核心组件，有效提升了未来语义场景预测的准确性和一致性。实验表明，InterOCF在4D占用预测基准上达到了最先进性能，为自动驾驶安全提供了关键的预测能力。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.17519v2",
+      "source": "arxiv",
+      "title": "GEAR: Reconstruction of Classical Paintings via Geometry Grounding and Appearance Restitution",
+      "abstract": "Classical paintings preserve rich spatial, cultural, and historical content, making their reconstruction as explorable 3D scenes valuable for digital preservation, immersive exhibition, and cultural engagement. Yet, unlike photographs, they often depict scenes in a single-view, stylized manner, with weak perspective, lighting, and depth cues. Existing 3D reconstruction methods are largely built on natural-image priors, making it difficult to recover geometrically plausible and visually faithful 3D representations from such inputs. To address this challenge, we introduce Classical Painting-to-3D (CP3D), a new task that aims to recover a 3D representation from a single classical painting while jointly ensuring geometric plausibility, appearance fidelity to the source artwork, and plausible novel-view synthesis. We further propose GeAR, a training-free two-stage framework for Geometry Grounding and Appearance Restitution. GeAR first converts the input painting into a geometry-grounded representation with more coherent shading and illumination cues, improving the stability of 3D Gaussian reconstruction. It then restores artwork-faithful appearance across views under spatial constraints and multi-view consistency, recovering the painterly textures and details weakened during grounding. In addition, we construct HeriArch, a curated benchmark of 10,160 high-resolution classical artworks for systematic evaluation of CP3D. Extensive experiments and user studies show that GeAR consistently outperforms strong baselines in geometric plausibility, appearance fidelity, and human preference. Code and dataset will be released publicly.",
+      "authors": [
+        "Qinyu Zhang",
+        "Xinda Liu",
+        "Yunchen Li",
+        "Yunzhuo Liu",
+        "Chenxi Hu",
+        "Kang Li",
+        "Guohua Geng"
+      ],
+      "primary_category": "cs.MM",
+      "categories": [
+        "cs.MM"
+      ],
+      "published": "2026-07-20T03:53:52+00:00",
+      "link": "https://arxiv.org/pdf/2607.17519v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "reconstructing 3D scenes from a single classical painting, a form of 3D generation from an image",
+      "llm_evidence_cn": "从单幅古典绘画重建三维场景，属于从图像生成三维内容",
+      "llm_evidence": "从单幅古典绘画重建三维场景，属于从图像生成三维内容",
+      "canonical_evidence": "从单幅古典绘画重建三维场景，属于从图像生成三维内容",
+      "llm_tldr_en": "GEAR tackles the new task of reconstructing geometrically plausible and visually faithful 3D scenes from single classical paintings by grounding geometry and recovering appearance.",
+      "llm_tldr_cn": "古典绘画包含丰富空间内容，但缺乏自然图片的透视、光照与深度线索，传统三维重建方法难以适用。本文提出GEAR方法，通过几何锚定与外观重构从单幅绘画中恢复可探索的三维场景，开创了古典绘画转三维的新任务。实验表明，该方法能生成几何合理且视觉保真的三维表示，为文化遗产数字化保护与沉浸式展览提供了新途径。",
+      "llm_tldr": "古典绘画包含丰富空间内容，但缺乏自然图片的透视、光照与深度线索，传统三维重建方法难以适用。本文提出GEAR方法，通过几何锚定与外观重构从单幅绘画中恢复可探索的三维场景，开创了古典绘画转三维的新任务。实验表明，该方法能生成几何合理且视觉保真的三维表示，为文化遗产数字化保护与沉浸式展览提供了新途径。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.20071v2",
+      "source": "arxiv",
+      "title": "GaussianSeed: Hierarchical Gaussian Seeding for High-Resolution 3D Occupancy Prediction",
+      "abstract": "Vision-centric 3D occupancy prediction provides dense scene representations essential for autonomous driving and robotic navigation, yet existing methods struggle to scale to high voxel resolutions due to prohibitive computational costs. To address this, we introduce GaussianSeed, a progressive multi-scale Gaussian occupancy prediction framework that organizes primitives into a coarse-to-fine hierarchy. Benefiting from this hierarchical design, GaussianSeed effectively circumvents the memory bottlenecks inherent in dense representations, successfully scaling to a $0.1\\text{m}$ spatial resolution while maintaining real-time inference capabilities. To comprehensively evaluate high-resolution geometric perception, we further construct TJScenes, a panoramic six-camera occupancy dataset with highly detailed $0.1\\text{m}$ annotations. Extensive experiments on Occ3D-nuScenes and TJScenes demonstrate that GaussianSeed delivers the lowest latency among all evaluated methods while maintaining highly competitive accuracy, advancing the efficiency-quality frontier of high-resolution 3D occupancy prediction. Codes are available at https://github.com/Athameral/GUSD",
+      "authors": [
+        "Xinzhuo Li",
+        "Xianghui Pan",
+        "Jiayuan Du",
+        "Wei Wei",
+        "Liuyi Wang",
+        "Chengju Liu",
+        "Qijun Chen"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-22T12:18:30+00:00",
+      "link": "https://arxiv.org/pdf/2607.20071v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "3D occupancy prediction provides dense scene representations from vision, akin to multi-view 3D reconstruction",
+      "llm_evidence_cn": "3D占用预测从视觉中提供稠密场景表示，类似于多视角三维重建",
+      "llm_evidence": "3D占用预测从视觉中提供稠密场景表示，类似于多视角三维重建",
+      "canonical_evidence": "3D占用预测从视觉中提供稠密场景表示，类似于多视角三维重建",
+      "llm_tldr_en": "GaussianSeed uses a coarse-to-fine hierarchy of Gaussian primitives for high-resolution 3D occupancy prediction, reducing memory overhead and enabling real-time inference.",
+      "llm_tldr_cn": "针对现有视觉中心3D占用预测因计算开销限制难以扩展到高体素分辨率的问题，本文提出GaussianSeed，采用渐进式多尺度高斯原语层次结构，有效规避稠密表示的内存瓶颈，在0.1米空间分辨率下实现实时推理。该框架在自动驾驶和机器人导航中可提供精细的几何感知，推动了高分辨率3D场景重建的实用性。",
+      "llm_tldr": "针对现有视觉中心3D占用预测因计算开销限制难以扩展到高体素分辨率的问题，本文提出GaussianSeed，采用渐进式多尺度高斯原语层次结构，有效规避稠密表示的内存瓶颈，在0.1米空间分辨率下实现实时推理。该框架在自动驾驶和机器人导航中可提供精细的几何感知，推动了高分辨率3D场景重建的实用性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.24302v1",
+      "source": "arxiv",
+      "title": "Multiview Multi-Person Human Mesh Recovery Under Large Scenes with Occlusions",
+      "abstract": "Human mesh recovery (HMR) aims to recover 3D human meshes from images. Most existing HMR benchmarks and methods focus on either multi-person reconstruction from a single view or single-person reconstruction from multiple views, where the number of subjects and the scene scale are relatively limited. Such settings are insufficient for real-world applications with large scenes and severe inter-person occlusions. To address this limitation, we introduce a large-scale synthetic benchmark for multiview multi-person HMR, termed MVMP-HMR. The proposed dataset contains 15 complex scenes with up to 50 camera views and 30 interacting persons, featuring large spatial coverage and severe occlusions, which significantly increases the difficulty of human mesh recovery. Based on this benchmark, we further propose a multiview multi-person whole-body human mesh recovery model, referred to as MVMP-HMR model. The model first fuses multiview features into a scene-level 3D feature volume, and then leverages pelvis joints predicted by a 3D pose estimation network to extract person-specific queries from the 3D feature volume. These human queries are cross-attended with the 3D feature volume and integrated to decode each person's 3D mesh. Moreover, we introduce two novel losses--the orientation loss and the 3D joint density loss--to alleviate orientation and pose ambiguities under severe occlusions. Experiments demonstrate that existing state-of-the-art HMR methods struggle on the proposed MVMP-HMR benchmark, while our method consistently outperforms prior SOTAs in large-scale scenes with severe occlusions.",
+      "authors": [
+        "Qi Zhang",
+        "Tao Yu",
+        "Jiechao He",
+        "Antoni B. Chan",
+        "Hui Huang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-27T11:47:26+00:00",
+      "link": "https://arxiv.org/pdf/2607.24302v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Multiview multi-person human mesh recovery from images with large scenes and occlusions",
+      "llm_evidence_cn": "从多视图图像恢复大场景遮挡下多人人体网格",
+      "llm_evidence": "从多视图图像恢复大场景遮挡下多人人体网格",
+      "canonical_evidence": "从多视图图像恢复大场景遮挡下多人人体网格",
+      "llm_tldr_en": "The paper presents MVMP-HMR, a large-scale synthetic benchmark for multiview multi-person human mesh recovery, featuring 15 complex scenes, up to 50 views, and severe occlusions to push 3D human reconstruction in realistic settings.",
+      "llm_tldr_cn": "针对现有多视图多人人体网格恢复中场景规模和遮挡处理能力不足的问题，本文提出MVMP-HMR大规模合成基准。该数据集包含15个复杂场景、最多50个相机视角和30个交互人物，覆盖大空间范围和严重遮挡。基于该基准，作者构建了评估体系并测试了主流方法。该工作为多视图三维人体重建提供了更具挑战性的测试平台，推动了真实场景下多人重建技术的发展。",
+      "llm_tldr": "针对现有多视图多人人体网格恢复中场景规模和遮挡处理能力不足的问题，本文提出MVMP-HMR大规模合成基准。该数据集包含15个复杂场景、最多50个相机视角和30个交互人物，覆盖大空间范围和严重遮挡。基于该基准，作者构建了评估体系并测试了主流方法。该工作为多视图三维人体重建提供了更具挑战性的测试平台，推动了真实场景下多人重建技术的发展。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.24403v1",
+      "source": "arxiv",
+      "title": "GenSplatCodec: Feed-Forward Gaussian Splatting Compression via One-Step Diffusion",
+      "abstract": "Feed-forward 3D Gaussian Splatting (3DGS) enables scalable scene reconstruction without per-scene optimization, yet produces dense Gaussians that are costly to store and transmit. Existing feed-forward Gaussian compression methods formulate decoding as deterministic representation recovery, which becomes inadequate at low bitrates when high-frequency textures and view-dependent appearance are discarded. Although generative models offer a promising alternative, using them as standalone post-processing decouples generation from the transmitted scene structure, thereby compromising cross-view consistency. To address these limitations, we propose GenSplatCodec, a unified feed-forward Gaussian codec that reformulates low-bitrate Gaussian compression as geometry-guided generative decoding. We present a detail-aware feed-forward Gaussian coding scheme within a dual-stream formulation, where the resulting compact Gaussian structural stream is complemented by a lightweight reference appearance stream. We further introduce a geometry-guided one-step generative decoding approach that jointly exploits decoded structural and appearance cues through hierarchical geometry control to reconstruct high-fidelity and view-consistent novel views. Finally, we develop a three-stage optimization strategy that stabilizes the learning of the unified codec and adapts the generative decoder to codec-derived structural and appearance cues. Extensive experiments across multiple datasets demonstrate that GenSplatCodec consistently achieves superior rate-distortion (RD) performance over existing methods.",
+      "authors": [
+        "Qiang Hu",
+        "Zhenlong Wu",
+        "Lei Huang",
+        "Zihan Zheng",
+        "Xiaoyun Zhang",
+        "Wenjun Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-27T13:20:26+00:00",
+      "link": "https://arxiv.org/pdf/2607.24403v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Feed-forward 3DGS enables scalable scene reconstruction from multi-view images",
+      "llm_evidence_cn": "前馈高斯泼溅从多视图图像实现可扩展场景重建",
+      "llm_evidence": "前馈高斯泼溅从多视图图像实现可扩展场景重建",
+      "canonical_evidence": "前馈高斯泼溅从多视图图像实现可扩展场景重建",
+      "llm_tldr_en": "Proposes a feed-forward Gaussian Splatting codec with one-step diffusion to compress 3D scene reconstructions, preserving cross-view consistency at low bitrates.",
+      "llm_tldr_cn": "针对前馈高斯泼溅方法产生大量高斯体、存储传输成本高的问题，该论文提出 GenSplatCodec，一种统一的前馈高斯编解码器，采用一步扩散模型在低比特率下压缩高斯表示。不同于解耦生成与场景结构的后处理方式，该方法通过生成式重建确保压缩后保持跨视角一致性，实现了可扩展的3D场景重建与高效传输。",
+      "llm_tldr": "针对前馈高斯泼溅方法产生大量高斯体、存储传输成本高的问题，该论文提出 GenSplatCodec，一种统一的前馈高斯编解码器，采用一步扩散模型在低比特率下压缩高斯表示。不同于解耦生成与场景结构的后处理方式，该方法通过生成式重建确保压缩后保持跨视角一致性，实现了可扩展的3D场景重建与高效传输。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2607.17519v1",
+      "source": "arxiv",
+      "title": "GEAR: Reconstruction of Classical Paintings via Geometry Grounding and Appearance Restitution",
+      "abstract": "Classical paintings preserve rich spatial, cultural, and historical content, making their reconstruction as explorable 3D scenes valuable for digital preservation, immersive exhibition, and cultural engagement. Yet, unlike photographs, they often depict scenes in a single-view, stylized manner, with weak perspective, lighting, and depth cues. Existing 3D reconstruction methods are largely built on natural-image priors, making it difficult to recover geometrically plausible and visually faithful 3D representations from such inputs. To address this challenge, we introduce Classical Painting-to-3D (CP3D), a new task that aims to recover a 3D representation from a single classical painting while jointly ensuring geometric plausibility, appearance fidelity to the source artwork, and plausible novel-view synthesis. We further propose GeAR, a training-free two-stage framework for Geometry Grounding and Appearance Restitution. GeAR first converts the input painting into a geometry-grounded representation with more coherent shading and illumination cues, improving the stability of 3D Gaussian reconstruction. It then restores artwork-faithful appearance across views under spatial constraints and multi-view consistency, recovering the painterly textures and details weakened during grounding. In addition, we construct HeriArch, a curated benchmark of 10,160 high-resolution classical artworks for systematic evaluation of CP3D. Extensive experiments and user studies show that GeAR consistently outperforms strong baselines in geometric plausibility, appearance fidelity, and human preference. Code and dataset will be released publicly.",
+      "authors": [
+        "Qinyu Zhang",
+        "Xinda Liu",
+        "Yunchen Li",
+        "Yunzhuo Liu",
+        "Chenxi Hu",
+        "Kang Li",
+        "Guohua Geng"
+      ],
+      "primary_category": "cs.MM",
+      "categories": [
+        "cs.MM"
+      ],
+      "published": "2026-07-20T03:53:52+00:00",
+      "link": "https://arxiv.org/pdf/2607.17519v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "3D reconstruction from a single classical painting for digital preservation",
+      "llm_evidence_cn": "从单幅古典绘画进行三维重建以用于数字保存",
+      "llm_evidence": "从单幅古典绘画进行三维重建以用于数字保存",
+      "canonical_evidence": "从单幅古典绘画进行三维重建以用于数字保存",
+      "llm_tldr_en": "This paper tackles the task of recovering 3D scenes from single classical paintings, a highly ill-posed problem due to stylized cues. It introduces CP3D and a method with geometry grounding and appearance restitution for plausible and faithful reconstruction.",
+      "llm_tldr_cn": "针对古典绘画缺乏自然透视和深度线索导致的三维重建难题，本文提出CP3D任务并设计GEAR方法。通过几何锚定赋予合理结构，再结合外观重建恢复逼真纹理，从单幅绘画生成可探索的三维场景。实验在绘画数据集上证明该方法能生成几何合理且视觉忠实的三维表示。该工作为文化遗产的数字化保存和沉浸式展览提供了新途径。",
+      "llm_tldr": "针对古典绘画缺乏自然透视和深度线索导致的三维重建难题，本文提出CP3D任务并设计GEAR方法。通过几何锚定赋予合理结构，再结合外观重建恢复逼真纹理，从单幅绘画生成可探索的三维场景。实验在绘画数据集上证明该方法能生成几何合理且视觉忠实的三维表示。该工作为文化遗产的数字化保存和沉浸式展览提供了新途径。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.23803v1",
+      "source": "arxiv",
+      "title": "Beyond Appearance: A Multi-cue Framework and Large-scale Benchmark for Pedestrian Association and Tracking on Mobile Aerial-Ground Platforms",
+      "abstract": "Multi-view Multi-object Association and Tracking (MvMoAT) associates objects across camera views and tracks them over time, supporting identity persistence and forensic trajectory reconstruction in multi-platform cooperative perception. Unlike conventional multiple object tracking, MvMoAT faces frequent viewpoint shifts that distort appearance and undermine cross-view association and temporal tracking. We propose FUSION, a viewpoint-robust Feature Unification framework for multi-view aSsociation and IdentificatiON. Its Multi-cue Adaptive Combination (MAC) module adaptively integrates viewpoint-invariant cues with appearance features to improve cross-view association, while Online Multi-view Feature Synchronization (OMFS) aggregates pedestrian features across historical and cross-view frames for temporally consistent tracking. We also introduce RealMvMoAT, a large-scale benchmark featuring substantial inter- and intra-camera viewpoint variation. It contains 504.9K frames from 7 cameras (5 UAV and 2 ground views) across 10 scenes, with over 7.3M identity-labeled bounding boxes. All cameras exhibit random and substantial motion. To the best of our knowledge, RealMvMoAT is the largest MvMoAT dataset to date. Its scale, viewpoint diversity, complex platform motion, and realistic trajectories provide a comprehensive resource for future research. Experiments on RealMvMoAT and six public benchmarks show that FUSION achieves state-of-the-art performance.",
+      "authors": [
+        "Ruiqi Wu",
+        "Bingliang Jiao",
+        "Ruize Han",
+        "Hangzheng Yu",
+        "Xunkai Jiang",
+        "Shining Wang",
+        "Yuanqi Hu",
+        "Wenxuan Wang",
+        "Peng Wang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.MM"
+      ],
+      "published": "2026-07-26T19:06:04+00:00",
+      "link": "https://arxiv.org/pdf/2607.23803v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Multi-view feature matching for pedestrian association and tracking across camera views",
+      "llm_evidence_cn": "跨视图行人关联与跟踪的多视图特征匹配",
+      "llm_evidence": "跨视图行人关联与跟踪的多视图特征匹配",
+      "canonical_evidence": "跨视图行人关联与跟踪的多视图特征匹配",
+      "llm_tldr_en": "Proposes FUSION, a framework that adaptively integrates viewpoint-invariant cues with appearance features for robust cross-view pedestrian association and tracking on mobile aerial-ground platforms.",
+      "llm_tldr_cn": "该论文针对多视角行人关联与跟踪中因视点变化导致的外观失真问题，提出FUSION框架，通过多线索自适应组合模块整合视点不变线索与外观特征，增强跨视图关联鲁棒性。实验表明该方法在移动空地平台上有效提升了多目标关联精度，为多平台协同感知提供了新基准。",
+      "llm_tldr": "该论文针对多视角行人关联与跟踪中因视点变化导致的外观失真问题，提出FUSION框架，通过多线索自适应组合模块整合视点不变线索与外观特征，增强跨视图关联鲁棒性。实验表明该方法在移动空地平台上有效提升了多目标关联精度，为多平台协同感知提供了新基准。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.24436v1",
+      "source": "arxiv",
+      "title": "MSVS-VAE: Multi-Scale Anchored VecSet for High-Fidelity 3D Reconstruction",
+      "abstract": "High-fidelity 3D generative modeling increasingly relies on the latent diffusion paradigm, where the reconstruction quality of the underlying 3D VAE becomes a primary bottleneck. Existing approaches largely follow two paradigms: sparse voxel-based representations achieve strong reconstruction quality but incur significant memory and computational overhead, while set-based representations are compact and continuous yet typically lag in fidelity due to latent sparsity and excessive global smoothness. We propose MSVS-VAE, a hierarchical set-based VAE that closes this fidelity gap without sacrificing compactness. Our key idea is to progressively densify anchored VecSet latents via hierarchical point-shuffle upsampling, increasing spatial capacity for fine-grained geometry modeling. To efficiently decode from the densified hierarchy, we replace global cross-attention with AVS-Conv, a geometry-aware local aggregation operator operating within local neighborhoods rather than the exhaustive latent set. We further introduce multi-scale query decoding to fuse coarse-to-fine latent features, where coarse scales provide stable global context, and fine scales refine localized geometry, reducing artifacts from overly local receptive fields. Extensive experiments on Objaverse, ABO, and in-the-wild benchmarks demonstrate that MSVS-VAE consistently outperforms prior set-based and voxel-based VAEs, delivering approximately 10x faster decoding than prior set-based methods and approximately 10x higher compactness than voxel-based baselines.",
+      "authors": [
+        "Dehao Hao",
+        "Kaiyi Zhang",
+        "Tanghui Jia",
+        "Xiangjun Gao",
+        "Dongyu Yan",
+        "Weikai Chen",
+        "Zeyu Hu",
+        "Lingting Zhu",
+        "Yingda Yin",
+        "Runze Zhang",
+        "Li Yuan",
+        "Xin Wang",
+        "Long Quan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-27T13:45:22+00:00",
+      "link": "https://arxiv.org/pdf/2607.24436v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Core component for 3D generative models, enabling high-fidelity object reconstruction.",
+      "llm_evidence_cn": "三维生成模型的核心组件，实现高保真物体重建。",
+      "llm_evidence": "三维生成模型的核心组件，实现高保真物体重建。",
+      "canonical_evidence": "三维生成模型的核心组件，实现高保真物体重建。",
+      "llm_tldr_en": "MSVS-VAE proposes a hierarchical set-based VAE that progressively densifies anchord VecSet latents, closing the reconstruction fidelity gap for 3D generative models while maintaining compactness.",
+      "llm_tldr_cn": "现有三维VAE在潜在扩散模型中要么占用大量内存，要么重建保真度不足。MSVS-VAE提出一种基于层次集表示的VAE，通过渐进式点洗牌上采样增密锚定VecSet隐变量，在保持紧凑性的同时大幅提升三维重建质量。该方法解决了稀疏集合表示过于平滑的问题，为高保真三维生成建模提供了强大的编码器基础。实验表明，MSVS-VAE在重建精度上显著优于现有方法，且保持计算效率。",
+      "llm_tldr": "现有三维VAE在潜在扩散模型中要么占用大量内存，要么重建保真度不足。MSVS-VAE提出一种基于层次集表示的VAE，通过渐进式点洗牌上采样增密锚定VecSet隐变量，在保持紧凑性的同时大幅提升三维重建质量。该方法解决了稀疏集合表示过于平滑的问题，为高保真三维生成建模提供了强大的编码器基础。实验表明，MSVS-VAE在重建精度上显著优于现有方法，且保持计算效率。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
