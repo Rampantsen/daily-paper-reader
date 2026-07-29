@@ -1,0 +1,326 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-29T20:12:17.721190+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2607.20417v2",
+      "source": "arxiv",
+      "title": "ATSplat: Compact Feed-forward 3D Gaussian Splatting with Adaptive Token Expansion",
+      "abstract": "3D Gaussian Splatting (3DGS) achieves high-quality novel-view synthesis by optimizing freely placed primitives in 3D and adaptively densifying them in under-reconstructed regions. However, this scene-adaptive capacity allocation is largely lost in existing feed-forward 3DGS methods, which commonly regress Gaussians at input pixels and lift them along camera rays. Such pixel-aligned formulations make the number and placement of primitives depend on image resolution and input viewpoints rather than scene complexity, resulting in dense and often redundant Gaussian sets. We present ATSplat, a feed-forward 3DGS framework that restores the adaptive allocation capability of 3DGS optimization through Adaptive 3D Tokens. ATSplat first lifts coarse patch-level depth and camera cues into sparse 3D anchor tokens, forming a compact scaffold of the scene. Each token is then regressed into local Gaussians with learnable 3D offsets, decoupling primitive placement from input image grids. An Adaptive Token Expansion module predicts a token-level uncertainty score, supervised by rendering error maps, and selectively expands high-uncertainty tokens through learnable expansion layers. This sparse-to-adaptive formulation enables ATSplat to concentrate primitives in challenging regions while maintaining a compact representation. Experiments on two representative datasets, RealEstate10K and DL3DV, show that ATSplat achieves state-of-the-art rendering quality while reducing the number of Gaussians by more than $5.7\\times$ compared with dense feed-forward 3DGS methods. From 12 input images at $512 \\times 960$ resolution, ATSplat completes reconstruction in less than a second using a single commercial GPU, and renders high-quality novel views at 1136 FPS ($512 \\times 960$) with only 311K Gaussians.",
+      "authors": [
+        "In Cho",
+        "Jeonghwan Cho",
+        "Mijin Yoo",
+        "Gim Hee Lee",
+        "Seon Joo Kim"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-22T17:54:44+00:00",
+      "link": "https://arxiv.org/pdf/2607.20417v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "feed-forward 3D Gaussian Splatting for scene reconstruction from images with adaptive token expansion",
+      "llm_evidence_cn": "自适应令牌扩展的前馈3D高斯泼溅，用于从图像重建场景",
+      "llm_evidence": "自适应令牌扩展的前馈3D高斯泼溅，用于从图像重建场景",
+      "canonical_evidence": "自适应令牌扩展的前馈3D高斯泼溅，用于从图像重建场景",
+      "llm_tldr_en": "Restores adaptive Gaussian allocation in feed-forward 3DGS via Adaptive 3D Tokens that lift coarse tokens from images and selectively expand to fine-grained primitives, achieving compact and efficient 3D reconstruction without per-scene optimization.",
+      "llm_tldr_cn": "针对传统前馈3DGS无法自适应分配高斯原语的问题，提出ATSplat，通过自适应3D令牌从图像中提升粗令牌，并根据场景复杂度选择性扩展为细粒度原语，恢复优化式3DGS的密度控制能力。实验表明该方法生成的高斯集更紧凑高效，无需逐场景优化即可实现高质量新视角合成。",
+      "llm_tldr": "针对传统前馈3DGS无法自适应分配高斯原语的问题，提出ATSplat，通过自适应3D令牌从图像中提升粗令牌，并根据场景复杂度选择性扩展为细粒度原语，恢复优化式3DGS的密度控制能力。实验表明该方法生成的高斯集更紧凑高效，无需逐场景优化即可实现高质量新视角合成。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.23491v1",
+      "source": "arxiv",
+      "title": "PlanCraft: Sketch, Refine, and Furnish for Architect-Inspired Progressive 3D Residential Scene Generation",
+      "abstract": "Two structural insights have been overlooked in automated residential floor plan generation. First, design is inherently progressive. Architects begin with rough strokes and refine them over time, whereas existing methods typically require their conditioning representation to be fully specified before generation, a fundamental mismatch with how design actually works. Second, the 2D floor plan is not an optional intermediate but an irreplaceable spatial contract. Once room boundaries, doors, and windows are fixed, furnishing reduces from open-ended spatial reasoning to bounded constraint satisfaction. Bypassing this contract, as existing 3D systems do by delegating layout to language models, yields overlapping rooms and implausible proportions; directly calling general-purpose language models likewise produces geometrically invalid layouts. Guided by these insights, we present PlanCraft. SketchPlan supplies the missing training signal by replaying the architect's drawing process on 80K real floor plans, producing partial sketches at every completeness level. PlanCraft-Diff progressively sharpens an incomplete sketch into a geometrically precise, vectorizable floor plan through a coarse-to-fine strategy. With the spatial contract established, PlanCraft-Agent then furnishes the scene within well-defined room boundaries. Experiments show that PlanCraft achieves a 61.1\\% lower FID than the best existing 2D method and surpasses existing 3D systems by 15 points in expert-rated spatial rationality, with a sketch at only 25\\% completion already outperforming all fully specified baselines.",
+      "authors": [
+        "Pengyu Zeng",
+        "Yuqin Dai",
+        "Jun Yin",
+        "Ziyang Han",
+        "Ng Cheuk Hei",
+        "Jing Zhong",
+        "Chaoyang Shi",
+        "ZhanXiang Jin",
+        "Maowei Jiang",
+        "Yuxing Han",
+        "Shuai Lu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.CL"
+      ],
+      "published": "2026-07-26T06:35:14+00:00",
+      "link": "https://arxiv.org/pdf/2607.23491v1",
+      "tags": [
+        "keyword:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "progressive 3D residential scene generation",
+      "llm_evidence_cn": "渐进式三维住宅场景生成",
+      "llm_evidence": "渐进式三维住宅场景生成",
+      "canonical_evidence": "渐进式三维住宅场景生成",
+      "llm_tldr_en": "Introduces PlanCraft, a progressive 3D residential scene generation method that mimics architect workflow: sketch, refine, and furnish, ensuring plausible floor plans and interior layouts.",
+      "llm_tldr_cn": "针对现有自动住宅设计方法不符合渐进式设计流程的问题，提出PlanCraft，模仿建筑师从草图到细化的渐进生成，利用二维平面图作为空间约束进行家具布置，生成合理无重叠的三维室内场景。",
+      "llm_tldr": "针对现有自动住宅设计方法不符合渐进式设计流程的问题，提出PlanCraft，模仿建筑师从草图到细化的渐进生成，利用二维平面图作为空间约束进行家具布置，生成合理无重叠的三维室内场景。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.21595v1",
+      "source": "arxiv",
+      "title": "3D-Aware VLMs with Implicit and Explicit Geometries",
+      "abstract": "Despite rapid progress, most existing vision-language models (VLMs) built from 2D visual inputs often struggle when handling various 3D tasks that require fine-grained spatial understanding and reasoning. To bridge this gap, we present VLM-IE3D, a unified framework that enhances the 3D spatial awareness of VLMs by equipping them with both implicit and explicit 3D geometries learned from RGB videos. Our VLM-IE3D introduces Implicit Geometry Tokens (IGTs) that capture high-level geometric priors from input videos, as well as complementary Explicit Geometry Tokens (EGTs) that encode detailed geometric structures from reconstructed 3D attributes. On top of that, VLM-IE3D comes with a 3D-aware adapter that effectively fuses the two types of geometric representations with 2D visual cues. This RGB-only design injects strong 3D inductive biases for fine-grained spatial understanding and reasoning without requiring any additional 3D inputs. Extensive experiments show that VLM-IE3D achieves superior performance consistently across various 3D tasks including 3D video detection, 3D visual grounding, 3D dense captioning, and spatial reasoning. Code and models are available at https://github.com/Vegetebird/VLM-IE3D.",
+      "authors": [
+        "Wenhao Li",
+        "Xueying Jiang",
+        "Quanhao Qian",
+        "Deli Zhao",
+        "Ran Xu",
+        "Shijian Lu",
+        "Gongjie Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-07-23T17:59:59+00:00",
+      "link": "https://arxiv.org/pdf/2607.21595v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "augments VLMs with implicit/explicit 3D geometry for spatial understanding",
+      "llm_evidence_cn": "用隐显式三维几何增强VLM的空间理解",
+      "llm_evidence": "用隐显式三维几何增强VLM的空间理解",
+      "canonical_evidence": "用隐显式三维几何增强VLM的空间理解",
+      "llm_tldr_en": "Proposes VLM-IE3D, which enhances vision-language models with implicit and explicit 3D geometry from videos, improving spatial understanding and reasoning for 3D tasks.",
+      "llm_tldr_cn": "针对视觉语言模型缺乏三维空间理解的问题，提出VLM-IE3D框架，通过从视频中学习隐式几何令牌和显式几何令牌，并设计三维感知适配器融合多模态特征。该方法为VLM注入了细粒度的三维空间知识，在多项三维任务上提升了空间推理能力，为构建三维感知的通用视觉语言模型提供了有效方案。",
+      "llm_tldr": "针对视觉语言模型缺乏三维空间理解的问题，提出VLM-IE3D框架，通过从视频中学习隐式几何令牌和显式几何令牌，并设计三维感知适配器融合多模态特征。该方法为VLM注入了细粒度的三维空间知识，在多项三维任务上提升了空间推理能力，为构建三维感知的通用视觉语言模型提供了有效方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "feature matching and 3D scene understanding from large scale image collections",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.25362v1",
+      "source": "arxiv",
+      "title": "PanoLess: Environment Reconstruction from Partial Reflective Views",
+      "abstract": "Reflections from shiny objects and glass facades naturally extend the field of view of a camera, capturing the surrounding environment without the need to pan the camera or acquire a full panorama. We propose PanoLess, a Gaussian-splat-based framework that reconstructs the surrounding environment as a distant illumination map from images captured on only one side of a reflective surface. PanoLess leverages surface-aligned 2D Gaussian splats with deferred shading to recover accurate per-pixel normals and reflection cues, which are fused into a neural cubemap representation of the environment. In addition, PanoLess produces a visibility map that explicitly denotes which regions of the environment are supported by the partial reflective observations. Unlike existing inverse-rendering and reflection-aware Gaussian-splatting approaches, which typically require full 360-degree coverage and struggle under incomplete views, PanoLess enables consistent, physically grounded illumination estimation from partial-view input. We show that PanoLess achieves high-fidelity and geometrically consistent environment reconstruction, outperforming reflection-aware baselines on a new custom synthetic benchmark and publicly available datasets, and demonstrating generalization to real-world reflective captures.",
+      "authors": [
+        "Ahitagni Das",
+        "Ashok Veeraraghavan",
+        "Vivek Boominathan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-28T07:13:11+00:00",
+      "link": "https://arxiv.org/pdf/2607.25362v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "reconstructs surrounding environment as illumination map from images of one side of a reflective surface, using Gaussian splats",
+      "llm_evidence_cn": "利用高斯泼溅从反射面单侧图像重建环境光照贴图",
+      "llm_evidence": "利用高斯泼溅从反射面单侧图像重建环境光照贴图",
+      "canonical_evidence": "利用高斯泼溅从反射面单侧图像重建环境光照贴图",
+      "llm_tldr_en": "Proposes PanoLess, a Gaussian-splat-based framework that reconstructs the surrounding environment as a distant illumination map from partial reflective views, using surface-aligned 2D Gaussian splats and deferred shading to recover normals and reflection cues.",
+      "llm_tldr_cn": "针对无法拍摄全景的场景，提出PanoLess框架，利用反射面单侧图像，通过表面对齐的2D高斯泼溅和延迟着色恢复法向与反射线索，重构环境为远程光照贴图。该方法无需全景采集，仅凭局部反射视图即可实现环境重建，扩展了基于图像的场景重建适用性。",
+      "llm_tldr": "针对无法拍摄全景的场景，提出PanoLess框架，利用反射面单侧图像，通过表面对齐的2D高斯泼溅和延迟着色恢复法向与反射线索，重构环境为远程光照贴图。该方法无需全景采集，仅凭局部反射视图即可实现环境重建，扩展了基于图像的场景重建适用性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.19777v1",
+      "source": "arxiv",
+      "title": "Look Before You Edit: Attention-Guided Camera Placement and Multi-View Alignment for 3D Gaussian Splatting Editing",
+      "abstract": "Text-driven 3D scene editing with 3D Gaussian Splatting (3DGS) typically applies a 2D diffusion editor to views rendered from fixed training cameras, limiting both the spatial coverage of edits and the user's freedom to target specific objects in complex scenes. We present LB-Edit, a framework that addresses two coupled problems: where to place editing cameras for localized edits, and how to make per-view edits agree with one another so that the 3D scene remains consistent after fine-tuning. First, Attention-Guided Editing Camera Placement (ACP) probes the diffusion model's self- and cross-attention at multiple candidate camera distances to find where attention is well-contained in the region of interest, then places a compact, geometrically diverse editing camera set at that attention-optimal distance. Second, Multi-view Attention Alignment (MAA) steers the editor toward the same edit across views along two axes: it aligns appearance by sharing self-attention features via token-level correspondence, and aligns spatial location by lifting cross-attention maps onto the 3D Gaussians as a shared 3D attention field, suppressing both appearance and spatial drift. Experiments on multi-object and single-object scenes show that our method achieves the highest user preference in instruction fidelity, multi-view consistency, and editing locality, using as few as 5 editing views and reducing latency by up to 7x over existing methods.",
+      "authors": [
+        "Jaeyeon Park",
+        "Taeho Kang",
+        "Youngki Lee"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-22T05:51:10+00:00",
+      "link": "https://arxiv.org/pdf/2607.19777v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "attention-guided camera placement and multi-view alignment for 3D editing",
+      "llm_evidence_cn": "注意力引导相机放置与多视角对齐用于三维编辑",
+      "llm_evidence": "注意力引导相机放置与多视角对齐用于三维编辑",
+      "canonical_evidence": "注意力引导相机放置与多视角对齐用于三维编辑",
+      "llm_tldr_en": "Proposes LB-Edit, a framework for text-driven 3D editing that uses attention guidance to place cameras for localized edits and enforces multi-view alignment, resulting in consistent, controllable edits.",
+      "llm_tldr_cn": "针对三维高斯泼溅场景编辑中相机固定和跨视角不一致问题，提出LB-Edit。通过扩散模型注意力图引导编辑相机放置，定位感兴趣区域，并采用多视角对齐方法使各视图编辑结果一致。该方法在复杂三维场景中实现了高质量、可控的目标编辑，无需额外训练，显著提升了编辑的灵活性和多视角一致性。",
+      "llm_tldr": "针对三维高斯泼溅场景编辑中相机固定和跨视角不一致问题，提出LB-Edit。通过扩散模型注意力图引导编辑相机放置，定位感兴趣区域，并采用多视角对齐方法使各视图编辑结果一致。该方法在复杂三维场景中实现了高质量、可控的目标编辑，无需额外训练，显著提升了编辑的灵活性和多视角一致性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.20325v1",
+      "source": "arxiv",
+      "title": "MR-Compare: A Mixed-Reality Framework for Spatially Grounded Visual Comparison of 3D Gaussian Splatting and Mesh Reconstructions with the Physical Environment",
+      "abstract": "We introduce MR-Compare, a mixed reality framework for spatially grounded visual comparison between 3D Gaussian splatting and mesh reconstructions with live video see-through (VST). Implemented on a PC-tethered Meta Quest~3, it combines a two-stage registration pipeline with a 3D Slider for cross-media comparison. We evaluated five representative desktop and mobile reconstruction workflows through a real-world benchmark with an exploratory user study ($n=30$) in two static indoor rooms. MR-Compare achieved centimetre-level translation error across all workflows. The two desktop 3DGS workflows showed the strongest overall pattern, with 3DGS-MCMC yielding the lowest registration error and strongest VST-referenced visual consistency. Room-session measures indicated high perceived usability and low workload. We further propose an anisotropy filter, a zero-shot module that leverages Gaussian anisotropies to improve 3DGS registration in MR-Compare. A controlled Replica threshold sweep shows that moderate pruning can improve robustness and reduce residual errors. These results establish system-level feasibility in the tested setting rather than task-level effectiveness or standalone deployment. The project is available at https://github.com/changruizhu96/MR-Compare.",
+      "authors": [
+        "Changrui Zhu",
+        "Ernst Kruijff",
+        "Pengju Zhang",
+        "Simon Julier"
+      ],
+      "primary_category": "cs.GR",
+      "categories": [
+        "cs.GR"
+      ],
+      "published": "2026-07-22T16:11:35+00:00",
+      "link": "https://arxiv.org/pdf/2607.20325v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "framework for comparing 3D Gaussian splatting and mesh reconstructions with physical environment",
+      "llm_evidence_cn": "用于比较3D高斯溅射与网格重建的混合现实框架",
+      "llm_evidence": "用于比较3D高斯溅射与网格重建的混合现实框架",
+      "canonical_evidence": "用于比较3D高斯溅射与网格重建的混合现实框架",
+      "llm_tldr_en": "Proposes MR-Compare, a mixed-reality tool for spatially grounded comparison of 3D Gaussian splatting and mesh reconstructions against real environments, achieving centimeter-level accuracy.",
+      "llm_tldr_cn": "提出MR-Compare混合现实框架，实现3D高斯溅射与网格重建结果与真实环境的精确空间对齐比较，通过两阶段配准和3D滑块实现跨媒体对比。对五种重建流程的评估显示厘米级平移误差，其中桌面3DGS方法总体表现最优，为3D重建质量评估提供了直观手段。",
+      "llm_tldr": "提出MR-Compare混合现实框架，实现3D高斯溅射与网格重建结果与真实环境的精确空间对齐比较，通过两阶段配准和3D滑块实现跨媒体对比。对五种重建流程的评估显示厘米级平移误差，其中桌面3DGS方法总体表现最优，为3D重建质量评估提供了直观手段。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.25389v1",
+      "source": "arxiv",
+      "title": "HOME: Robust Hough-space Matching Method for Structured and Textureless Videos",
+      "abstract": "Visual front-ends for robotic localization typically rely on point-based features such as Oriented FAST and Rotated BRIEF (ORB), which frequently fail in structured environments dominated by strong linear structures or textureless surfaces. While line-based Simultaneous Localization and Mapping (SLAM) systems mitigate this by utilizing line segments, conventional line extraction and description algorithms are computationally prohibitive for real-time edge robotics. To address this fundamental bottleneck, we propose HOME (Hough-space One-dimensional Matching of Extrema), an ultra-lightweight, training-free feature matching framework. HOME transforms images into Hough space, mapping global linear structures to stable local extrema, which serve as keypoints, thereby reformulating complex line matching into highly efficient one-dimensional point matching. The proposed 1D radial descriptor mathematically guarantees rotational and translational invariance without the overhead of explicit orientation estimation. As a proof of concept to validate the matching accuracy and efficiency of HOME, this paper focuses on homography estimation. Extensive evaluations demonstrate that HOME achieves robust registration in challenging scenarios where point-based methods fail, operating at a much faster speed than existing line-based methods. Extending this robust matching engine to full 3D pose estimation remains a highly promising future direction.",
+      "authors": [
+        "Masaki Satoh"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.RO"
+      ],
+      "published": "2026-07-28T07:47:50+00:00",
+      "link": "https://arxiv.org/pdf/2607.25389v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "proposes a lightweight feature matching method for structured videos, useful for SLAM and multi-view 3D understanding",
+      "llm_evidence_cn": "提出轻量级特征匹配方法用于结构化视频，可用于SLAM和多视图三维理解",
+      "llm_evidence": "提出轻量级特征匹配方法用于结构化视频，可用于SLAM和多视图三维理解",
+      "canonical_evidence": "提出轻量级特征匹配方法用于结构化视频，可用于SLAM和多视图三维理解",
+      "llm_tldr_en": "Proposes HOME, a training-free feature matching framework that transforms images into Hough space to extract stable local extrema, enabling robust matching in structured and textureless environments for real-time robotic localization.",
+      "llm_tldr_cn": "针对结构化无纹理环境下点特征失效的问题，提出无训练的HOME特征匹配框架，将图像转换到霍夫空间，提取稳定的局部极值作为匹配特征，实现实时机器人定位。该方法在结构化场景中显著优于传统点特征，为多视图三维重建提供鲁棒前端匹配。",
+      "llm_tldr": "针对结构化无纹理环境下点特征失效的问题，提出无训练的HOME特征匹配框架，将图像转换到霍夫空间，提取稳定的局部极值作为匹配特征，实现实时机器人定位。该方法在结构化场景中显著优于传统点特征，为多视图三维重建提供鲁棒前端匹配。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.22731v1",
+      "source": "arxiv",
+      "title": "Calibration-Free 3D Multi-Camera People Tracking for Indoor Environment",
+      "abstract": "Multi-Camera People Tracking (MCPT) traditionally relies on precise intrinsic and extrinsic camera calibration to project 2D detections into a unified 3D world coordinate system.However, manual calibration constitutes a major bottleneck in large-scale dataset generation from unconstrained video archives.  This work proposes a unified calibration-free 3D MCPT framework that infers geometric structure directly from visual data using deep foundation models.  The system integrates anchor-free detection (YOLOX), robust tracking (BoT-SORT), omni-scale appearance embedding (OsNet), pose estimation (HRNet via MMPose), and transformer-based geometric reconstruction using the Visual Geometry Grounded Transformer (VGGT). A pose-guided 3D lifting strategy projects head keypoints onto a reconstructed manifold, eliminating dependence on ground-plane homography. Global identity association is formulated as hierarchical agglomerative clustering under a joint appearance-geometry cost with strict velocity gating. Evaluation on the AI City Challenge 2024 demonstrates a HOTA score of 53.13% without access to ground-truth calibration matrices, establishing a strong baseline for purely vision-based 3D tracking.",
+      "authors": [
+        "Ponleur Veng",
+        "Dominique Vaufreydaz",
+        "Phutphalla Kong"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-22T09:16:10+00:00",
+      "link": "https://arxiv.org/pdf/2607.22731v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "calibration-free multi-view 3D reconstruction for tracking",
+      "llm_evidence_cn": "无标定多视角三维重建用于跟踪",
+      "llm_evidence": "无标定多视角三维重建用于跟踪",
+      "canonical_evidence": "无标定多视角三维重建用于跟踪",
+      "llm_tldr_en": "Proposes a calibration-free 3D multi-camera people tracking framework that uses deep foundation models to infer geometry and track people without explicit camera calibration.",
+      "llm_tldr_cn": "提出一种无摄像头标定的三维多摄像头行人跟踪框架，集成检测、跟踪、外观嵌入与位姿估计，利用视觉几何基础模型进行三维几何重建，实现无需标定的三维跟踪。",
+      "llm_tldr": "提出一种无摄像头标定的三维多摄像头行人跟踪框架，集成检测、跟踪、外观嵌入与位姿估计，利用视觉几何基础模型进行三维几何重建，实现无需标定的三维跟踪。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

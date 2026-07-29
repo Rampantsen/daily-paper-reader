@@ -6,52 +6,46 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-28
-- 运行时间：2026-07-28 21:07:15 UTC
+- 最新运行日期：2026-07-29
+- 运行时间：2026-07-29 20:18:33 UTC
 - 运行状态：成功
-- 本次总论文数：10
-- 精读区：6
+- 本次总论文数：8
+- 精读区：4
 - 速读区：4
 
 ### 今日简报（AI）
-1) 今日AI日报深入3D视觉前沿，聚焦立体几何统一估计、多图鲁棒生成与高效压缩等突破。
-2) 最值得关注：统一视差与表面法线的几何框架，以及用交叉注意力路由实现的无约束多图3D生成。
-3) 建议读者关注几何估计与生成式方法的融合趋势，它们正推动文化遗产数字化和移动感知落地。
-- 详情：[/202607/28/README](/202607/28/README)
+今日聚焦3D高斯泼溅的高效前馈生成与3D视觉语言模型，同时跟进场景编辑和匹配评估等周边工具。  
+最值得关注是ATSplat用自适应令牌扩展实现紧凑高质量渲染，以及将隐式与显式几何注入VLMs带来的3D理解提升。  
+建议读者留意这类方法如何降低3D内容创作门槛，可先体验基于混合现实的评估工具来直观感受重建质量差异。
+- 详情：[/202607/29/README](/202607/29/README)
 
 ### 精读区论文标签
-1. [A Unified Stereo Geometry Estimation Framework for Disparity and Surface Normal](/202607/28/2607.24024v1-a-unified-stereo-geometry-estimation-framework-for-disparity-and-surface-normal)  
-   标签：评分：10.0/10、query:d-gen-recon
-   evidence：直接从两个视图进行多视图立体估计视差和表面法向。
-2. [UMI3D: Robust 3D Generation on Unconstrained Multi-Image Inputs via Simultaneous Focus Cross-Attention Routing](/202607/28/2607.24298v1-umi3d-robust-3d-generation-on-unconstrained-multi-image-inputs-via-simultaneous-focus-cross-attention-routing)  
-   标签：评分：10.0/10、query:d-gen-recon
-   evidence：从无约束多图像输入进行鲁棒三维生成，直接致力于从图像集合生成三维场景
-3. [InterOCF: Spatio-Temporal 2D-3D Interaction for Camera-Only 4D Occupancy Forecasting](/202607/28/2607.24431v1-interocf-spatio-temporal-2d-3d-interaction-for-camera-only-4d-occupancy-forecasting)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：从多视图图像预测语义三维占用，是三维场景语义分割的直接形式。
-4. [GEAR: Reconstruction of Classical Paintings via Geometry Grounding and Appearance Restitution](/202607/28/2607.17519v2-gear-reconstruction-of-classical-paintings-via-geometry-grounding-and-appearance-restitution)  
+1. [ATSplat: Compact Feed-forward 3D Gaussian Splatting with Adaptive Token Expansion](/202607/29/2607.20417v2-atsplat-compact-feed-forward-3d-gaussian-splatting-with-adaptive-token-expansion)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：从单幅古典绘画重建三维场景，属于从图像生成三维内容
-5. [GaussianSeed: Hierarchical Gaussian Seeding for High-Resolution 3D Occupancy Prediction](/202607/28/2607.20071v2-gaussianseed-hierarchical-gaussian-seeding-for-high-resolution-3d-occupancy-prediction)  
+   evidence：自适应令牌扩展的前馈3D高斯泼溅，用于从图像重建场景
+2. [3D-Aware VLMs with Implicit and Explicit Geometries](/202607/29/2607.21595v1-3d-aware-vlms-with-implicit-and-explicit-geometries)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：3D占用预测从视觉中提供稠密场景表示，类似于多视角三维重建
-6. [Multiview Multi-Person Human Mesh Recovery Under Large Scenes with Occlusions](/202607/28/2607.24302v1-multiview-multi-person-human-mesh-recovery-under-large-scenes-with-occlusions)  
+   evidence：用隐显式三维几何增强VLM的空间理解
+3. [PlanCraft: Sketch, Refine, and Furnish for Architect-Inspired Progressive 3D Residential Scene Generation](/202607/29/2607.23491v1-plancraft-sketch-refine-and-furnish-for-architect-inspired-progressive-3d-residential-scene-generation)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：从多视图图像恢复大场景遮挡下多人人体网格
+   evidence：渐进式三维住宅场景生成
+4. [PanoLess: Environment Reconstruction from Partial Reflective Views](/202607/29/2607.25362v1-panoless-environment-reconstruction-from-partial-reflective-views)  
+   标签：评分：8.0/10、query:d-gen-recon
+   evidence：利用高斯泼溅从反射面单侧图像重建环境光照贴图
 
 ### 速读区论文标签
-1. [GenSplatCodec: Feed-Forward Gaussian Splatting Compression via One-Step Diffusion](/202607/28/2607.24403v1-gensplatcodec-feed-forward-gaussian-splatting-compression-via-one-step-diffusion)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：前馈高斯泼溅从多视图图像实现可扩展场景重建
-2. [GEAR: Reconstruction of Classical Paintings via Geometry Grounding and Appearance Restitution](/202607/28/2607.17519v1-gear-reconstruction-of-classical-paintings-via-geometry-grounding-and-appearance-restitution)  
+1. [Look Before You Edit: Attention-Guided Camera Placement and Multi-View Alignment for 3D Gaussian Splatting Editing](/202607/29/2607.19777v1-look-before-you-edit-attention-guided-camera-placement-and-multi-view-alignment-for-3d-gaussian-splatting-editing)  
    标签：评分：7.0/10、query:d-gen-recon
-   evidence：从单幅古典绘画进行三维重建以用于数字保存
-3. [Beyond Appearance: A Multi-cue Framework and Large-scale Benchmark for Pedestrian Association and Tracking on Mobile Aerial-Ground Platforms](/202607/28/2607.23803v1-beyond-appearance-a-multi-cue-framework-and-large-scale-benchmark-for-pedestrian-association-and-tracking-on-mobile-aerial-ground-platforms)  
+   evidence：注意力引导相机放置与多视角对齐用于三维编辑
+2. [HOME: Robust Hough-space Matching Method for Structured and Textureless Videos](/202607/29/2607.25389v1-home-robust-hough-space-matching-method-for-structured-and-textureless-videos)  
    标签：评分：7.0/10、query:d-gen-recon
-   evidence：跨视图行人关联与跟踪的多视图特征匹配
-4. [MSVS-VAE: Multi-Scale Anchored VecSet for High-Fidelity 3D Reconstruction](/202607/28/2607.24436v1-msvs-vae-multi-scale-anchored-vecset-for-high-fidelity-3d-reconstruction)  
-   标签：评分：7.0/10、query:d-gen-recon
-   evidence：三维生成模型的核心组件，实现高保真物体重建。
+   evidence：提出轻量级特征匹配方法用于结构化视频，可用于SLAM和多视图三维理解
+3. [MR-Compare: A Mixed-Reality Framework for Spatially Grounded Visual Comparison of 3D Gaussian Splatting and Mesh Reconstructions with the Physical Environment](/202607/29/2607.20325v1-mr-compare-a-mixed-reality-framework-for-spatially-grounded-visual-comparison-of-3d-gaussian-splatting-and-mesh-reconstructions-with-the-physical-environment)  
+   标签：评分：6.0/10、query:d-gen-recon
+   evidence：用于比较3D高斯溅射与网格重建的混合现实框架
+4. [Calibration-Free 3D Multi-Camera People Tracking for Indoor Environment](/202607/29/2607.22731v1-calibration-free-3d-multi-camera-people-tracking-for-indoor-environment)  
+   标签：评分：6.0/10、query:d-gen-recon
+   evidence：无标定多视角三维重建用于跟踪
 
 
 <div class="dpr-home-promo-card">
