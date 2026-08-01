@@ -6,52 +6,64 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-07-30
-- 运行时间：2026-07-30 21:24:46 UTC
+- 最新运行日期：2026-08-01
+- 运行时间：2026-08-01 21:08:21 UTC
 - 运行状态：成功
-- 本次总论文数：10
-- 精读区：5
-- 速读区：5
+- 本次总论文数：14
+- 精读区：6
+- 速读区：8
 
 ### 今日简报（AI）
-今日精读5篇、速读5篇，聚焦三维重建与生成式AI的交叉前沿。  
-重点阅读满分的等几何分析稀疏视图重建仿真（《Spline-Based Boundary Representations》）和生成式AI多时相卫星立体匹配（《SeasonStereo》）。  
-建议读者跟踪生成式模型与几何先验深度融合的新范式，拓展到卫星遥感与工业仿真场景。
-- 详情：[/202607/30/README](/202607/30/README)
+今日从14篇论文中精读2篇、速读3篇，聚焦3D重建与视觉生成。  
+亮点是10分论文用卷积神经着色实现高质量多视图重建，9分工作则让路面重建学会理解道路拓扑。  
+建议读者优先关注“渲染+重建”融合的新范式，并跟进轻量化立体深度估计中的高效Token混合思路。
+- 详情：[/202608/01/README](/202608/01/README)
 
 ### 精读区论文标签
-1. [Spline-Based Boundary Representations for Sparse View Reconstruction and Simulation Using Isogeometric Analysis](/202607/30/2607.26234v1-spline-based-boundary-representations-for-sparse-view-reconstruction-and-simulation-using-isogeometric-analysis)  
+1. [Convolutional Neural Shading for High-Quality 3D Reconstruction from Multi-View Images](/202608/01/2607.28132v1-convolutional-neural-shading-for-high-quality-3d-reconstruction-from-multi-view-images)  
    标签：评分：10.0/10、query:d-gen-recon
-   evidence：从稀疏多视角RGB图像直接重建水密三维几何
-2. [SeasonStereo: Robust Dense Stereo Matching for Multi-Date Satellite Imagery via Generative AI](/202607/30/2607.27139v1-seasonstereo-robust-dense-stereo-matching-for-multi-date-satellite-imagery-via-generative-ai)  
+   evidence：卷积神经着色实现多视角高质量三维重建
+2. [RoadVGGT: Road-Structure-Aware Feed-Forward Road Surface Reconstruction](/202608/01/2607.23758v1-roadvggt-road-structure-aware-feed-forward-road-surface-reconstruction)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：多日期卫星图像的稠密立体匹配直接解决多视角立体三维重建。
-3. [VidMap: Exploiting Temporal Structure for Video-Based Structure-from-Motion](/202607/30/2607.27194v1-vidmap-exploiting-temporal-structure-for-video-based-structure-from-motion)  
+   evidence：从多视角图像重建道路三维表面
+3. [WHTMix: Efficient Stereo Depth Estimation via Walsh-Hadamard Token Mixing](/202608/01/2607.25234v1-whtmix-efficient-stereo-depth-estimation-via-walsh-hadamard-token-mixing)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：基于视频的运动恢复结构，从多视角视频恢复相机位姿和稀疏3D结构
-4. [FPSGen: Flexible Point Cloud Scene Generation with BEV-Supported Transport Flows](/202607/30/2607.26645v1-fpsgen-flexible-point-cloud-scene-generation-with-bev-supported-transport-flows)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：不依赖部分扫描的灵活点云场景生成
-5. [Robust RPC Bundle Adjustment for Multi-Date Satellite Imagery with Season-Invariant Correspondences](/202607/30/2607.26973v1-robust-rpc-bundle-adjustment-for-multi-date-satellite-imagery-with-season-invariant-correspondences)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：用于多视图光束法平差的学习特征匹配
+   evidence：用Walsh-Hadamard令牌混合替代自注意力实现高效立体深度估计
+4. [4DHumanDiff: Direct Text-to-4DGS Generation for Consistent 360-Degree Dynamic Humans](/202608/01/2607.27634v1-4dhumandiff-direct-text-to-4dgs-generation-for-consistent-360-degree-dynamic-humans)  
+   标签：评分：9.0/10、query:d-gen-recon
+   evidence：从文本直接生成动态人类的4D高斯泼溅
+5. [Split and Drive: Dual-Axis Disentanglement for Real-Time Gaussian Head Avatars](/202608/01/2607.28032v1-split-and-drive-dual-axis-disentanglement-for-real-time-gaussian-head-avatars)  
+   标签：评分：9.0/10、query:d-gen-recon
+   evidence：从单张图像生成逼真可驱动头部化身，使用3D高斯点云
+6. [S-Avatar: Diffusion-Guided Gaussian Head Avatars from a Single Image](/202608/01/2607.28164v1-s-avatar-diffusion-guided-gaussian-head-avatars-from-a-single-image)  
+   标签：评分：9.0/10、query:d-gen-recon
+   evidence：从单张图像生成3D头部化身，符合从图像生成3D物体的需求。
 
 ### 速读区论文标签
-1. [SHReg: Strictly Rotation-Equivariant Point Cloud Registration via Spherical Harmonics](/202607/30/2607.23096v1-shreg-strictly-rotation-equivariant-point-cloud-registration-via-spherical-harmonics)  
+1. [WHTMix: Efficient Stereo Depth Estimation via Walsh-Hadamard Token Mixing](/202608/01/2607.25234v2-whtmix-efficient-stereo-depth-estimation-via-walsh-hadamard-token-mixing)  
+   标签：评分：8.0/10、query:d-gen-recon
+   evidence：使用沃尔什-哈达玛令牌混合替代自注意力实现高效立体深度估计
+2. [MonoVoc: Decoupling Geometry and Semantics for Lightweight Monocular Open-Vocabulary 3D Gaussians](/202608/01/2607.28300v1-monovoc-decoupling-geometry-and-semantics-for-lightweight-monocular-open-vocabulary-3d-gaussians)  
+   标签：评分：8.0/10、query:d-gen-recon
+   evidence：免训练管线解耦几何与语义，从单目视频实现开放词汇三维场景理解
+3. [ROAD: Reciprocal-Objective Alignment of Discriminative Semantics for 3D Shape Generation](/202608/01/2607.28581v1-road-reciprocal-objective-alignment-of-discriminative-semantics-for-3d-shape-generation)  
+   标签：评分：8.0/10、query:d-gen-recon
+   evidence：将判别性三维基础模型先验迁移至扩散变换，实现高效三维形状生成
+4. [Genie Sim PanoWorld: An Infinite Indoor 3D World Generation Pipeline via Panoramic Scene Modeling and Simulation](/202608/01/2607.26646v1-genie-sim-panoworld-an-infinite-indoor-3d-world-generation-pipeline-via-panoramic-scene-modeling-and-simulation)  
    标签：评分：7.0/10、query:d-gen-recon
-   evidence：严格旋转等变点云配准用于多视角对齐
-2. [Semantic Semi-Incremental Data-Association-Free Object SLAM](/202607/30/2607.23384v1-semantic-semi-incremental-data-association-free-object-slam)  
+   evidence：从单张全景图生成三维室内场景
+5. [Articulated Object Reconstruction from Rest-State Observation](/202608/01/2607.27749v1-articulated-object-reconstruction-from-rest-state-observation)  
    标签：评分：7.0/10、query:d-gen-recon
-   evidence：联合估计数据关联，实现跨视图隐式特征匹配
-3. [Visual Relocalization from Sparse Views in Aliased and Low-Texture Environments via Novel View Synthesis](/202607/30/2607.22147v1-visual-relocalization-from-sparse-views-in-aliased-and-low-texture-environments-via-novel-view-synthesis)  
+   evidence：从单一图像重建3D铰接物体
+6. [PlanCraft: Sketch, Refine, and Furnish for Architect-Inspired Progressive 3D Residential Scene Generation](/202608/01/2607.23491v1-plancraft-sketch-refine-and-furnish-for-architect-inspired-progressive-3d-residential-scene-generation)  
    标签：评分：6.0/10、query:d-gen-recon
-   evidence：通过估计相机姿态与3D高斯泼溅地图进行视觉重定位，涉及多视图几何
-4. [SpatialQ: Understanding 3D Gaussian Splatting Scene Quality via Visual-based MLLM](/202607/30/2607.26595v1-spatialq-understanding-3d-gaussian-splatting-scene-quality-via-visual-based-mllm)  
+   evidence：从草图出发通过草图、精炼、家具布置阶段渐进式生成3D住宅场景
+7. [3DGBGS: 3D Granular Ball Gaussian Splatting for Compact Novel View Synthesis](/202608/01/2607.26578v1-3dgbgs-3d-granular-ball-gaussian-splatting-for-compact-novel-view-synthesis)  
    标签：评分：6.0/10、query:d-gen-recon
-   evidence：3D高斯泼溅场景重建质量评估
-5. [Genie Sim PanoWorld: An Infinite Indoor 3D World Generation Pipeline via Panoramic Scene Modeling and Simulation](/202607/30/2607.26646v1-genie-sim-panoworld-an-infinite-indoor-3d-world-generation-pipeline-via-panoramic-scene-modeling-and-simulation)  
+   evidence：通过颗粒球组织改进3DGS新视角合成，实现紧凑场景重建
+8. [MeshFM: 2D Features Are All You Need for 3D Shape Understanding](/202608/01/2607.27592v1-meshfm-2d-features-are-all-you-need-for-3d-shape-understanding)  
    标签：评分：6.0/10、query:d-gen-recon
-   evidence：从单张全景图生成3D室内场景
+   evidence：从二维学习三维特征用于分割与对应
 
 
 <div class="dpr-home-promo-card">
