@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-08-02 <!--dpr-date:20260802-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/02/2607.28382v1-semancorr-semantic-anchored-correspondence-for-zero-shot-manipulation-skill-transfer" data-sidebar-item="{&quot;title&quot;: &quot;SemAnCorr: Semantic Anchored Correspondence for Zero-Shot Manipulation Skill Transfer&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.28382v1-semancorr-semantic-anchored-correspondence-for-zero-shot-manipulation-skill-transfer&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;d-gen-recon&quot;}], &quot;evidence&quot;: &quot;利用语义锚定建立物体表面的稠密对应&quot;}">SemAnCorr: Semantic Anchored Correspondence for Zero-Shot Manipulation Skill Transfer</a>
   * 2026-08-01 <!--dpr-date:20260801-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/01/2607.28132v1-convolutional-neural-shading-for-high-quality-3d-reconstruction-from-multi-view-images" data-sidebar-item="{&quot;title&quot;: &quot;Convolutional Neural Shading for High-Quality 3D Reconstruction from Multi-View Images&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2607.28132v1-convolutional-neural-shading-for-high-quality-3d-reconstruction-from-multi-view-images&quot;, &quot;score&quot;: &quot;10.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;d-gen-recon&quot;}], &quot;evidence&quot;: &quot;卷积神经着色实现多视角高质量三维重建&quot;}">Convolutional Neural Shading for High-Quality 3D Reconstruction from Multi-View Images</a>
