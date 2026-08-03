@@ -1,0 +1,247 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-03T21:35:33.940640+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2607.28935v1",
+      "source": "arxiv",
+      "title": "Group-wise Supervision with Focal-Dice Loss for Long-Tailed Indoor Semantic Occupancy Prediction",
+      "abstract": "Recently, 3D semantic occupancy prediction has garnered increasing attention for understanding the indoor scene. However, unlike structured outdoor environments, indoor scenes feature a high diversity of object categories that exhibit a severe long-tailed distribution, which has become a core bottleneck limiting the performance of existing models. To tackle this challenge, we propose a novel method, Group-UFD Occ, based on hierarchical semantic supervision and synergistic loss optimization. At the architectural level, we introduce a fine-grained semantic grouping strategy and design multi-scale, parallel ``main-expert'' prediction heads to guide the model in efficiently learning tail-class features through deep regularization. At the optimization level, we introduce the Unified Focal-Dice (UFD) loss. This synergistic loss function dynamically focuses on hard samples at the per-voxel level. Meanwhile, it simultaneously optimizes the geometric integrity of predicted objects from a region-based perspective. We conducted experiments on the large-scale EmbodiedScan dataset. The results demonstrate that our method yields a relative improvement of 11.38\\% over the baseline, with substantial accuracy gains in several critical long-tailed categories.",
+      "authors": [
+        "Qi Zheng",
+        "Zihuang Su",
+        "Xiao Pan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-31T01:32:45+00:00",
+      "link": "https://arxiv.org/pdf/2607.28935v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "indoor 3D semantic occupancy prediction with long-tailed distribution handling",
+      "llm_evidence_cn": "室内三维语义占用预测，处理长尾分布",
+      "llm_evidence": "室内三维语义占用预测，处理长尾分布",
+      "canonical_evidence": "室内三维语义占用预测，处理长尾分布",
+      "llm_tldr_en": "Addresses long-tailed class distribution in indoor 3D semantic occupancy prediction by proposing group-wise supervision with focal-dice loss and multi-scale expert heads.",
+      "llm_tldr_cn": "针对室内场景三维语义占用预测中严重的长尾分布问题，本文提出Group-UFD Occ方法，通过细粒度语义分组和多尺度主专家预测头进行层次化语义监督，并设计焦点Dice损失协同优化。实验表明，该方法能有效提升尾部类别的预测性能，解决了室内三维理解中的类别不平衡瓶颈，为长尾分布下的3D场景语义分割提供了新思路。",
+      "llm_tldr": "针对室内场景三维语义占用预测中严重的长尾分布问题，本文提出Group-UFD Occ方法，通过细粒度语义分组和多尺度主专家预测头进行层次化语义监督，并设计焦点Dice损失协同优化。实验表明，该方法能有效提升尾部类别的预测性能，解决了室内三维理解中的类别不平衡瓶颈，为长尾分布下的3D场景语义分割提供了新思路。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.29033v1",
+      "source": "arxiv",
+      "title": "SAM+D: Parameter-Efficient Dimensional Lifting of SAM-Family Models via Depth-Routed LoRA and Depth Shifting",
+      "abstract": "Existing methods for adapting 2D foundation models such as SAM to 3D volumes either process slices independently---ignoring inter-slice context---or require substantial architectural changes and retraining. In this paper, we present \\textbf{SAM+D}, a parameter-efficient framework that lifts SAM-family models by one spatial dimension---enabling 3D volumetric segmentation from 2D SAM and, for the first time via parameter-efficient fine-tuning, end-to-end 4D (3D+T) spatiotemporal segmentation from video-based SAM2---while keeping the vast majority of pre-trained parameters frozen. SAM+D introduces two lightweight, model-agnostic modules into frozen transformer blocks: (1)~\\textbf{Depth-Routed LoRA (DRLoRA)} experts with learned routing for spatially adaptive low-rank updates, and (2)~\\textbf{Depth Shift Modules (DSM)} for cross-slice feature exchange at zero additional parameter cost. Together, they provide volume-level context while tuning only ${\\sim}$2.8\\% of parameters for SAM and ${\\sim}$3.7\\% for SAM2. We evaluate SAM+D in two distinct settings, each lifting the base model by one spatial dimension: 3D segmentation, where SAM(2D$\\,\\to\\,$3D) is evaluated on four CT benchmarks (KiTS, Pancreas, LiTS, Colon), and 4D segmentation, where SAM2 (2D+T$\\,\\to\\,$3D+T) is evaluated on a cell tracking challenge (CTC) dataset (Fluo-N3DH-SIM+). In both settings SAM+D achieves competitive or superior results under the single-point prompt setting while using fewer trainable parameters than existing methods, demonstrating that SAM+D generalizes across SAM-family architectures, target dimensionalities (3D, 4D), and domains spanning medical imaging and bio-scene understanding. Code is publicly available at https://github.com/JerrySongCST/SAM-Plus-D.",
+      "authors": [
+        "Yu Song",
+        "Hao Sun",
+        "Shiyu Teng",
+        "Ikuko Nishikawa",
+        "Yen-wei Chen"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-31T05:11:25+00:00",
+      "link": "https://arxiv.org/pdf/2607.29033v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "3D volumetric segmentation from 2D SAM",
+      "llm_evidence_cn": "从2D SAM实现3D体积分割",
+      "llm_evidence": "从2D SAM实现3D体积分割",
+      "canonical_evidence": "从2D SAM实现3D体积分割",
+      "llm_tldr_en": "Proposes SAM+D, a parameter-efficient method to lift SAM to 3D for volumetric segmentation by adding lightweight modules to frozen transformer blocks, enabling 3D and 4D segmentation with minimal training.",
+      "llm_tldr_cn": "针对二维基础模型无法利用三维上下文的问题，提出SAM+D框架，通过深度路由LoRA和深度移位将SAM系列模型提升至3D体积分割，仅需少量参数即可实现三维乃至四维时空分割，保持了预训练参数的冻结状态。该方法在医学影像等场景中展现了高效的分割能力，为三维场景语义标注提供了轻量解决方案。",
+      "llm_tldr": "针对二维基础模型无法利用三维上下文的问题，提出SAM+D框架，通过深度路由LoRA和深度移位将SAM系列模型提升至3D体积分割，仅需少量参数即可实现三维乃至四维时空分割，保持了预训练参数的冻结状态。该方法在医学影像等场景中展现了高效的分割能力，为三维场景语义标注提供了轻量解决方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.29037v1",
+      "source": "arxiv",
+      "title": "GO-PRE: Goal-Oriented Next-Best-View Selection via Predictive Rendering Entropy for Active 3D Reconstruction",
+      "abstract": "Active 3D reconstruction relies on active view selection to maximize reconstruction fidelity under limited capture budgets. However, most existing methods rely on surrogate signals such as parameter uncertainty or geometric heuristics, but these signals are often misaligned with the ultimate goal: the fidelity of rendered predictions. We propose GO-PRE, a goal-oriented next-best-view selection framework that explicitly targets information gain in the prediction space. Specifically, we formulate the objective as maximizing the reduction of the average marginal predictive entropy over a user-specified target view manifold. GO-PRE supports interactive goal specification and yields an efficient acquisition rule that enables real-time computation of information gain. Extensive experiments across benchmarks demonstrate that GO-PRE consistently improves active reconstruction performance and provides more reliable uncertainty quantification compared to state-of-the-art methods.",
+      "authors": [
+        "Yan Song",
+        "Zhihao Li",
+        "Chenglong Li",
+        "Li He",
+        "Yan Wang",
+        "Wenqiang Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-31T05:29:04+00:00",
+      "link": "https://arxiv.org/pdf/2607.29037v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "active 3D reconstruction with goal-oriented next-best-view selection",
+      "llm_evidence_cn": "面向目标的下一最佳视角选择用于主动三维重建",
+      "llm_evidence": "面向目标的下一最佳视角选择用于主动三维重建",
+      "canonical_evidence": "面向目标的下一最佳视角选择用于主动三维重建",
+      "llm_tldr_en": "Proposes GO-PRE, a next-best-view selection method for active 3D reconstruction that maximizes reduction of predictive rendering entropy over target views, directly optimizing reconstruction fidelity.",
+      "llm_tldr_cn": "针对主动三维重建中下一最佳视角选择与重建保真度目标不一致的问题，本文提出GO-PRE框架，通过最大化目标视角集上预测渲染熵的减少来显式优化信息增益。该方法支持交互式目标指定，并给出高效的采集规则。实验表明，该方法在有限采集预算下能显著提升重建质量，为主动重建提供了更直接的目标导向视角选择策略。",
+      "llm_tldr": "针对主动三维重建中下一最佳视角选择与重建保真度目标不一致的问题，本文提出GO-PRE框架，通过最大化目标视角集上预测渲染熵的减少来显式优化信息增益。该方法支持交互式目标指定，并给出高效的采集规则。实验表明，该方法在有限采集预算下能显著提升重建质量，为主动重建提供了更直接的目标导向视角选择策略。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.29633v1",
+      "source": "arxiv",
+      "title": "OASIS: Occlusion-aware Single-image Hand Avatar Reconstruction via 3D Gaussian Splatting",
+      "abstract": "Single-image 3D hand avatar reconstruction is fundamentally ill-posed and particularly challenging due to limited visual evidence under severe self-occlusion and the complex pose-dependent deformation of highly articulated hands. Existing methods predominantly rely on implicit NeRF-style representations, whose volumetric fitting is computationally expensive and often struggles to preserve fine-grained hand details. In this work, we present OASIS, a tailored 3D Gaussian Splatting framework for single-image hand avatar reconstruction. To faithfully encode sparse image-specific appearance cues in single-view reconstruction, we construct geometry-aligned visual evidence tokens by explicitly aligning input image observations with 3D hand geometry and context-adaptively tokenizing the resulting visual evidence. Since severe self-occlusion makes the reliability of image evidence inherently visibility-dependent, we introduce a visibility-conditioned point-image attention to reliably transfer visual evidence to geometric tokens, yielding occlusion-aware Gaussian features for faithful and robust reconstruction. To further capture non-rigid deformation of articulated hands, we introduce a Feature-on-Mesh representation to enable Gaussian deformation to be guided by local surface stretching. Under this framework, we adopt a one-shot adaptation scheme that learns a shared hand prior from multi-identity training data and then fits it to a target image for target-specific reconstruction. Extensive experiments show that OASIS outperforms existing baselines in both visual fidelity and efficiency across challenging poses and in-the-wild scenarios, and further demonstrates strong versatility in downstream applications such as text-to-avatar generation and texture editing.",
+      "authors": [
+        "Zhisheng Han",
+        "Shiyao Wu",
+        "Jiayan Qiu",
+        "Yakun Ju",
+        "Lu Liu",
+        "Le Zhang",
+        "Pengfei Feng",
+        "Huiyu Zhou",
+        "Zheheng Jiang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-31T17:09:46+00:00",
+      "link": "https://arxiv.org/pdf/2607.29633v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "single-image 3D hand avatar reconstruction",
+      "llm_evidence_cn": "单张图像重建三维手部化身",
+      "llm_evidence": "单张图像重建三维手部化身",
+      "canonical_evidence": "单张图像重建三维手部化身",
+      "llm_tldr_en": "OASIS reconstructs a 3D hand avatar from a single image using 3D Gaussian Splatting, addressing self-occlusion with geometry-aligned visual tokens for better detail preservation.",
+      "llm_tldr_cn": "针对单张图像手部重建中严重自遮挡和姿态相关形变的挑战，提出OASIS框架，利用3D高斯泼溅并通过几何对齐的视觉证据令牌来编码稀疏图像线索，实现了精细的手部三维重建。该方法克服了隐式表示的细节丢失问题，为单视图三维物体生成提供了高效方案。",
+      "llm_tldr": "针对单张图像手部重建中严重自遮挡和姿态相关形变的挑战，提出OASIS框架，利用3D高斯泼溅并通过几何对齐的视觉证据令牌来编码稀疏图像线索，实现了精细的手部三维重建。该方法克服了隐式表示的细节丢失问题，为单视图三维物体生成提供了高效方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.29106v1",
+      "source": "arxiv",
+      "title": "Forwardrobe: Garment-Aware Gaussian Avatars from a Single Image",
+      "abstract": "Reconstructing animatable 3D human avatars from a single image remains particularly challenging for loose garments, whose geometry and motion cannot be adequately represented by body-aligned topology and skinning. We present Forwardrobe, a feed-forward framework for reconstructing garment-aware Gaussian avatars from a single image. Forwardrobe explicitly separates clothing from the body in canonical Gaussian space and equips the garment layer with continuity-aware geometry and skinning initialization, pose-conditioned non-rigid deformation, and appearance adaptation. These designs improve garment reconstruction and visual quality during animation, particularly for skirts and dresses. The separated garment layer additionally forms an independently controllable 3D asset, enabling garment editing, transfer, and 3D virtual try-on. Experiments demonstrate improved garment reconstruction quality and greater flexibility in garment manipulation compared with existing single-image avatar reconstruction methods.",
+      "authors": [
+        "Daisheng Jin",
+        "Shuyun Wang",
+        "Ying He"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-31T07:35:52+00:00",
+      "link": "https://arxiv.org/pdf/2607.29106v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "reconstructing animatable 3D human avatars from a single image",
+      "llm_evidence_cn": "从单张图像重建可动3D人体化身",
+      "llm_evidence": "从单张图像重建可动3D人体化身",
+      "canonical_evidence": "从单张图像重建可动3D人体化身",
+      "llm_tldr_en": "Forwardrobe reconstructs garment-aware Gaussian avatars from a single image, achieving high-quality clothing separation and animation, directly relevant to 3D object generation from images.",
+      "llm_tldr_cn": "Forwardrobe提出从单张图像重建服装感知的可动3D化身，通过显式分离服装与身体并设计专门的几何、变形和外观模块，显著提升了裙装等宽松服装的重建与动画质量，推动了单图3D人体重建的实用化发展。",
+      "llm_tldr": "Forwardrobe提出从单张图像重建服装感知的可动3D化身，通过显式分离服装与身体并设计专门的几何、变形和外观模块，显著提升了裙装等宽松服装的重建与动画质量，推动了单图3D人体重建的实用化发展。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2607.26829v1",
+      "source": "arxiv",
+      "title": "BATS: Resource-Efficient Volumetric Segmentation with Boundary-Aware Mixed-Resolution Tokens",
+      "abstract": "Many high-performing volumetric segmentation models maintain dense multi-scale feature maps, leading to high activation memory and inference cost. We present BATS (Boundary-Aware Token Selection), a 3D medical image segmentation architecture that concentrates fine-resolution processing near predicted class boundaries. A dense boundary predictor identifies where additional resolution is needed, while a fine-first context cascade constructs an input-dependent mixed-resolution hierarchy. Homogeneous regions are represented coarsely, with finer tokens retained around boundaries, thin structures, and small targets. The sparse hierarchy is refined and rasterised into a dense segmentation.   BATS predicts boundary relevance independently at every resolution level, preventing an erroneous coarse-scale decision from suppressing fine-scale evidence. Parent cluster attention further injects hierarchical ancestor tokens into local attention neighbourhoods, providing cross-scale context without dense multi-scale feature maps or cross-scale neighbour search.   We evaluate BATS on five public CT and MRI datasets using the standardised nnU-Net Revisited protocol. BATS achieves the highest LiTS Dice among the compared methods and averages within 0.37 Dice points of the strongest dense baseline, MedNeXt-L, across the five datasets. Relative to MedNeXt-L, it reduces peak allocated GPU memory by more than 53% on KiTS, LiTS, and BraTS. Inference is up to 30% faster on KiTS and LiTS, which retain fewer tokens, but slower on the more token-dense BraTS. Mixed-resolution processing therefore provides consistent memory savings, while runtime and accuracy gains depend on dataset boundary density.",
+      "authors": [
+        "David Hagerman",
+        "Roman Naeem",
+        "Fredrik Kahl"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-07-29T12:21:40+00:00",
+      "link": "https://arxiv.org/pdf/2607.26829v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Volumetric segmentation with boundary-aware token selection for 3D medical images",
+      "llm_evidence_cn": "面向3D医学图像的边界感知令牌选择体分割方法",
+      "llm_evidence": "面向3D医学图像的边界感知令牌选择体分割方法",
+      "canonical_evidence": "面向3D医学图像的边界感知令牌选择体分割方法",
+      "llm_tldr_en": "BATS is a 3D medical image segmentation method that uses boundary-aware mixed-resolution tokens to reduce memory and inference cost while maintaining accuracy, useful for efficient 3D segmentation.",
+      "llm_tldr_cn": "BATS是一种资源高效的3D医学图像分割架构，通过预测边界区域并仅在边界附近保留高分辨率细粒度令牌，构建输入依赖的混合分辨率层次，在保持分割精度的同时显著降低激活内存和推理成本。实验表明其性能与密集多尺度方法相当但资源开销更小，为通用3D分割任务提供了可迁移的高效方案。",
+      "llm_tldr": "BATS是一种资源高效的3D医学图像分割架构，通过预测边界区域并仅在边界附近保留高分辨率细粒度令牌，构建输入依赖的混合分辨率层次，在保持分割精度的同时显著降低激活内存和推理成本。实验表明其性能与密集多尺度方法相当但资源开销更小，为通用3D分割任务提供了可迁移的高效方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
