@@ -6,40 +6,64 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-03
-- 运行时间：2026-08-03 21:41:03 UTC
+- 最新运行日期：2026-08-04
+- 运行时间：2026-08-04 22:04:26 UTC
 - 运行状态：成功
-- 本次总论文数：6
-- 精读区：5
-- 速读区：1
+- 本次总论文数：14
+- 精读区：9
+- 速读区：5
 
 ### 今日简报（AI）
-今日精读5篇论文，重点聚焦长尾室内语义占用预测与SAM模型高效3D提升。  
-两项9分工作分别提出分组Focal-Dice损失和深度路由LoRA，为3D占用预测长尾分布和基础模型维度扩展提供新解法。  
-建议读者跟进3D视觉中类别不平衡处理与轻量化适配技术，尤其关注监督信号设计和参数高效微调策略。
-- 详情：[/202608/03/README](/202608/03/README)
+今日精读三维视觉前沿，从立体几何到动态重建共9篇深度解读。  
+GeoStereo 统一估计视差与表面法线，Struct-GStream 以结构化3D高斯实现低码率自由视角视频流，是今日最亮突破。  
+若关注实时应用，建议先跟进 Struct-GStream 的码率优化思路。
+- 详情：[/202608/04/README](/202608/04/README)
 
 ### 精读区论文标签
-1. [Group-wise Supervision with Focal-Dice Loss for Long-Tailed Indoor Semantic Occupancy Prediction](/202608/03/2607.28935v1-group-wise-supervision-with-focal-dice-loss-for-long-tailed-indoor-semantic-occupancy-prediction)  
+1. [GeoStereo: A Unified Stereo Geometry Estimation Framework for Disparity and Surface Normal](/202608/04/2607.24024v2-geostereo-a-unified-stereo-geometry-estimation-framework-for-disparity-and-surface-normal)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：室内三维语义占用预测，处理长尾分布
-2. [SAM+D: Parameter-Efficient Dimensional Lifting of SAM-Family Models via Depth-Routed LoRA and Depth Shifting](/202608/03/2607.29033v1-samd-parameter-efficient-dimensional-lifting-of-sam-family-models-via-depth-routed-lora-and-depth-shifting)  
+   evidence：使用扩散先验联合估计立体视差和表面法线
+2. [Struct-GStream: Towards Efficient Free-Viewpoint Video Streaming at Low-Bitrates with Structured 3D Gaussians](/202608/04/2608.01053v1-struct-gstream-towards-efficient-free-viewpoint-video-streaming-at-low-bitrates-with-structured-3d-gaussians)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：从2D SAM实现3D体积分割
-3. [GO-PRE: Goal-Oriented Next-Best-View Selection via Predictive Rendering Entropy for Active 3D Reconstruction](/202608/03/2607.29037v1-go-pre-goal-oriented-next-best-view-selection-via-predictive-rendering-entropy-for-active-3d-reconstruction)  
+   evidence：利用结构化3D高斯从多视角图像构建自由视点视频
+3. [DynActiveGS: Active Gaussian Splatting for Dynamic Scene Reconstruction](/202608/04/2608.01178v1-dynactivegs-active-gaussian-splatting-for-dynamic-scene-reconstruction)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：面向目标的下一最佳视角选择用于主动三维重建
-4. [OASIS: Occlusion-aware Single-image Hand Avatar Reconstruction via 3D Gaussian Splatting](/202608/03/2607.29633v1-oasis-occlusion-aware-single-image-hand-avatar-reconstruction-via-3d-gaussian-splatting)  
+   evidence：通过主动视点选择从多视图图像重建动态场景
+4. [QuerySplat: Decoupling Geometry and Appearance Representations in 3DGS Prediction](/202608/04/2608.01186v1-querysplat-decoupling-geometry-and-appearance-representations-in-3dgs-prediction)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：单张图像重建三维手部化身
-5. [Forwardrobe: Garment-Aware Gaussian Avatars from a Single Image](/202608/03/2607.29106v1-forwardrobe-garment-aware-gaussian-avatars-from-a-single-image)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：从单张图像重建可动3D人体化身
+   evidence：前馈3DGS框架用于高效多视角三维重建
+5. [StreamSplat: Streaming Feed-Forward 3D Gaussian Splatting](/202608/04/2608.01659v1-streamsplat-streaming-feed-forward-3d-gaussian-splatting)  
+   标签：评分：9.0/10、query:d-gen-recon
+   evidence：基于序列视图的流式前馈3D高斯溅射重建
+6. [PartMat: Material-Aware 3D Part Decomposition with a Single Global Latent](/202608/04/2608.01825v1-partmat-material-aware-3d-part-decomposition-with-a-single-global-latent)  
+   标签：评分：9.0/10、query:d-gen-recon
+   evidence：从参考图像和整体几何进行材料感知的3D部件分解
+7. [ASTRA: Asynchronous Spatio-Temporal Reconstruction via Trajectory Alignment](/202608/04/2608.02006v1-astra-asynchronous-spatio-temporal-reconstruction-via-trajectory-alignment)  
+   标签：评分：9.0/10、query:d-gen-recon
+   evidence：从异步多相机输入进行动态三维场景重建
+8. [UniqueSplat: View-conditioned 3D Gaussian Splatting for Generalizable 3D Reconstruction](/202608/04/2608.02145v1-uniquesplat-view-conditioned-3d-gaussian-splatting-for-generalizable-3d-reconstruction)  
+   标签：评分：9.0/10、query:d-gen-recon
+   evidence：视图条件前馈三维重建的多视角图像输入
+9. [DerainSplat: Feed-Forward Clean 3D Gaussian Splatting from Sparse Rainy Views](/202608/04/2608.02191v1-derainsplat-feed-forward-clean-3d-gaussian-splatting-from-sparse-rainy-views)  
+   标签：评分：9.0/10、query:d-gen-recon
+   evidence：从稀疏雨天多视角图像重建干净三维场景
 
 ### 速读区论文标签
-1. [BATS: Resource-Efficient Volumetric Segmentation with Boundary-Aware Mixed-Resolution Tokens](/202608/03/2607.26829v1-bats-resource-efficient-volumetric-segmentation-with-boundary-aware-mixed-resolution-tokens)  
-   标签：评分：7.0/10、query:d-gen-recon
-   evidence：面向3D医学图像的边界感知令牌选择体分割方法
+1. [Astrolabe: Spherical-Map Guidance Across Diffusion Pipelines for Full-Body Capture from Unconstrained Images](/202608/04/2608.01276v1-astrolabe-spherical-map-guidance-across-diffusion-pipelines-for-full-body-capture-from-unconstrained-images)  
+   标签：评分：8.0/10、query:d-gen-recon
+   evidence：通过球面地图引导从无约束照片进行全身捕获
+2. [D^2-4DGS: Dual-Depth Guided Sparse-Camera 4D Gaussian Splatting](/202608/04/2608.01588v1-d2-4dgs-dual-depth-guided-sparse-camera-4d-gaussian-splatting)  
+   标签：评分：8.0/10、query:d-gen-recon
+   evidence：利用双深度引导的稀疏相机动态新视角合成
+3. [GuideGround: VLM-guided Semantic Understanding and Viewpoint-aware Reasoning for 3D Visual Grounding](/202608/04/2608.00518v1-guideground-vlm-guided-semantic-understanding-and-viewpoint-aware-reasoning-for-3d-visual-grounding)  
+   标签：评分：6.0/10、query:d-gen-recon
+   evidence：三维语义理解与视觉指称
+4. [PhotoHOI: Synthesizing 3D Hand-Object Interactions from a Single RGB Photograph](/202608/04/2608.01905v1-photohoi-synthesizing-3d-hand-object-interactions-from-a-single-rgb-photograph)  
+   标签：评分：6.0/10、query:d-gen-recon
+   evidence：从图像合成三维手物交互
+5. [InfiniSplat: Implicit Gaussian Decoding for Large-Baseline Monocular View Synthesis](/202608/04/2608.02437v1-infinisplat-implicit-gaussian-decoding-for-large-baseline-monocular-view-synthesis)  
+   标签：评分：6.0/10、query:d-gen-recon
+   evidence：通过表面对齐高斯的单图像前馈三维场景生成
 
 
 <div class="dpr-home-promo-card">

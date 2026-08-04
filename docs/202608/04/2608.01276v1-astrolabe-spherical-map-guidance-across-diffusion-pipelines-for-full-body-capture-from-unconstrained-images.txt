@@ -1,0 +1,580 @@
+Title: Astrolabe: Spherical-Map Guidance Across Diffusion Pipelines for Full-Body Capture from Unconstrained Images
+
+URL Source: https://arxiv.org/pdf/2608.01276v1
+
+Published Time: Tue, 04 Aug 2026 01:43:57 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+> PREPRINT 1
+
+# Astrolabe: Spherical-Map Guidance Across Diffusion Pipelines for Full-Body Capture from Unconstrained Images 
+
+Shuliang Zhu, Qi Wang, Ryugo Morita, and Jinjia Zhou 
+
+Abstract —Full-body capture from unconstrained photographs requires global correspondence across arbitrary views, poses, crops, and occlusions. Yet pose, geometry, and foundation fea-tures estimated in this setting are too unreliable for dense matching or appearance transfer, while diffusion rectifiers and optimization pipelines expose no common interface for consuming such uncertain correspondence. Our insight is that correspon-dence need not be locally accurate: its coarse viewpoint and body layout can still organize how a diffusion prior adapts and guides reconstruction. We introduce Astrolabe , a host-portable adapter built on frozen viewpoint-guided spherical maps (SPH). A fixed bounded transform converts SPH into a spatial noise shift, which is matched during prior adaptation and reused during downstream denoising or score-distillation guidance in both pipeline categories. When a rectifier exposes a reference router, the same target/reference SPH additionally supplies coarse compatibility scores to select native appearance features; router-free optimization uses only the shared shift path. Astrolabe therefore follows one SPH–shift–adapt–guide process without dense warping or a learned control branch. Across Puzzle-IOI and 4D-Dress, it improves all reported image metrics in both hosts and all paired Puzzle-IOI geometry metrics; image gains extend to rear views, while 4D-Dress geometry remains stable overall. 
+
+Index Terms —Diffusion models, 3D avatar reconstruction, multi-view rectification, score distillation, noise shifting, spherical maps, adapters, unconstrained images. 
+
+I. I NTRODUCTION 
+
+# FULL-BODY capture from unconstrained photographs must integrate identity, clothing, and body evidence scat-tered across unrelated images. Casual albums contain arbitrary viewpoints, poses, crops, illumination, and occlusions, so com-plementary observations of the same garment or body region differ in visibility and projection. A coherent avatar therefore requires global body correspondence : relating evidence across pose and viewpoint changes so that observations distributed throughout the album support consistent target views and reconstruction. Yet reliable global correspondence is precisely what uncon-strained imagery denies. Structured reconstruction can exploit calibrated views, silhouettes, depth, or accurate body fits, while many learning-based avatars [1]–[8] rely on pose-aligned observations. Under truncation, occlusion, loose clothing, and large viewpoint changes, Sapiens-derived pose/SMPL, depth, and normal estimates [9] can become incomplete or locally inconsistent, while DINOv2 [10] is not explicitly organized 
+
+Preprint. This manuscript has been submitted to IEEE Transactions on Visualization and Computer Graphics for possible publication. 
+
+by viewpoint (Fig. 1). Direct dense matching or appearance warping is therefore unsafe, particularly across symmetric limbs and front/back views. The challenge is to retain global, viewpoint-aware organization when local correspondence is unreliable. Diffusion priors can complete missing views and regularize reconstruction, but do not determine how such correspondence should enter capture. Multi-view rectifiers organize references and jointly denoise target views [11], whereas optimization pipelines such as TeCH [12], HaveFUN [13], and PuzzleA-vatar [14] query a personalized prior to optimize an explicit 3D avatar. Their native interfaces differ: the former exposes joint denoising and a reference router, while the latter exposes per-render conditions and score residuals. Learned controllers such as ControlNet [15] and T2I-Adapter [16] add architecture-specific branches and still assume a reliable condition. What is missing is a portable mechanism that carries uncertain but globally organized correspondence through variables both hosts already consume. Our key observation is that global correspondence can guide reconstruction even when it is too weak for pixel-accurate matching. Viewpoint-guided spherical maps (SPH) [17] pre-serve coarse body orientation and part layout, but are neither calibrated normals nor reliable dense correspondence. We therefore treat SPH as a weak global field rather than an ap-pearance warp: cross-view compatibility identifies structurally plausible evidence, while spatial organization locates the dif-fusion bias. This retains viewpoint and symmetry information without propagating local SPH errors into reconstruction. We introduce Astrolabe , a complete host-portable adapter that translates weak global correspondence into native dif-fusion variables (Fig. 2). A fixed projection and bounded transform convert SPH into a per-pixel noise shift, extending the global trajectory steering of TKG-DM [18]; this is the common guidance path in both pipeline categories. In the router-bearing rectifier, reference and target SPH also yield coarse compatibility scores for selecting native appearance features. The two operations preserve complementary aspects of one cue: the shift carries global spatial organization, while association carries cross-view compatibility. SPH is never copied as appearance or used as a dense warp, and neither operation adds a learned control branch. Both bindings therefore follow the same process: infer frozen SPH, translate it through fixed host-native operations, and use the guidance during capture. The rectifier applies the shift during attention-LoRA adaptation and high-noise joint arXiv:2608.01276v1 [cs.CV] 2 Aug 2026 PREPRINT 2Pose SMPL Depth Normal DINOv2 SPH Full-body 
+
+> Fig. 1. Candidate signals for cross-view body correspondence in unconstrained images. From left: Sapiens-derived pose, SMPL, depth, and normal estimates [9]; DINOv2 features; SPH; and a full-body reference. The Sapiens outputs become incomplete or locally inconsistent under truncation, loose clothing, and extreme viewpoints, while DINOv2 is semantically strong but not explicitly viewpoint-aware. SPH does not provide precise pixel correspondence, but preserves coarse viewpoint and part organization—the weak global cue that Astrolabe translates into host-native diffusion guidance.
+
+denoising, while its existing router consumes SPH association. Optimization uses the same SPH-to-shift construction across reference personalization, online rendered-normal guidance, and NFDS readout; without a reference router, it has no association operation. This host-interface difference does not split the method, and both bindings retain their original appear-ance representation, diffusion backbone, and reconstruction procedure. Experiments on two hosts and two datasets support this correspondence-guided design. On Puzzle-IOI, both bindings improve every paired image and geometry metric over their respective hosts. On 4D-Dress, both improve all reported image metrics while geometry remains numerically stable overall; optimization also improves P2S and surface-normal error, with only a small numerical Chamfer change. Gains extend to difficult rear views. Dense-transfer tests, association compression, and factorized controls show that accurate pixel correspondence and large association magnitudes are unnec-essary; they separate association-only SPH from the coupled rectifier shift path and test spatial layout, shift matching, and guided NFDS readout in optimization. Rectifier inference remains essentially cost-neutral, while optimization is more ac-curate and lighter than the tested SPH- and DINO-conditioned ControlNet-color alternatives. Our contributions are:  
+
+> •
+
+(C1) Weak global correspondence for unconstrained diffusion capture. Astrolabe is one complete adapter that translates frozen SPH into host-native guidance: a bounded spatial noise shift shared across both pipeline categories and coarse reference association in the router-bearing rectifier. It brings globally organized correspon-dence into multi-view rectification and optimization-based 3D capture without dense warping or a learned control branch.  
+
+> •
+
+(C2) A controlled account of why weak correspon-dence is sufficient. Dense-transfer diagnostics, asso-ciation compression, association/shift factorization, and spatial-to-mean ablations show that coarse cross-view compatibility and spatial organization remain useful with-out accurate pixel correspondence or large association magnitudes (Secs. V-D and V-E).  
+
+> •
+
+(C3) Cross-host evidence with lightweight deployment. 
+
+Evaluations on Puzzle-IOI and 4D-Dress demonstrate consistent image improvements across both bindings, paired Puzzle-IOI geometry gains, and stable 4D-Dress geometry; the rectifier remains essentially cost-neutral, and the optimization binding is lighter than the tested ControlNet alternative (Secs. V-B and V-F). II. R ELATED WORK 
+
+A. Structured avatar reconstruction and correspondence 
+
+Structured avatar capture obtains cross-view coherence from both its representation and its organized observations. Neural radiance fields and 3D Gaussian splatting provide foundations for photorealistic view synthesis [19], [20]; human-specific systems make them animatable through pose-conditioned ra-diance fields, explicit body models, or deformable Gaussian primitives [1], [2], [4], [7], [8], [21]–[27]. Complementary methods separate body and clothing or model garment dy-namics and physical properties [28]–[35]. Their strong fidelity relies on temporal continuity, calibrated views, or pose-aligned observations that implicitly organize evidence across the body. Unconstrained albums remove this organization. Identity and garment evidence is distributed across unrelated poses, crops, lighting, and occlusion, while visibility and pose-to-surface alignment can disagree. A stronger avatar representa-tion alone cannot determine how an observation of one body region should support another pose or target view. Astrolabe therefore retains the representation and reconstruction machin-ery of its diffusion hosts and addresses the missing evidence organization: it translates weak, viewpoint-aware global corre-spondence into decisions those hosts already make. This focus distinguishes the method from new rendering, deformation, or cloth representations. 
+
+B. Diffusion priors for sparse and unconstrained capture 
+
+Optimization-based capture uses diffusion priors to regular-ize views that sparse observations do not constrain. Score dis-tillation converts a pretrained 2D prior into a 3D optimization signal [36], [37]; human-specific systems add text, shape, pose, identity, or album personalization. TeCH and AvatarBooth optimize clothed avatars from text/image guidance, HaveFUN introduces few-shot pose-aware reconstruction, PuzzleAvatar assembles composable album evidence, and PFAvatar targets pose-fused outfit photographs [12]–[14], [38], [39]. These methods provide strong generative regularization, but the op-timization signal still needs a reliable way to relate subject evidence to the current rendered viewpoint. Rectification and multi-view generation organize observa-tions before or alongside reconstruction. Morphable Diffu-sion, Human-3Diffusion, DreamAvatar, and MVDream learn multi-view or shape-aware priors [40]–[43]; DiffusionAvatars, Cap4D, and GAF couple diffusion with head, portrait, or PREPRINT 3
+
+video-avatar representations [44]–[46]. UP2You instead rec-tifies an unconstrained collection through joint target de-noising and pose-correlated routing of native reference fea-tures [11]. This host must select compatible evidence imme-diately, whereas optimization hosts expose per-render score residuals rather than a reference router. Astrolabe translates one weak correspondence cue into these native interfaces: the spatial shift is shared across both host categories, and the same cue additionally supplies coarse association only when an existing router can consume it. 
+
+C. Conditional and reference-guided diffusion 
+
+General diffusion controllers inject conditions through learned model-side interfaces. ControlNet and T2I-Adapter attach spatial-conditioning branches, IP-Adapter introduces decoupled image-prompt attention, and GLIGEN grounds generation through gated spatial features [15], [16], [47], [48]. These mechanisms are effective when a stable condition and a particular denoiser can be trained together, but their interfaces depend on network activations or attention modules and presume that the supplied condition is sufficiently aligned. Human synthesis specializes these interfaces for skele-tons, poses, and cross-view appearance. PoCoLD, HumanSD, CFLD, Stable-Pose, and GRPose encode structured pose con-straints [49]–[53]; cross-view masked diffusion and Dream-Pose transfer appearance across viewpoints or frames [54], [55], while domain-adapted human controls improve shape and pose specification [56]. Such systems generally learn an aligned condition jointly with one model family. Astrolabe instead treats correspondence as frozen and uncertain: it maps SPH to variables the host already consumes—diffusion noise and, where available, reference-selection scores. The rectifier’s small LoRA only adapts existing attention to the shifted-noise family; it neither encodes SPH nor forms a separate conditioning interface. The cue therefore changes trajectory layout and which native appearance features are read without becoming an appearance encoder or requiring a shared learned control branch. 
+
+D. Weak correspondence and noise-domain steering 
+
+Strong geometric coordinates are valuable only when their estimates remain reliable. Canonical body models and dense human coordinates provide explicit semantics but inherit fitting and correspondence errors in unconstrained imagery [57], [58]; foundation features improve semantic matching and human perception without guaranteeing viewpoint-aware body correspondence [9], [10]. SphericalMaps instead augments self-supervised features with weak viewpoint-aware geometry for symmetric correspondence [17]. Astrolabe deliberately consumes this signal below the level of dense transfer: coarse compatibility ranks native reference evidence, and spatial organization lays out trajectory guidance. This preserves the useful global relation without treating local SPH matches as trustworthy appearance correspondence. Noise steering provides a branch-free destination for that spatial organization. TKG-DM shows that global channel-mean shifts can steer generated color without modifying the denoiser [18]. Astrolabe connects this noise-domain premise to weak global correspondence by extending the fixed trans-formation to a bounded per-pixel field; in the router-bearing binding, the same frozen cue additionally ranks native appear-ance values without replacing them. The resulting contribution is neither a new dense matcher nor another learned controller, but one cue-to-host conversion whose two boundaries—coarse rather than dense selection, and spatial rather than channel-mean guidance—are tested directly in our ablations. III. P RELIMINARIES 
+
+A. Noise shifting for diffusion control 
+
+With ϵT ∼ N (0 , I ) and latent channels c ∈ { 1, . . . , C },TKG-DM [18] adds a channel-wise bias 
+
+ϵ′ 
+
+> c,h,w
+
+= ϵc,h,w + sc, (1) which steers the denoising trajectory while leaving per-channel variance unchanged. Two properties make this interface useful here: the shift acts from a high-noise state, and its energy can remain small relative to scheduler noise. TKG-DM instantiates 
+
+s from a target color through a fixed color-to-channel map. Astrolabe instead derives a spatial field sc,h,w from SPH, allowing the cue’s global layout to enter variables that diffu-sion hosts already consume. This direct, branch-free interface remains available whether or not a host exposes explicit cross-view routing. 
+
+B. Spherical maps as weak global correspondence 
+
+Viewpoint-guided spherical maps (SPH) [17] map each visible token to a learned unit vector q ∈ S2. The field preserves coarse viewpoint and part layout, but is neither a calibrated camera/world normal map nor reliable pixel corre-spondence. Both pipeline categories use one frozen DINOv2-B/14-backed checkpoint: the rectifier evaluates it at 896 2 to obtain a 64 2 token grid, while optimization uses the same predictor through offline RGB-reference and online rendered-normal paths. Host-provided foreground masks suppress in-valid tokens. Rectifier runs use binary support without extra shift-mask erosion or softening; optimization personalization intersects offline body support with the current training-asset support, while distillation uses renderer masks. SPH is there-fore deliberately used at coarse granularity: it is structured enough to lay out a shift and, where available, rank compatible regions, but too uncertain to justify dense appearance transfer. 
+
+C. Two diffusion hosts 
+
+The two hosts expose different decisions through which global correspondence can guide capture. The rectifier host 
+
+adapts attention layers, routes reference features, and jointly denoises target views [11]; the optimization host personalizes a 2D prior and queries it one render at a time to opti-mize DMTet through score-distillation updates [14]. Astrolabe translates the same frozen SPH cue into the variables each host already consumes: a spatial noise field in both, and coarse compatibility scores in the rectifier’s existing router. The shared object is therefore the cue translation, not identical trained weights or host operations. PREPRINT 4
+
+a) Timestep convention.: We use the forward DDPM index t ∈ { 0, . . . , T − 1}, where larger t means more noise; a normalized interval [a, b ] denotes t ∈ [aT, bT ). “Early” reverse denoising therefore means large t. Optimization progress is 
+
+p = i/N .IV. M ETHOD 
+
+Astrolabe translates frozen weak global correspondence into the native guidance variables of diffusion-based full-body capture. Given reference images and a target or current observation, the frozen SphericalMaps predictor [17] produces SPH fields whose coarse viewpoint organization is useful even though their local matches are unreliable. Astrolabe preserves two complementary properties of this cue: global spatial organization, realized as a bounded latent-noise field, and cross-view compatibility, realized as coarse association when a host exposes a reference router. Figure 2 shows this cue-to-host translation. Every binding predicts SPH, converts its spatial layout through a fixed projection and bounded nonlinearity into δ, and realizes a host-scaled shift s. In the rectifier, s defines one coupled path across shift-matched attention-LoRA adaptation, initialization, and high-noise readout; the LoRA is the host’s trainable carrier of this path, not another adapter output. Reference/target SPH additionally supplies coarse association to the existing router. The router-free optimization binding carries the same spatial construction through personalization and 3D guidance. These host bindings are coordinated realizations of one correspon-dence cue rather than separate methods or contributions. Three constraints keep the translation faithful to a weak cue. First, SPH controls only layout and compatibility; selected appearance values remain native host features. Second, the fixed bounded map steers rather than overwrites the pre-trained trajectory. Third, Astrolabe reuses routing scores, noise tensors, and residuals already exposed by the hosts instead of adding a learned control branch. Section IV-A constructs the spatial field, Sec. IV-B constructs coarse association, and Sec. IV-C binds these outputs to the two capture pipelines while retaining their original appearance representations and reconstruction machinery [11], [14]. 
+
+A. Spatial realization of weak correspondence 
+
+Astrolabe carries SPH’s global spatial organization into dif-fusion through a bounded latent-noise field. Building on noise-domain steering [18], the construction converts the coarse correspondence cue into a per-pixel bias rather than a dense warp, a learned control branch, or one global channel shift. It is the shared adapter output in both pipeline categories and remains usable when no reference router exists. The frozen predictor emits q = ( q1, q 2, q 3) in a learned basis with no assigned physical axes. We preserve this checkpoint-defined order, encode Isph = ( q + 1) /2 = ( R, G, B ), and center it as ¯Isph = Isph − 0.5. Let 
+
+P =
+
+
+
+0 0 0 10 0 1 00 1 0 01 0 0 0
+
+ (2) reverse the four mapped latent channels. The fixed projection is 
+
+M =
+
+
+
+0 0 0
+
+−2 0 21 1 −20 0 0
+
+ , u = 14 P M ¯Isph . (3) Following TKG-DM’s empirical color-to-latent design [18], we algebraically adapt the projection to the four-channel latent order without fitting evaluation subjects. The zero-sum nonzero rows of M cancel common SPH-channel offsets; P
+
+only permutes channels, and 1/4 limits pre-nonlinearity ampli-tude. Because the SPH basis has no calibrated axes, individual rows carry no body-part or world-coordinate semantics. After bicubic resampling to the latent grid, the canonical [0 , 1] -encoded construction is 
+
+δ = 0 .8 tanh  2 atanh   clip( u, −0.999 , 0.999)  ⊙ m, (4) 
+
+s = κδ, ϵs = ϵo + s, ϵo ∼ N (0 , I ), (5) where m is host-provided foreground support and κ is host/regime-specific. The bounded δ is the shared representa-tion and s the realized host input. Both hosts share M , P , the foreground-masking operation, and the nonlinearity but retain native masks and input conventions: Eq. (4) applies directly to the rectifier and online distillation, whereas personalization’s 
+
+[−1, 1] loader induces a fixed 2× pre-nonlinearity scale ab-sorbed into its reported κ, since M ’s nonzero rows sum to zero. The fixed construction prevents a weak cue from becoming an architecture-specific appearance encoder. Matrices M and 
+
+P and the nonlinear transform are unchanged throughout all experiments, so neither host learns an SPH-to-latent projection or assigns physical axes to the checkpoint basis. After host-specific resampling, δ ∈ R4×Hz ×Wz matches a latent-noise sample, and foreground masking leaves background locations unchanged. Unlike feature conditioning, δ is never concate-nated with a UNet activation; the realized s enters a noise tensor or residual already consumed by the host. The bounded transform amplifies weak nonzero entries without allowing large ones to grow unbounded. For |u| < 1,
+
+tanh(2 atanh u) = 2u/ (1 + u2). At each location, ϵs is therefore a unit-variance Gaussian with mean s(c, h, w ), but aggregating a spatially varying field yields a mixture rather than one globally translated Gaussian. Because the realized shifts are small, the empirical channel histograms in Fig. 3 remain close to Gaussian. We treat this as an empirical approximation, not distributional invariance. 
+
+a) Why spatial (Fig. 3, Fig. 4).: Spatial variation pre-serves where the correspondence cue should act, which a global channel mean cannot express. The per-pixel field re-tains coarse viewpoint and part layout without asserting local matches. In Fig. 4, a target leg segment with no source counterpart remains intact, indicating a localized response rather than global appearance copying. The spatial-to-mean optimization control directly tests this layout, while the factor-ized rectifier control compares the complete coupled shift path against association-only SPH when explicit routing is available (Sec. V-D). PREPRINT 5Target task views    
+
+> (pose controls)
+> Reference View
+> Target views
+> Feature
+> Selector
+> (top-k)
+> SPH Mapping SPH Correspondence SPH Association
+> Denoising timesteps (T → 0)
+> High noise (early) Low noise (late)
+
+…
+
+…     
+
+> Shift
+> value
+> Initial
+> noise ∈௢
+> ch1 ch2
+> Shifted
+> noise ∈௦
+> Training jitter
+> (scale/translatio
+> n)
+> ∈௢
+> ∈௦
+> 𝑥 ௢𝑥 ௢
+> Early high-
+> noise readout
+> …
+> Shape Prediction
+> ch1 ch2
+
+…
+
+…
+
+Fig. 2. From weak global correspondence to host-native guidance. The frozen SphericalMaps predictor extracts SPH from references and target/current observations. Astrolabe preserves its global spatial organization as a fixed bounded field δ, whose scaled realization moves ϵo → ϵs in both host categories. In the rectifier, shift-matched LoRA adaptation and inference-time initialization/readout form one coupled shift path; reference/target SPH additionally provides coarse compatibility for top-k selection of native appearance features. Reverse denoising proceeds from t = T − 1 toward 0; scale/translation jitter is used only during optimization personalization. Initial Noise ∈௢    
+
+> Shifted Noise ∈௦
+> (a)
+> (b)
+> Shift
+> ∈௢
+> 𝑥 ௢
+> ∈௢
+> ∈௦
+> 𝑥 ௢
+> ∈௢∈௦-∈௢
+> 𝑥 ௢
+> ∈௦
+
+Fig. 3. Spatial realization of weak correspondence. Left: overall and per-channel histograms of ϵo and ϵs; small shifts move the means while remaining empirically close to Gaussian, without implying an exact global Gaussian. Middle: ϵo → ϵs relocates the trajectory’s starting state toward xo. Right: per-channel ϵo, ϵs, and s = ϵs − ϵo (shown at ×40 ) reveal an SPH-aligned spatial field rather than a global bias. 
+
+B. Coarse correspondence for native reference selection 
+
+The rectifier must decide which scattered reference evidence is compatible with each target view, even though SPH is too uncertain for dense transfer. Astrolabe therefore uses SPH only to rank the host’s native reference features. The cue determines 
+
+which features to read , while the selected values still come from the host’s learned appearance representation; no SPH value is copied as appearance or used to warp a reference image. Given valid frozen-SPH outputs qrj , q tℓ for reference token 
+
+j and target token ℓ, Astrolabe first computes target-specific compatibility. We encode c = ( q/ ∥q∥2 + 1) /2 and use djℓ =
+
+∥crj − ctℓ∥2; DINOv2-B remains internal to the SPH predictor, and its appearance features do not enter this distance. Let dk(j)
+
+be the mean of the k = 4 smallest target-token distances and 
+
+d.60 (j) = Q.60 ({djℓ }ℓ). The reference-token score is 
+
+aj = λ d.60 (j) − dk(j) − dk(j), λ = 0 .45 . (6) The −dk(j) term rewards a compatible target region, while 
+
+d.60 (j) − dk(j) favors a match distinctive from that token’s typical distance. Equation (6) produces one score per reference token for the current target view; it neither selects a target pixel nor defines a warp. Joint scoring over valid tokens from all references also prevents each reference from independently rescaling itself into an equally strong candidate. Because raw compatibility varies across target views, we normalize it robustly over valid reference tokens. With linear quantile interpolation, let ℓ = Q.35 (a) and h = Q.98 (a), and compute r = clip(( a − ℓ)/ max( h − ℓ, 10 −6), 0, 1) 1.2. We set 
+
+br = r for r ≤ 0.55 and br = 0 .55 + 0 .30( r − 0.55) otherwise, followed by w = 4.85 br; invalid tokens remain zero. The lower quantile suppresses diffuse matches, the upper quantile prevents outliers from fixing the range, and the reduced high-value slope limits extreme scores. Thin, identity-sensitive head boundaries can disappear dur-ing foreground downsampling. Within each reference bound-ing box, we therefore define the head as pixels with normalized vertical coordinate below 0.28 , dilate its inner mask boundary by one feature pixel, and floor that boundary at 0.65 of the map’s positive maximum. This support operation protects hair and head evidence after masking without introducing facial correspondence; SPH still determines the remaining ranking. The final selector limits score extremes before allocating its fixed token budget. For nonempty positive support, let W =max w> 0 w, with knees l = 0 .22 W and hs = 0 .66 W and widths σl = 0 .11 W and σh = 0 .15 W ; we apply the monotone soft-clip 
+
+SC( w) = 
+
+
+
+[l − σl(1 − e−(l−w)/σ l )] +, 0 < w < l, w, l ≤ w ≤ hs,hs + σh(1 − e−(w−hs)/σ h ), w > h s,
+
+0, w = 0 .
+
+(7) Here W is computed on the current association tensor. Struc-tural zeros remain zero, while the exponential tails preserve PREPRINT 6
+
+positive ordering and limit leverage near either extreme. From the Nr Hf Wf -token pool, the selector retains the Hf Wf
+
+highest-weight tokens—one feature-map equivalent, with no random tokens—and passes their native values to the router. SPH therefore supplies eligibility and priority, whereas the payload remains the host’s appearance feature; an all-zero map contributes zero features. 
+
+a) Selection, not loudness.: A weak correspondence cue should control coarse eligibility and ranking without relying on large magnitudes. To compress contrast while preserving posi-tive support, let S = {j : wj > 0} and ¯wS = |S| −1 P 
+
+> j∈S
+
+wj .Before top-k, we apply 
+
+w′ 
+
+> j
+
+=
+
+(
+
+βw j + (1 − β) ¯ wS , j ∈ S ,
+
+0, j / ∈ S , . (8) The forward order is fixed: soft-clip w, blend on the native 
+
+64 2 grid, bilinearly resize to each reference-feature resolution, apply the resized reference mask, and select top-k. If S = ∅,blending is skipped and the contributed features remain zero despite implementation-dependent tie indices. For 0 < β ≤
+
+1, Eq. (8) is strictly monotone on S, preserving native-grid support and ranking while compressing magnitudes. Resizing can alter boundary order before top-k, and β = 0 ties all positive native values, so final membership is not claimed to be identical. The main model uses β = 0 .2, where the gain persists under strong compression (Sec. V-E); this qualified robustness is what we call “selection, not loudness.” 
+
+C. Host-native integration across capture pipelines 
+
+Astrolabe binds one correspondence adapter according to the variables exposed by each host rather than forcing identical internal operations. Both bindings use the frozen SPH predic-tor and fixed spatial construction. The rectifier couples shift-matched adaptation with inference-time trajectory guidance and additionally feeds coarse association to its router; opti-mization carries the spatial field through personalization and score-distillation updates without association. Host-specific scales and timestep gates respect each native schedule, and neither binding changes the host’s avatar representation or reconstruction procedure. 
+
+a) Rectifier binding: The rectifier binding follows 
+
+up2you ’s shape/pose processing, latent encoder, pose-correlated aggregator, joint denoiser, native reference values, and schedule [11]. First, its preliminary pose-conditioned target RGB and the input photographs provide masked target and reference SPH. Their coarse compatibility from Sec. IV-B, including Eq. (8), replaces only the router scores; selected pay-loads remain the host’s learned appearance features. Second, the spatial field defines a single shift path from adaptation to inference: a small attention LoRA is trained with shifted noise while the remaining backbone stays frozen, then the same construction perturbs initial target noise at scale 0.7
+
+and supplies scale-0.5 readout for t > 600 , with later reverse steps unshifted. This LoRA exists to match the denoiser to the shifted-noise family and is not an independent conditioning module. Consequently, the association-only diagnostic disables both shift uses and the trained LoRA, whereas every active rec-tifier shift path includes them as one coupled mechanism. The effective shift is approximately 0.04 , so trajectory guidance remains weak while association directly organizes cross-view evidence. 
+
+b) Optimization binding (SDS): The optimization bind-ing follows PuzzleAvatar’s personalized 2D prior, UNet/VAE, renderer, NFDS/CFG, sampling, and two-phase DMTet op-timization [14], [59]. Because this host has no reference-token pool or router, it cannot consume explicit association. Astrolabe instead carries SPH’s global layout through an offline reference-RGB field during personalization and an online rendered-normal field during DMTet optimization. The representation and reconstruction schedule remain unchanged, and no conditioning branch is added. 
+
+c) Robustness to cue–observation misalignment.: Weak SPH and observation masks can be slightly misaligned dur-ing personalization. We therefore perturb only the input-side shift with isotropic scale γ ∼ U (0 .9, 1.1) and normalized-grid translations U(−0.03 , 0.03) , using bilinear resampling and zero padding. The aligned target shift and all RGB, normal, and mask targets remain unchanged. This controlled mismatch discourages dependence on one exact alignment without geometrically altering supervision. 
+
+d) Shift-matched personalization.: The personalized de-noiser must learn the same correspondence-derived noise fam-ily that later guides 3D reconstruction. For RGB reference x,normal image n, and VAE latents z = E(x), z n = E(n),define 
+
+ezt(z, η ) = √αtz + √1 − αt η. (9) One offline SPH field supplies both slots. We jitter only its input realization sin while retaining aligned stgt as the prediction target: 
+
+Lmatch = E∥ϵθ (ezt(z, ϵ + sin ), y ) − (ϵ + stgt )∥22
+
++ ∥ϵθ (ezt(zn, ϵ + sin ), y ) − (ϵ + stgt )∥22
+
+. (10) Each real RGB reference is processed once by the frozen SPH predictor, and its masked field supplies the aligned target to both RGB and normal slots. Equation (10) converts standard noise prediction into shift matching without adding an output branch: the denoiser receives the jittered realization but pre-dicts the aligned one. The shift scale is 0.8 for 120 ≤ t < 300 .
+
+e) Online correspondence during distillation.: The cue is recomputed as the avatar changes. During both DMTet phases, the frozen SPH predictor produces Isph = SPH pred (n) ⊙ m
+
+from rendered normal n treated as a three-channel image. This is a learned prediction rather than an analytic normal-to-sphere conversion. Geometry is frozen during appearance, which uses the lower shift scale and no RGB–SPH mixture. 
+
+f) Conditioning and guided NFDS readout.: The online correspondence field influences both the sampled state and the residual read by NFDS. At camera c, let x = R(ϕ; c),
+
+z = E(x), and ezt = ezt(z, ϵ + scond (t)) . Denote condi-tional, unconditional, and negative-prompt UNet predictions by ˆϵy , ˆϵ∅, ˆϵy− . The NFDS/CFG residual is 
+
+gz = (1 − αt) [ wg (ˆ ϵy − ˆϵ∅) + rt] . (11) PREPRINT 7
+
+Algorithm 1 Astrolabe on the optimization host 
+
+Require: UNet ϵθ , renderer R, SPH( ·), fixed map M , sched-ule {αt}, gates gcond , g grad  
+
+> 1:
+
+for phase ∈ { GEOM , APP } do  
+
+> 2:
+
+freeze appearance (GEOM) / geometry (APP)  
+
+> 3:
+
+for i = 1 to Nphase do  
+
+> 4:
+
+sample camera c and timestep t 
+
+> 5:
+
+render (x, n, m ) ← R(ϕ; c); Isph ←
+
+SPH pred (n) ⊙ m 
+
+> 6:
+
+δ ← Eqs. (3)–(4); scale and gate it into scond , s grad  
+
+> 7:
+
+ezt ← add noise( E(x), ϵ + scond , t ) 
+
+> 8:
+
+form gz by Eqs. (11)–(12); inject C0.1(gz ) at z =
+
+E(x) through Eq. (14); update ϕ 
+
+> 9:
+
+end for  
+
+> 10:
+
+end for 
+
+rt = ggrad (t)(ˆ ϵ∅ − sgrad (t)) + [1 − ggrad (t)](ˆ ϵ∅ − ˆϵy− ), (12) where binary ggrad (t) activates SPH readout; outside its support, rt reverts to the host’s negative-prompt residual. Independently gated versions of the same δ therefore control noising and explicit gradient readout. Separate gates let the cue change the sampled state and the NFDS residual over different timestep supports. In geometry, 
+
+scond (t) = 0 .2δ 1[40 ,300) (t), sgrad (t) = 0 .2δ 1[80 ,300) (t).
+
+(13) Appearance multiplies both paths by 0.35 , uses condition sup-port [0 , 1000) , and restricts gradient readout to [0 , 200) . Ge-ometry therefore emphasizes the noisy portion of its restricted schedule, whereas appearance permits broad conditioning but confines explicit residual guidance to low indices. These scales and supports are host/regime bindings, not learned parts of the shared map. The guided residual reaches DMTet through the differen-tiable VAE input path rather than an image-space shortcut. With detached UNet predictions and frozen VAE weights, the host injects row-wise norm-clipped C0.1(gz ) on z:
+
+∇ϕLSDS =
+
+ ∂z ∂ϕ 
+
+⊤
+
+C0.1(gz ), ∂z ∂ϕ = ∂E (x)
+
+∂x ∂R (ϕ; c)
+
+∂ϕ .
+
+(14) The UNet prediction is detached, but E(x) is not. Equa-tion (14) therefore preserves the gradient path from the in-jected latent residual through the frozen VAE encoder to the renderer. 
+
+g) Spatial-layout control.: To isolate spatial organization from per-channel shift magnitude, the ablation in Table IV averages bounded, masked δ before phase scaling and timestep gates: 
+
+∆b,c =
+
+P 
+
+> h,w
+
+mb,h,w δb,c,h,w 
+
+max( P 
+
+> h,w
+
+mb,h,w , 1) , δmean  
+
+> b,c,h,w
+
+= ∆ b,c mb,h,w .
+
+(15) Thus δmean preserves each foreground channel mean while removing only its spatial layout. Algorithm 1 summarizes the optimization binding after per-sonalization. Each iteration renders the current avatar, predicts SPH from its normal map, constructs δ with the fixed cue translation, applies phase-specific condition/readout gates, and Original Target     
+
+> Fig. 4. Local response to the correspondence-derived shift. Top: an in-the-wild photograph, its masked subject, and the transfer result; bottom: source and target SPH maps. The highlighted target leg has no source counterpart and remains intact, indicating that the host responds to the layout of srather than globally copying appearance.
+
+injects the latent residual into the DMTet update. Geome-try and appearance differ only in trainable variables, scales, and supports. Both host bindings therefore begin with the same frozen correspondence representation and fixed spatial construction; their endpoints differ because one guides joint denoising and native reference routing, whereas the other guides an SDS residual without a reference-token pool. V. E XPERIMENTS 
+
+Our experiments test whether weak global correspondence can improve unconstrained full-body capture without reli-able dense matching. We ask three questions: (i) does the complete adapter improve both rectification and optimization across datasets and difficult rear views (C1, C3); (ii) how do coarse association and spatial trajectory guidance carry cross-view compatibility and global layout into each host (C2); and (iii) do the gains persist without accurate warping, large association magnitudes, or a learned control branch (C2, C3)? We report the protocol, overall and difficult-view results, factorized mechanisms, correspondence diagnostics, and deployment cost. 
+
+A. Implementation, datasets, and metrics 
+
+Hosts. We bind the same frozen SPH correspondence cue to two diffusion systems. In up2you [11], SPH supplies coarse scores to the existing reference router, while the spatial shift is enabled during attention-LoRA adaptation and joint denoising; the remaining backbone is frozen. PuzzleAvatar [14] with SD 2.1 has no cross-view router, so it receives SPH through shift-matched personalization and shifted condition/readout during the native 10 k-step geometry and appearance opti-mization. Unless stated otherwise, rectifier inference uses 
+
+30 denoising steps, initialization/readout scales of 0.7/0.5,readout at t > 600 , and association blend β = 0 .2.
+
+Hyperparameters. Both hosts use the fixed SPH →shift map M , while scales and schedules follow their native regimes. The rectifier’s effective shift is approximately 0.04 .Optimization personalization uses AdamW for 1k embed-ding/decoder steps at 5×10 −4 and 4k model-personalization PREPRINT 8Inputs AvatarBooth PuzzleAvatar Ours@PA up2you Ours@up2you Reference      
+
+> Fig. 5. Qualitative comparison across both host families. Embedded “Ours” labels denote Astrolabe. Columns compare AvatarBooth, PuzzleAvatar, Astrolabe@PA, up2you , and Astrolabe@ up2you ; each reconstruction is shown with front/back RGB and normal views. Puzzle-IOI cases emphasize rear appearance and garment layout. In the two matched-input 4D-Dress studies, all methods use the same 16 references (eight partial base and eight full-body update views); Table I’s rectifier block instead reports the separate ten-case aggregate, with eight partial references per case.
+
+steps at 2×10 −6 with weight decay 10 −2; input-shift jitter follows the optimization binding in Sec. IV-C. The DMTet ge-ometry/appearance phases use learning rates 10 −3/6.6×10 −4,classifier-free guidance 6.5/7.0, and normalized timestep ranges [0 .04 , 0.30] /[0 .02 , 0.98] . In integer DDPM indices, geometry uses condition/readout supports [40 , 300) /[80 , 300) 
+
+and scale 0.2 (maximum shift 0.16 ); appearance uses 
+
+[0 , 1000) /[0 , 200) , scale 0.2, and multiplier 0.35 (maximum shift 0.056 ). One empirical association setting is reused across all rectifier data; each host-regime shift schedule is fixed across subjects and datasets, without per-subject tuning. 
+
+Hardware. Both bindings fit on a single 24 GB GPU with-out multi-GPU training. Their operating regimes differ: the rectifier performs one feed-forward multi-view pass, whereas the optimization host is trained separately for each subject, so absolute resource values are compared only within each host. 
+
+Datasets. We use Puzzle-IOI [14], an in-the-wild personal-album benchmark with substantial viewpoint, lighting, and oc-clusion variation, and 4D-Dress [60], which provides captured humans in diverse garments. The rectifier evaluation contains a fixed 10 -subject Puzzle-IOI subset with 12 references per subject and 10 exact-match 4D-Dress cases with benchmark PREPRINT 9
+
+TABLE I 
+
+MAIN QUANTITATIVE COMPARISON . 2D METRICS USE INDEPENDENTLY BLACK -COMPOSITED PREDICTION /GT RGBA, FULL -IMAGE PSNR/SSIM,  
+
+> AND SCALAR
+
+ALEX -LPIPS. R ECTIFIER MESHES ARE RECONSTRUCTED FROM SIX GENERATED TARGETS ; P UZZLE -IOI USES 10 SUBJECTS WITH 12 
+
+> REFERENCES
+
+, AND BOTH 4D-D RESS HOST BLOCKS USE 10 CASES . T HE PAIRED PUZZLE -IOI OPTIMIZATION COMPARISON USES NINE SUBJECTS ;AVATAR BOOTH COVERS EIGHT AND IS REPORTED AS A NON -PAIRED MEAN . P ARENTHESES GIVE ASTROLABE ’S PAIRED OR WITHIN -PROTOCOL CHANGE 
+
+(GREEN BETTER , RED WORSE ). N ORMAL † IS ANGULAR SURFACE -NORMAL ERROR IN DEGREES ; N ORMAL ‡ IS THE UNITLESS NATIVE PUZZLE AVATAR NORMAL -IMAGE ERROR AND IS NOT NUMERICALLY COMPARABLE .                                                                                                   
+
+> 3D (mesh) 2D (multi-view/rendered) Host Dataset Method Chamfer ↓P2S ↓Normal †/‡↓PSNR ↑SSIM ↑LPIPS ↓
+> Rectifier Puzzle-IOI (10) up2you (host) 2.8400 (-4.2%) 1.7250 (-8.6%) 31.6146 (-1.9%) 23.4287 (+4.3%) 0.8487 (+2.9%) 0.1650 (-12.4%)
+> Astrolabe@ up2you 2.7207 1.5770 31.0132 24.4269 0.8735 0.1445
+> 4D-Dress (10) up2you (host) 1.0760 (+0.5%) 0.9872 (-1.2%) 25.4743 (-0.2%) 22.9239 (+3.9%) 0.8927 (+1.0%) 0.0761 (-10.2%)
+> Astrolabe@ up2you 1.0810 0.9751 25.4270 23.8100 0.9017 0.0683
+> Optimization Puzzle-IOI AvatarBooth (n=8; non-paired) 3.8467 3.9599 0.1648 21.9131 0.8615 0.2137 PuzzleAvatar (n=9) 1.4116 (-8.5%) 1.4175 (-8.7%) 0.0719 (-22.4%) 25.1297 (+3.6%) 0.9045 (+0.6%) 0.1288 (-7.1%)
+> Astrolabe@PA (n=9) 1.2917 1.2945 0.0558 26.0428 0.9103 0.1196
+> 4D-Dress (10) AvatarBooth 4.5267 3.7508 41.9970 13.7951 0.7772 0.2970 PuzzleAvatar 1.5221 (+1.8%) 1.4890 (-3.2%) 31.2493 (-9.3%) 26.1198 (+3.6%) 0.8811 (+2.6%) 0.1198 (-13.5%)
+> Astrolabe@PA 1.5501 1.4408 28.3359 27.0671 0.9043 0.1036
+
+GT scans; the optimization evaluation uses the paired nine-subject Puzzle-IOI set and 10 4D-Dress cases. Each rectifier 4D-Dress case provides eight partial observations: front, back, left, and right views split into upper- and lower-body crops. Puzzle-IOI target shape/pose is taken from GT17 fitting and rendered at the host’s six slots ( 0◦, 45 ◦, 90 ◦, 180 ◦, 270 ◦, 315 ◦). Each host follows its dataset-specific reconstruction and novel-view protocol. The two 4D-Dress examples in Figs. 5 and 6 are separate matched-input case studies, not part of the rectifier’s ten-case aggregate. 
+
+Metrics. Within each comparison, prediction and GT RGBA are independently composited onto black and evaluated as full images using PSNR ↑, SSIM ↑, and scalar Alex-LPIPS ↓;foreground-spatial LPIPS is diagnostic only. For rectifier ge-ometry, Chamfer is the bidirectional nearest-surface distance and P2S is the reconstruction-to-GT direction, both in cm. Normal † is the unoriented angular surface-normal error in degrees and is used by the rectifier and the 4D-Dress op-timization benchmark. Puzzle-IOI optimization instead uses the native unitless four-view normal-image error Normal ‡; the two Normal scales are never compared numerically. The main comparison and rectifier ablation use separately frozen 2D export/evaluation runs, so repeated image rows are interpreted only through paired contrasts within their own table. 
+
+Baselines. Because Astrolabe changes correspondence guid-ance rather than the avatar representation, its primary con-trols are the same hosts without the adapter: up2you for rectification and PuzzleAvatar [14] for optimization. These paired comparisons retain the reconstruction machinery and isolate the cue-to-host conversion; Sec. V-D then factorizes its paths. AvatarBooth [38] is an available SDS reference, but its eight-subject Puzzle-IOI mean is non-paired and is not used for percentage changes or ranking. Direct numbers from TeCH [12], HaveFUN [13], and PFAvatar [39] are omitted because their protocols are respectively single-image, not strictly unconstrained, or unavailable as a public implemen-tation for matched evaluation. Effectiveness and portability claims therefore come from paired host contrasts. 
+
+B. Weak-correspondence gains across hosts and datasets (C1, C3) 
+
+Table I first shows that weak global correspondence improves rectified target views across both datasets. On Puzzle-IOI, Astrolabe@ up2you improves all six met-rics: Chamfer/P2S decrease by 4.2% /8.6% , angular nor-mal error by 1.9% , and PSNR/SSIM/LPIPS improve by 
+
+4.3% /2.9% /12 .4% . On 4D-Dress, all image metrics improve, including a 10 .2% LPIPS reduction; P2S and normal error also decrease by 1.2% and 0.2% , while Chamfer changes by only 
+
+0.5% . Thus the rectifier consistently benefits in view synthesis, with all Puzzle-IOI geometry metrics improving and 4D-Dress geometry remaining numerically stable overall. The optimization results show that the same correspondence cue remains effective without an explicit reference router. Against paired PuzzleAvatar on Puzzle-IOI, Astrolabe@PA improves every metric, with the largest relative change in native normal error ( −22 .4% ). On 4D-Dress, it improves P2S by 3.2% , angular normal error by 9.3% , and all image metrics, while Chamfer changes by only 1.8% . AvatarBooth remains a non-paired reference and is not the source of these percentages. Together, the two host blocks support the portability of frozen SPH and its fixed conversion from weak global correspondence to host-native diffusion guidance. 
+
+C. Difficult-view and qualitative analysis 
+
+Rear views provide a direct stress test of global corre-spondence because their evidence is often sparse or observed elsewhere in the album. Table II separates the 0◦ and 180 ◦
+
+Puzzle-IOI targets. Relative to PuzzleAvatar, optimization im-proves back-view PSNR/SSIM by 6.3% /1.1% and reduces LPIPS by 9.3% , compared with 2.0% /0.6% /7.5% on the front. Rectification is similarly consistent, reducing LPIPS by 
+
+18 .8% on the front and 17 .4% on the back. The gains therefore extend to the viewpoint where cross-view organization is most needed. Qualitative comparisons localize these gains to regions where correspondence is ambiguous. Relative to each host, Fig. 5 shows cleaner head and limb boundaries, more stable PREPRINT 10 
+
+TABLE II 
+
+FRONT VS . B ACK VIEW SYNTHESIS . BLACK -BACKGROUND RGBA-COMPOSITED FULL -IMAGE 2D METRICS ON PUZZLE -IOI, SEPARATED INTO THE FRONT TARGET SLOT (0◦ ) AND BACK TARGET SLOT (180 ◦ ). P ERCENTAGES REPORT THE RELATIVE CHANGE ACHIEVED BY ASTROLABE ONLY FOR PAIRED OR WITHIN -PROTOCOL BASELINES . A VATAR BOOTH IS AN n = 8 NON -PAIRED MEAN AND THEREFORE HAS NO PERCENTAGE ANNOTATION .
+
+Front ( 0◦) Back ( 180 ◦)Method PSNR ↑ SSIM ↑ LPIPS ↓ PSNR ↑ SSIM ↑ LPIPS ↓
+
+Optimization (SDS) Host 
+
+AvatarBooth (n=8; non-paired) 20.6720 0.8245 0.2442 21.3448 0.8279 0.2480 PuzzleAvatar 24.5894 (+2.0%) 0.8855 (+0.6%) 0.1240 (-7.5%) 24.3683 (+6.3%) 0.8851 (+1.1%) 0.1328 (-9.3%) 
+
+Astrolabe@PA 25.0859 0.8904 0.1147 25.9027 0.8950 0.1204 
+
+Rectifier Host 
+
+up2you 23.3907 (+6.5%) 0.8396 (+4.2%) 0.1566 (-18.8%) 24.2639 (+4.2%) 0.8427 (+4.2%) 0.1698 (-17.4%) 
+
+Astrolabe@ up2you 24.9059 0.8745 0.1271 25.2802 0.8782 0.1402 
+
+hair–neck transitions, and more coherent rear-garment extent and patterns. Matched RGB and normal views separate appear-ance continuity from surface behavior; the partial-observation cases in Fig. 6 further expose rear-jacket silhouette and plaid continuity. These 4D-Dress examples follow the separate matched-input case-study protocol in Fig. 5; they illustrate rather than enlarge the ten-case aggregate. 
+
+D. Factorizing weak-correspondence guidance (C2, C3) 
+
+Table III separates the two ways that SPH correspondence enters the rectifier: coarse reference association and the cou-pled shift path. The two SPH-only controls contain association alone—no spatial shift during adaptation or inference and no shift-matched LoRA—and differ only in whether association values are raw or flattened. Rows that activate the shift path include its matched LoRA by construction; the table therefore exposes only its initialization and high-noise readout uses rather than presenting LoRA as an independent component. All variants use the Puzzle-IOI setup of 10 subjects, six targets, 12 references, matched seeds and denoising steps, and one frozen 768 2 RGBA exporter/evaluator. Table I and this ablation use their respective frozen 2D export/evaluation runs, so conclusions are drawn from paired rows within Table III. Association-only SPH supplies most of the measured recti-fier improvement. Without either shift or LoRA, its raw and flattened variants both improve all three image metrics over the host and remove the highlighted hand/arm and rear-garment artifacts in Fig. 7. Adding the complete coupled shift path to flattened association further changes PSNR/SSIM/LPIPS from 24 .3153 /0.8841 /0.1403 to 24 .4651 /0.8854 /0.1385 , a smaller but consistent improvement in all three metrics. Most of this complement is already present in the initialization-only Inputs up2you Ours@up2you GT 
+
+Fig. 6. Front/side/back rectifier comparison on two 4D-Dress cases. Partial inputs are followed by up2you , Astrolabe@ up2you , and ground truth at matched views, exposing rear-garment layout and silhouette recovery. 
+
+row; adding high-noise readout changes PSNR by 0.0053 dB and leaves SSIM/LPIPS equal at four decimals. Conversely, the shift path without association does not reproduce the association gain. The rectifier evidence therefore supports coordinated roles: coarse compatibility drives native reference selection, while the coupled spatial shift provides the shared trajectory interface used across both pipeline categories. Table IV asks how the SPH correspondence field remains useful when the optimization host exposes no reference router. Two controls disable shift matching during personalization or guided NFDS readout during distillation. The channel-mean control replaces spatial δ(h, w ) with foreground mean ∆,preserving each channel shift while removing global layout. Two further variants discard latent shifting and inject the same online SPH map or a DINOv2 PCA map through a frozen ControlNet-color branch during both stages. Guided NFDS readout is the strongest measured path in the optimization binding. Removing it lowers PSNR/SSIM from 
+
+25 .2784 /0.9003 to 20 .1682 /0.8094 , raises LPIPS from 0.1071 
+
+to 0.2373 , and produces the fragmented reconstruction in Fig. 8. Removing shift matching gives a smaller but consistent image change: the complete adapter adds 1.5820 dB PSNR and 0.0171 SSIM while reducing LPIPS by 0.0161 . Replacing spatial δ with channel mean ∆ also reduces every image metric, directly showing that global layout, rather than a channel-wide bias alone, carries useful correspondence. Full Astrolabe further outperforms both frozen ControlNet-color Astrolabe (full) GT up2you SPH-only raw SPH-only beta=0.2 Shift-only Init-only 
+
+Fig. 7. Qualitative rectifier injection-path ablation corresponding to Table III. Front/back comparisons show the host, raw and flattened SPH-only association (both without shift or LoRA), the shift path without association, initialization-only guidance, and full Astrolabe. The highlighted regions emphasize hand/arm artifacts and back-garment consistency. PREPRINT 11 
+
+TABLE III 
+
+FACTORIZED INJECTION -PATH ABLATION (RECTIFIER , P UZZLE -IOI, 10 SUBJ .). SPH-ONLY IS ASSOCIATION -ONLY : IT USES NEITHER SPATIAL SHIFT NOR LORA. “R AW ” AND “FLAT ” DENOTE ASSOCIATION WITH β = 1 AND 0.2. A NY ACTIVE SHIFT PATH INCLUDES ITS SHIFT -MATCHED LORA BY CONSTRUCTION ; I NIT ./R EADOUT INDICATE ITS TWO INFERENCE USES RATHER THAN SEPARATE ADAPTERS . A LL ROWS USE ONE FROZEN 768 2 RGBA 
+
+> EVALUATOR
+
+, AND BOLD MARKS THE COMPLETE ADAPTER .
+
+SPH Association Coupled Shift Path 2D (Multi-view) Variant Raw Flat Init. Readout PSNR ↑ SSIM ↑ LPIPS ↓
+
+up2you (host) × × × × 23.4644 0.8612 0.1633 SPH-only (w/o shift), raw ✓ × × × 24.2285 0.8844 0.1392 SPH-only (w/o shift), flattened × ✓ × × 24.3153 0.8841 0.1403 shift path only (w/o association) × × ✓ ✓ 23.4237 0.8477 0.1797 init-only (no readout) × ✓ ✓ × 24.4598 0.8854 0.1385 
+
+Astrolabe (complete) × ✓ ✓ ✓ 24.4651 0.8854 0.1385 
+
+TABLE IV 
+
+MECHANISM -TRANSFER ABLATION (OPTIMIZATION HOST , P UZZLE -IOI, 9 SUBJ .). COMPONENT COLUMNS IDENTIFY THE SHIFT LAYOUT AND THE STAGES AT WHICH IT IS MATCHED OR READ OUT . T HE LAST TWO ROWS REPLACE THE COMPLETE ASTROLABE SHIFT PATH WITH A FROZEN 
+
+CONTROL NET -COLOR BRANCH THAT INJECTS SPH OR DINO DURING BOTH PERSONALIZATION AND DISTILLATION . A LL ROWS USE BLACK -BACKGROUND RGBA COMPOSITING AND FULL -IMAGE SCALAR ALEX -LPIPS. 
+
+Shift Layout Shift Coupling ControlNet-color 2D (Rendered) Variant Spatial δ Mean ∆ FT Match NFDS Readout SPH DINO PSNR ↑ SSIM ↑ LPIPS ↓
+
+Astrolabe (complete) ✓ × ✓ ✓ × × 25.2784 0.9003 0.1071 
+
+w/o shift matching (FT) ✓ × × ✓ × × 23.6964 0.8832 0.1232 w/o guided readout (NFDS) ✓ × ✓ × × × 20.1682 0.8094 0.2373 channel ∆ × ✓ ✓ ✓ × × 24.0154 0.8891 0.1189 ControlNet-color (SPH) × × × × ✓ × 22.5886 0.8575 0.1692 ControlNet-color (DINO) × × × × × ✓ 21.8782 0.8568 0.1740 
+
+alternatives on all three image metrics while avoiding their heavier branch (Table V). Thus, without explicit associa-tion, weak global correspondence remains effective through matched spatial trajectory guidance and its NFDS readout. GT Astrolabe (full) w/o FT shift w/o NFDS Channel mean SPH ControlNet DINO ControlNet 
+
+Fig. 8. Qualitative optimization-host mechanism ablation corresponding to Table IV. RGB and normal renderings compare full Astrolabe, removal of shift-matching fine-tuning, removal of the guided NFDS readout, channel-mean guidance, and the SPH/DINO ControlNet alternatives. 
+
+E. Weak correspondence: selection, not loudness (C2) 
+
+SPH should be interpreted as weak global correspondence rather than a dense matching field. Figure 9 warps a reference across a large viewpoint change using DINOv2 or SPH; both transfers are distorted and noisy. Yet SPH improves the recti-fier when it only ranks and selects native reference features. Its useful content is therefore coarse cross-view compatibility, not accurate pixel-to-pixel transfer. Large association magnitudes are also unnecessary. In the foreground-only three-seed sweep of Fig. 10, decreasing pos-itive β retains native-grid support/ranking while improving PSNR and SSIM for SPH-only association and the complete adapter. The operation compresses contrast rather than fixing the final selector exactly: feature-scale interpolation can alter boundary order, and β = 0 ties all positive native values. Under the separate full-image protocol of Table III, flattening SPH-only raises PSNR while SSIM is effectively unchanged (0.8844 vs. 0.8841 ). The evidence therefore shows robust-ness to association compression, not monotonic improvement across protocols. Together, the dense-transfer stress test, factorized controls, and compression sweep favor coarse support and ranking over precise warping or large scores. The evidence neither requires identical selected features after interpolation nor implies that every stronger compression improves every metric. This qual-ified robustness to coarse selection is what we call “selection, not loudness.” PREPRINT 12 
+
+F. Efficiency (C3) 
+
+Host-native correspondence guidance keeps rectifier infer-ence essentially cost-neutral while reducing resident model memory. Table V shows that Astrolabe replaces DINOv2-L appearance routing with a DINOv2-B-backed SPH predictor, fixed association, and a small LoRA; DINOv2-B predicts SPH but does not enter the association distance. Resident fp16 weights decrease by 14 .7% , while runtime VRAM and step time change by only +0 .5% and +1 .4% . These values are compared only within the rectifier regime, so “cost-neutral” does not mean cost-free. In optimization, the host-native shift is lighter and more accurate than the tested ControlNet-color alternative receiving the same online SPH. It reduces model memory by 20 .9% , run-time VRAM by 16 .4% , and SDS-step time by 15 .7% . Together with Table IV, this result shows that weak correspondence can be carried by the existing noise interface instead of a learned control branch. 
+
+G. Evidence summary 
+
+Taken together, the experiments support Astrolabe’s central claim: global correspondence can guide unconstrained recon-struction even when it is too weak for dense transfer. In the rectifier, association-only SPH improves native reference selection and supplies most of the image gain, while the coupled shift path adds a smaller consistent complement. In optimization, where no router is available, the same cue acts through spatial trajectory layout, matched personalization, and Original DINOv2  
+
+> Target SPH
+
+Fig. 9. Dense-correspondence stress test. The left column shows the reference and target; the right column warps the reference with DINOv2 or SPH. Both transfers are distorted across the large viewpoint gap, yet coarse SPH association improves the host. Weak global compatibility, rather than accurate dense transfer, is sufficient. 0.0 0.2 0.4 0.6 0.8 1.0     
+
+> value-blend
+> 15.0
+> 15.2
+> 15.4
+> 15.6
+> Foreground PSNR
+> flatten magnitude, keep top-kselection
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> value-blend
+> 0.430
+> 0.435
+> 0.440
+> 0.445
+> 0.450
+> 0.455
+> 0.460
+> Foreground SSIM
+> flatten magnitude, keep top-kselection
+> up2you (host) Astrolabe (assoc.+shift+LoRA) SPH-only (assoc.)
+
+Fig. 10. Selection, not loudness (rectifier, gt17-as-GT, 10 subjects). For 
+
+0 < β ≤ 1, flattening preserves support/ranking on the native SPH grid, although interpolation can alter boundary order before top-k; β = 0 ties all positive values. Foreground-only PSNR/SSIM improve under compression. Curves and error bars show the mean and standard deviation over three seeds; the gray band shows the host standard deviation. TABLE V 
+
+HOST -SPECIFIC EFFICIENCY (LOWER IS BETTER ). M EMORY DENOTES RESIDENT FP 16 WEIGHTS . R ECTIFIER TIMING IS THE 10 -SUBJECT ,
+
+> SIX
+
+-VIEW , 12 -REFERENCE PROTOCOL WITH 30 DENOISING STEPS ,
+
+> REPORTED PER STEP
+
+; OPTIMIZATION TIMING IS ONE BATCH -3, 512 2 SDS  
+
+> STEP INCLUDING ONLINE
+
+SPH. P ARENTHESES REPORT THE RELATIVE CHANGE ACHIEVED BY ASTROLABE WITHIN EACH HOST .                                 
+
+> Method Model mem. Runtime VRAM Step time
+> Rectifier
+> up2you 3.6506 GB (-14.7%) 19 .6213 GB (+0.5%) 314 .75 ms (+1.4%)
+> Astrolabe@ up2you 3.1134 GB 19 .7238 GB 319 .22 ms
+> Optimization
+> PA+ControlNet (online SPH) 3.4857 GB (-20.9%) 4.1769 GB (-16.4%) 57 .99 ms (-15.7%)
+> Astrolabe@PA 2.7572 GB 3.4917 GB 48 .90 ms
+
+guided NFDS readout. Cross-host improvements, rear-view results, and correspondence diagnostics therefore support one complete adapter that translates weak global correspondence according to the variables exposed by each diffusion pipeline. VI. L IMITATIONS AND ETHICS 
+
+Astrolabe inherits the weaknesses of its cue. Dependence on SPH/segmentation: thin structures and heavy occlusion receive weak guidance, leading to over-smoothed extremities; confidence-aware fusion of SPH with normals/depth could help. Magnitude is regime-specific: although the mechanism is shared, the effective shift magnitude must be set per host (small and trained-in for the rectifier, larger for single-step SDS); we set it by regime rather than learn it. Appear-ance/lighting: the optimization host’s simple albedo model entangles material and shading, limiting relighting. Ethics: 
+
+avatar capture from casual photos raises consent and privacy concerns; we recommend opt-in usage, anonymization, and provenance tracking. VII. C ONCLUSION 
+
+Astrolabe brings global correspondence into unconstrained full-body capture through one adapter. Frozen SPH becomes a bounded spatial shift shared by rectification and optimization; an existing rectifier router additionally uses coarse compatibil-ity. Across Puzzle-IOI and 4D-Dress, Astrolabe improves all reported image metrics in both hosts and all paired Puzzle-IOI geometry metrics; image gains extend to rear views, while 4D-Dress geometry remains stable overall. Factorized controls show that weak correspondence can guide both router-based association and router-free optimization. Dependence on cue quality motivates confidence-aware fusion and temporal consistency. PREPRINT 13 
+
+REFERENCES [1] S. Peng, J. Dong, Q. Wang, S. Zhang, Q. Shuai, X. Zhou, and H. Bao, “Animatable neural radiance fields for modeling dynamic human bodies,” in Proceedings of the IEEE/CVF International Conference on Computer Vision , 2021, pp. 14 314–14 323. [2] L. Liu, M. Habermann, V. Rudnev, K. Sarkar, J. Gu, and C. Theobalt, “Neural actor: Neural free-view synthesis of human actors with pose control,” ACM transactions on graphics (TOG) , vol. 40, no. 6, pp. 1– 16, 2021. [3] W. Jiang, K. M. Yi, G. Samei, O. Tuzel, and A. Ranjan, “NeuMan: Neu-ral human radiance field from a single video,” in European Conference on Computer Vision (ECCV) , 2022, pp. 402–418. [4] L. Hu, H. Zhang, Y. Zhang, B. Zhou, B. Liu, S. Zhang, and L. Nie, “Gaussianavatar: Towards realistic human avatar modeling from a single video via animatable 3d gaussians,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 2024, pp. 634– 644. [5] C. Guo, T. Jiang, X. Chen, J. Song, and O. Hilliges, “Vid2Avatar: 3d avatar reconstruction from videos in the wild via self-supervised scene decomposition,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2023, pp. 12 858– 12 868. [6] G. Moon, T. Shiratori, and S. Saito, “Expressive whole-body 3d gaussian avatar,” in European Conference on Computer Vision (ECCV) , 2024, pp. 19–35. [7] Z. Li, Z. Zheng, L. Wang, and Y. Liu, “Animatable gaussians: Learning pose-dependent gaussian maps for high-fidelity human avatar modeling,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 2024, pp. 19 711–19 722. [8] J. Chen, J. Hu, G. Wang, Z. Jiang, T. Zhou, Z. Chen, and C. Lv, “Taoavatar: Real-time lifelike full-body talking avatars for augmented reality via 3d gaussian splatting,” in Proceedings of the Computer Vision and Pattern Recognition Conference , 2025, pp. 10 723–10 734. [9] R. Khirodkar, T. Bagautdinov, J. Martinez, S. Zhaoen, A. James, P. Selednik, S. Anderson, and S. Saito, “Sapiens: Foundation for human vision models,” in European Conference on Computer Vision . Springer, 2024, pp. 206–228. [10] M. Oquab, T. Darcet, T. Moutakanni, H. Vo, M. Szafraniec, V. Khalidov, P. Fernandez, D. Haziza, F. Massa, A. El-Nouby et al. , “Dinov2: Learning robust visual features without supervision,” Transactions on Machine Learning Research , 2024. [11] Z. Cai, Z. Li, X. Li, B. Li, Z. Wang, Z. Zhang, and Y. Xiu, “UP2You: Fast reconstruction of yourself from unconstrained photo collections,” in International Conference on Learning Representations (ICLR) , 2026. [12] Y. Huang, H. Yi, Y. Xiu, T. Liao, J. Tang, D. Cai, and J. Thies, “Tech: Text-guided reconstruction of lifelike clothed humans,” in 2024 International Conference on 3D Vision (3DV) . IEEE, 2024, pp. 1531– 1542. [13] X. Yang, X. Chen, D. Gao, S. Wang, X. Han, and B. Wang, “Have-fun: Human avatar reconstruction from few-shot unconstrained images,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2024, pp. 742–752. [14] Y. Xiu, Y. Ye, Z. Liu, D. Tzionas, and M. J. Black, “PuzzleAvatar: Assembling 3d avatars from personal albums,” ACM Transactions on Graphics , vol. 43, no. 6, pp. 283:1–283:15, 2024. [15] L. Zhang, A. Rao, and M. Agrawala, “Adding conditional control to text-to-image diffusion models,” in Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , 2023, pp. 3836– 3847. [16] C. Mou, X. Wang, L. Xie, Y. Wu, J. Zhang, Z. Qi, Y. Shan, and X. Qie, “T2i-adapter: Learning adapters to dig out more controllable ability for text-to-image diffusion models,” Proceedings of the AAAI Conference on Artificial Intelligence , vol. 38, no. 5, pp. 4296–4304, 2024. [17] O. Mariotti, O. Mac Aodha, and H. Bilen, “Improving semantic cor-respondence with viewpoint-guided spherical maps,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2024, pp. 19 521–19 530. [18] R. Morita, S. Frolov, B. B. Moser, T. Shirakawa, K. Watanabe, A. Den-gel, and J. Zhou, “Tkg-dm: Training-free chroma key content generation diffusion model,” in Proceedings of the Computer Vision and Pattern Recognition Conference , 2025, pp. 13 031–13 040. [19] B. Mildenhall, P. P. Srinivasan, M. Tancik, J. T. Barron, R. Ramamoorthi, and R. Ng, “Nerf: Representing scenes as neural radiance fields for view synthesis,” Communications of the ACM , vol. 65, no. 1, pp. 99–106, 2021. [20] B. Kerbl, G. Kopanas, T. Leimk¨ uhler, and G. Drettakis, “3d gaussian splatting for real-time radiance field rendering,” ACM Transactions on Graphics , vol. 42, no. 4, pp. 139:1–139:14, 2023. [21] K. Shen, C. Guo, M. Kaufmann, J. J. Zarate, J. Valentin, J. Song, and O. Hilliges, “X-avatar: Expressive human avatars,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,2023, pp. 16 911–16 921. [22] J. Dong, Q. Fang, Y. Guo, S. Peng, Q. Shuai, X. Zhou, and H. Bao, “Totalselfscan: Learning full-body avatars from self-portrait videos of faces, hands, and bodies,” Advances in Neural Information Processing Systems , vol. 35, pp. 13 654–13 667, 2022. [23] Z. Zheng, X. Zhao, H. Zhang, B. Liu, and Y. Liu, “Avatarrex: Real-time expressive full-body avatars,” ACM Transactions on Graphics (TOG) ,vol. 42, no. 4, pp. 1–19, 2023. [24] A. Moreau, J. Song, H. Dhamo, R. Shaw, Y. Zhou, and E. P´ erez-Pellitero, “Human gaussian splatting: Real-time rendering of animatable avatars,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 2024, pp. 788–798. [25] W. Zielonka, T. Bagautdinov, S. Saito, M. Zollh¨ ofer, J. Thies, and J. Romero, “Drivable 3d gaussian avatars,” in International Conference on 3D Vision (3DV) , 2025. [26] H. Pang, H. Zhu, A. Kortylewski, C. Theobalt, and M. Habermann, “Ash: Animatable gaussian splats for efficient and photoreal human rendering,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 2024, pp. 1165–1175. [27] S. Qian, T. Kirschstein, L. Schoneveld, D. Davoli, S. Giebenhain, and M. Nießner, “Gaussianavatars: Photorealistic head avatars with rigged 3d gaussians,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 2024, pp. 20 299–20 309. [28] Y. Feng, J. Yang, M. Pollefeys, M. J. Black, and T. Bolkart, “Capturing and animation of body and clothing from monocular video,” in SIG-GRAPH Asia 2022 Conference Papers , 2022, pp. 1–9. [29] L. Qiu, G. Chen, J. Zhou, M. Xu, J. Wang, and X. Han, “Rec-mv: Recon-structing 3d dynamic cloth from monocular videos,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,2023, pp. 4637–4646. [30] C. Luo, F. Luo, Y. Wang, E. Zhao, and C. Xiao, “Dlca-recon: Dynamic loose clothing avatar reconstruction from monocular videos,” in Proceed-ings of the AAAI Conference on Artificial Intelligence , vol. 38, no. 4, 2024, pp. 3963–3971. [31] K. Wang, G. Zhang, S. Cong, and J. Yang, “Clothed human performance capture with a double-layer neural radiance fields,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,2023, pp. 21 098–21 107. [32] S. Lin, Z. Li, Z. Su, Z. Zheng, H. Zhang, and Y. Liu, “Layga: Layered gaussian avatars for animatable clothing transfer,” in ACM SIGGRAPH 2024 Conference Papers , 2024, pp. 1–11. [33] Z. Su, L. Hu, S. Lin, H. Zhang, S. Zhang, J. Thies, and Y. Liu, “Caphy: Capturing physical properties for animatable human avatars,” in Proceedings of the IEEE/CVF International Conference on Computer Vision , 2023, pp. 14 150–14 160. [34] B. Peng, Y. Tao, H. Zhan, Y. Guo, and J. Zhang, “PICA: Physics-integrated clothed avatar,” IEEE Transactions on Visualization and Computer Graphics , vol. 31, no. 12, pp. 10 762–10 776, 2025. [35] B. Rong, A. Grigorev, W. Wang, M. J. Black, B. Thomaszewski, C. Tsalicoglou, and O. Hilliges, “Gaussian garments: Reconstructing simulation-ready clothing with photorealistic appearance from multi-view video,” in International Conference on 3D Vision (3DV) , 2025. [36] B. Poole, A. Jain, J. T. Barron, and B. Mildenhall, “Dreamfusion: Text-to-3d using 2d diffusion,” in International Conference on Learning Representations (ICLR) , 2023. [37] Z. Wang, C. Lu, Y. Wang, F. Bao, C. Li, H. Su, and J. Zhu, “Prolific-dreamer: High-fidelity and diverse text-to-3d generation with variational score distillation,” in Advances in Neural Information Processing Sys-tems (NeurIPS) , 2023. [38] Y. Zeng, Y. Lu, X. Ji, Y. Yao, H. Zhu, and X. Cao, “AvatarBooth: High-quality and customizable 3d human avatar generation,” arXiv preprint arXiv:2306.09864 , 2023. [39] D. Xi, G. An, J. Zhu, Z. Liu, Y. Liu, R. Zhang, J. Lu, Y. Huo, and R. Wang, “PFAvatar: Pose-fusion 3d personalized avatar reconstruction from real-world outfit-of-the-day photos,” Proceedings of the AAAI Conference on Artificial Intelligence , vol. 40, no. 13, pp. 10 924–10 932, 2026. [40] X. Chen, M. Mihajlovic, S. Wang, S. Prokudin, and S. Tang, “Morphable diffusion: 3d-consistent diffusion for single-image avatar creation,” in 
+
+Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2024, pp. 10 359–10 370. PREPRINT 14 
+
+[41] Y. Xue, X. Xie, R. Marin, and G. Pons-Moll, “Human-3diffusion: Realistic avatar creation via explicit 3d consistent diffusion models,” in 
+
+Advances in Neural Information Processing Systems (NeurIPS) , vol. 37, 2024. [42] Y. Cao, Y.-P. Cao, K. Han, Y. Shan, and K.-Y. K. Wong, “Dreamavatar: Text-and-shape guided 3d human avatar generation via diffusion mod-els,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2024, pp. 958–968. [43] Y. Shi, P. Wang, J. Ye, L. Mai, K. Li, and X. Yang, “MVDream: Multi-view diffusion for 3d generation,” in International Conference on Learning Representations (ICLR) , 2024. [44] T. Kirschstein, S. Giebenhain, and M. Nießner, “Diffusionavatars: De-ferred diffusion for high-fidelity 3d head avatars,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2024, pp. 5481–5492. [45] F. Taubner, R. Zhang, M. Tuli, and D. B. Lindell, “Cap4d: Creating animatable 4d portrait avatars with morphable multi-view diffusion models,” in 2025 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) . IEEE Computer Society, 2025, pp. 5318–5330. [46] J. Tang, D. Davoli, T. Kirschstein, L. Schoneveld, and M. Niessner, “Gaf: Gaussian avatar reconstruction from monocular videos via multi-view diffusion,” in Proceedings of the Computer Vision and Pattern Recognition Conference , 2025, pp. 5546–5558. [47] H. Ye, J. Zhang, S. Liu, X. Han, and W. Yang, “IP-Adapter: Text compatible image prompt adapter for text-to-image diffusion models,” 
+
+arXiv preprint arXiv:2308.06721 , 2023. [48] Y. Li, H. Liu, Q. Wu, F. Mu, J. Yang, J. Gao, C. Li, and Y. J. Lee, “Gligen: Open-set grounded text-to-image generation,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2023, pp. 22 511–22 521. [49] X. Han, X. Zhu, J. Deng, Y.-Z. Song, and T. Xiang, “Controllable person image synthesis with pose-constrained latent diffusion,” in Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) ,2023, pp. 22 768–22 777. [50] X. Ju, A. Zeng, C. Zhao, J. Wang, L. Zhang, and Q. Xu, “Humansd: A native skeleton-guided diffusion model for human image generation,” in Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , 2023, pp. 15 988–15 998. [51] Y. Lu, M. Zhang, A. J. Ma, X. Xie, and J.-H. Lai, “Coarse-to-fine latent diffusion for pose-guided person image synthesis,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2024, pp. 6420–6429. [52] J. Wang, M. Ghahremani Boozandani, Y. Li, B. Ommer, and C. Wachinger, “Stable-pose: Leveraging transformers for pose-guided text-to-image generation,” Advances in Neural Information Processing Systems , vol. 37, pp. 65 670–65 698, 2024. [53] X. Yin, D. Di, L. Fan, H. Li, W. Chen, Y. Song, X. Sun, X. Yang 
+
+et al. , “Grpose: Learning graph relations for human image generation with pose priors,” in Proceedings of the AAAI Conference on Artificial Intelligence , vol. 39, no. 9, 2025, pp. 9526–9534. [54] T. X. Pham, K. Zhang, and C. D. Yoo, “Cross-view masked diffusion transformers for person image synthesis,” in Proceedings of the 41st International Conference on Machine Learning (ICML) , ser. Proceedings of Machine Learning Research, vol. 235, 2024, pp. 40 611–40 641. [55] J. Karras, A. Holynski, T.-C. Wang, and I. Kemelmacher-Shlizerman, “Dreampose: Fashion video synthesis with stable diffusion,” in Pro-ceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , 2023, pp. 22 680–22 690. [56] B. Buchheim, M. Reimann, and J. D¨ ollner, “Controlling human shape and pose in text-to-image diffusion models via domain adaptation,” in 
+
+2025 IEEE/CVF Winter Conference on Applications of Computer Vision (WACV) . IEEE, 2025, pp. 3688–3697. [57] M. Loper, N. Mahmood, J. Romero, G. Pons-Moll, and M. J. Black, “SMPL: A skinned multi-person linear model,” ACM Transactions on Graphics , vol. 34, no. 6, pp. 248:1–248:16, 2015. [58] R. A. G¨ uler, N. Neverova, and I. Kokkinos, “Densepose: Dense human pose estimation in the wild,” in Proceedings of the IEEE/CVF Confer-ence on Computer Vision and Pattern Recognition (CVPR) , 2018, pp. 7297–7306. [59] J. Gao, T. Shen, Z. Wang, W. Chen, K. Yin, D. Li, O. Litany, Z. Gojcic, and S. Fidler, “Get3d: A generative model of high quality 3d textured shapes learned from images,” Advances in neural information processing systems , vol. 35, pp. 31 841–31 854, 2022. [60] W. Wang, H.-I. Ho, C. Guo, B. Rong, A. Grigorev, J. Song, J. J. Zarate, and O. Hilliges, “4D-DRESS: A 4d dataset of real-world human clothing with semantic annotations,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2024, pp. 550– 560.
