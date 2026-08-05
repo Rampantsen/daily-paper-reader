@@ -1,0 +1,501 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-05T21:46:42.292655+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 9,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 6,
+    "quick_skim_target": 11,
+    "quick_selected": 6
+  },
+  "deep_dive": [
+    {
+      "id": "2608.03618v1",
+      "source": "arxiv",
+      "title": "Geospatial-Prior Guidance for 3D Semantic Scene Completion",
+      "abstract": "Inferring complete 3D geometry and semantics from onboard images remains challenging because occlusions and restricted fields of view leave large scene regions underconstrained. Although satellite imagery provides wide-area context, appearance cues alone offer limited structural guidance and may be unreliable because of spatial or temporal discrepancies. We present GeoScene, a geospatially guided framework that jointly uses satellite imagery and structured OpenStreetMap cues as soft priors for 3D semantic scene completion. GeoScene learns complementary voxel-wise reliability weights for onboard observations and geospatial guidance, and uses them to control feature refinement in observed and unobserved regions. This design preserves local visual evidence while exploiting large-scale road and building structure beyond onboard visibility. Experiments on SemanticKITTI and SSCBench-KITTI-360 demonstrate that GeoScene consistently improves both geometric and semantic completion under the geospatial-prior-assisted setting, with the most pronounced benefits for large-scale static and geospatially structured classes.",
+      "authors": [
+        "Meng Wang",
+        "Shougao Zhang",
+        "Wenzhe He",
+        "Ruihui Li",
+        "Nan Hu",
+        "Zhuo Tang",
+        "Kenli Li"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-04T13:08:14+00:00",
+      "link": "https://arxiv.org/pdf/2608.03618v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Jointly uses satellite imagery and OSM cues as soft priors for 3D semantic scene completion from onboard images",
+      "llm_evidence_cn": "联合卫星图像和OSM线索作为软先验，从车载图像实现3D语义场景补全",
+      "llm_evidence": "联合卫星图像和OSM线索作为软先验，从车载图像实现3D语义场景补全",
+      "canonical_evidence": "联合卫星图像和OSM线索作为软先验，从车载图像实现3D语义场景补全",
+      "llm_tldr_en": "GeoScene completes 3D geometry and semantics from onboard images by incorporating geospatial priors, using learned reliability weights to fuse observations with priors, bridging occluded regions.",
+      "llm_tldr_cn": "针对车载图像因遮挡和视野受限导致3D语义场景补全困难的问题，提出GeoScene框架，协同使用卫星图像与OpenStreetMap结构化先验。通过学习体素级可靠性权重，融合车载观测与地理空间引导，在保持局部视觉证据的同时合理推断缺失区域，显著提升场景补全的几何与语义精度，为城市级3D重建提供了有效先验融合方法。",
+      "llm_tldr": "针对车载图像因遮挡和视野受限导致3D语义场景补全困难的问题，提出GeoScene框架，协同使用卫星图像与OpenStreetMap结构化先验。通过学习体素级可靠性权重，融合车载观测与地理空间引导，在保持局部视觉证据的同时合理推断缺失区域，显著提升场景补全的几何与语义精度，为城市级3D重建提供了有效先验融合方法。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.03851v1",
+      "source": "arxiv",
+      "title": "LiteMVS: Efficient Multi-View Stereo with Foundation Distillation and Expert Aggregation",
+      "abstract": "Real-time 3D perception is crucial for robotics, augmented reality, and embodied intelligence applications. Existing multi-view stereo (MVS) methods primarily rely on geometric correspondences, which often fail in textureless or repetitive regions, while monocular depth models leverage strong image-level priors but lack robust multi-view geometric constraints. More importantly, in robotics and embodied manipulation scenarios, high-quality 3D geometry is not only essential for static reconstruction, but also serves as a critical foundation for learning temporally consistent 4D representations. To obtain visual representations with stronger structural awareness and greater potential for spatiotemporal extension, we present LiteMVS, a lightweight multi-view depth estimation model that integrates plane-sweep geometric reasoning with strong monocular semantic and structural priors. The central idea of LiteMVS is to efficiently inject high-level monocular knowledge, obtained from lightweight segmentation models and large-scale vision foundation models, into a multi-view stereo framework. In particular, LiteMVS enriches the cost volume with semantic descriptors and employs a Mixture-of-Experts (MoE) formulation to enable adaptive geometric aggregation across depth hypotheses. Moreover, geometric priors distilled from vision foundation models further strengthen monocular guidance without increasing inference cost. Through this design, LiteMVS not only improves depth estimation and 3D reconstruction quality in static scenes, but also provides a more reliable geometric foundation for subsequent temporal modeling and 4D representation learning. Experiments on ScanNetv2 and 7-Scenes demonstrate that LiteMVS achieves high-quality depth prediction and 3D reconstruction while maintaining competitive efficiency.",
+      "authors": [
+        "Tianbao Zhang",
+        "Zeyu Liu",
+        "Shuyu Wu",
+        "Fanxing Li",
+        "Zhaoxin Fan",
+        "Wenjun Wu",
+        "Danping Zou"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-04T15:54:32+00:00",
+      "link": "https://arxiv.org/pdf/2608.03851v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Efficient multi-view stereo with foundation model distillation and expert aggregation",
+      "llm_evidence_cn": "结合基础模型蒸馏与专家聚合的高效多视图立体匹配",
+      "llm_evidence": "结合基础模型蒸馏与专家聚合的高效多视图立体匹配",
+      "canonical_evidence": "结合基础模型蒸馏与专家聚合的高效多视图立体匹配",
+      "llm_tldr_en": "Presents LiteMVS, an efficient multi-view stereo method that distills monocular depth priors from foundation models and aggregates multi-view geometric constraints, improving depth estimation in textureless regions.",
+      "llm_tldr_cn": "针对多视图立体匹配在纹理缺失区域失效的问题，提出LiteMVS，将单目深度基础模型先验蒸馏并与多视图几何约束融合，增强结构感知。实验表明在保持高效的同时，深度估计精度优于纯几何方法，且能拓展至序列重建，为机器人3D感知提供了鲁棒视觉表示。",
+      "llm_tldr": "针对多视图立体匹配在纹理缺失区域失效的问题，提出LiteMVS，将单目深度基础模型先验蒸馏并与多视图几何约束融合，增强结构感知。实验表明在保持高效的同时，深度估计精度优于纯几何方法，且能拓展至序列重建，为机器人3D感知提供了鲁棒视觉表示。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "multi-view stereo 3D reconstruction",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.00931v1",
+      "source": "arxiv",
+      "title": "Stipple: Real-Time Incremental Gaussian Splatting with Visual-Inertial Tracking",
+      "abstract": "3D Gaussian Splatting (3DGS) provides efficient rendering of photo-realistic scenes, but its heavy preprocessing and training steps make it a poor fit for applications that require real-time reconstruction in robotics or XR. This capability is important since it allows immediate feedback and interaction with new environments. Visual-inertial odometry (VIO) and simultaneous localization and mapping (VI-SLAM) systems, on the other hand, specifically target these real-time applications, which makes them a good choice for integration with 3DGS. We propose a new method that tracks and reconstructs simultaneously in real-time by leveraging an efficient visual-inertial tracking system based on Basalt together with a novel incremental method built on top of Brush, an efficient Rust-based GPU-vendor-agnostic implementation of 3D Gaussian Splatting. We show that many of the heavy preprocessing and training steps of 3DGS can be replaced with a more efficient incremental training strategy that has direct access to the information generated by the visual-inertial tracking system. Furthermore, we propose and combine multiple practical improvements to increase the efficiency of the training pipeline and adapt it to run in real-time, parallel to the tracking thread. This work highlights the value of exploiting the complementary nature of SLAM and 3DGS, and how that can lead to promising results for real-time 3D reconstruction.",
+      "authors": [
+        "Kilian Northoff",
+        "Mateo de Mayo",
+        "Daniel Cremers"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-08-02T02:17:05+00:00",
+      "link": "https://arxiv.org/pdf/2608.00931v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Real-time incremental 3DGS reconstruction from multi-view with visual-inertial tracking",
+      "llm_evidence_cn": "利用视觉惯性跟踪实现实时增量3DGS多视图重建",
+      "llm_evidence": "利用视觉惯性跟踪实现实时增量3DGS多视图重建",
+      "canonical_evidence": "利用视觉惯性跟踪实现实时增量3DGS多视图重建",
+      "llm_tldr_en": "Stipple integrates efficient visual-inertial tracking with novel incremental 3DGS to achieve simultaneous real-time tracking and photo-realistic 3D reconstruction, suitable for robotics and XR applications.",
+      "llm_tldr_cn": "针对3D高斯溅射预处理和训练耗时问题，Stipple结合高效的视觉惯性跟踪与新型增量高斯溅射方法，实现实时同时定位与稠密重建。该方法在机器人和扩展现实中提供即时反馈和环境交互能力。",
+      "llm_tldr": "针对3D高斯溅射预处理和训练耗时问题，Stipple结合高效的视觉惯性跟踪与新型增量高斯溅射方法，实现实时同时定位与稠密重建。该方法在机器人和扩展现实中提供即时反馈和环境交互能力。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.02711v1",
+      "source": "arxiv",
+      "title": "Hunyuan3D-Buffalo 1.0: A Unified Multimodal Model for Scalable 3D Generation, Understanding, and Editing",
+      "abstract": "Recent advances in image generation have demonstrated the potential of unified multimodal models that integrate understanding, generation, and editing. However, unified 3D modeling remains constrained by scarce multimodal data, particularly the lack of large-scale and geometrically consistent editing data. To address this limitation, we propose Hunyuan3D-Buffalo 1.0, a unified framework supporting 3D understanding, text-to-3D generation, instruction-guided 3D editing, and text-grounded part generation within a single architecture. To enable scalable training, we construct an 87M-scale 3D multimodal corpus, comprising 25M understanding samples, 50M text-to-3D pairs, and 12M editing pairs generated using Nano3D-v2. Architecturally, the framework combines Hunyuan3D-VLM for semantic, structural, and spatial understanding with Hunyuan3D DiT for high-fidelity 3D synthesis. The VLM provides multimodal semantic conditions for generation, while editing and part generation additionally condition the diffusion process on the source object representation to preserve its overall structure and unedited regions. Extensive experiments show that Hunyuan3D-Buffalo 1.0 achieves state-of-the-art or leading performance on text-to-3D generation and 3D editing benchmarks, while exhibiting strong understanding and part-generation capabilities. Our analysis further shows that both generation and understanding improve editing, demonstrating the effectiveness of unified 3D multimodal training. Project Page: https://tencent-hunyuan.github.io/Hunyuan3D-Buffalo1.0/",
+      "authors": [
+        "Junliang Ye",
+        "Kenkun Liu",
+        "Guocun Wang",
+        "Yang Li",
+        "Yansong Qu",
+        "Chunshi Wang",
+        "Jingwei Xu",
+        "Yunhan Yang",
+        "Zibo Zhao",
+        "Jiachen Xu",
+        "Jiaao Yu",
+        "Lifu Wang",
+        "Zhihao Liang",
+        "Zhuo Chen",
+        "Chunchao Guo"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-03T17:57:11+00:00",
+      "link": "https://arxiv.org/pdf/2608.02711v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "unified model for text-to-3D generation, understanding, and editing",
+      "llm_evidence_cn": "支持文本到3D生成与理解的统一模型",
+      "llm_evidence": "支持文本到3D生成与理解的统一模型",
+      "canonical_evidence": "支持文本到3D生成与理解的统一模型",
+      "llm_tldr_en": "Hunyuan3D-Buffalo is a unified multimodal model that scales 3D generation, understanding, and editing by constructing an 87M-scale 3D multimodal corpus and a single architecture.",
+      "llm_tldr_cn": "针对统一3D建模受限于多模态数据稀缺的问题，本文提出Hunyuan3D-Buffalo 1.0，一个支持3D理解、文本到3D生成、编辑和部分生成的统一框架。通过构建8700万规模的3D多模态语料库，该模型在单一架构内实现了多项3D任务。实验证明，该模型在多种3D生成与理解基准上性能领先，推动了可扩展3D多模态模型的发展。",
+      "llm_tldr": "针对统一3D建模受限于多模态数据稀缺的问题，本文提出Hunyuan3D-Buffalo 1.0，一个支持3D理解、文本到3D生成、编辑和部分生成的统一框架。通过构建8700万规模的3D多模态语料库，该模型在单一架构内实现了多项3D任务。实验证明，该模型在多种3D生成与理解基准上性能领先，推动了可扩展3D多模态模型的发展。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.03323v1",
+      "source": "arxiv",
+      "title": "PolyLayout: Multi-room Manhattan Layout Estimation",
+      "abstract": "Estimating room layouts from multi-view imagery is a core task for indoor scene understanding. Existing methods are typically limited either by poor generalization to new datasets or restrictive geometric assumptions of the room shape or camera configuration. Most also estimate rooms independently, failing to exploit shared building structure such as dominant directions, ground plane or ceiling height.   We propose PolyLayout, a multi-room layout estimation method that parameterizes room layouts as Manhattan 3D polygons and optimizes them jointly across multiple rooms. The optimization objective is predicted by a neural network on top of robust pre-trained visual features and trained end-to-end with supervision only on output room layouts. At the same time, camera projection and polygon updates remain explicit and model-based. This separation between learned scoring and geometry improves generalization to new datasets and camera parameters. During optimization, PolyLayout adaptively refines the polygon topology through iterative wall split and merge operations while jointly utilizing structural cues across rooms. We introduce two new multi-view multi-room layout benchmarks by providing layout annotations to existing datasets, and experiments show that PolyLayout outperforms prior approaches, both in terms of accuracy and robustness.   Project page: https://ghanning.github.io/PolyLayout",
+      "authors": [
+        "Gustav Hanning",
+        "Shaohui Liu",
+        "Rémi Pautrat",
+        "Marc Pollefeys",
+        "Kalle Åström",
+        "Viktor Larsson"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-04T08:30:36+00:00",
+      "link": "https://arxiv.org/pdf/2608.03323v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "multi-room layout estimation from multi-view imagery, reconstructing 3D room polygons",
+      "llm_evidence_cn": "从多视图图像估计多房间布局，重建3D多边形房间结构",
+      "llm_evidence": "从多视图图像估计多房间布局，重建3D多边形房间结构",
+      "canonical_evidence": "从多视图图像估计多房间布局，重建3D多边形房间结构",
+      "llm_tldr_en": "PolyLayout jointly estimates multi-room Manhattan layouts from multi-view images by optimizing 3D polygon parameters using a neural network on top of pre-trained features, achieving better generalization.",
+      "llm_tldr_cn": "针对现有房间布局估计方法泛化性差或几何假设受限，且通常独立估计各房间忽略共享结构的问题，本文提出PolyLayout。该方法将布局参数化为曼哈顿3D多边形，利用神经网络在预训练视觉特征基础上预测优化目标，端到端联合优化多个房间布局。实验表明，该方法有效利用多房间共享方向与平面，提升布局估计准确性与泛化能力。",
+      "llm_tldr": "针对现有房间布局估计方法泛化性差或几何假设受限，且通常独立估计各房间忽略共享结构的问题，本文提出PolyLayout。该方法将布局参数化为曼哈顿3D多边形，利用神经网络在预训练视觉特征基础上预测优化目标，端到端联合优化多个房间布局。实验表明，该方法有效利用多房间共享方向与平面，提升布局估计准确性与泛化能力。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.03423v1",
+      "source": "arxiv",
+      "title": "SGFormer: Structure-Guided Transformer for Robust Local Feature Matching",
+      "abstract": "Local feature matching is a fundamental component of photogrammetry, enabling accurate image correspondence critical for tasks such as 3D reconstruction, stereo mapping, and visual localization. While recent detector-free matching methods, like LoFTR, have advanced the field, the global features obtained by leveraging the global-range modeling capacity of the unconstrained attention mechanism compromise the model's attention to the salient structures in certain scenarios. This limitation leads to a phenomenon we define as attention divergence, wherein a portion of high-confidence matches are distributed outside the valid matching region (overlapping region), especially in scenes with large viewpoint variations. This occurs because similar features in irrelevant regions may receive equal weighting and consideration within the standard Transformer, limiting matching reliability in challenging photogrammetric environments. To address this issue in feature matching, we propose SGFormer (Structure-Guided Transformer), a novel structure-aware matching network that adaptively updates attention on features near salient structure in overlapping regions. SGFormer employs a semi-dense coarse-to-fine pipeline and incorporates the proposed Triple-Structure-Attention (TSA) module into the backbone net for extracting distinctive features. The TSA module utilizes shallow local features from early network layers to enhance the representation around salient structure, guiding subsequent transformer stages to intensify the model's focus on regions with salient structure across the global scope. SGFormer, thereby reinforcing attention to visually consistent areas while mitigating the influence of non-overlapping regions. Extensive experiments show that SGFormer significantly mitigates attention divergence and improves matching accuracy.",
+      "authors": [
+        "Runyu Zhu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-04T10:14:16+00:00",
+      "link": "https://arxiv.org/pdf/2608.03423v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "proposes robust local feature matching for 3D reconstruction, using structure-guided attention to avoid attention divergence in wide-baseline scenarios",
+      "llm_evidence_cn": "提出结构引导的局部特征匹配方法，解决大视角变化下的注意发散问题，用于三维重建等任务",
+      "llm_evidence": "提出结构引导的局部特征匹配方法，解决大视角变化下的注意发散问题，用于三维重建等任务",
+      "canonical_evidence": "提出结构引导的局部特征匹配方法，解决大视角变化下的注意发散问题，用于三维重建等任务",
+      "llm_tldr_en": "SGFormer addresses attention divergence in detector-free local feature matching by incorporating structure guidance, forcing the model to focus on salient structures within overlapping regions; it improves match accuracy and robustness for 3D reconstruction and visual localization.",
+      "llm_tldr_cn": "针对无检测器局部特征匹配中的注意发散问题，SGFormer提出结构引导的Transformer，通过强制关注重叠区域内的显著结构来抑制错误匹配。在三维重建、立体匹配等任务上，该方法提升了匹配准确率与鲁棒性，尤其在场景存在大视角变化时优势明显。",
+      "llm_tldr": "针对无检测器局部特征匹配中的注意发散问题，SGFormer提出结构引导的Transformer，通过强制关注重叠区域内的显著结构来抑制错误匹配。在三维重建、立体匹配等任务上，该方法提升了匹配准确率与鲁棒性，尤其在场景存在大视角变化时优势明显。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.02437v2",
+      "source": "arxiv",
+      "title": "InfiniSplat: Implicit Gaussian Decoding for Large-Baseline Monocular View Synthesis",
+      "abstract": "Single-image feed-forward 3D Gaussian Splatting (3DGS) aims to directly generate a renderable 3D scene representation from one input image, avoiding the cost of multi-view capture and per-scene optimization. However, existing methods are often constrained by a pixel-aligned representation, where Gaussians are predicted from fixed image-grid locations. Such pixel-aligned primitives can produce promising nearby-view renderings, but they remain weakly coupled to underlying scene surfaces and struggle to preserve coherent structures under large viewpoint shifts. We present InfiniSplat, a feed-forward single-image 3DGS framework that moves from a pixel-aligned representation toward a surface-aligned representation. InfiniSplat constructs this representation by first using geometry-guided sampling to place 2D supports according to depth-induced local surface structure, and then applying a query-conditioned implicit decoder to predict Gaussian attributes from the image features queried at these supports. By grounding support locations in geometry while decoupling Gaussian prediction from fixed pixel centers, InfiniSplat produces Gaussian layouts that better follow scene surfaces and reduce scattered primitives caused by grid discretization. Across multiple cross-dataset NVS evaluations, InfiniSplat achieves state-of-the-art performance compared with single-image feed-forward baselines, and demonstrates zero-shot generalization from Hypersim indoor synthetic training to complex open-world scenes. Project page: https://zju3dv.github.io/InfiniSplat.",
+      "authors": [
+        "Jiawei Wang",
+        "Hao Yu",
+        "Yongzhen Hu",
+        "Xinyi Yang",
+        "Tao Ni",
+        "Xin Zhan",
+        "Junbo Chen",
+        "Xiaowei Zhou",
+        "Ruizhen Hu",
+        "Sida Peng"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-03T16:17:39+00:00",
+      "link": "https://arxiv.org/pdf/2608.02437v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Feed-forward single-image 3D scene generation using 3D Gaussian Splatting",
+      "llm_evidence_cn": "利用3D高斯泼溅从单张图像前馈生成3D场景",
+      "llm_evidence": "利用3D高斯泼溅从单张图像前馈生成3D场景",
+      "canonical_evidence": "利用3D高斯泼溅从单张图像前馈生成3D场景",
+      "llm_tldr_en": "Proposes InfiniSplat, a single-image 3DGS framework moving from pixel-aligned to surface-aligned representation, enabling high-quality view synthesis with large-baseline changes.",
+      "llm_tldr_cn": "针对现有单图像3D高斯泼溅方法受限于像素对齐表示、大视角变化时结构不连贯的问题，提出InfiniSplat，通过隐式高斯解码构建表面对齐表示。该方法利用空间连续性从单图推断表面附近高斯分布，提高大基线视角合成质量，为单图3D生成提供了更稳定、连贯的场景表示。",
+      "llm_tldr": "针对现有单图像3D高斯泼溅方法受限于像素对齐表示、大视角变化时结构不连贯的问题，提出InfiniSplat，通过隐式高斯解码构建表面对齐表示。该方法利用空间连续性从单图推断表面附近高斯分布，提高大基线视角合成质量，为单图3D生成提供了更稳定、连贯的场景表示。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.01826v1",
+      "source": "arxiv",
+      "title": "Multi-View Unified Camera Fields: Geometry-Shaped Action-Facing Representations for RGB-Only Multi-Camera VLA Policies",
+      "abstract": "Vision-Language-Action (VLA) models have shown strong generalization in robotic manipulation, yet complex contact-rich tasks often benefit from multi-camera observations that jointly capture the end effector, objects, and targets under occlusion. Existing multi-camera VLAs usually concatenate view tokens, leaving action representations weak in metric depth and inconsistent across cameras. We introduce Multi-View Unified Camera Fields (MVUCF), a training-only framework that forms a shared action-facing latent field across views. A coordinate-query depth objective makes metric depth recoverable, while a preprocessing-aware correspondence objective aligns tokens observing the same physical point from different cameras. Both directly shape the hidden states consumed by the action module. After geometry injection, depth, camera calibration, and auxiliary heads are removed, so deployment uses the original RGB-only graph with no extra inference FLOPs. Held-out probes confirm stronger depth recovery and cross-view matching. Under matched GR00T-N1.6 settings, MVUCF reaches 98.9% on LIBERO, improves LIBERO-Plus by 22.4 points, and raises success by 23.3 points across six RoboTwin tasks spanning three action families: touch, move-and-place, and contact interaction. Real-world humanoid experiments further provide evidence of its practical effectiveness under RGB-only deployment.",
+      "authors": [
+        "Jiarui Yang",
+        "Yehao Lu",
+        "Yuning Su",
+        "Yufeng Xie",
+        "Yu Zhong",
+        "Haiyu Lan",
+        "Tianjing Hao",
+        "Kaixiang Lu",
+        "Peiwen Lin",
+        "Chuang Wang",
+        "Enyu Li",
+        "Junwei Liang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-03T07:36:09+00:00",
+      "link": "https://arxiv.org/pdf/2608.01826v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "aligns tokens from multiple views observing the same physical point using correspondence objective",
+      "llm_evidence_cn": "通过对应目标对齐观察同一物理点的多视角令牌",
+      "llm_evidence": "通过对应目标对齐观察同一物理点的多视角令牌",
+      "canonical_evidence": "通过对应目标对齐观察同一物理点的多视角令牌",
+      "llm_tldr_en": "Introduces MVUCF, a multi-camera VLA framework that creates a shared action-facing latent field by aligning multi-view tokens via coordinate-query depth and correspondence, improving depth awareness and cross-view consistency.",
+      "llm_tldr_cn": "为改善多相机视觉-语言-动作模型中的深度感知和视角一致性，提出MVUCF，通过坐标查询深度目标和预处理感知对应目标在多视角间对齐令牌，构建统一动作朝向潜在场，提升机器人操作任务的跨视角泛化能力。",
+      "llm_tldr": "为改善多相机视觉-语言-动作模型中的深度感知和视角一致性，提出MVUCF，通过坐标查询深度目标和预处理感知对应目标在多视角间对齐令牌，构建统一动作朝向潜在场，提升机器人操作任务的跨视角泛化能力。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.00214v1",
+      "source": "arxiv",
+      "title": "Manifold-GS: Certified Hybrid Assets via Varifold-Conservative Gaussian Splatting",
+      "abstract": "3D Gaussian Splatting (3DGS) gives high-quality novel-view synthesis, but its adaptive radiance primitives are not directly usable as structured assets: opacity is not an additive area measure, refinement can change the induced geometry, and watertight mesh extraction can hallucinate collision surfaces in unobserved regions. We introduce Manifold-GS, a certified hybrid asset layer for Gaussian scenes. The method separates appearance opacity from geometric quadrature mass, represents surface-like Gaussians as a discrete unoriented varifold, and exports only confidence-certified open surface patches while retaining uncertified content as residual splats. It provides refinement-conservative mass transport, local realizability diagnostics, source-preserving patch bindings, and conservative collision candidates. On three DTU scenes, a frozen asset benchmark shows zero patch-defined edit leakage, texture round-trip PSNR of 30.1/35.3/33.7 dB, and lower collision floater area than official 2DGS meshes on all scenes, with large gaps on two scenes. The result is a precision-coverage tradeoff rather than a universal reconstruction claim. External-region annotations, phantom-collision probes, and 5k-face simplification further support the certified asset interpretation, while RGB-only experiments show that local realizability is not sufficient for sparse-view surface identifiability.",
+      "authors": [
+        "Boyang Li"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-07-31T18:55:26+00:00",
+      "link": "https://arxiv.org/pdf/2608.00214v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Improves 3DGS geometry for multi-view scene reconstruction with certified surface patches",
+      "llm_evidence_cn": "改进3DGS几何以用于多视图场景重建，输出认证的表面片",
+      "llm_evidence": "改进3DGS几何以用于多视图场景重建，输出认证的表面片",
+      "canonical_evidence": "改进3DGS几何以用于多视图场景重建，输出认证的表面片",
+      "llm_tldr_en": "Manifold-GS enhances 3D Gaussian Splatting by introducing a varifold-conservative representation that separates appearance and geometry, enabling certified mesh extraction and reliable geometric assets from multi-view reconstruction.",
+      "llm_tldr_cn": "针对3D高斯溅射重建中不透明度非加性、几何不一致和网格提取不可靠的问题，本文提出Manifold-GS，利用离散无向变分表示分离外观不透明度与几何质量，导出置信认证的开表面片并保留未认证区域作为残差溅射。方法提供细化一致的传输和局部可实现性诊断。这提升了从多视图图像重建的3D资产可靠性和可用性。",
+      "llm_tldr": "针对3D高斯溅射重建中不透明度非加性、几何不一致和网格提取不可靠的问题，本文提出Manifold-GS，利用离散无向变分表示分离外观不透明度与几何质量，导出置信认证的开表面片并保留未认证区域作为残差溅射。方法提供细化一致的传输和局部可实现性诊断。这提升了从多视图图像重建的3D资产可靠性和可用性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.02980v1",
+      "source": "arxiv",
+      "title": "Qwen-3D: A Generalist 3D Vision-Language Model for Spatial Understanding",
+      "abstract": "Large Multimodal Models (LMMs) have achieved remarkable success on images and short videos, yet scaling them to long videos remains challenging due to frame-centric tokenization and limited context windows. 3D geometry provides a natural compression mechanism for visual streams: depth and camera pose enable observations from multiple views and time steps to be fused into a persistent, world-aligned representation. While recent 3D LMMs leverage geometry-aware representations to improve spatial reasoning, they continue to lag behind specialist 3D perception systems on grounding and segmentation tasks. We argue that a key limitation is geometry-aware decoding: existing methods communicate 3D predictions through language tokens, proposal selection, or lightweight grounding queries, creating a bottleneck between language reasoning and dense geometric prediction. Building on these insights, we introduce Qwen-3D, a geometry-aware LMM that compresses visual information within the Qwen backbone using multi-view geometric cues, enabling efficient long-horizon visual reasoning over static scenes. Qwen-3D augments visual tokens with 3D Rotary Positional Embeddings, allowing attention to operate directly in 3D scene space rather than across independent image frames and thereby facilitating scalable cross-view and temporal reasoning. To bridge language and geometry, Qwen-3D incorporates a query-based segmentation decoder that grounds language directly in the underlying 3D scene representation, unifying referential grounding, instance segmentation, and visual question answering across both images and videos. Across a diverse set of benchmarks, Qwen-3D surpasses existing 3D LMMs and outperforms several large proprietary 2D models. Notably, Qwen-3D achieves these improvements while maintaining strong performance on standard 2D vision-language benchmarks by jointly training on 2D and 3D data.",
+      "authors": [
+        "Lucy Lin",
+        "Ayush Jain",
+        "Yifan Liu",
+        "Katerina Fragkiadaki"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-04T00:32:09+00:00",
+      "link": "https://arxiv.org/pdf/2608.02980v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "addresses 3D grounding and segmentation tasks with geometry-aware decoding, improving spatial reasoning and segmentation",
+      "llm_evidence_cn": "通过几何感知解码解决3D定位与分割任务，提升空间推理与分割性能",
+      "llm_evidence": "通过几何感知解码解决3D定位与分割任务，提升空间推理与分割性能",
+      "canonical_evidence": "通过几何感知解码解决3D定位与分割任务，提升空间推理与分割性能",
+      "llm_tldr_en": "Qwen-3D proposes a generalist 3D vision-language model that leverages 3D geometry for efficient multi-view fusion, and introduces geometry-aware decoding to directly output 3D predictions for grounding and segmentation, bridging the gap with specialist systems.",
+      "llm_tldr_cn": "为解决大型多模态模型在长视频上的扩展难题，Qwen-3D利用3D几何将多视图观测融合为一致的世界表示，并提出几何感知解码直接输出3D定位与分割结果。在多个基准上，该方法在空间推理和分割任务上显著缩小了与专用3D感知系统的差距，为3D视觉语言理解提供了通用架构。",
+      "llm_tldr": "为解决大型多模态模型在长视频上的扩展难题，Qwen-3D利用3D几何将多视图观测融合为一致的世界表示，并提出几何感知解码直接输出3D定位与分割结果。在多个基准上，该方法在空间推理和分割任务上显著缩小了与专用3D感知系统的差距，为3D视觉语言理解提供了通用架构。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.02437v1",
+      "source": "arxiv",
+      "title": "InfiniSplat: Implicit Gaussian Decoding for Large-Baseline Monocular View Synthesis",
+      "abstract": "Single-image feed-forward 3D Gaussian Splatting (3DGS) aims to directly generate a renderable 3D scene representation from one input image, avoiding the cost of multi-view capture and per-scene optimization. However, existing methods are often constrained by a pixel-aligned representation, where Gaussians are predicted from fixed image-grid locations. Such pixel-aligned primitives can produce promising nearby-view renderings, but they remain weakly coupled to underlying scene surfaces and struggle to preserve coherent structures under large viewpoint shifts. We present InfiniSplat, a feed-forward single-image 3DGS framework that moves from a pixel-aligned representation toward a surface-aligned representation. InfiniSplat constructs this representation by first using geometry-guided sampling to place 2D supports according to depth-induced local surface structure, and then applying a query-conditioned implicit decoder to predict Gaussian attributes from the image features queried at these supports.By grounding support locations in geometry while decoupling Gaussian prediction from fixed pixel centers, InfiniSplat produces Gaussian layouts that better follow scene surfaces and reduce scattered primitives caused by grid discretization.Across multiple cross-dataset NVS evaluations, InfiniSplat achieves state-of-the-art performance compared with single-image feed-forward baselines, and demonstrates zero-shot generalization from Hypersim indoor synthetic training to complex open-world scenes.Project page: https://zju3dv.github.io/InfiniSplat.",
+      "authors": [
+        "Jiawei Wang",
+        "Hao Yu",
+        "Yongzhen Hu",
+        "Xinyi Yang",
+        "Tao Ni",
+        "Xin Zhan",
+        "Junbo Chen",
+        "Xiaowei Zhou",
+        "Ruizhen Hu",
+        "Sida Peng"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-03T16:17:39+00:00",
+      "link": "https://arxiv.org/pdf/2608.02437v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "generates a renderable 3D scene from a single image, avoiding multi-view capture, by moving from pixel-aligned to surface-aligned Gaussians",
+      "llm_evidence_cn": "从单张图像生成可渲染的三维场景，无需多视图采集，通过从像素对齐转向表面对齐的高斯表示",
+      "llm_evidence": "从单张图像生成可渲染的三维场景，无需多视图采集，通过从像素对齐转向表面对齐的高斯表示",
+      "canonical_evidence": "从单张图像生成可渲染的三维场景，无需多视图采集，通过从像素对齐转向表面对齐的高斯表示",
+      "llm_tldr_en": "InfiniSplat proposes a feed-forward single-image 3DGS method that constructs a surface-aligned representation via implicit Gaussian decoding, enabling large-baseline novel-view synthesis with improved structure coherence.",
+      "llm_tldr_cn": "针对单图像前馈3DGS中像素对齐表示导致的结构不连贯问题，InfiniSplat提出隐式高斯解码，将表示从像素对齐转向表面对齐，从而支持大基线视点下的高质量新视图合成。实验表明，该方法在保持训练效率的同时，显著提升了远距离视角下的渲染质量与结构一致性，为单图像三维场景重建提供了更稳健的方案。",
+      "llm_tldr": "针对单图像前馈3DGS中像素对齐表示导致的结构不连贯问题，InfiniSplat提出隐式高斯解码，将表示从像素对齐转向表面对齐，从而支持大基线视点下的高质量新视图合成。实验表明，该方法在保持训练效率的同时，显著提升了远距离视角下的渲染质量与结构一致性，为单图像三维场景重建提供了更稳健的方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.03064v1",
+      "source": "arxiv",
+      "title": "Global Graph-Validated Optimization for VLM-based 3D Indoor Scene Generation",
+      "abstract": "We study open-vocabulary 3D indoor layout generation, which synthesizes diverse and physically plausible scenes from unlabeled 3D assets using free-form language instructions. Recent methods leverage large language models (LLMs) and vision-language models (VLMs) to generate structured scenes from text. However, most model inter-asset relations implicitly or rely on local pairwise constraints and local optimization. These formulations are poorly aligned with the global, highly non-convex layout space, often yielding locally plausible yet globally inconsistent or physically infeasible scenes. We address this problem with a graph-based intermediate representation that separates semantic coherence from physical feasibility, together with a hybrid search-and-refinement strategy. First, Global Semantic Verification (GSV) represents scenes as structured graphs and enforces semantic constraints through rule-based verification. This explicit validation removes contradictory configurations and produces a globally consistent semantic scaffold. Second, Global Physical Feasibility Search (GPFS) combines evolutionary search for global exploration with gradient-based refinement for local exploitation. It reduces dependence on VLM-proposed initialization and improves robustness in non-convex and discontinuous feasible spaces. Together, GSV and GPFS move layout generation beyond local relational modeling and initialization-sensitive optimization toward globally consistent reasoning and search. Experiments show that our method achieves state-of-the-art performance in open-vocabulary 3D indoor layout generation, improving both semantic consistency and physical plausibility.",
+      "authors": [
+        "Jialu Huang",
+        "Yingxuan You",
+        "Fei Wang",
+        "Zheng Dang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-04T03:24:09+00:00",
+      "link": "https://arxiv.org/pdf/2608.03064v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "open-vocabulary 3D indoor layout generation from free-form language instructions",
+      "llm_evidence_cn": "基于自由形式语言指令的开放词汇三维室内布局生成",
+      "llm_evidence": "基于自由形式语言指令的开放词汇三维室内布局生成",
+      "canonical_evidence": "基于自由形式语言指令的开放词汇三维室内布局生成",
+      "llm_tldr_en": "This paper addresses globally inconsistent 3D scene generation from text by introducing a graph-based intermediate representation that separates semantic and physical constraints, achieving more plausible indoor layouts.",
+      "llm_tldr_cn": "现有基于文本的三维室内场景生成方法常因局部优化导致全局不一致或物理不可行。本文提出图基中间表示，将语义连贯性与物理可行性解耦，并设计混合搜索与图验证优化策略，在从自由语言描述生成三维客厅等场景时显著提升了全局一致性和物理合理性。该方法为开放词汇三维场景生成提供了更可靠的框架。",
+      "llm_tldr": "现有基于文本的三维室内场景生成方法常因局部优化导致全局不一致或物理不可行。本文提出图基中间表示，将语义连贯性与物理可行性解耦，并设计混合搜索与图验证优化策略，在从自由语言描述生成三维客厅等场景时显著提升了全局一致性和物理合理性。该方法为开放词汇三维场景生成提供了更可靠的框架。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    }
+  ]
+}

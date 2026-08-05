@@ -1,0 +1,427 @@
+Title: Manifold-GS: Certified Hybrid Assets via Varifold-Conservative Gaussian Splatting
+
+URL Source: https://arxiv.org/pdf/2608.00214v1
+
+Published Time: Tue, 04 Aug 2026 00:09:50 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+# Manifold-GS: Certified Hybrid Assets via Varifold-Conservative Gaussian Splatting 
+
+## Boyang Li Peking University 
+
+## liboyang935@gmail.com 
+
+## Preliminary Draft 
+
+# Abstract 
+
+3D Gaussian Splatting (3DGS) gives high-quality novel-view synthesis, but its adaptive radiance primitives are not directly usable as structured assets: opacity is not an additive area mea-sure, clone/split operations can change the induced geometry, and watertight mesh extraction can hallucinate collision sur-faces in unobserved regions. We introduce Manifold-GS , a certified open-surface asset layer for Gaussian scenes. The method separates appearance opacity from geometric quadra-ture mass, interprets surface-like Gaussians as a discrete un-oriented varifold, and exports only confidence-certified open surface patches while retaining uncertified content as a resid-ual splat layer. It provides refinement-conservative mass and moment transport rules, local realizability diagnostics based on tangent and fundamental-form compatibility, source-preserving patch bindings, and a hybrid bundle with certified geometry, attached appearance Gaussians, residual Gaussians, and a con-servative collision candidate. On three DTU scenes, a frozen asset-benchmark protocol shows zero patch-defined certified edit leakage, patch texture round-trip PSNR of 30.1/35.3/33.7 dB, and lower collision floater area than official 2DGS meshes on all scenes, with large gaps on two scenes; it also reduces floater area relative to SuGaR culled meshes and Poisson-from-3DGS under the same GT collision metric. This precision comes at lower coverage, so we present the result as a precision– coverage tradeoff rather than a universal surface-reconstruction win. External-region annotations, phantom-collision probes, and 5k-face simplification further show that the certified open-patch backbone preserves clean editing and collision behavior under practical asset operations. We also retain a negative find-ing: local realizability is not sparse-RGB identifiability. This draft anchors a conservative claim: certified hybrid Gaussian assets, not state-of-the-art RGB-only reconstruction. 
+
+# 1 Introduction 
+
+3D Gaussian Splatting (3DGS) [ 8 ] optimizes anisotropic Gaus-sian primitives for high-quality real-time novel view synthesis. Its adaptive density control makes the representation compact and expressive, but also blurs the boundary between appearance fitting and geometric reconstruction. A thin Gaussian may look like a local surfel, yet the collection of Gaussians need not form a refinement-stable surface measure, a globally realizable normal field, or an asset that can be edited, meshed, or bound to downstream geometry tasks. Recent surface-oriented Gaussian methods improve this sit-uation by making primitives planar [ 6], aligning Gaussians to mesh surfaces [ 5], or introducing depth and normal regulariza-tion [ 2]. Our starting point is complementary. We ask what geometric object is preserved by the adaptive Gaussian rep-resentation itself. In particular, if a Gaussian is split, cloned, pruned, or projected, what should remain invariant so that ge-ometry does not drift merely because the renderer changed its sampling density? We propose to treat surface-like Gaussians as samples of a discrete geometric measure. The covariance eigensystem pro-vides a local tangent plane and dimensionality label, while a separate positive mass variable plays the role of area quadra-ture. This mass is deliberately not identified with opacity, since opacity participates in view-dependent alpha compositing and is not a conserved geometric measure. The resulting object is an unoriented varifold over positions and tangent 2-planes. This makes adaptive refinement a transport problem: split and merge operations should preserve geometric mass and local moments, up to controlled cell diameter terms. It also gives an explicit source mapping from original Gaussians to certi-fied patch units, which is the basis for structured editing and conservative collision proxies. The second part of the paper separates two often conflated questions. A local tangent and curvature field may be realizable ,meaning that it is compatible with some nearby surface, with-out being identifiable as the ground-truth surface from sparse RGB observations. We therefore add confidence-certified real-izability diagnostics based on local support charts, covariance normals, and fundamental-form compatibility, but we do not claim that these diagnostics solve the inverse problem by them-selves. The contributions of this anchor draft are: • a refinement-conservative Gaussian-to-varifold interpreta-tion that separates geometric mass from appearance opac-ity; • conservation rules for adaptive Gaussian refinement and a stability statement in bounded-Lipschitz distance; 1arXiv:2608.00214v1 [cs.CV] 31 Jul 2026 • a realizability diagnostic based on tangent support and approximate fundamental-form compatibility; • a certified hybrid asset export that separates open surface patches, attached appearance Gaussians, residual splats, source mappings, and collision candidates; • a frozen three-scene DTU asset benchmark covering cer-tified editing, texture charting, collision precision, sim-plification robustness, external region annotations, and Poisson/SuGaR/2DGS mesh baselines; • an experimental audit showing why sparse RGB-only compatibility should not be promoted to a surface-reconstruction claim. 
+
+# 2 Related Work 
+
+Gaussian scene representations. 3DGS [ 8] represents a scene by anisotropic 3D Gaussians with learned opacity, co-variance, and spherical-harmonic color. Follow-up work has improved aliasing, scale structure, efficiency, and level-of-detail behavior [ 15 , 12 ]. These methods retain the strength of splat-ting as a real-time radiance representation, but the geometry encoded by a trained Gaussian cloud is still not guaranteed to be a stable surface. 
+
+Surface-oriented Gaussian splatting. 2DGS [ 6 ] replaces volumetric Gaussians by oriented disks, making each primitive an intrinsic local surface element. SuGaR [ 5 ] aligns Gaussians with surfaces and extracts/refines meshes. Gaussian Opac-ity Fields (GOF) [ 16 ] and Sorted Opacity Fields [ 10 ] derive mesh extraction procedures from opacity fields rather than relying only on external Poisson or TSDF fusion. PGSR [ 2 ], VCR-GauS [ 3], and related depth/normal guided methods [ 7 , 9 ]add geometric priors for more accurate surface reconstruction. MeshSplat [ 1] studies generalizable sparse-view reconstruction through 2DGS-like surface primitives, while GSurf [ 13 ] cou-ples Gaussian splatting with SDF learning for continuous sur-faces. GeoSplatting [ 14 ] uses mesh guidance to ground Gaus-sian normals for physically based inverse rendering. Manifold-GS does not claim priority over the broad idea of surface-aware Gaussian splatting. Its narrower focus is the measure preserved by adaptive refinement, certified open-surface asset export, and the boundary between local realizability and data identifiability. 
+
+Geometric measures and compatibility. Varifolds provide an unoriented surface measure over positions and tangent planes [ 11 ]. Classical differential geometry relates the first and second fundamental forms through compatibility condi-tions [ 4 ]. We use these tools as diagnostics for Gaussian scenes: if centers define a support chart and covariances define nor-mals and tangents, the two descriptions should be mutually compatible before the result is trusted as a surface asset. 
+
+# 3 Gaussian Splats as a Geometric Mea-sure 
+
+Let a trained Gaussian scene be 
+
+G = {(μi, Σi, α i, c i)}Ni=1 , (1) where μi ∈ R3 is the Gaussian center, Σi is a positive-definite covariance, αi is opacity, and ci denotes appearance parameters. Let 
+
+Σi = Ri diag( λi1, λ i2, λ i3)R⊤ 
+
+> i
+
+, λi1 ≥ λi2 ≥ λi3. (2) When λi1, λ i2 ≫ λi3, the two dominant eigenvectors define a tangent plane Pi and the smallest eigenvector defines an unori-ented normal ni. If ui, v i are the two dominant eigenvectors, then 
+
+Pi = uiu⊤ 
+
+> i
+
++ viv⊤ 
+
+> i
+
+= I − nin⊤ 
+
+> i
+
+. (3) 
+
+Definition 1 (Gaussian varifold surrogate) . For surface-like Gaussian primitives with centers μi, tangent planes Pi, and positive geometric masses qi, define 
+
+VG (ϕ) = X
+
+> i
+
+qiϕ(μi, P i), (4) 
+
+for bounded test functions ϕ over R3 and the Grassmannian of unoriented 2-planes. 
+
+The key design choice is that qi is not αi. Opacity is a ren-dering parameter; it is neither additive under alpha compositing nor invariant under view-dependent visibility. In the current implementation, quantities such as αi
+
+√λi1λi2 are treated as diagnostics or initialization surrogates, not as a final definition of surface area. The separation used throughout the paper can be summarized without a diagram: 
+
+(μi, Σi, α i, c i) =⇒
+
+(
+
+(μi, P i, q i) 7 → qiδ(μi,P i) geometry ,
+
+(αi, c i) rendering .
+
+(5) Here Pi is extracted from the covariance eigensystem, while 
+
+qi is a separate geometric quadrature mass. Opacity and color remain rendering parameters. 
+
+Forward consistency. Let M be a compact C2 embedded surface with area measure A and tangent projector P (x). For a partition {Ci}, assume 
+
+sup 
+
+> x∈Ci
+
+∥x − μi∥ ≤ h, sup 
+
+> x∈Ci
+
+∥P (x) − Pi∥F ≤ εT , (6) and P 
+
+> i
+
+|qi − A(Ci)| ≤ εq . Then for any test function ϕ with supremum norm and Lipschitz constant bounded by one, 
+
+|VG (ϕ) − VM (ϕ)| ≤ A(M )( h + εT ) + εq . (7) The proof is just cell-area quadrature plus the triangle inequality. The point is not that any trained 3DGS automatically satisfies these assumptions; it is that once sampling, tangent error, and quadrature mass are controlled, the covariance-to-varifold map has the expected forward consistency. Proof details are given in Appendix A. 24 Refinement Conservation 
+
+Adaptive density control is central to Gaussian splatting. From a geometric measure perspective, however, a split should not create area merely because a primitive was refined. 
+
+Proposition 1 (Refinement conservation) . Consider replacing a parent primitive i by children indexed by j with 
+
+X
+
+> j
+
+qj = qi, X
+
+> j
+
+qj μj = qiμi. (8) 
+
+Then zero-th mass and first spatial moment are preserved. If additionally P 
+
+> j
+
+qj Pj = qiPi, the tangent projector moment is preserved. For any 1-Lipschitz ϕ, the local perturbation satisfies 
+
+∆i(ϕ) := X
+
+> j
+
+qj ϕ(μj , P j ) − qiϕ(μi, P i)
+
+≤ X
+
+> j
+
+qj
+
+ ∥μj − μi∥ + ∥Pj − Pi∥F
+
+.
+
+(9) This statement is intentionally conditional. It does not say that arbitrary 3DGS optimization recovers a surface. It says what an adaptive Gaussian method should preserve if it wants its geometry to be meaningful across refinement. The repository implements this idea through explicit geometric mass ledgers, diagnostic projection, patch extraction, and conservative asset export. The implemented conservative split recenters child offsets and inherits the parent tangent, so mass, barycenter, and inherited-tangent moment are preserved deterministically. Merge preserves mass and barycenter, and preserves the tangent moment only when child tangents agree. Prune is handled as transport to nearest retained atoms: if R is the removed set and 
+
+a(i) the assigned retained atom, then 
+
+∆ X
+
+> i
+
+qiμi ≤ X
+
+> i∈R
+
+qi∥μi − μa(i)∥. (10) This bound is recorded in the prune ledger. Proof details and the prune transport derivation are given in Appendix A. 
+
+# 5 Realizability is not Identifiability 
+
+The proposed compatibility diagnostics compare two local de-scriptions: 1. support geometry fitted from Gaussian centers; 2. extrinsic geometry predicted by covariance normals and their local derivatives. For a chart φ(u, v ) with Jacobian Jφ, the support induces a first fundamental form I = J⊤ 
+
+> φ
+
+Jφ. A support normal and a covariance normal field induce two estimates of the second fundamental form. Their disagreement, antisymmetry, Gauss residual, normal curl, and Codazzi-like residual form a local realizability diagnostic. This separation is the main reason the paper reports negative results. A smooth and compatible field can describe the wrong surface if the image evidence does not constrain depth, support, or visibility sufficiently. In the current codebase, RGB-only training and fixed sparse support both expose this failure mode. Let ΠZ V denote projection onto a compatible surface-varifold class Z. For any varifold metric dV ,
+
+dV (V, V ∗) ≤ dV (V, ΠZ V ) + dV (Π Z V, V ∗). (11) The first term is a realizability error controlled by compatibility, sampling, and quadrature quality. The second term compares two already-realizable surfaces and requires observation evi-dence; a smooth but wrong plane can make the first term small while remaining far from the ground truth. For the implemented Gaussian kernel varifold, any coupling π gives the sufficient bound 
+
+MMD k(μ, ν ) ≤
+
+Z  ∥x − y∥2
+
+σ2 + ∥P − Q∥2
+
+> F
+
+τ 2
+
+
+
+dπ 
+
+1/2
+
+.
+
+(12) Thus conservative transport controls the evaluator, but the re-verse is not guaranteed: a fixed-bandwidth MMD can hide small-scale geometric or topological errors. Reliable visible depth gives constructive coercivity because depth H1 error controls both position and tangent projector on visible regions. RGB-only evidence is locally identifiable only when the re-stricted rendering Jacobian has a strictly positive smallest sin-gular value on the compatible tangent space; low texture, occlu-sion, few views, and unobserved regions break that condition. The metric decomposition and kernel bound are expanded in Appendix B, while the observation assumptions are summa-rized in Appendix C. 
+
+# 6 Implementation 
+
+The current implementation is renderer-adjacent rather than a new rasterizer. It includes: • PLY readers and covariance eigensystem diagnostics; • Gaussian dimensionality labels and local patch graph scores; • differentiable training hooks for thinness, support, tangent, shape, symmetry, and experimental Gauss compatibility terms; • projection and patch-mesh extraction utilities; • hybrid asset export with certified patches, attached Gaus-sians, residual Gaussians, source mappings, and a conser-vative collision candidate; • observation-evidence gates based on sparse support and multi-view photometric consistency. The implementation is designed to make unsupported geom-etry visible. It keeps uncertified regions as residual Gaussian 3layers rather than forcing a watertight mesh over unknown ar-eas. The asset branch further includes DTU scan24/65/105 bundles, GLB packaging, collision and simplification metrics, restricted rendering Fisher diagnostics, and external-region edit evaluation. 
+
+Frozen asset protocol. The downstream validation is inten-tionally not a screenshot-only mesh demo. The repository freezes a protocol, asset-benchmark/1.0 , with explicit PASS/FAIL checks for edit propagation, texture round-trip, and collision when aligned GT is available. The thresholds avoid quantities dominated by the evaluation setup. For editing, certi-fied binding is expected to have zero leak by construction, so the informative check is whether a proximity baseline actually leaks across patch boundaries on the same scene. For texture, the absolute seam magnitude is dominated by true cross-patch color variation; the gate therefore measures only the extra seam introduced by baking, together with round-trip PSNR. For colli-sion, a single tight tolerance can report low coverage when the tolerance is below the method’s own geometric accuracy, so the protocol reads coverage over a tolerance sweep and reports the tolerance at which the coverage floor is reached. Any threshold change is treated as a protocol-version change. 
+
+# 7 Experiments 
+
+The following results are taken from the repository’s current ev-idence ledger on branch a5-asset-benchmark-3scene .They should be read as an asset utility and evidence-boundary audit, not as a final reconstruction leaderboard. The experi-ments answer five questions: whether conservative operators prevent refinement-induced measure drift; under what evidence compatibility is useful; whether the certified subset yields a more reliable asset backbone; whether the RGB-only failures match the identifiability analysis; and whether real-scene in-crements replicate under a matched resource schedule. We re-port Chamfer, normal angle, kernel-varifold distance, certified mass/coverage, DTU accuracy/completeness/overall, held-out PSNR/SSIM, edit leakage, texture round-trip fidelity, collision floater area, phantom-collision rate, and simplification robust-ness. No single metric is used as a universal ranking. 
+
+## 7.1 Mechanism: covariance and compatibility 
+
+Unit tests verify that conservative clone/split preserves total mass, barycenter, and inherited-tangent moment to numerical precision. Pruning preserves zero-th order mass through an explicit ledger and records the transport cost and first-moment bound. On the same geometry under different refinement sched-ules, the explicit qi varifold diagnostic is more stable than treat-ing opacity as area. These tests validate the operators, not reconstruction quality. A 50-iteration synthetic smoke run verifies that the official 3DGS training path can be instrumented and that the covariance-thinness loss is differentiable and nonzero. The median thinness diagnostic moves from approximately 0.371 to 0.299 , while Table 1: Analytic plane, 1500-step mechanism ladder. Lower is better except PSNR. RGB-only compatibility helps but does not close the gap to depth-anchored geometry.                     
+
+> Method Cham. Norm. Varif. PSNR RGB 0.05946 64.91 0.19335 28.017 RGB + comp. 0.05011 55.18 0.15167 27.662 + adapt. comp. 0.04537 55.95 0.14614 30.264 + depth oracle 0.01885 8.84 0.06056 30.863
+
+r23 moves from approximately 0.903 to 0.716 . This is only evidence of a working thinness pressure. It is not evidence of manifold reconstruction. On an analytic sphere checkpoint, offline projection sub-stantially reduces fundamental-form diagnostics: normal angle decreases from 21 .84 ◦ to 0.96 ◦, shape mismatch from 0.383 to 
+
+0.113 , symmetry residual from 0.364 to 0.029 , Gauss residual from 0.300 to 0.112 , normal curl from 1.410 to 0.024 , and Codazzi residual from 0.503 to 0.057 . Since the projected field is constructed from the same MLS support, this is a diagnostic sanity check rather than a reconstruction result. On the sphere sparse-view asset mechanism test, the full com-patibility pipeline raises certified mass coverage from 54.95% to 63.44%, reduces certified point Chamfer from 0.24090 to 0.15211, and reduces sampled patch-mesh Chamfer from 0.28287 to 0.16346, while all exported meshes have zero non-manifold edges. The cost is a small held-out appearance drop, from 21.4959 to 21.3542 dB PSNR and from 0.5539 to 0.5395 SSIM. The paired confidence interval does not clear the prede-fined improvement threshold, so the formal verdict is inconclu-sive . We use it as mechanism evidence for asset extraction, not as a final reconstruction claim. 
+
+## 7.2 Analytic identifiability ladder 
+
+Table 1 shows the core decomposition. Compatibility improves tangent and varifold quality, but the oracle depth rung is needed for strong support recovery. The exact depth condition is an oracle diagnostic, not a fair sparse-RGB method. 
+
+## 7.3 DTU matched diagnostic 
+
+The current RGB-only manifold loss does not pass the frozen three-scene DTU rule. Against a matched 3DGS densifica-tion control on scan24, scan65, and scan105, the mean relative overall improvement is only 0.271% , below the 1% threshold. Accuracy improves on average by 1.98% , but completeness degrades by 0.38% . This supports the mechanism interpreta-tion that the current loss behaves more like a local precision regularizer than a reliable surface-coverage improvement. Adding a fixed RGB-SfM support anchor changes the pic-ture. Excluding scan105 as the post-hoc discovery scene, the frozen two-scene replication on scan24 and scan65 improves the matched diagnostic overall metric by 1.62% and 4.32% ,respectively, with held-out PSNR changes of +0 .132 dB and 
+
++0 .297 dB. This supports the narrower claim that sparse RGB-SfM support anchors and realizability constraints can provide a reproducible increment under a matched resource schedule. 4Table 2: DTU fixed RGB-SfM anchor replication. Overall is the official DTU diagnostic metric; lower is better.             
+
+> Scan 3DGS Anch. Gain ∆PSNR 24 1.7163 1.6885 +1.62% +0.132 65 2.4643 2.3577 +4.32% +0.297
+
+Table 3: Certified asset summary on three DTU scenes. Iden-tification is deliberately conservative; the remaining columns measure whether accepted patches behave as usable assets. Lower is better for floater, phantom, and external non-target motion; higher is better for identified area and texture PSNR.                     
+
+> Scan ID area floater phantom tex. dB ext. move 24 54.2% 18.25% 0.10% 30.11 0.36% 65 49.5% 0.87% 0.00% 35.34 0.95% 105 61.9% 1.54% 0.00% 33.70 0.66%
+
+## 7.4 Mesh-vs-splat tradeoff with SuGaR 
+
+A same-machine 8GB SuGaR pilot on DTU scan24/65/105 shows a tradeoff rather than a single winner. SuGaR gives stronger mesh geometry on scan24 and scan65, especially com-pleteness, while anchored 3DGS preserves held-out rendering quality and performs better on the cleaner scan105 geometry. Because this pilot uses a reduced SuGaR budget, it is a diagnos-tic comparison and must not be used to claim broad superiority over full-budget SuGaR. 
+
+## 7.5 Three-scene certified asset benchmark 
+
+The main asset result is a frozen CPU protocol, 
+
+asset-benchmark/1.0 , run on DTU scan24, scan65, and scan105. Each exported bundle contains certified open patches, a source-ID mapping, attached appearance Gaussians, residual Gaussians, a conservative collision candidate, and a manifest. The observation gate is intentionally conservative: only about 
+
+42 –58% of patches, covering roughly 50 –62% of surface area, are accepted; the rest remain as residual splat content. Coverage is treated as a recall-side diagnostic rather than a correctness score. For collision assets, high coverage is use-ful only when paired with low false surface area: watertight or TSDF extraction can cover more GT points by closing unknown regions, while simultaneously introducing collision geometry in free or unobserved space. Thus a low-coverage result ex-poses the cost of certification, whereas a high-coverage result is not sufficient evidence of a usable asset unless its floater and phantom-collision rates remain low. To avoid defining the edit target by our own patch IDs, an external operator manually selected one contiguous region in each certified patches.ply using Blender, based only on geometry appearance. The selected regions con-tain 1,759/1,805/1,932 vertices for scan24/65/105. Approx-imating each external target by certified patches with at least 
+
+50% overlap yields IoU 0.274/0.525/0.525 and precision/recall 0.619/0.329, 0.678/0.700, and 0.684/0.694. This is not a claim of perfect semantic segmentation; scan24 in particu-lar exposes under-coverage at the patch granularity. How-ever, under a rigid translation of 0.1× the target bounding-box diagonal, certified patch binding moves non-target source Table 4: Collision floater area at 1% bbox tolerance. Lower is better. Coverage is lower for ours, reflecting a deliberate conservative precision–coverage tradeoff.                                          
+
+> Scan Method Float. % ↓Cov. % ↑
+> 24 ours 18.3 37.1 24 2DGS 21.1 69.9 24 SuGaR 78.7 69.8 24 Poisson 98.5 51.5 65 ours 0.9 26.3 65 2DGS 13.7 48.7 65 SuGaR 17.4 46.3 65 Poisson 97.4 49.0 105 ours 1.5 41.0 105 2DGS 11.4 51.8 105 SuGaR 7.7 51.9 105 Poisson 54.1 75.9
+
+mass by only 0.36/0.95/0.66%, with zero residual contami-nation. The nearest-radius baseline moves 22.3/43.9/19.2% non-target source mass and contaminates the residual layer by 24.2/45.4/20.4%. This is the non-circular edit evidence: the target is externally annotated, then approximated by certified patches. It supports conservative binding after patch approxi-mation, not zero-error semantic segmentation. Texture gives a similar protocol lesson. On scan105, noisy SH-DC colors give a seam PSNR of 12.5 dB, while multi-view photometric mean colors raise it to 18.36 dB. In both cases, the baked seam is close to the raw cross-boundary color ceiling, so the remaining seam is mainly a color-source limitation rather than a charting artifact. A single-chart ablation is much worse even at matched texel budget, trailing per-patch charting by 6– 15 dB across scan24/65/105, because one tangent chart cannot parameterize the curved object without projection collapse. 
+
+## 7.6 Collision precision against mesh baselines 
+
+We compare the certified collision candidate to Poisson-from-3DGS, SuGaR native culled meshes, and official 2DGS 30k TSDF meshes under the same DTU GT alignment and collision-vs-GT evaluator. The DTU STL mesh is deterministically mapped to the Gaussian/reconstruction frame by the prepro-cessing scale mat ; no ICP is used. This comparison is adequate for the collision-precision part of the asset claim: 2DGS is evaluated from its official 30k native TSDF meshes, under the same DTU GT alignment, tol-erance, and area-sampling evaluator as the other baselines. The result supports a narrow asset claim: certified open patches reduce false collision surfaces compared with watertight or TSDF-style extraction, but they cover less of the scene. We therefore do not rank the method as universally better than 2DGS, SuGaR, or Poisson; the methods occupy different points on a coverage-versus-precision frontier. Because the 2DGS mesh does not expose certified patch/source binding, it is not used as a structured-editing baseline. For the edit axis, the struc-tural comparison is with watertight Poisson and SuGaR meshes: their largest connected component occupies 97.5–99.5% of tri-angles, so sub-region editing has no natural certified boundary and falls back to proximity selection, which is exactly the leaking baseline above. Our certified output instead exposes 381–402 observation-supported editable patch units across the 5three DTU scenes. 
+
+## 7.7 Simplification robustness and asset behavior 
+
+To test whether the asset survives standard post-processing, we apply the same Open3D cleanup and quadric decimation to ours, 2DGS, SuGaR, and Poisson, targeting about 5k faces. After simplification, our floater percentages remain 18.55/0.81/1.42 on scan24/65/105, compared with 18.87/12.21/10.12 for 2DGS, 78.89/17.16/7.46 for SuGaR, and 98.51/97.36/52.39 for Pois-son. Coverage drops by only 1.0/0.2/0.8 percentage points relative to the original mesh, and all outputs have zero non-manifold edges. This supports robustness of conservative colli-sion precision after a common asset simplification step. It does not claim better triangle quality: 2DGS and Poisson have more regular triangles in some mesh-quality statistics because our output intentionally preserves open patch boundaries. Two end-to-end demonstrations translate the metrics into behavior. In a phantom-collision probe, the fraction of free-space probes blocked by the collision mesh is 0.00–0.10% for ours, 0.05–3.58% for SuGaR, and 2.90–6.50% for Poisson. In a scan105 semantic-part edit, rotating a selected cluster of 30 cer-tified patches moves no non-target source mass under certified binding, whereas proximity binding drags 3,847 neighboring vertices (19.7%). The bundle is also packaged as a GLB with patch-colored certified geometry and a transparent collision proxy node. 
+
+Figure 1: Collision cross-section demonstration on DTU scan24. The row visualizes the GT surface together with candidate collision geometry; hallucinated geometry appears as free-space collision. Across scan24/65/105, the phantom-collision rate is 0.00–0.10% for ours, 0.05–3.58% for SuGaR, and 2.90–6.50% for Poisson. :
+
+Figure 2: Certified edit propagation on scan105. A selected part is transformed through source-preserving certified patch binding, while a proximity selection drags neighboring geometry. Certified binding moves no non-target source mass; the proximity baseline moves 3,847 neighboring vertices, or 19.7% of the source geometry. 67.8 Restricted rendering Fisher diagnostics 
+
+The asset branch also evaluates a restricted-rendering Fisher/Jacobian diagnostic for accepted patches. Under fixed appearance, 165/184 patches in scan24, 146/164 in scan65, and 210/234 in scan105 are classified as locally supported, with 19/17/24 weak patches and one insufficient-view patch in scan65. This certificate is a local RGB sensitivity ranking, not a proof of global RGB-only reconstruction. A GT read-only diagnostic confirms the boundary: scan24 floater patches have lower Fisher median than clean patches, but scan105 floaters can still be marked supported. The diagnostic therefore com-plements collision-vs-GT evaluation; it does not replace it. 
+
+# 8 Discussion 
+
+The experiments separate three levels that are easy to con-flate. Thin covariance is a primitive-level property; without a conserved qi, the collection-level geometry can still drift un-der densification. Compatibility is a field-level property; it rejects tangent and curvature fields that are not locally surface-realizable, but it still permits many wrong yet realizable sur-faces. Identifiability is an observation-level property; depth, RGB-SfM support, or a locally coercive rendering Jacobian is needed to choose the GT surface inside the compatible class. This explains the DTU results. Without an anchor, the loss improves local accuracy but does not reliably improve com-pleteness. Fixed COLMAP support adds a data-coercive signal in the coverage direction, making the same realizability ma-chinery beneficial on the two replication scenes. The resulting 2.97% replication gain validates the decomposition; it is not the paper’s main performance claim. The stronger claim is the asset-layer behavior: keep certified geometry editable and collision-honest, and leave uncertain content as residual splats rather than hallucinating a closed mesh. 
+
+# 9 Limitations 
+
+The current method has several important limitations. First, sparse RGB-only training does not reliably identify the ground-truth surface. Second, local patch charts and compatibility diagnostics do not guarantee global topology. Third, the asset is intentionally conservative: it exposes open certified patches and residual splats rather than producing a watertight mesh, so its coverage is lower than 2DGS, SuGaR, or Poisson in several scenes. Fourth, the current evidence does not justify a state-of-the-art reconstruction claim against full-budget surface-GS baselines. Finally, the exported GLB is an asset backbone, not a production-ready asset: complete UV atlas material baking, renderer round-trip validation, engine-side physics validation, and richer editable semantic units remain future work. We also explicitly do not claim RGB-only superiority over 2DGS, SuGaR, GeoSplatting, or other surface-GS systems; the unanchored DTU evidence argues against that statement. Nor do we claim unconditional convergence to the true surface. The theoretical statements are conditional on sampling, tan-gent, mass, and observation evidence assumptions, while the engineering future work is separate: full renderer round-trip PSNR/SSIM/LPIPS, complete UV-atlas material baking, real-depth multi-seed validation, and full Gauss–Codazzi training. 
+
+# 10 Conclusion 
+
+Manifold-GS treats adaptive Gaussian splats as a conservative discrete geometric measure and uses this view to build certi-fied hybrid assets. Separating geometric mass from opacity makes refinement a transport problem rather than an implicit change of surface area, while the varifold formulation provides a common language for tangent-aware diagnostics and evalua-tor design. The exported asset keeps only observation-certified open patches as editable and collision-relevant geometry, leav-ing uncertain content in residual splats rather than forcing a watertight completion. The experiments support this conservative asset interpre-tation. Across three DTU scenes, certified bindings avoid patch-defined edit leakage, per-patch texture baking preserves round-trip appearance, collision candidates reduce false surface area relative to mesh-extraction baselines, and the behavior survives common simplification. The same results also mark the boundary of the method: certification lowers coverage, and local realizability does not by itself identify the ground-truth surface from sparse RGB evidence. Future progress should therefore focus on stronger observation evidence and full asset-rendering validation, rather than treating compatibility alone as a complete reconstruction objective. 7A Proof Details for the Varifold Bounds 
+
+## A.1 Forward consistency 
+
+Let VM denote the smooth surface varifold 
+
+VM (ϕ) = 
+
+Z
+
+> M
+
+ϕ(x, P (x)) dA (x). (13) For a partition {Ci} of M , insert the cell quadrature term 
+
+eV (ϕ) = X
+
+> i
+
+A(Ci)ϕ(μi, P i). (14) For any ϕ with ∥ϕ∥∞ ≤ 1 and Lipschitz constant at most one, 
+
+|VM (ϕ) − eV (ϕ)| ≤ X
+
+> i
+
+Z
+
+> Ci
+
+|ϕ(x, P (x)) − ϕ(μi, P i)| dA (x)
+
+≤ X
+
+> i
+
+A(Ci)( h + εT ) = A(M )( h + εT ).
+
+(15) The mass error contributes 
+
+| eV (ϕ) − VG(ϕ)| ≤ X
+
+> i
+
+|A(Ci) − qi| | ϕ(μi, P i)| ≤ εq . (16) Combining the two inequalities gives the bound in Sec. 3. The result is a forward consistency statement: it requires controlled sampling, tangent error, and quadrature mass. It is not a recov-ery theorem for arbitrary optimized Gaussian scenes. 
+
+## A.2 Conservative refinement 
+
+For one parent atom (q, μ, P ) and children (qj , μ j , P j ), zero-th mass and first spatial moment are exactly preserved by 
+
+X
+
+> j
+
+qj = q, X
+
+> j
+
+qj μj = qμ. (17) If P 
+
+> j
+
+qj Pj = qP , the tangent projector moment is also pre-served. For a 1-Lipschitz test function over position and pro-jector space, define ∆( ϕ) = | P 
+
+> j
+
+qj ϕ(μj , P j ) − qϕ (μ, P )|.Then 
+
+∆( ϕ) = X
+
+> j
+
+qj
+
+ϕ(μj , P j ) − ϕ(μ, P )
+
+≤ X
+
+> j
+
+qj
+
+ ∥μj − μ∥ + ∥Pj − P ∥F
+
+. (18) Summing over all refined parents gives the global bounded-Lipschitz perturbation bound. The implemented split recenters child offsets and inherits the parent tangent, so the equalities hold deterministically for the inherited tangent model. Merge preserves tangent moment only in the special case of compatible child tangents; otherwise it is a controlled approximation, not an exact conservation operation. Pruning is represented as transporting removed mass to re-tained atoms. Let R be removed atoms and a(i) the retained assignment. The zero-th mass is preserved by adding qi to a(i).The first-moment change is 
+
+∆ X
+
+> i
+
+qiμi = X
+
+> i∈R
+
+qi(μa(i) − μi), (19) hence 
+
+∆ X
+
+> i
+
+qiμi ≤ X
+
+> i∈R
+
+qi∥μi − μa(i)∥. (20) This is the quantity recorded by the prune ledger. 
+
+# B Realizability, Identifiability, and Ker-nel Distance 
+
+Let Z be the class of compatible surface-varifold fields and let 
+
+ΠZ V be any selected projection or approximation of V in Z.The metric decomposition 
+
+dV (V, V ∗) ≤ dV (V, ΠZ V ) + dV (Π Z V, V ∗) (21) is only the triangle inequality, but it is conceptually important. The first term is the part that compatibility diagnostics can reduce. The second term is an observation problem: many com-patible surfaces may explain the same sparse RGB evidence. For equal-mass positive measures, or after normalizing the compared measures to equal total mass, let the Gaussian kernel varifold diagnostic use 
+
+k(( x, P ), (y, Q )) = exp 
+
+
+
+− ∥x − y∥2
+
+2σ2 − ∥P − Q∥2
+
+> F
+
+2τ 2
+
+
+
+.
+
+(22) For any coupling π between the normalized discrete varifold measures μ and ν, the reproducing-kernel distance is bounded by the transport cost 
+
+MMD k(μ, ν ) ≤
+
+Z  ∥x − y∥2
+
+σ2 + ∥P − Q∥2
+
+> F
+
+τ 2
+
+
+
+dπ 
+
+1/2
+
+,
+
+(23) up to the constant convention of the Gaussian kernel. This follows from the feature-map identity 
+
+∥Φ( a) − Φ( b)∥2 
+
+> H
+
+= k(a, a ) + k(b, b ) − 2k(a, b ) (24) and 1 − exp( −t) ≤ t. Thus bounded spatial and tangent trans-port is sufficient to control the implemented varifold evaluator. The converse is not guaranteed: a fixed-bandwidth kernel can smooth out small holes, thin handles, or high-frequency tangent errors. 
+
+# C Observation Coercivity Assumptions 
+
+Reliable visible depth gives a constructive identifiability con-dition. On a fixed visible chart X(u, v ), an H1 depth error controls both position error and first derivatives in the image-induced graph coordinates, and therefore controls tangent pro-jector error on visible regions under bounded camera Jacobian 8and non-grazing-angle assumptions. This is the reason depth or calibrated sparse support can improve both position and tangent diagnostics. RGB-only evidence has no such unconditional guarantee. A local RGB solution is identifiable only if the restricted rendering Jacobian, after quotienting out appearance-only directions and restricting to compatible geometric perturbations, has a strictly positive smallest singular value. Textureless regions, repeated patterns, occlusions, grazing views, and unobserved backsides can make this singular value vanish or become too small to be useful. This is why the paper reports RGB-only failure rather than converting local compatibility into a ground-truth reconstruction claim. 
+
+# References 
+
+[1] Hanzhi Chang, Ruijie Zhu, Wenjie Chang, Mulin Yu, Yanzhe Liang, Jiahao Lu, Zhuoyuan Li, and Tianzhu Zhang. Meshsplat: Generalizable sparse-view surface reconstruction via gaussian splatting. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 40, pages 2716–2724, 2026. [2] Danpeng Chen, Hai Li, Weicai Ye, Yifan Wang, Weijian Xie, Shangjin Zhai, Nan Wang, Haomin Liu, Hujun Bao, and Guofeng Zhang. PGSR: Planar-based gaussian splat-ting for efficient and high-fidelity surface reconstruction. 
+
+arXiv preprint arXiv:2406.06521 , 2024. [3] Hanlin Chen, Fangyin Wei, Chen Li, Tianxin Huang, Yun-song Wang, and Gim Hee Lee. VCR-GauS: View consis-tent depth-normal regularizer for gaussian surface recon-struction. In Advances in Neural Information Processing Systems , 2024. [4] Manfredo P. do Carmo. Differential Geometry of Curves and Surfaces . Prentice-Hall, 1976. [5] Antoine Gu ´edon and Vincent Lepetit. SuGaR: Surface-aligned gaussian splatting for efficient 3d mesh recon-struction and high-quality mesh rendering. In IEEE/CVF Conference on Computer Vision and Pattern Recognition ,2024. [6] Binbin Huang, Zehao Yu, Anpei Chen, Andreas Geiger, and Shenghua Gao. 2d gaussian splatting for geomet-rically accurate radiance fields. In ACM SIGGRAPH Conference Papers , 2024. [7] Bo Jia, Yanan Guo, Ying Chang, Benkui Zhang, Ying Xie, Kangning Du, and Lin Cao. Multi-view normal and distance guidance gaussian splatting for surface recon-struction. arXiv preprint arXiv:2508.07701 , 2025. [8] Bernhard Kerbl, Georgios Kopanas, Thomas Leimk ¨uhler, and George Drettakis. 3d gaussian splatting for real-time radiance field rendering. ACM Transactions on Graphics ,42(4), 2023. [9] G. Lee, S. Hong, and J. Suh. Prior-driven enhancements in 3d gaussian splatting: Normals and depths regulariza-tion. International Archives of the Photogrammetry, Re-mote Sensing and Spatial Information Sciences , XLVIII-G-2025:891–897, 2025. [10] Lukas Radl, Felix Windisch, Thomas Deixelberger, Jozef Hladky, Michael Steiner, Dieter Schmalstieg, and Markus Steinberger. Sorted opacity fields for fast unbounded sur-face reconstruction. In ACM SIGGRAPH Asia Conference Papers , 2025. [11] Leon Simon. Lectures on Geometric Measure Theory .Australian National University, 1983. [12] Lu Wang, Juncheng Zhang, Xiyao Liu, Fuqiang Zhao, Yanshun Zhang, Yingliang Zhang, Minye Wu, Lan Yu, and Lan Xu. Octree-gs: Towards consistent real-time rendering with lod-structured 3d gaussians. arXiv preprint arXiv:2403.17898 , 2024. [13] Baixin Xu, Jiangbei Hu, Jiaze Li, and Ying He. GSurf: Learning signed distance fields from splatting opaque gaussians for high-quality 3d reconstruction. Computer-Aided Design , page 104106, 2026. [14] Kai Ye, Chong Gao, Guanbin Li, Wenzheng Chen, and Baoquan Chen. Geosplatting: Towards geometry guided gaussian splatting for physically-based inverse rendering. In Proceedings of the IEEE/CVF International Confer-ence on Computer Vision , pages 28991–29000, 2025. [15] Zehao Yu, Anpei Chen, Binbin Huang, Torsten Sattler, and Andreas Geiger. Mip-splatting: Alias-free 3d gaus-sian splatting. arXiv preprint arXiv:2311.16493 , 2024. [16] Zehao Yu, Torsten Sattler, and Andreas Geiger. Gaus-sian opacity fields: Efficient and compact surface re-construction in unbounded scenes. arXiv preprint arXiv:2404.10772 , 2024. 9
