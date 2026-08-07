@@ -1,0 +1,327 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-07T00:49:59.217197+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2608.01659v2",
+      "source": "arxiv",
+      "title": "StreamSplat: Streaming Feed-Forward 3D Gaussian Splatting",
+      "abstract": "Feed-forward 3D Gaussian Splatting enables efficient novel-view synthesis without per-scene optimization, but most existing methods assume a fixed set of context views and process them jointly. This limits their applicability to online scenarios where calibrated views arrive sequentially and the scene must be updated causally. We present \\emph{StreamSplat}, a streaming feed-forward 3DGS framework that incrementally maintains a persistent geometry-grounded scene state and decodes it into renderable 3D Gaussians after each input chunk. StreamSplat centers on a \\textbf{Voxel-Aligned Causal Cache (VACC)}, which stores historical 3D tokens in a memory-bounded voxel structure so that memory grows with explored scene geometry rather than stream length. To better reuse history during causal prediction, we introduce \\textbf{History-Projected Depth Anchoring (HPDA)} to project cached geometry as depth guidance for current cost-volume estimation, and \\textbf{Cache-Guided Feature Injection (CGFI)} to inject cached latent evidence into Gaussian-token regression. Experiments on DL3DV, RealEstate10K, and ScanNet show that StreamSplat remains competitive with state-of-the-art feed-forward 3DGS methods under sparse causal inputs, despite not using future views or full-scene context. More importantly, it scales to long input streams with 256, 512, and 1024 views where fixed-view baselines run out of memory, yielding sustained improvements in novel-view synthesis quality as more observations arrive. The code will be made publicly available upon acceptance.",
+      "authors": [
+        "Changhao Song",
+        "Yuxuan Wang",
+        "Qibiao Li",
+        "Youcheng Cai",
+        "Ligang Liu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-03T03:48:20+00:00",
+      "link": "https://arxiv.org/pdf/2608.01659v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "streaming feed-forward 3D Gaussian splatting for multi-view scene reconstruction",
+      "llm_evidence_cn": "流式前馈3D高斯泼溅进行多视角场景重建",
+      "llm_evidence": "流式前馈3D高斯泼溅进行多视角场景重建",
+      "canonical_evidence": "流式前馈3D高斯泼溅进行多视角场景重建",
+      "llm_tldr_en": "StreamSplat is a streaming feed-forward 3DGS framework that incrementally reconstructs a scene from sequential calibrated views, using a voxel-aligned causal cache to maintain a persistent geometry state.",
+      "llm_tldr_cn": "为解决传统前馈3DGS仅支持固定视角集合的局限，StreamSplat提出一种流式框架，可增量处理序列化的校准图像并维持持久的三维场景状态。其核心是体素对齐因果缓存，能按需存储历史三维标记，实现内存随场景几何增长而非随流长度增长，从而实现高效的在线新视角合成。",
+      "llm_tldr": "为解决传统前馈3DGS仅支持固定视角集合的局限，StreamSplat提出一种流式框架，可增量处理序列化的校准图像并维持持久的三维场景状态。其核心是体素对齐因果缓存，能按需存储历史三维标记，实现内存随场景几何增长而非随流长度增长，从而实现高效的在线新视角合成。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.04701v1",
+      "source": "arxiv",
+      "title": "UniWorld-View: Large-Baseline View Synthesis via Video Diffusion Models",
+      "abstract": "The abundance of casually captured monocular videos and images on social media provides a valuable source for immersive content creation, where generating novel views from such sparse observations can greatly enhance user experiences. However, producing photorealistic and geometrically consistent views with precise camera control remains challenging when input coverage is extremely limited. Reconstruction-based approaches such as NeRF and 3D Gaussian Splatting (3DGS) deteriorate severely under sparse inputs and fail to explicitly handle occlusions. Generative methods ease data requirements but still struggle with large-baseline view synthesis due to inaccurate or implicit geometric guidance. To overcome these limitations, we introduce UniWorld-View, a unified framework for controllable large-baseline novel view synthesis from monocular inputs. UniWorld-View integrates explicit 3D guidance with generative diffusion modeling to enable precise camera control and geometrically consistent view generation. The geometric guidance is obtained through an occlusion-aware point cloud rendering strategy that resolves visibility ambiguities and provides accurate priors for diffusion-based synthesis. By coupling this rendering strategy with powerful video diffusion backbones, UniWorld-View achieves high-fidelity novel view generation even under extreme camera motions and wide-baseline changes, and can further provide multi-view videos for downstream dynamic 3DGS reconstruction. Experiments on the WorldScore benchmark and zero-shot NVS benchmarks demonstrate the effectiveness of UniWorld-View in controllability, geometric consistency, and visual fidelity.",
+      "authors": [
+        "Haiyang Zhou",
+        "Wangbo Yu",
+        "Chaoran Feng",
+        "Xunyu Zhou",
+        "Yonghong Tian",
+        "Li Yuan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-05T11:10:52+00:00",
+      "link": "https://arxiv.org/pdf/2608.04701v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "large-baseline novel view synthesis from sparse casual images, generating 3D scenes",
+      "llm_evidence_cn": "从稀疏随意拍摄图像进行大基线新视角合成，生成3D场景",
+      "llm_evidence": "从稀疏随意拍摄图像进行大基线新视角合成，生成3D场景",
+      "canonical_evidence": "从稀疏随意拍摄图像进行大基线新视角合成，生成3D场景",
+      "llm_tldr_en": "UniWorld-View leverages video diffusion models to synthesize novel views from casually captured monocular videos, enabling photorealistic and geometrically consistent large-baseline view synthesis for immersive content creation.",
+      "llm_tldr_cn": "现有方法在稀疏输入下进行大基线视角合成时难以实现几何一致性。UniWorld-View利用视频扩散模型从单目视频中生成新视角，通过结合相机控制实现逼真且几何一致的渲染，解决了稀疏观测下的遮挡和几何不准确问题，为社交媒体内容创建提供了新途径。",
+      "llm_tldr": "现有方法在稀疏输入下进行大基线视角合成时难以实现几何一致性。UniWorld-View利用视频扩散模型从单目视频中生成新视角，通过结合相机控制实现逼真且几何一致的渲染，解决了稀疏观测下的遮挡和几何不准确问题，为社交媒体内容创建提供了新途径。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D scenes from image collections",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.04560v1",
+      "source": "arxiv",
+      "title": "OutLangSplat: 3D Language Gaussian Splatting for UAV Outdoor Scenes",
+      "abstract": "3D Language Gaussian Splatting embeds open-vocabulary language features into 3D Gaussian Splatting, providing an efficient explicit representation for text-driven 3D scene understanding. However, existing methods are limited to indoor or small-scale scenes, and tend to fail in Unmanned Aerial Vehicle (UAV) outdoor scenes, where severe occlusions and long distance viewpoints often lead to incorrect semantic activations and missing target responses. In this paper, we present OutLangSplat which adapts language Gaussian representations to UAV outdoor scenes by improving feature representation and aggregation reliability. For the feature representation, a 2D-3D dual-branch representation with region-based alignment and fusion is designed to improve spatial consistency, reducing incomplete target responses and background misactivations. For the feature aggregation, we introduce a training-free contribution and consistency-aware Gaussian feature aggregation strategy that leverages pixel contribution reliability and cross-view semantic consistency to suppress unreliable responses from noisy viewpoints. A new dataset is provided by manually annotating various objects on four real-world public UAV outdoor scene datasets. To the best of our knowledge, it is the first accessible dataset of open-vocabulary 3D scene understanding for UAV outdoor scenes. Quantitative evaluations and ablation studies demonstrate that OutLangSplat outperforms SOTA methods on both open-vocabulary semantic segmentation and instance localization tasks. The datasets and codes will be open-sourced.",
+      "authors": [
+        "Xia Yan",
+        "He Wu",
+        "Yanghui Xu",
+        "Zizhao Wu",
+        "Jiazhou Chen"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR"
+      ],
+      "published": "2026-08-05T07:54:22+00:00",
+      "link": "https://arxiv.org/pdf/2608.04560v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "language-embedded 3D Gaussians for open-vocabulary 3D scene understanding and semantic segmentation",
+      "llm_evidence_cn": "嵌入语言特征的3D高斯用于开放词汇3D场景理解与语义分割",
+      "llm_evidence": "嵌入语言特征的3D高斯用于开放词汇3D场景理解与语义分割",
+      "canonical_evidence": "嵌入语言特征的3D高斯用于开放词汇3D场景理解与语义分割",
+      "llm_tldr_en": "OutLangSplat adapts 3D language Gaussian Splatting to UAV outdoor scenes by improving feature representation and aggregation, enabling reliable open-vocabulary 3D scene understanding.",
+      "llm_tldr_cn": "针对现有3D语言高斯溅射在无人机户外场景中因遮挡和远距离视点导致的语义激活错误问题，OutLangSplat提出2D-3D双分支表征与区域对齐融合，增强了空间一致性，实现了户外大场景中可靠的文本驱动3D场景理解和分割。",
+      "llm_tldr": "针对现有3D语言高斯溅射在无人机户外场景中因遮挡和远距离视点导致的语义激活错误问题，OutLangSplat提出2D-3D双分支表征与区域对齐融合，增强了空间一致性，实现了户外大场景中可靠的文本驱动3D场景理解和分割。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.05066v1",
+      "source": "arxiv",
+      "title": "Beyond Reprojection Error: Camera Calibration with 3D Targets",
+      "abstract": "In 3D reconstruction, camera calibration is an essential element for achieving high fidelity and accuracy of the reconstructed geometry. While existing approaches rely upon 2D planar calibration, this work proposes a framework tailored for 3D reconstruction that is based on predicting scene rays, which adds flexibility to the reconstruction pipeline and enables the use of recent advances in camera models. Novel metrics, reconstruction and intersection error, derived from predicted scene rays are employed in combination with a bootstrapping procedure that statistically evaluates different calibration objects and calibration pipelines for both intrinsic and extrinsic camera parameters. The results show that the generalized distortion model more faithfully captures physical camera effects and yields an improvement in calibration accuracy. Reprojection error is shown to be a potentially misleading indicator of 3D accuracy, and the proposed ray-based metrics provide a more holistic assessment. An icosahedron calibration target is designed to enrich calibration information for 3D reconstruction together with a ring-feature-based detector. The icosahedral target yields approximately 40% lower mean intersection and more stable calibration across bootstrap trials on synthetic data, while real-data performance demands very tight fabrication tolerances.",
+      "authors": [
+        "Dennis Ruppel",
+        "Hasan Kutlu",
+        "Kai A. Neumann",
+        "Martin Knuth",
+        "Pedro Santos",
+        "Andreas Weinmann",
+        "Arjan Kuijper"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-05T17:12:21+00:00",
+      "link": "https://arxiv.org/pdf/2608.05066v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "camera calibration framework tailored for 3D reconstruction, using scene ray prediction",
+      "llm_evidence_cn": "专为三维重建设计的相机标定框架，基于场景光线预测",
+      "llm_evidence": "专为三维重建设计的相机标定框架，基于场景光线预测",
+      "canonical_evidence": "专为三维重建设计的相机标定框架，基于场景光线预测",
+      "llm_tldr_en": "Proposes a camera calibration framework for 3D reconstruction that predicts scene rays and uses novel metrics (reconstruction error, intersection error) to evaluate and improve calibration accuracy.",
+      "llm_tldr_cn": "针对三维重建中的相机标定，提出基于场景光线预测的框架，引入重建误差和相交误差等新指标，结合自举法统计评估不同标定物体与流程，证明广义畸变模型能更忠实地捕捉镜头特性。",
+      "llm_tldr": "针对三维重建中的相机标定，提出基于场景光线预测的框架，引入重建误差和相交误差等新指标，结合自举法统计评估不同标定物体与流程，证明广义畸变模型能更忠实地捕捉镜头特性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "multi-view stereo 3D reconstruction",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.05137v1",
+      "source": "arxiv",
+      "title": "SmartMage: Dynamic Modality Orchestration for 3D Scene Understanding",
+      "abstract": "Understanding 3D scenes is fundamental to embodied intelligence, requiring joint reasoning over heterogeneous information from multiple modalities, including visual and geometric cues. However, the relevance of these modalities often varies across queries. Existing Multimodal Large Language Models (MLLMs) typically rely on fixed modality combinations, overlooking query-dependent modality needs. Such a rigid design can introduce semantic noise from irrelevant modalities while underutilizing more informative ones, leading to wasted computation and diluted reasoning. To address these challenges, this paper proposes SmartMage, a unified MLLM that dynamically orchestrates heterogeneous modalities for semantic-aware 3D scene understanding. Specifically, SmartMage incorporates: (1) a Semantic-guided Modality Adaptive RouTng (SMART) module that selects task-relevant modalities using semantic priors, text-modality alignment, and modality quality; and (2) a Modality-Aware Gating Expert (MAGE) module that leverages modality priors to guide expert activation, fostering adaptive specialization in multimodal reasoning. Empirically, SmartMage achieves state-of-the-art performance across five 3D scene understanding benchmarks, and attains competitive results on RGB-only video understanding benchmarks. In our diagnostic benchmark ScanFacet, tasks are divided into fine-grained semantic categories, enabling analysis of modality combinations preferred by each semantic type. The observed modality-semantic patterns provide further evidence of SmartMage's effectiveness. Project page: https://yuecheong.github.io/SmartMage/.",
+      "authors": [
+        "Yue Zhang",
+        "Yingzhao Jian",
+        "Yunqiu Xu",
+        "Xiaoxiao Sun",
+        "Hehe Fan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-05T17:56:35+00:00",
+      "link": "https://arxiv.org/pdf/2608.05137v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "dynamic modality orchestration for semantic-aware 3D scene understanding",
+      "llm_evidence_cn": "动态模态编排以实现语义感知的3D场景理解",
+      "llm_evidence": "动态模态编排以实现语义感知的3D场景理解",
+      "canonical_evidence": "动态模态编排以实现语义感知的3D场景理解",
+      "llm_tldr_en": "SmartMage proposes a unified MLLM that dynamically selects modalities per query for semantic-aware 3D scene understanding, reducing noise and computation.",
+      "llm_tldr_cn": "针对现有MLLM在3D场景理解中固定模态组合不能适应查询需求而产生噪声和计算浪费的问题，SmartMage通过动态编排异构模态实现语义感知的推理，提升了3D场景语义理解的效率和准确性。",
+      "llm_tldr": "针对现有MLLM在3D场景理解中固定模态组合不能适应查询需求而产生噪声和计算浪费的问题，SmartMage通过动态编排异构模态实现语义感知的推理，提升了3D场景语义理解的效率和准确性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.04610v1",
+      "source": "arxiv",
+      "title": "HiSC: Hierarchical Spatial Clustering Token Compression for Efficient 3D Scene Understanding",
+      "abstract": "3D vision-language models (3D VLMs) enable spatial reasoning over multi-view scenes but suffer from substantial token redundancy due to duplicated observations and large uninformative regions, leading to high computational cost. Although visual token compression has shown promise in accelerating 2D VLMs, it fails to capture the structured nature of 3D scenes and leads to incomplete spatial coverage and loss of fine-grained details. In this paper, we propose \\textbf{HiSC}, a training-free framework for hierarchical spatial clustering token compression in 3D VLMs. HiSC lifts token compression from token-level selection to cluster-level processing by organizing tokens into spatially grounded clusters using joint geometric and semantic cues. Specifically, we first introduce a \\textbf{spatial graph-based merging (SGraM) strategy} that models cross-view redundancy as spatial connectivity and consolidates physically consistent regions, effectively merging extremely similar redundant tokens prior to LLM inference. We then propose a \\textbf{spatial clustering-based pruning (SCluP) paradigm} within LLM inference, which performs hierarchical compression across clusters and within clusters, preserving object instance completeness while retaining fine-grained details for important regions. Extensive experiments on diverse 3D reasoning benchmarks show validate the effectiveness of HiSC, particularly under high visual token pruning ratios. Besides, HiSC achieves over 90\\% token reduction with minimal performance degradation. Code is accessible at https://github.com/elecreak/HiSC.",
+      "authors": [
+        "Jiuhe Qu",
+        "Yingping Liang",
+        "Ying Fu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-05T09:15:43+00:00",
+      "link": "https://arxiv.org/pdf/2608.04610v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "efficient 3D scene understanding via hierarchical spatial clustering token compression for multi-view VLMs",
+      "llm_evidence_cn": "通过层次化空间聚类令牌压缩实现高效多视角3D场景理解",
+      "llm_evidence": "通过层次化空间聚类令牌压缩实现高效多视角3D场景理解",
+      "canonical_evidence": "通过层次化空间聚类令牌压缩实现高效多视角3D场景理解",
+      "llm_tldr_en": "HiSC compresses redundant tokens in 3D VLMs by clustering them spatially, enabling efficient 3D scene understanding over multi-view scenes without retraining.",
+      "llm_tldr_cn": "针对3D VLM在多视角场景理解中存在的令牌冗余问题，HiSC提出无需训练的层次化空间聚类令牌压缩框架。它根据几何和语义信息将令牌组织为空间聚类，以聚类级处理替代令牌级选择，在保持精细细节的同时大幅降低计算成本，显著提升了三维场景理解的效率。",
+      "llm_tldr": "针对3D VLM在多视角场景理解中存在的令牌冗余问题，HiSC提出无需训练的层次化空间聚类令牌压缩框架。它根据几何和语义信息将令牌组织为空间聚类，以聚类级处理替代令牌级选择，在保持精细细节的同时大幅降低计算成本，显著提升了三维场景理解的效率。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "feature matching and 3D scene understanding from large scale image collections",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.01492v1",
+      "source": "arxiv",
+      "title": "GaussianSelector: Lightweight Human-Guided Object Selection in 3D Gaussian Splatting with Graph Optimization",
+      "abstract": "Selecting a complete 3D object from a reconstructed scene with minimal user effort is essential for practical scene editing and embodied interaction. Existing 3DGS-based methods either retrain the Gaussian representation to embed per-object labels, or build dense multi-view SAM observations, both requiring heavy computation and dense viewpoint coverage that is rarely available in practice. We present GaussianSelector, a training-free framework for interactive 3D object selection from sparse views and sparse scribble guidance. Operating directly on native Gaussian primitives, we coarsen dense Gaussians into geometrically coherent superpoints and construct a continuity-weighted graph using appearance and spatial cues. Sparse user scribbles are lifted into 3D via visibility-aware transmittance coverage, and selection is solved as a global graph-cut energy minimization that propagates sparse evidence to a complete 3D object. This design naturally supports multi-round refinement, where users iteratively correct the selection from additional viewpoints to progressively improve the result. Experiments demonstrate that GaussianSelector achieves competitive selection quality against state-of-the-art multi-view SAM-based methods, while requiring significantly fewer interaction views and substantially lower computational overhead. These properties make it well suited for human-in-the-loop 3D scene editing and 3D asset extraction in real-world deployment scenarios.",
+      "authors": [
+        "Baihan Yang",
+        "Tiexin Li",
+        "Yuheng Liu",
+        "Xin Lin",
+        "Xinke Li",
+        "Xiaohui Xie",
+        "Truong Nguyen"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-02T20:51:09+00:00",
+      "link": "https://arxiv.org/pdf/2608.01492v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "interactive 3D object selection in 3DGS scenes using graph-based superpoint propagation, enabling segmentation from sparse views.",
+      "llm_evidence_cn": "基于图传播的交互式3D物体选择，从稀疏视图实现三维高斯场景分割",
+      "llm_evidence": "基于图传播的交互式3D物体选择，从稀疏视图实现三维高斯场景分割",
+      "canonical_evidence": "基于图传播的交互式3D物体选择，从稀疏视图实现三维高斯场景分割",
+      "llm_tldr_en": "GaussianSelector enables training-free 3D object selection in Gaussian Splatting scenes from sparse views and scribbles by coarsening Gaussians into superpoints and optimizing a continuity-weighted graph.",
+      "llm_tldr_cn": "GaussianSelector提出了一种无需训练的框架，从稀疏视图和简单涂鸦中交互式选择3D高斯泼溅场景中的完整物体。它将密集高斯粗化为几何一致的超点，并构建基于外观和空间线索的连续性加权图进行优化传播，大幅降低了计算量和视角需求。",
+      "llm_tldr": "GaussianSelector提出了一种无需训练的框架，从稀疏视图和简单涂鸦中交互式选择3D高斯泼溅场景中的完整物体。它将密集高斯粗化为几何一致的超点，并构建基于外观和空间线索的连续性加权图进行优化传播，大幅降低了计算量和视角需求。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.02598v1",
+      "source": "arxiv",
+      "title": "VR3D: View-Robust 3D Representation Learning for Aerial-Ground Person Re-Identification",
+      "abstract": "Aerial-ground person re-identification is a challenging task due to cross-platform viewpoint variations, which cause severe occlusion and geometric deformation. Existing methods attempt to learn view-invariant representations exclusively within the 2D image space, where drastic viewpoint variations cause the learned features to remain coupled with viewpoint bias. To address this, we propose VR3D, a View-Robust 3D Representation Learning framework that maps images into a unified 3D coordinate space to achieve view-independent feature interaction. Specifically, we introduce View-Robust 3D Representation Interaction, which leverages 3D priors extracted from single 2D observations to lift 2D appearance features into a canonical 3D space. VR3I employs 3D Geometry-Semantic Attention to establish interactions between 2D patches and 3D voxels from corresponding body parts based on their 3D spatial locations, effectively grounding 2D semantics within a 3D framework. In addition, as the reliability of these representations varies across samples due to viewpoint changes and 3D reconstruction errors, we introduce Reliability-Aware Fusion, which estimates sample-specific reliability and adaptively aggregates the multi-source representations. Extensive experiments on three benchmark datasets (CARGO, AG-ReID.v1, and AG-ReID.v2) demonstrate that VR3D outperforms recent methods. For example, it achieves a 5.63% improvement in Rank-1 on CARGO. Our code will be released.",
+      "authors": [
+        "Chao Ji",
+        "Shiyu Xuan",
+        "Zechao Li"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-03T17:59:01+00:00",
+      "link": "https://arxiv.org/pdf/2608.02598v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "mapping 2D images into a unified 3D coordinate space for view-independent feature interaction",
+      "llm_evidence_cn": "将二维图像映射到统一三维坐标空间以实现视角无关特征交互",
+      "llm_evidence": "将二维图像映射到统一三维坐标空间以实现视角无关特征交互",
+      "canonical_evidence": "将二维图像映射到统一三维坐标空间以实现视角无关特征交互",
+      "llm_tldr_en": "Introduces VR3D, a framework that lifts 2D features to a canonical 3D space using 3D priors for aerial-ground person re-identification, achieving view-robust representations.",
+      "llm_tldr_cn": "空地行人重识别中视角变化剧烈，VR3D利用单图三维先验将外观特征提升到规范三维空间，通过视角鲁棒的三维表征交互实现视角无关匹配，在多个数据集上取得先进性能。",
+      "llm_tldr": "空地行人重识别中视角变化剧烈，VR3D利用单图三维先验将外观特征提升到规范三维空间，通过视角鲁棒的三维表征交互实现视角无关匹配，在多个数据集上取得先进性能。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
