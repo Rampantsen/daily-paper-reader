@@ -1,0 +1,69 @@
+{
+  "label": "2026-08-08",
+  "date": "2026-08-08",
+  "generated_at": "2026-08-08T20:22:58",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202608/08/2608.05248v1-worldclaw-agentic-3d-open-world-generation-at-scale",
+      "section": "deep",
+      "title_en": "WorldClaw: Agentic 3D Open-World Generation at Scale",
+      "authors": "Chunchao Guo, Jinpeng Li, Yang Li, Zilong Huang",
+      "date": "2026-08-05",
+      "pdf": "https://arxiv.org/pdf/2608.05248v1",
+      "score": "9.0",
+      "evidence": "智能体框架从文本生成大规模3D世界",
+      "tldr": "从开放式文本生成大规模、可自由探索的3D世界面临全局连贯性与可编辑资产的挑战。WorldClaw是一个全代理驱动的粗到细框架，通过规划代理将文本转化为结构化场景规范，分步构建全局连贯地形与细节丰富的可编辑网格资产。在多样开放世界提示下，该方法生成空间组织一致、视觉逼真且资产可实例化编辑的大规模场景。此项工作首次将代理规划与程序化生成结合，为可重用、可扩展的3D开放世界创建提供了新范式。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Generating large-scale, freely explorable 3D worlds from open-ended text remains challenging because a system must jointly maintain global spatial coherence, rich local content, and explicit assets suitable for downstream editing and reuse. We present WorldClaw, a fully agentic, coarse-to-fine framework for open-world 3D scene generation. Planning agents translate a text prompt into a structured specification of regions, terrain, assets, materials, and spatial relations. WorldClaw then builds a globally coherent terrain foundation from semantic layouts, reusable assets, generative or procedural materials, and a region-aware height field. For detail-demanding regions, it generates terrain-conditioned compositions, reconstructs editable textured meshes, and recovers their placement on the terrain; render-based agents further refine terrain, objects, appearance, and contacts. Across diverse open-world prompts, WorldClaw produces large-scale scenes with coherent spatial organization, visually compelling local content, and editable instance-level assets while preserving a consistent global terrain structure.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/08/2608.01905v2-photohoi-synthesizing-3d-hand-object-interactions-from-a-single-rgb-photograph",
+      "section": "quick",
+      "title_en": "PhotoHOI: Synthesizing 3D Hand-Object Interactions from a Single RGB Photograph",
+      "authors": "Zhenhao Zhang, Jiajun Zhang, Wei Min, Yebin Liu",
+      "date": "2026-08-03",
+      "pdf": "https://arxiv.org/pdf/2608.01905v2",
+      "score": "7.0",
+      "evidence": "从单张图像和文本指令生成三维手物交互",
+      "tldr": "从单张RGB照片和开放词汇指令生成3D手物交互序列是实用难题。PhotoHOI先通过视觉语言模型解析指令并恢复场景，再规划物体轨迹并合成手部运动，后者利用大规模交互先验与隐空间抓取精化。在基准测试中接触质量提升、穿透下降，真实照片上任务成功率与场景一致性更高，并能泛化至新物体和指令。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Hand-object interaction (HOI) is a fundamental human behavior with broad applications in AR/VR, digital humans, and embodied interaction. Existing methods typically require predefined object geometry, object trajectories, or task-specific conditions, limiting their use with natural real-world inputs. To address this, we study a more practical problem of synthesizing 3D hand-object interaction sequences from a single RGB photograph and an open-vocabulary language instruction, and introduce PhotoHOI. PhotoHOI first uses a vision-language model to parse the input image and instruction into a structured task specification, including the interaction object, target region, and spatial relation. It then recovers a compact task-relevant 3D scene and plans a smooth collision-aware object trajectory based on the recovered object states, support relations, and surrounding scene geometry. To synthesize hand motion that generalizes to real-world photographs and unseen objects, it learns transferable task-conditioned contact and contact-conditioned grasp priors from large-scale affordance and HOI data. The grasp is further refined in a learned latent space, constraining the optimization to a plausible hand-pose manifold. Experiments on GRAB and H2O demonstrate improved contact quality and reduced penetration over representative baselines. Results on real-world photographs further demonstrate higher task success and scene consistency, together with generalization to unseen objects and open-vocabulary instructions.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/08/2608.05569v1-coordrefer-coordinate-aware-3d-visual-grounding-from-multiview-images",
+      "section": "quick",
+      "title_en": "CoordRefer: Coordinate-Aware 3D Visual Grounding from Multiview Images",
+      "authors": "Haijie Li, Jiaxin Zhang, Dave Zhenyu Chen, Youyu Chen, Yanmin Wu, Jian Zhang",
+      "date": "2026-08-06",
+      "pdf": "https://arxiv.org/pdf/2608.05569v1",
+      "score": "7.0",
+      "evidence": "从多视图图像进行坐标感知的3D视觉定位.",
+      "tldr": "多视图3D视觉定位中，联合优化坐标系选择和框回归易导致坐标模糊：同一框在不同坐标系下有多重数值表示，造成多目标冲突与无效折中预测。CoordRefer提出解耦框架，先选择参考坐标系，再基于该坐标系预测3D框，通过坐标感知微调与基于3D IoU的组相对策略优化对齐两阶段。在ScanRefer上，Acc@0.25和Acc@0.5分别提升11%和7%，其几何精炼变体超越显式3D输入方法。该工作为坐标条件定位提供了新范式。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Multiview image-based 3D visual grounding predicts a coordinate frame to define a coordinate system and then regresses a 3D bounding box for localization. However, existing methods jointly optimize coordinate frame selection and box regression, leading to coordinate-relative box ambiguity and degraded grounding performance. This ambiguity arises because the same box admits different numerical representations across coordinate frames, creating multiple optimization targets and yielding invalid compromise predictions. To tackle this challenge, we propose CoordRefer, a coordinate-aware framework that decouples coordinate frame selection from coordinate-conditioned grounding. CoordRefer first selects a reference frame to define the coordinate system and then conditions 3D box prediction on the coordinate system. We perform coordinate-aware supervised fine-tuning to establish coordinate frame selection and coordinate-conditioned box regression, followed by Group Relative Policy Optimization with 3D IoU-based rewards to align both stages with downstream grounding quality. On ScanRefer with Qwen3-VL-2B, CoordRefer achieves gains of 11% in Acc@0.25 and 7% in Acc@0.5 over the coordinate-agnostic baseline, while its geometrically refined variant surpasses methods using explicit 3D inputs.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/08/2608.04560v1-outlangsplat-3d-language-gaussian-splatting-for-uav-outdoor-scenes",
+      "section": "quick",
+      "title_en": "OutLangSplat: 3D Language Gaussian Splatting for UAV Outdoor Scenes",
+      "authors": "Xia Yan, He Wu, Yanghui Xu, Zizhao Wu, Jiazhou Chen",
+      "date": "2026-08-05",
+      "pdf": "https://arxiv.org/pdf/2608.04560v1",
+      "score": "6.0",
+      "evidence": "3D语言高斯泼溅用于无人机室外场景的文本驱动3D场景理解，解决语义激活问题，可用于3D语义分割。",
+      "tldr": "针对现有3D语言高斯泼溅难以应对无人机室外场景中严重遮挡和远距离视角导致的语义激活错误问题，OutLangSplat设计了双分支特征表示与基于区域对齐融合，以及无训练的贡献感知聚合策略，提升语义一致性。在新建的UAV室外数据集上，该方法在开放词汇语义分割与实例定位任务中均优于现有SOTA，为无人机场景理解提供了首个开源基准。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "3D Language Gaussian Splatting embeds open-vocabulary language features into 3D Gaussian Splatting, providing an efficient explicit representation for text-driven 3D scene understanding. However, existing methods are limited to indoor or small-scale scenes, and tend to fail in Unmanned Aerial Vehicle (UAV) outdoor scenes, where severe occlusions and long distance viewpoints often lead to incorrect semantic activations and missing target responses. In this paper, we present OutLangSplat which adapts language Gaussian representations to UAV outdoor scenes by improving feature representation and aggregation reliability. For the feature representation, a 2D-3D dual-branch representation with region-based alignment and fusion is designed to improve spatial consistency, reducing incomplete target responses and background misactivations. For the feature aggregation, we introduce a training-free contribution and consistency-aware Gaussian feature aggregation strategy that leverages pixel contribution reliability and cross-view semantic consistency to suppress unreliable responses from noisy viewpoints. A new dataset is provided by manually annotating various objects on four real-world public UAV outdoor scene datasets. To the best of our knowledge, it is the first accessible dataset of open-vocabulary 3D scene understanding for UAV outdoor scenes. Quantitative evaluations and ablation studies demonstrate that OutLangSplat outperforms SOTA methods on both open-vocabulary semantic segmentation and instance localization tasks. The datasets and codes will be open-sourced.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
