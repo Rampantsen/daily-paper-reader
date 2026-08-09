@@ -6,34 +6,28 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-08
-- 运行时间：2026-08-08 20:22:48 UTC
+- 最新运行日期：2026-08-09
+- 运行时间：2026-08-09 20:47:00 UTC
 - 运行状态：成功
-- 本次总论文数：4
+- 本次总论文数：2
 - 精读区：1
-- 速读区：3
+- 速读区：1
 
 ### 今日简报（AI）
-今日精读《WorldClaw》探索智能体驱动的大规模3D开放世界生成，同时速览了手物交互合成、坐标感知3D定位与户外语言高斯泼溅三项前沿工作。
-最值得关注的是《WorldClaw》让AI像导演一样自主搭建可交互的3D场景，一举突破规模化瓶颈。
-建议从文中智能体的任务分解与工具使用机制入手，思考该思路能否复用到你关心的其他生成任务上。
-- 详情：[/202608/08/README](/202608/08/README)
+今日精读了一篇RGB-D SLAM新工作，速览了一项零样本3D视觉定位研究。  
+CHOW-SLAM的互补重叠窗口优化可兼顾地图紧凑性与精度，值得关注。  
+建议读者优先测试其开源的轻量混合表征，再对比TDVR的文本消歧思路看是否互补。
+- 详情：[/202608/09/README](/202608/09/README)
 
 ### 精读区论文标签
-1. [WorldClaw: Agentic 3D Open-World Generation at Scale](/202608/08/2608.05248v1-worldclaw-agentic-3d-open-world-generation-at-scale)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：智能体框架从文本生成大规模3D世界
+1. [CHOW-SLAM: Compact Hybrid Representation with Complementary Overlap Window Optimization for RGB-D SLAM](/202608/09/2608.01914v1-chow-slam-compact-hybrid-representation-with-complementary-overlap-window-optimization-for-rgb-d-slam)  
+   标签：评分：8.0/10、query:d-gen-recon
+   evidence：利用多视角 RGB-D 图像和深度进行稠密三维场景重建的 SLAM 框架。
 
 ### 速读区论文标签
-1. [PhotoHOI: Synthesizing 3D Hand-Object Interactions from a Single RGB Photograph](/202608/08/2608.01905v2-photohoi-synthesizing-3d-hand-object-interactions-from-a-single-rgb-photograph)  
-   标签：评分：7.0/10、query:d-gen-recon
-   evidence：从单张图像和文本指令生成三维手物交互
-2. [CoordRefer: Coordinate-Aware 3D Visual Grounding from Multiview Images](/202608/08/2608.05569v1-coordrefer-coordinate-aware-3d-visual-grounding-from-multiview-images)  
-   标签：评分：7.0/10、query:d-gen-recon
-   evidence：从多视图图像进行坐标感知的3D视觉定位.
-3. [OutLangSplat: 3D Language Gaussian Splatting for UAV Outdoor Scenes](/202608/08/2608.04560v1-outlangsplat-3d-language-gaussian-splatting-for-uav-outdoor-scenes)  
+1. [TDVR: Joint Text Disambiguation and Viewpoint Reasoning for Zero-Shot 3D Visual Grounding](/202608/09/2608.03763v1-tdvr-joint-text-disambiguation-and-viewpoint-reasoning-for-zero-shot-3d-visual-grounding)  
    标签：评分：6.0/10、query:d-gen-recon
-   evidence：3D语言高斯泼溅用于无人机室外场景的文本驱动3D场景理解，解决语义激活问题，可用于3D语义分割。
+   evidence：在三维点云中检测实例并构建语义场景图，与三维场景语义分割相关
 
 
 <div class="dpr-home-promo-card">
