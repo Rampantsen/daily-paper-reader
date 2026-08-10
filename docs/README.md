@@ -6,28 +6,34 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-09
-- 运行时间：2026-08-09 20:47:00 UTC
+- 最新运行日期：2026-08-10
+- 运行时间：2026-08-10 19:57:48 UTC
 - 运行状态：成功
-- 本次总论文数：2
-- 精读区：1
+- 本次总论文数：4
+- 精读区：3
 - 速读区：1
 
 ### 今日简报（AI）
-今日精读了一篇RGB-D SLAM新工作，速览了一项零样本3D视觉定位研究。  
-CHOW-SLAM的互补重叠窗口优化可兼顾地图紧凑性与精度，值得关注。  
-建议读者优先测试其开源的轻量混合表征，再对比TDVR的文本消歧思路看是否互补。
-- 详情：[/202608/09/README](/202608/09/README)
+今日深入了两项三维重建与理解的前沿突破：用可执行场景程序从稀疏视图重建精细场景，以及用实例感知的前馈高斯泼溅加速场景理解。  
+最亮眼的方向是「程序化几何推理」让稀疏视图重建更可控、更接近语义生成，以及「前馈式分割」让三维场景理解从逐场景优化走向通用泛化。  
+若你是三维视觉爱好者，不妨优先跟读这两篇高分精读，并关注下周将发布的动态模态编排方案如何进一步降低理解成本。
+- 详情：[/202608/10/README](/202608/10/README)
 
 ### 精读区论文标签
-1. [CHOW-SLAM: Compact Hybrid Representation with Complementary Overlap Window Optimization for RGB-D SLAM](/202608/09/2608.01914v1-chow-slam-compact-hybrid-representation-with-complementary-overlap-window-optimization-for-rgb-d-slam)  
+1. [Scenix: Sparse-View 3D Scene Reconstruction via Executable Scene Programs](/202608/10/2608.07012v1-scenix-sparse-view-3d-scene-reconstruction-via-executable-scene-programs)  
+   标签：评分：9.0/10、query:d-gen-recon
+   evidence：从未标定稀疏视角RGB图像重建三维室内场景
+2. [InstanceSplat: Instance-Aware Feed-Forward 3D Gaussian Splatting for Scene Understanding](/202608/10/2608.07144v1-instancesplat-instance-aware-feed-forward-3d-gaussian-splatting-for-scene-understanding)  
+   标签：评分：9.0/10、query:d-gen-recon
+   evidence：从多视图图像统一前馈3D重建与实例感知场景理解
+3. [RORA: Realistic Object Reconstruction with Articulation](/202608/10/2608.04842v1-rora-realistic-object-reconstruction-with-articulation)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：利用多视角 RGB-D 图像和深度进行稠密三维场景重建的 SLAM 框架。
+   evidence：从单段静态物体视频重建带关节的仿真就绪3D物体，从图像生成3D物体
 
 ### 速读区论文标签
-1. [TDVR: Joint Text Disambiguation and Viewpoint Reasoning for Zero-Shot 3D Visual Grounding](/202608/09/2608.03763v1-tdvr-joint-text-disambiguation-and-viewpoint-reasoning-for-zero-shot-3d-visual-grounding)  
-   标签：评分：6.0/10、query:d-gen-recon
-   evidence：在三维点云中检测实例并构建语义场景图，与三维场景语义分割相关
+1. [SmartMage: Dynamic Modality Orchestration for 3D Scene Understanding](/202608/10/2608.05137v2-smartmage-dynamic-modality-orchestration-for-3d-scene-understanding)  
+   标签：评分：7.0/10、query:d-gen-recon
+   evidence：动态模态编排用于语义感知的三维场景理解
 
 
 <div class="dpr-home-promo-card">

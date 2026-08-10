@@ -1,0 +1,69 @@
+{
+  "label": "2026-08-10",
+  "date": "2026-08-10",
+  "generated_at": "2026-08-10T19:57:58",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202608/10/2608.07012v1-scenix-sparse-view-3d-scene-reconstruction-via-executable-scene-programs",
+      "section": "deep",
+      "title_en": "Scenix: Sparse-View 3D Scene Reconstruction via Executable Scene Programs",
+      "authors": "Kai Li, Lutao Jiang, Zhenyang Li, Jiayu Dong, Jierui Zhang, Yingda Yin, Runze Zhang, Kai Yan, Xiaoyang Huang, Keyang Luo, Xin Wang, Xiangyu Zhao, Weikai Chen",
+      "date": "2026-08-07",
+      "pdf": "https://arxiv.org/pdf/2608.07012v1",
+      "score": "9.0",
+      "evidence": "从未标定稀疏视角RGB图像重建三维室内场景",
+      "tldr": "从稀疏RGB视图重建可编辑3D室内场景面临推断房间结构和关联跨视图对象的挑战。现有方法依赖密集输入或强先验，限制了通用性。Scenix提出可执行场景程序表示，通过感知驱动资产实例化和闭环空间细化从少量视图中预测结构化场景。在XScene数据集上训练，利用观察一致性监督，实验证明其在多种场景下能实现准确目标定位与空间优化。该框架为稀疏视图3D场景重建提供了灵活且可编辑的解决方案。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Synthesizing a structured and editable 3D indoor scene from a few uncalibrated RGB views requires more than generating high-quality individual assets: a system must infer the room structure, associate objects across incomplete observations, and recover a globally consistent spatial configuration. Previous methods mainly focus on 3D scene generation with text input or require continuous visual inputs with additional priors, \\ e.g., human-annotated masks or accurate 3D layouts, which makes these methods labor demanding and hard to apply in general cases. We present \\textsc{Scenix}, a sparse-view 3D scene reconstruction framework via executable scene programs, a structured representation that can be directly instantiated into editable 3D scenes. Given sparse views, \\textsc{Scenix} predicts executable scene programs through perception-grounded asset instantiation and closed-loop spatial refinement. % We present \\method, a framework that predicts an executable scene representation from sparse views and realizes it through perception-grounded asset instantiation and closed-loop spatial refinement. To support this task, we construct \\dataset, a dataset of approximately 110,000 synthetic and real indoor scenes with multiview imagery, room structures, object-centric descriptions, and metric spatial annotations. We further introduce observation-consistent supervision that aligns each target scene with the visual evidence available in its input views. Experiments on held-out \\textsc{XScene} scenes, real indoor images, and out-of-distribution SpatialGen cases evaluate structured scene prediction, object grounding, and spatial refinement.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/10/2608.07144v1-instancesplat-instance-aware-feed-forward-3d-gaussian-splatting-for-scene-understanding",
+      "section": "deep",
+      "title_en": "InstanceSplat: Instance-Aware Feed-Forward 3D Gaussian Splatting for Scene Understanding",
+      "authors": "Minchao Jiang, Xiaoxuan Ma, Shunyu Jia, Haoru Wang, Zhang Liang, Wentao Zhu",
+      "date": "2026-08-07",
+      "pdf": "https://arxiv.org/pdf/2608.07144v1",
+      "score": "9.0",
+      "evidence": "从多视图图像统一前馈3D重建与实例感知场景理解",
+      "tldr": "当前前馈3D高斯溅射（3DGS）方法在场景理解上多局限于类别级，实例感知方法则依赖逐场景优化且与重建分离。InstanceSplat提出统一前馈框架，从多视图图像一次构建实例感知高斯表示，并设计实例中心学习策略联合优化重建、分割与语义。实验在多个任务上取得最优性能，并展现高效和强泛化。该工作实现了重建与实例理解的相互促进，推动通用3D场景理解。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Feed-forward 3D Gaussian Splatting (3DGS) enables efficient and generalizable 3D reconstruction, but current feed-forward 3DGS methods for scene understanding remain largely category-oriented. In contrast, instance-aware 3DGS methods typically rely on per-scene optimization and often decouple reconstruction from instance and semantic learning, limiting reciprocal interactions among them. We present InstanceSplat, a unified feed-forward 3DGS framework for generalizable 3D reconstruction and instance-aware scene understanding from pose-free multi-view images. In a single forward pass, InstanceSplat constructs an instance-aware Gaussian representation that jointly encodes appearance, geometry, instance identity, and language-aligned semantics. Shared 3D Gaussians ground instance identities across views, producing renderable and cross-view-consistent instance features. To allow reconstruction and scene understanding to benefit from each other, we further design an instance-centric learning strategy that connects reconstruction, instance learning, and semantic learning through shared instance structure. Specifically, instance cues guide reconstruction, language-aligned semantics strengthen the discrimination of confusing same-category instances, and instance regions aggregate semantic evidence into coherent object-level predictions. Experiments on novel-view synthesis, instance segmentation, and open-vocabulary semantic understanding under varying input-view settings and on an unseen dataset demonstrate state-of-the-art performance, practical efficiency, and strong generalization.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/10/2608.04842v1-rora-realistic-object-reconstruction-with-articulation",
+      "section": "deep",
+      "title_en": "RORA: Realistic Object Reconstruction with Articulation",
+      "authors": "Hyesung Lee, Youngseon Lee, Kyutae Lee, Dongjun Lee, Yongseok Lee",
+      "date": "2026-08-05",
+      "pdf": "https://arxiv.org/pdf/2608.04842v1",
+      "score": "8.0",
+      "evidence": "从单段静态物体视频重建带关节的仿真就绪3D物体，从图像生成3D物体",
+      "tldr": "机器人学习仿真中重建具有铰接的真实对象仍具挑战，现有方法需动态扫描且对复杂关节效果差。RORA是首个从单静态视频通过人机交互建议重建铰接资产的端到端管道，结合3DGS与网格混合表示，通过凸分解和用户分组分割部件，自动关节建议算法计算候选轴。在PartNet-Mobility和真实对象上实现精确铰接，并部署到虚幻引擎和Isaac Sim演示灵巧手任务，简化重建并提升仿真质量。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Replicating real-world environments into simulation by realistic visual representation like NeRF and 3D Gaussian Splatting (3DGS) has emerged as an effective strategy to reduce the sim-to-real gap in robot learning. However, implementing object articulation during the real-to-sim process is still a challenging task. Existing motion tracking or learning based articulation methods shows low success rates on complex kinematic structures having multiple joints. Furthermore, those methods require scan of dynamic motion of objects, which makes reconstruction process much complicated. In this work, we propose the first end-to-end pipeline that reconstructs simulation-ready assets with accurate articulation from a single static object video input through suggestion based human-in-the-loop process. Our approach exports a hybrid representation combining 3DGS for photorealistic rendering and mesh-based geometry for physical interaction. In the reconstruction process, our pipeline performs convex decomposition followed by user grouping for intuitive part segmentation, subsequently binding 3D Gaussians to the corresponding mesh parts. An Automatic Joint Suggestion Algorithm then calculates candidate joint axes from local boundary geometries and presents them to users for efficient articulated asset reconstruction. We have shown that our method achieves precise articulation results on partnet-mobility-v0 dataset and real objects. Additionally we presented a potential usage of our framework on robot learning, deploying the reconstructed assets in Unreal Engine and NVIDIA Isaac Sim, demonstrating real-time dexterous hand manipulation tasks.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/10/2608.05137v2-smartmage-dynamic-modality-orchestration-for-3d-scene-understanding",
+      "section": "quick",
+      "title_en": "SmartMage: Dynamic Modality Orchestration for 3D Scene Understanding",
+      "authors": "Yue Zhang, Yingzhao Jian, Yunqiu Xu, Xiaoxiao Sun, Hehe Fan",
+      "date": "2026-08-05",
+      "pdf": "https://arxiv.org/pdf/2608.05137v2",
+      "score": "7.0",
+      "evidence": "动态模态编排用于语义感知的三维场景理解",
+      "tldr": "3D场景理解中，不同查询对视觉与几何模态的需求动态变化，但现有MLLMs采用固定模态组合，易引入噪声且浪费计算。SmartMage提出语义引导的模态路由SMART和模态感知专家MAGE，实现查询自适应的动态模态编排。在五个基准上取得最优性能，并在诊断实验中发现明确的语义-模态偏好模式，为高效多模态融合提供了新范式。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Understanding 3D scenes is fundamental to embodied intelligence, requiring joint reasoning over heterogeneous information from multiple modalities, including visual and geometric cues. However, the relevance of these modalities often varies across queries. Existing Multimodal Large Language Models (MLLMs) typically rely on fixed modality combinations, overlooking query-dependent modality needs. Such a rigid design can introduce semantic noise from irrelevant modalities while underutilizing more informative ones, leading to wasted computation and diluted reasoning. To address these challenges, this paper proposes SmartMage, a unified MLLM that dynamically orchestrates heterogeneous modalities for semantic-aware 3D scene understanding. Specifically, SmartMage incorporates: (1) a Semantic-guided Modality Adaptive RouTng (SMART) module that selects task-relevant modalities using semantic priors, text-modality alignment, and modality quality; and (2) a Modality-Aware Gating Expert (MAGE) module that leverages modality priors to guide expert activation, fostering adaptive specialization in multimodal reasoning. Empirically, SmartMage achieves state-of-the-art performance across five 3D scene understanding benchmarks, and attains competitive results on RGB-only video understanding benchmarks. In our diagnostic benchmark ScanFacet, tasks are divided into fine-grained semantic categories, enabling analysis of modality combinations preferred by each semantic type. The observed modality-semantic patterns provide further evidence of SmartMage's effectiveness. Project page: https://yuecheong.github.io/SmartMage/.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
