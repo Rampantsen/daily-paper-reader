@@ -1,0 +1,516 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-11T20:55:06.742991+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 12,
+    "deep_cap": 6,
+    "deep_selected": 11,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2608.07757v1",
+      "source": "arxiv",
+      "title": "Rethinking 3D Segmentation from Individual LiDAR Scans: Incidence-Aware Sampling on the SIP Benchmark",
+      "abstract": "3D scene understanding is increasingly important in construction, yet most methods are developed on curated datasets that do not fully reflect real site sensing conditions. In many workflows, individual LiDAR scans provide rapid local updates rather than complete scene representations, producing limited surface coverage, acquisition-driven density variation, and severe imbalance between dominant planar surfaces and sparse construction elements. Because large point clouds must be downsampled, sampling resolution and point allocation directly affect the balance between geometric detail and spatial context. This study evaluates these effects under a fixed per-fragment point budget and introduces an incidence-aware sampling strategy for individual LiDAR scans. The method maps points to a geometry-normalized manifold space for voxel-based selection while preserving original Euclidean coordinates for downstream learning. It requires only point coordinates and normals and no backbone modification. Using the Site in Pieces (SIP) benchmark, experiments with Point Transformer and PointNeXt show improved resolution-averaged segmentation performance, especially for non-planar elements and ladders, while reducing sensitivity to sampling resolution. The results show that acquisition-aware sampling can provide a more stable geometric representation and should be treated as an active component of individual-scan 3D segmentation rather than generic preprocessing.",
+      "authors": [
+        "Seongyong Kim",
+        "Jingdao Chen",
+        "Yong Kwon Cho"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-07T20:42:43+00:00",
+      "link": "https://arxiv.org/pdf/2608.07757v1",
+      "tags": [
+        "keyword:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "3D segmentation from LiDAR scans directly targets semantic segmentation of 3D scenes",
+      "llm_evidence_cn": "来自激光雷达扫描的三维分割，直接对应三维场景语义分割",
+      "llm_evidence": "来自激光雷达扫描的三维分割，直接对应三维场景语义分割",
+      "canonical_evidence": "来自激光雷达扫描的三维分割，直接对应三维场景语义分割",
+      "llm_tldr_en": "Evaluates sampling strategies for 3D segmentation of individual LiDAR scans in construction, introducing an incidence-aware sampling method to handle density variation and planar-structural imbalance.",
+      "llm_tldr_cn": "针对建筑场景中单帧激光雷达扫描存在的覆盖率有限、密度不均匀和平面-稀疏元素严重不平衡的问题，研究了固定点预算下的采样策略对三维分割的影响，并提出入射角感知的采样方法。实验证明该方法能更好地平衡几何细节与空间上下文，提升对稀疏施工要素的分割精度。",
+      "llm_tldr": "针对建筑场景中单帧激光雷达扫描存在的覆盖率有限、密度不均匀和平面-稀疏元素严重不平衡的问题，研究了固定点预算下的采样策略对三维分割的影响，并提出入射角感知的采样方法。实验证明该方法能更好地平衡几何细节与空间上下文，提升对稀疏施工要素的分割精度。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.08696v1",
+      "source": "arxiv",
+      "title": "OccAnyScene: Towards Unified Indoor-Outdoor 3D Occupancy Predictio",
+      "abstract": "3D occupancy prediction is fundamental to scene understanding, yet existing 3D semantic occupancy methods are typically specialized to fixed scene types and occupancy protocols. We introduce Cross-Scene 3D Semantic Occupancy Prediction, a new task setting which requires a single model to handle heterogeneous indoor and outdoor scenes with varying cameras, spatial ranges, voxel specifications, and semantic taxonomies. This setting poses a fundamental challenge: achieving metric-consistent yet scene-adaptive image-to-3D lifting across varying camera configurations and scene scales. To address this challenge, we propose OccAnyScene, a pixel-frustum-centered Gaussian framework built upon a pretrained depth foundation model. Specifically, the framework employs Pixel-Aligned Frustum Feature Aggregation to construct a camera-aware frustum query for each feature pixel, and Frustum-Parameterized Gaussian Construction to decode each query into multiple Gaussians whose positions and sizes are constrained by the predicted pixel depth and corresponding frustum geometry. OccAnyScene sets new state-of-the-art results, achieving 59.92% mIoU on the indoor Occ-ScanNet and 23.06% mIoU on the outdoor SurroundOcc-nuScenes.",
+      "authors": [
+        "Junjie Liu",
+        "Wanshui Gan",
+        "Zitong Dai",
+        "Guiping Cao",
+        "Yan Li",
+        "Ke Chen",
+        "Dongmei Jiang",
+        "Xiangyuan Lan",
+        "Jianguo Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-09T13:19:53+00:00",
+      "link": "https://arxiv.org/pdf/2608.08696v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Unified 3D semantic occupancy prediction across scenes, essentially 3D semantic segmentation",
+      "llm_evidence_cn": "跨场景的统一三维语义占用预测，本质上为三维语义分割",
+      "llm_evidence": "跨场景的统一三维语义占用预测，本质上为三维语义分割",
+      "canonical_evidence": "跨场景的统一三维语义占用预测，本质上为三维语义分割",
+      "llm_tldr_en": "Proposes OccAnyScene for cross-scene 3D semantic occupancy prediction using a pixel-frustum-centered Gaussian framework on a depth foundation model, enabling a single model for indoor-outdoor scenes.",
+      "llm_tldr_cn": "针对现有三维语义占用方法局限于单一场景类型的问题，提出OccAnyScene框架，利用像素-视锥体中心的高斯模型和深度基础模型，实现跨室内外场景的统一三维语义占用预测。该框架能处理不同相机、体素规格和语义类别，在多个基准上表现出强泛化性与准确性。",
+      "llm_tldr": "针对现有三维语义占用方法局限于单一场景类型的问题，提出OccAnyScene框架，利用像素-视锥体中心的高斯模型和深度基础模型，实现跨室内外场景的统一三维语义占用预测。该框架能处理不同相机、体素规格和语义类别，在多个基准上表现出强泛化性与准确性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.05879v1",
+      "source": "arxiv",
+      "title": "To See a World in a Living Context: Unified Indoor-Outdoor Urban World Generation",
+      "abstract": "Text-driven 3D generation has advanced rapidly in creating large-scale outdoor environments and detailed indoor scenes, but these domains are usually synthesized independently, lacking the correspondence required for a coherent urban world. We present HoloWorld, a unified indoor-outdoor urban world generation framework built on a continuously updated cross-scale world context. Initializing from a user description, HoloWorld progressively represents and updates the diverse world information, from city-scale planning to individual buildings, allowing generated interiors to maintain explicit correspondence with their associated exterior buildings. Conditioned on the evolving context and previously generated neighboring blocks, HoloWorld autoregressively generates urban exteriors with consistent spatial organization and visual identity across blocks. The generated exterior representations are further grounded in 3D building instances and footprints, enabling building-specific indoor generation with geometry-constrained layouts and inherited appearance characteristics. To our knowledge, HoloWorld is the first framework to unify indoor and outdoor generation within a coherent 3D urban world. Extensive experiments demonstrate that HoloWorld achieves superior urban exterior generation performance, improving the average AQS score over the SOTA by 7.68\\% and obtaining the highest average RDR score, while maintaining strong building-level indoor-outdoor correspondence and cross-block continuity within a unified 3D urban world.",
+      "authors": [
+        "Xiaobin Huang",
+        "Zilong Huang",
+        "Yang Luo",
+        "Hongchao Fan",
+        "Yiping Chen",
+        "Ting Han"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-06T11:00:38+00:00",
+      "link": "https://arxiv.org/pdf/2608.05879v1",
+      "tags": [
+        "keyword:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Text-driven unified indoor-outdoor 3D world generation with cross-scale correspondence",
+      "llm_evidence_cn": "文本驱动的统一室内外三维世界生成，实现跨尺度对应",
+      "llm_evidence": "文本驱动的统一室内外三维世界生成，实现跨尺度对应",
+      "canonical_evidence": "文本驱动的统一室内外三维世界生成，实现跨尺度对应",
+      "llm_tldr_en": "Presents HoloWorld, a cross-scale world generation framework that creates coherent urban environments with aligned interiors and exteriors from text descriptions.",
+      "llm_tldr_cn": "HoloWorld提出跨尺度世界生成框架，从文本描述统一生成连贯的室内外城市场景，通过持续更新的世界上下文实现建筑内外精确对应，解决了现有方法独立生成两个领域导致的不连贯问题，为开放世界文本驱动3D生成提供了新范式。",
+      "llm_tldr": "HoloWorld提出跨尺度世界生成框架，从文本描述统一生成连贯的室内外城市场景，通过持续更新的世界上下文实现建筑内外精确对应，解决了现有方法独立生成两个领域导致的不连贯问题，为开放世界文本驱动3D生成提供了新范式。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.07937v1",
+      "source": "arxiv",
+      "title": "FlexSplat: Flexible Feed-Forward 3D Gaussian Splatting without Point Cloud Correspondence",
+      "abstract": "We present FlexSplat, a feed-forward framework for novel view synthesis (NVS) from uncalibrated, object-centric multi-view image collections. A recent line of query-based methods reconstructs a compact set of 3D Gaussians by treating them as transformer queries that are refined with multi-view deformable attention; these methods, however, assume that camera poses are given. FlexSplat removes this assumption: a geometry transformer is trained jointly with the Gaussian decoder to predict per-image camera parameters and depth, which in turn ground a depth-guided Gaussian parameterization and a multi-view deformable cross-attention that aggregates evidence across all input views into a single, view-consistent set of primitives. An uncertainty-weighted depth-consistency objective lets the jointly trained geometry adapt to the reconstruction task, while the cross-view consensus formed during decoding absorbs the residual error of the estimated cameras and depth. The representation uses a compact Gaussian budget that is decoupled from the input resolution - unlike pixel-aligned methods, the primitive count does not grow with the image grid - and is not dictated by the number of views. On ShapeNet-SRN and Google Scanned Objects (GSO), FlexSplat matches or approaches posed state-of-the-art reconstructors while requiring neither camera poses nor ground-truth depth, and matches the best perceptual (LPIPS) quality among the compared methods on GSO. Our results indicate that a jointly trained geometry front-end is sufficient to bring calibration-free operation to query-based Gaussian reconstruction while staying within 0.7 dB PSNR of posed methods and matching their perceptual quality.",
+      "authors": [
+        "Amir Sabbaghziarani",
+        "Hanting Ye",
+        "Maria Gorlatova",
+        "Yi Ding"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-08T05:52:26+00:00",
+      "link": "https://arxiv.org/pdf/2608.07937v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "feed-forward 3D reconstruction from uncalibrated multi-view image collections",
+      "llm_evidence_cn": "从未标定多视角图像集合中进行前馈3D重建",
+      "llm_evidence": "从未标定多视角图像集合中进行前馈3D重建",
+      "canonical_evidence": "从未标定多视角图像集合中进行前馈3D重建",
+      "llm_tldr_en": "Introduces FlexSplat, a feed-forward framework that reconstructs 3D Gaussians from uncalibrated multi-view images by jointly predicting camera parameters and depth, enabling novel view synthesis without known poses.",
+      "llm_tldr_cn": "针对现有前馈3D高斯重建方法依赖已知相机姿态的局限，提出FlexSplat框架，联合几何变换器预测每图相机参数和深度，将多视图证据聚合为视角一致的3D基元，实现无需位姿的多视图新视图合成。实验表明该方法在未标定设置下效果显著。FlexSplat在多个对象中心数据集上验证了其有效性，即使在没有相机姿态的情况下，也能合成高保真新视图，为从无约束图像集合中轻松实现3D内容创建铺平了道路。",
+      "llm_tldr": "针对现有前馈3D高斯重建方法依赖已知相机姿态的局限，提出FlexSplat框架，联合几何变换器预测每图相机参数和深度，将多视图证据聚合为视角一致的3D基元，实现无需位姿的多视图新视图合成。实验表明该方法在未标定设置下效果显著。FlexSplat在多个对象中心数据集上验证了其有效性，即使在没有相机姿态的情况下，也能合成高保真新视图，为从无约束图像集合中轻松实现3D内容创建铺平了道路。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.08132v1",
+      "source": "arxiv",
+      "title": "When Does An Extra View Help? Adapting Single-View 3D Reconstruction with Extra Imagery",
+      "abstract": "Reconstruction of 3D objects from a single image is a challenging research problem in computer vision. The key challenge is the lack of critical information from viewpoints to complete 3D structures. Using an additional view may help to resolve the issue. However, there is no mechanism that can integrate the extra view into the single-view 3D reconstruction principle. We address this challenge by proposing ASV3D, a framework for adapting single-view 3D object reconstruction to test-time data with support from one additional image. We introduce two adaptation strategies: (i) a zero-shot adaptation scheme that leverages the auxiliary image to improve the reconstruction quality of an object without retraining, and (ii) an optimised adaptation scheme that further enhances visual fidelity and cross-view consistency via contrastive learning. We apply our ASV3D to improve two state-of-the-art single-view 3D reconstruction pipelines on both benchmark and real-world datasets. Results demonstrate that our approach consistently improves reconstruction accuracy and robustness under unconstrained multi-view inputs, outperforming the baselines in both quantitative metrics and human preference. We publish our code and the real-world object dataset in our project page at https://github.com/YNhuHuynh/ASV3D/tree/main.",
+      "authors": [
+        "Y Huynh",
+        "Duc Thanh Nguyen",
+        "Thao Minh Le",
+        "Mohamed Abdelrazek"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR"
+      ],
+      "published": "2026-08-08T13:39:28+00:00",
+      "link": "https://arxiv.org/pdf/2608.08132v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Adapting single-view 3D object reconstruction to utilize an extra view at test time",
+      "llm_evidence_cn": "将单视图3D物体重建适配为测试时可利用额外视图",
+      "llm_evidence": "将单视图3D物体重建适配为测试时可利用额外视图",
+      "canonical_evidence": "将单视图3D物体重建适配为测试时可利用额外视图",
+      "llm_tldr_en": "ASV3D proposes a framework to adapt single-view 3D object reconstruction using an extra image, introducing zero-shot and optimized adaptation strategies to improve reconstruction quality without retraining.",
+      "llm_tldr_cn": "ASV3D针对单视图3D物体重建中因缺失视角信息导致结构不完整的问题，提出在测试时利用额外一张图像进行自适应的框架。通过零样本适配和优化适配两种策略，无需重新训练即可将辅助图像信息融入单视图重建流程，提升重建质量。实验表明，该方法有效改善了物体重建的完整性和精度。",
+      "llm_tldr": "ASV3D针对单视图3D物体重建中因缺失视角信息导致结构不完整的问题，提出在测试时利用额外一张图像进行自适应的框架。通过零样本适配和优化适配两种策略，无需重新训练即可将辅助图像信息融入单视图重建流程，提升重建质量。实验表明，该方法有效改善了物体重建的完整性和精度。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.08476v1",
+      "source": "arxiv",
+      "title": "RayLift: Lifting Complementary Ray-Wise Evidence with 3D Geometry Priors for Semantic Scene Completion",
+      "abstract": "Camera-based 3D semantic scene completion (SSC) provides comprehensive scene understanding for autonomous driving and robotics. However, existing methods often treat stereo depth estimates as deterministic geometric constraints, causing depth uncertainty and local correspondence errors to propagate directly into voxel representations. To address this issue, we propose RayLift, a framework that uses stereo geometry as a metric reference while incorporating complementary ray evidence to recover reliable 3D structures adaptively. RayLift first employs a Complementary Context Encoder that extracts geometry-aware priors from a frozen 3D vision foundation model, thereby enriching the scene context. It then introduces a Depth Ray Evidence Lifter module that jointly models geometric dissimilarity, depth confidence, and spatial uncertainty to adaptively sample and weight candidate surface locations along each camera ray. Finally, a Semantic-Aware Voxel Integrator injects the resulting ray evidence into voxel features by explicitly modeling their spatial support. Extensive experiments on SemanticKITTI and SSCBench-KITTI-360 demonstrate that RayLift achieves competitive performance and consistently outperforms existing methods.",
+      "authors": [
+        "Meng Wang",
+        "Hongxia Yu",
+        "Wenzhe He",
+        "Xingdong Song",
+        "Huilong Pi",
+        "Jiapeng Zhang",
+        "Ruihui Li"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-09T04:41:34+00:00",
+      "link": "https://arxiv.org/pdf/2608.08476v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Performs 3D semantic scene completion from stereo images",
+      "llm_evidence_cn": "从立体图像完成三维语义场景补全",
+      "llm_evidence": "从立体图像完成三维语义场景补全",
+      "canonical_evidence": "从立体图像完成三维语义场景补全",
+      "llm_tldr_en": "RayLift uses stereo geometry as reference and complementary ray evidence with 3D priors for robust semantic scene completion.",
+      "llm_tldr_cn": "现有方法将立体深度估计视为确定约束，误差易传播至体素表示。RayLift 提出互补上下文编码器提取几何先验，结合深度细化模块，自适应融合光线证据，提升三维语义场景补全的鲁棒性和准确性，在自动驾驶场景理解中表现优异。",
+      "llm_tldr": "现有方法将立体深度估计视为确定约束，误差易传播至体素表示。RayLift 提出互补上下文编码器提取几何先验，结合深度细化模块，自适应融合光线证据，提升三维语义场景补全的鲁棒性和准确性，在自动驾驶场景理解中表现优异。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.08531v1",
+      "source": "arxiv",
+      "title": "ERF-GS: Reconstructing Fast Motion from Disjoint Event-RGB Viewpoints",
+      "abstract": "Deep learning-driven representations such as neural radiance fields (NeRFs) and 3D Gaussian splatting (3DGS) have revolutionized the field of dynamic 3D scene reconstruction with improved visual precision and scalability. However, the reconstruction of fast-moving objects remains a challenge; existing methods based on conventional frame-based videos often struggle in scenarios such as sports events and animal videography. We propose an event-RGB fusion Gaussian splatting (ERF-GS) framework that integrates event information into both optimization and densification stages of the Gaussian splatting pipeline, taking advantage of novel event sensors with high frame-rate. Unlike many other event-assisted scene reconstruction methods, ERF-GS was developed using realistic simulation settings and realizes event-based learning detached from RGB inputs. This design enables its application beyond straightforward synthetic data into the realm of natural video with complex layout, low frame rates and severe motion blur. Our experiments show that ERF-GS outperforms both the 4DGS baseline and the concurrent E-D3DGS on different variants of the Neu3D and Nvidia datasets which include blurry RGB frames and disjoint RGB-event viewpoints. Our code is available at https://github.com/andrewbxy/ERF-GS.",
+      "authors": [
+        "Xiaoyang Bai",
+        "Zhenyang Li",
+        "Weiwei Xu",
+        "Edmund Y. Lam",
+        "Yifan Peng"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-09T07:00:27+00:00",
+      "link": "https://arxiv.org/pdf/2608.08531v1",
+      "tags": [
+        "keyword:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "dynamic 3D scene reconstruction from multi-view event-RGB inputs",
+      "llm_evidence_cn": "从多视图事件-RGB输入进行动态三维场景重建",
+      "llm_evidence": "从多视图事件-RGB输入进行动态三维场景重建",
+      "canonical_evidence": "从多视图事件-RGB输入进行动态三维场景重建",
+      "llm_tldr_en": "Proposes ERF-GS, a dynamic 3D scene reconstruction framework that integrates event data into 3D Gaussian splatting to handle fast-moving objects, showing improved reconstruction quality over frame-only methods.",
+      "llm_tldr_cn": "针对动态三维场景中快速运动物体重建的挑战，本文提出ERF-GS框架，将事件信息融入三维高斯泼溅的优化和密集化阶段，利用高帧率事件传感器克服传统视频方法的局限，在运动模糊场景中实现了更精确的重建，实验表明该方法显著提升了快速运动的视觉精度和可扩展性。",
+      "llm_tldr": "针对动态三维场景中快速运动物体重建的挑战，本文提出ERF-GS框架，将事件信息融入三维高斯泼溅的优化和密集化阶段，利用高帧率事件传感器克服传统视频方法的局限，在运动模糊场景中实现了更精确的重建，实验表明该方法显著提升了快速运动的视觉精度和可扩展性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.08659v1",
+      "source": "arxiv",
+      "title": "JSGS: JPEG State-Guided Supervision for 3D Gaussian Splatting from Mixed-Quality Views",
+      "abstract": "Standard 3D Gaussian Splatting (3DGS) assumes that every input image faithfully samples scene radiance. However, mixed-quality JPEG images violate this assumption because compression-induced blocking and ringing artifacts can corrupt updates to Gaussians shared across views. To address this problem, we propose JPEG State-Guided Supervision for 3D Gaussian Splatting from Mixed-Quality Views (JSGS). JSGS uses luminance and chrominance quantization tables stored in each JPEG file to construct a view-specific JPEG observation operator. This operator encodes and decodes each rendered view for domain-matched comparison with the corresponding decoded input image. The luminance quantization table supplies continuous weights within a fixed middle frequency band. A loss in the low frequency band anchors coarse structure, while the weighted middle frequency loss redistributes supervision among the selected DCT coordinates. The resulting block disagreement also guides the Gaussian Controller to regularize small primitives with high opacity in disagreement regions. Across seven scenes and three mixed-quality schedules, JSGS achieves the lowest mean LPIPS and the highest mean SSIM under every schedule while rendering at approximately 150 FPS. Code: https://github.com/Jayden-Cui/JSGS.",
+      "authors": [
+        "Jinhua Cui",
+        "Anhong Wang",
+        "Kai Hu",
+        "Donghan Bu",
+        "Peihao Li",
+        "Tammam Tillo",
+        "Hao Jing",
+        "Shiao Xu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-09T12:05:34+00:00",
+      "link": "https://arxiv.org/pdf/2608.08659v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "3D Gaussian Splatting reconstruction from multi-view JPEG images, handling compression artifacts",
+      "llm_evidence_cn": "从多视角JPEG图像进行三维高斯泼溅重建，处理压缩伪影",
+      "llm_evidence": "从多视角JPEG图像进行三维高斯泼溅重建，处理压缩伪影",
+      "canonical_evidence": "从多视角JPEG图像进行三维高斯泼溅重建，处理压缩伪影",
+      "llm_tldr_en": "Proposes JSGS, a method for 3DGS reconstruction that uses JPEG quantization tables to guide supervision, mitigating artifacts when input views have mixed JPEG quality.",
+      "llm_tldr_cn": "针对标准三维高斯泼溅（3DGS）假设输入图像无噪声，但混合质量JPEG图像导致共享高斯被伪影污染的问题，提出JSGS方法。利用JPEG量化表构建视图相关的观测算子，在重建过程中实现域匹配的监督，从而抑制压缩伪影。实验表明JSGS在混合质量视图下重建质量优于标准3DGS。",
+      "llm_tldr": "针对标准三维高斯泼溅（3DGS）假设输入图像无噪声，但混合质量JPEG图像导致共享高斯被伪影污染的问题，提出JSGS方法。利用JPEG量化表构建视图相关的观测算子，在重建过程中实现域匹配的监督，从而抑制压缩伪影。实验表明JSGS在混合质量视图下重建质量优于标准3DGS。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.09110v1",
+      "source": "arxiv",
+      "title": "View-Adaptive Renderer for View-Consistent 2D-to-3D Generation",
+      "abstract": "Reconstructing 3D shapes from a single image remains a fundamental yet challenging problem in computer vision. Traditional monocular 3D generation pipelines typically synthesize multiple views from a single input image before applying Neural Radiance Field (NeRF)-based reconstruction. However, inherent projective ambiguities often produce visual discontinuities across generated viewpoints, leading to inaccuracies in reconstructed 3D models. Current solutions either incur significant additional computational burdens or fail to adequately resolve practical inconsistencies between synthesized views. To address these limitations, we propose a novel viewpoint-adaptive neural rendering framework that enables robust 3D reconstruction even when given partially inconsistent multi-view inputs. Our approach introduces view-adaptive neural renderers that independently correct viewpoint-dependent errors while simultaneously sharing a global feature backbone to preserve structural coherence. Furthermore, we propose a self-attention fusion module that adaptively integrates multi-view information, ensuring geometric consistency without relying heavily on indirect regularizations or computationally intensive methods. Through extensive experiments, we demonstrate that our method consistently improves 3D reconstruction fidelity. Importantly, our approach achieves near state-of-the-art performance without diffusion-based SDS supervision, relying primarily on photometric rendering loss with lightweight attention regularizers. This balance between accuracy and efficiency makes the proposed framework highly practical for real-world applications.",
+      "authors": [
+        "U-Chae Jun",
+        "Jaeeun Ko",
+        "Jiwoo Kang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR"
+      ],
+      "published": "2026-08-10T04:28:08+00:00",
+      "link": "https://arxiv.org/pdf/2608.09110v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "View-adaptive renderer for consistent 2D-to-3D shape generation from single image",
+      "llm_evidence_cn": "视角自适应渲染器实现单图到3D形状的一致性生成",
+      "llm_evidence": "视角自适应渲染器实现单图到3D形状的一致性生成",
+      "canonical_evidence": "视角自适应渲染器实现单图到3D形状的一致性生成",
+      "llm_tldr_en": "This paper proposes a viewpoint-adaptive neural rendering framework that addresses view inconsistencies in 2D-to-3D generation pipelines, enabling robust 3D shape reconstruction from a single image even when synthesized views are imperfect.",
+      "llm_tldr_cn": "针对传统单图转3D流程中合成多视图间存在视觉不连续、导致重建模型不准确的问题，本文提出视角自适应神经渲染框架。该框架能够自适应处理跨视角的不一致性，减轻投影歧义影响，从而即使在部分合成视图不一致的情况下也能稳健重建3D形状。实验证明该方法提升了从单图像生成3D模型的鲁棒性和准确性。",
+      "llm_tldr": "针对传统单图转3D流程中合成多视图间存在视觉不连续、导致重建模型不准确的问题，本文提出视角自适应神经渲染框架。该框架能够自适应处理跨视角的不一致性，减轻投影歧义影响，从而即使在部分合成视图不一致的情况下也能稳健重建3D形状。实验证明该方法提升了从单图像生成3D模型的鲁棒性和准确性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.09590v1",
+      "source": "arxiv",
+      "title": "TeaMatch: Teachable Cross-Modal Representation Learning for 2D-3D Matching",
+      "abstract": "Learning reliable correspondences between images and point clouds is fundamental for 2D-3D matching. Despite recent progress in detection-free methods, existing approaches primarily optimize matching within a single model and often struggle to maintain reliable correspondences under challenging conditions such as noisy inputs, low overlap, and ambiguous structures. In this work, we propose TeaMatch, a novel framework that introduces teachability as a criterion for cross-modal representation learning. We define teachability as the ability of a representation to be effectively recovered by weak learners under degraded inputs, reflecting its structural consistency and robustness. To this end, we construct a set of task-specific weak students that simulate common failure modes and train them to imitate the teacher on a training split while evaluating their recoverability on a disjoint meta split. The teacher is then optimized to improve the students' ability to recover reliable correspondences, guided by correspondence-level and geometry-aware constraints. Our framework can be seamlessly integrated into existing coarse-to-fine matching pipelines without additional inference cost. Extensive experiments demonstrate that TeaMatch improves matching robustness and achieves state-of-the-art performance on challenging 2D-3D matching benchmarks.",
+      "authors": [
+        "Chongjian Wang",
+        "Junjie Gao"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-10T13:24:01+00:00",
+      "link": "https://arxiv.org/pdf/2608.09590v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "2D-3D matching method for learning reliable correspondences between images and point clouds",
+      "llm_evidence_cn": "二维-三维匹配方法，学习图像与点云间的可靠对应关系",
+      "llm_evidence": "二维-三维匹配方法，学习图像与点云间的可靠对应关系",
+      "canonical_evidence": "二维-三维匹配方法，学习图像与点云间的可靠对应关系",
+      "llm_tldr_en": "Introduces TeaMatch, a framework using teachability for cross-modal 2D-3D matching, training with weak student models to improve robustness under noise and low overlap.",
+      "llm_tldr_cn": "针对现有二维-三维匹配方法在噪声、低重叠和歧义结构下难以保持可靠对应的问题，提出TeaMatch框架，引入可教性作为跨模态表征学习准则。通过构建任务相关的弱学生模型模拟退化输入，训练出结构一致且鲁棒的表示，在多个匹配任务上提升了匹配的鲁棒性和精度。",
+      "llm_tldr": "针对现有二维-三维匹配方法在噪声、低重叠和歧义结构下难以保持可靠对应的问题，提出TeaMatch框架，引入可教性作为跨模态表征学习准则。通过构建任务相关的弱学生模型模拟退化输入，训练出结构一致且鲁棒的表示，在多个匹配任务上提升了匹配的鲁棒性和精度。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.09597v1",
+      "source": "arxiv",
+      "title": "ResemBrick: Brick Reconstruction from Photographs with Perceptual Fidelity and Buildability",
+      "abstract": "Producing a hand-buildable, colored brick model of a 3D object from a few casual photographs is a clean testbed for a broader challenge: generating 3D content that meets hard physical-assembly constraints under a discrete, budget-limited voxel grid. On a coarse lattice, visual resemblance and structural stability pull against each other, yet prior brick pipelines address only one side and treat voxelization as fixed preprocessing rather than a variable to optimize. We present ResemBrick, which couples the two. Budgeted occupancy completion reframes discretization as allocation: given a target occupied-voxel count, a single resolution-conditioned network decides in one feed-forward pass which surface voxels to fill for best appearance, one weight set spanning 13 resolutions. Buildability by construction then combines support- and look-ahead-aware greedy placement with a deterministic, provably terminating repair that grounds every floating component. Under a matched budget, ResemBrick surpasses existing voxel selectors in perceptual fidelity while uniquely reaching zero floating and zero unstable bricks on unfiltered held-out objects; as a complete pipeline, it attains the best perceptual fidelity among prior brick-construction systems. Our results point to treating discretization and assembly as tightly coupled stages rather than independent ones.",
+      "authors": [
+        "Xilun Chen",
+        "Hanwen Wan",
+        "Yusong Zhao",
+        "Zexin Lin",
+        "Ruixiang Liao",
+        "Xiaoqiang Ji"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-10T13:34:05+00:00",
+      "link": "https://arxiv.org/pdf/2608.09597v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Reconstructs 3D brick models from casual photographs",
+      "llm_evidence_cn": "从几张普通照片重建可手动搭建的彩色积木三维模型",
+      "llm_evidence": "从几张普通照片重建可手动搭建的彩色积木三维模型",
+      "canonical_evidence": "从几张普通照片重建可手动搭建的彩色积木三维模型",
+      "llm_tldr_en": "ResemBrick optimizes voxel allocation for brick reconstruction from few images, balancing appearance and structural stability.",
+      "llm_tldr_cn": "针对从少量照片生成可搭建积木模型的难题，ResemBrick 将体素化重新定义为分配问题，通过单一网络在给定体素预算下同时优化外观相似度和结构稳定性，实现高效的一次性三维重建。该方法首次将视觉保真度与物理可搭建性统一优化，为离散约束下的三维内容生成提供了新思路。",
+      "llm_tldr": "针对从少量照片生成可搭建积木模型的难题，ResemBrick 将体素化重新定义为分配问题，通过单一网络在给定体素预算下同时优化外观相似度和结构稳定性，实现高效的一次性三维重建。该方法首次将视觉保真度与物理可搭建性统一优化，为离散约束下的三维内容生成提供了新思路。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.08685v1",
+      "source": "arxiv",
+      "title": "Semi-Dense Matching Uncertainty Is Not Just Local Confidence",
+      "abstract": "Reliable semi-dense matching is essential for modern geometric vision systems. Designed under a coarse-to-fine paradigm, it achieves an optimal balance between performance and computational cost. However, existing methods often struggle to provide well-quantified uncertainties, where catastrophic coarse-assignment failures are ignored, leading to truncated error distributions and severely misjudged geometric estimations. In this paper, we propose a lightweight, post-hoc overall uncertainty estimation framework that introduces a two-component calibrated Laplace mixture model with only 9 learnable parameters. The objective is to explicitly capture both the sharp local refinement noise and the broader tail of coarse-assignment failures. We introduce the Coarse-success posterior Refit (CoRe) method, a geometric refitting module that utilizes the posterior probability of coarse-assignment success as soft correspondence weights. Extensive experiments show that our method consistently improves downstream geometric accuracy across various pretrained-only matchers and robust estimators with minimal computational overhead. Our code is available at https://github.com/khoavpt/Probabilistic-matching.",
+      "authors": [
+        "Khoa Hoang",
+        "Hoang-Tuan Nguyen",
+        "Huong Ninh",
+        "Hai Tran",
+        "Long Q. Tran"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-09T13:01:20+00:00",
+      "link": "https://arxiv.org/pdf/2608.08685v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "uncertainty estimation for semi-dense matching in geometric vision",
+      "llm_evidence_cn": "几何视觉中半稠密匹配的不确定性估计",
+      "llm_evidence": "几何视觉中半稠密匹配的不确定性估计",
+      "canonical_evidence": "几何视觉中半稠密匹配的不确定性估计",
+      "llm_tldr_en": "Proposes a lightweight post-hoc uncertainty framework for semi-dense matching that captures both local refinement noise and coarse-assignment failures, improving geometric estimation reliability.",
+      "llm_tldr_cn": "现有的半稠密匹配方法难以准确量化不确定性，尤其在粗匹配失败时。本文提出一种轻量级后验不确定性估计框架，采用双分量拉普拉斯混合模型，明确捕获局部精化噪声和粗配准错误尾部分布，有效提升了几何估计的可靠性。",
+      "llm_tldr": "现有的半稠密匹配方法难以准确量化不确定性，尤其在粗匹配失败时。本文提出一种轻量级后验不确定性估计框架，采用双分量拉普拉斯混合模型，明确捕获局部精化噪声和粗配准错误尾部分布，有效提升了几何估计的可靠性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.08016v1",
+      "source": "arxiv",
+      "title": "EgoTrack3D: A Modular Framework for Egocentric 3D Object Tracking",
+      "abstract": "Understanding 3D scenes from egocentric video is fundamental for robotics and autonomous navigation, yet rapid viewpoint changes and partial occlusions make building structured representations challenging. Existing 3D tracking and scene graph construction methods primarily address explicit interactions or assume static scenes, limiting their ability to capture complex dynamics. We introduce EgoTrack3D, a modular framework that reconstructs and maintains a dynamic 3D scene representation directly from egocentric RGB video. The framework lifts 2D segmentation masks into a global 3D coordinate frame, using a point-based motion scoring mechanism alongside a voxel-based merging heuristic to associate object tracks. EgoTrack3D maintains accurate representations over time, achieving an 11% improvement in percentage of correct locations (PCL) relative to the strongest baseline on the Aria Digital Twin (ADT) dataset, while addressing the more general setting of persistent 3D tracking for both static and dynamic objects. Furthermore, to demonstrate the system's robustness under degraded conditions that simulate real-world deployment constraints, we replace dense depth maps with sparse 3D bounding box estimation and integrate interaction-guided dynamic association, enabling EgoTrack3D to maintain accurate spatial representations despite noisy observations.",
+      "authors": [
+        "Jan Kulik",
+        "Bjarni Dagur Thor Karason",
+        "Yung-Hsu Yang",
+        "Boyang Sun",
+        "Marc Pollefeys",
+        "Xi Wang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-08T08:53:54+00:00",
+      "link": "https://arxiv.org/pdf/2608.08016v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "reconstructs and maintains a dynamic 3D scene representation directly from egocentric RGB video",
+      "llm_evidence_cn": "从第一人称RGB视频直接重建并维护动态三维场景表示",
+      "llm_evidence": "从第一人称RGB视频直接重建并维护动态三维场景表示",
+      "canonical_evidence": "从第一人称RGB视频直接重建并维护动态三维场景表示",
+      "llm_tldr_en": "Introduces EgoTrack3D, a modular framework for dynamic 3D scene reconstruction and object tracking from egocentric video, lifting 2D segmentation masks into 3D.",
+      "llm_tldr_cn": "EgoTrack3D是一个从第一人称RGB视频中重建和维护动态三维场景表示的模块化框架。它通过将二维分割掩码提升到全局三维坐标系，结合点运动评分和体素合并启发式方法实现目标跟踪。该方法解决了快速视角变化和部分遮挡下的结构化表示难题，为机器人与自主导航提供了精确的动态场景理解，实验表明其能够准确关联目标轨迹。",
+      "llm_tldr": "EgoTrack3D是一个从第一人称RGB视频中重建和维护动态三维场景表示的模块化框架。它通过将二维分割掩码提升到全局三维坐标系，结合点运动评分和体素合并启发式方法实现目标跟踪。该方法解决了快速视角变化和部分遮挡下的结构化表示难题，为机器人与自主导航提供了精确的动态场景理解，实验表明其能够准确关联目标轨迹。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

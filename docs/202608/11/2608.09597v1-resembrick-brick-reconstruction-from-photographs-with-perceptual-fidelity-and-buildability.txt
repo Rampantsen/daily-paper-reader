@@ -1,0 +1,1011 @@
+Title: ResemBrick: Brick Reconstruction from Photographs with Perceptual Fidelity and Buildability
+
+URL Source: https://arxiv.org/pdf/2608.09597v1
+
+Published Time: Tue, 11 Aug 2026 02:21:50 GMT
+
+Number of Pages: 21
+
+Markdown Content:
+# ResemBrick: Brick Reconstruction from Photographs with Perceptual Fidelity and Buildability 
+
+## Xilun Chen 4, Hanwen Wan 1,2 , Yusong Zhao 4, Zexin Lin 1,2 , Ruixiang Liao 1,2 , Xiaoqiang Ji 1,2,3 ∗
+
+> 1
+
+School of Science and Engineering, The Chinese University of Hong Kong, Shenzhen, China 
+
+> 2
+
+Shenzhen Institute of Artificial Intelligence and Robotics for Society, China 
+
+> 3
+
+School of Artificial Intelligence, The Chinese University of Hong Kong, Shenzhen, China 
+
+> 4
+
+School of Data Science, The Chinese University of Hong Kong, Shenzhen, China 
+
+> *
+
+jixiaoqiang@cuhk.edu.cn 
+
+Abstract 
+
+Producing a hand-buildable, colored brick model of a 3D object from a few casual photographs is a clean testbed for a broader challenge: generating 3D content that meets hard physical-assembly constraints under a discrete, budget-limited voxel grid. On a coarse lattice, visual resemblance and struc-tural stability pull against each other, yet prior brick pipelines address only one side and treat voxelization as fixed prepro-cessing rather than a variable to optimize. We present Re-semBrick , which couples the two. Budgeted occupancy com-pletion reframes discretization as allocation: given a target occupied-voxel count, a single resolution-conditioned net-work decides in one feed-forward pass which surface voxels to fill for best appearance, one weight set spanning 13 reso-lutions. Buildability by construction then combines support-and look-ahead-aware greedy placement with a determinis-tic, provably terminating repair that grounds every floating component. Under a matched budget, ResemBrick surpasses existing voxel selectors in perceptual fidelity while uniquely reaching zero floating and zero unstable bricks on unfiltered held-out objects; as a complete pipeline, it attains the best per-ceptual fidelity among prior brick-construction systems. Our results point to treating discretization and assembly as tightly coupled stages rather than independent ones. 
+
+## 1 Introduction 
+
+Generating a hand-buildable, colored brick model of a real-world object from pose-free multi-view photographs is a clean testbed for a broader problem: producing 3D con-tent that satisfies hard physical-assembly constraints in a discrete-voxel setting. Recent pose-free multi-view recon-struction (Wang et al. 2024; Xu, Gao, and Shan 2025) makes recovering detailed geometry from a handful of casual pho-tographs practical, while converting the mesh into a colored brick assembly still falls short. Prior brick-modeling work tends to satisfy only one end. One line prioritizes perceptual or shape fidelity (Silva, Pam-plona, and Comba 2009; Yun et al. 2017; Zhou, Chen, and Xu 2019) but ignores structural stability or is confined to a nar-row object domain; another treats buildability as a physical-feasibility problem on a given shape (Testuz, Schwartzburg, and Pauly 2013; Luo et al. 2015), or synthesizes structures from learned or generative priors (Pun et al. 2025a; Xu et al. 2026; Ni et al. 2026), without aiming to faithfully 
+
+> ∗
+
+Corresponding author. 
+
+Figure 1: Teaser. Top: digital brick assemblies produced by 
+
+ResemBrick from casual photographs. Bottom: one object across three resolutions: from left, input mesh, colored at 
+
+R=24 , budgeted-completion illustration, and the brick mod-els at R=24 /32 /64 .reproduce appearance. As a result, faithful appearance and physical buildability are seldom guaranteed together within a single pipeline. Yet once bricks must be assembled for category-unconstrained objects, allocating discrete voxels on the coarse lattice is unavoidable. Under this coarse-lattice setting, the two goals pull against each other: spending the scarce occupied cells on shape-preserving structures may leave fragile, unbuildable geometry, while enforcing stabil-ity or uniformly thickening the voxel grid either flattens the thin structures that carry recognizability or over-inflates and distorts the overall shape. Budgeting voxel completion and brick assembly physical stability therefore cannot be handled in isolation and benefit from buildability-aware co-design: the former determines the upper bound attainable by the lat-ter. We therefore propose ResemBrick , which converts casual photographs of an everyday object into a physically build-able, colored brick assembly through two core designs, each resolving one side of this tension. (i) Budgeted occupancy completion recasts low-resolution discretization as an allo-arXiv:2608.09597v1 [cs.CV] 10 Aug 2026 cation problem—under a user-specified number of occupied voxels, deciding which candidate surface voxels to fill to best preserve appearance, producing a low-resolution occu-pancy grid in a single feed-forward pass. (ii) Buildability by construction combines support-, look-ahead-, and per-brick-color-aware greedy placement with a deterministic re-pair stage and a distilled stability surrogate that grounds any residual floating component. Our contributions are threefold: 
+
+• We introduce ResemBrick, a buildability-aware two-stage pipeline from pose-free photographs to buildable bricks that couples faithful appearance with grounded connec-tivity by construction. 
+
+• On the completion side, we recast voxelization as fidelity-driven budget allocation: a resolution- and budget-conditioned network, distilled from a buildability-repaired perceptual oracle, scores candidate voxels in one feed-forward pass. On the building side, we combine buildability-aware greedy placement with a determin-istic, provably terminating repair stage that guarantees grounded connectivity and zero floating components. 
+
+• Experimentally, as a complete pipeline, ResemBrick at-tains the best perceptual fidelity and is the only one yielding fully stable assemblies against existing brick-construction systems; under a matched budget, its com-pletion network further surpasses geometric voxel selec-tors in fidelity, confirming that budget allocation, not post-hoc assembly, sets the fidelity ceiling. 
+
+## 2 Related Work 
+
+Occupancy completion and budgeted voxelization. Vox-elization is the design variable that prior brick pipelines mostly hold fixed. Classical voxelization fills cells according to geometric coverage or signed distance (Nooruddin and Turk 2003), and existing brick systems inherit uniform or distance-based grids (Pun et al. 2025a; Lennon et al. 2021); this is reliable for coverage but indifferent to which voxels best preserve appearance under a coarse occupancy budget. Learned occupancy completion instead infers missing geom-etry, either as continuous fields (Mescheder et al. 2019) or as voxel completions from partial scans (Dai, Qi, and Niessner 2017), while recent discrete voxel methods optimize gener-ated volumes for rendered appearance (Huang et al. 2025; Xiang et al. 2026). Our setting differs from both: the source mesh is already known, so the task is not to hallucinate unob-served structure but to decide which surface cells to occupy when the number of occupied cells is fixed to a target budget. We therefore cast low-resolution voxelization as budgeted al-location over a surface band and learn a selector that spends the limited occupancy where it most improves appearance resemblance, subject to a connectivity constraint that keeps the downstream assembly buildable. 
+
+Brick structure generation. Brick modeling has largely pursued either resemblance to a target shape or physical feasi-bility of a given assembly. Fidelity-oriented systems voxelize meshes or images into LEGO-like models while preserving color and contour: some target arbitrary objects (Silva, Pam-plona, and Comba 2009; Yun et al. 2017; Lennon et al. 2021), while others attain higher fidelity by specializing to a nar-row object category such as architectural sculptures (Zhou, Chen, and Xu 2019), figurines (Ge et al. 2024), or micro buildings (Ge, Zhou, and Fu 2024). Stability-aware methods instead optimize brick layouts, connectivity, or force balance on an already discretized shape (Testuz, Schwartzburg, and Pauly 2013; Luo et al. 2015; Peysakhov and Regli 2003; Bao et al. 2024; Liu et al. 2024); widely used authoring tools follow the same regime, focusing on constructability rather than preserving the object’s appearance (BrickLink 2026). Recent learned systems broaden the input and output space: BrickGPT (Pun et al. 2025a) generates brick struc-tures autoregressively with rollback-based validity checks, BrickNet (Kulits and Schmid 2026) scales generation to large LDraw collections, and STABLE (Xu et al. 2026) and Brick-Anything (Ni et al. 2026) drive buildability through learned or hand-designed rewards. Across these regimes, however, faithful appearance and physical stability are never guaran-teed together for a low-budget reconstruction of an object. 
+
+Pose-free multi-view reconstruction. Our input side fol-lows recent sparse-view 3D reconstruction. Neural radi-ance fields (Mildenhall et al. 2020) and 3D Gaussian Splat-ting (Kerbl et al. 2023) established high-fidelity differentiable scene representations, typically relying on camera poses from structure-from-motion pipelines such as COLMAP (Schön-berger and Frahm 2016) and per-scene optimization. Gen-eralizable Gaussian methods reduce this cost for sparse views (Charatan et al. 2024; Chen et al. 2024), and pose-free reconstruction systems further remove calibration by predict-ing geometry, correspondences, Gaussians, and/or cameras from unposed images (Wang et al. 2024; Leroy, Cabon, and Revaud 2024; Ye et al. 2024; Xu, Gao, and Shan 2025). We use FreeSplatter as a front end and extract a watertight tex-tured mesh with TSDF fusion (Curless and Levoy 1996) and Marching Cubes (Lorensen and Cline 1987); any comparable reconstructor could substitute for it. The unresolved question, addressed here, is how to convert that recovered geometry into a low-budget brick assembly that both resembles the object and stands as built. 
+
+## 3 Method 
+
+3.1 Overview 
+
+Given a handful of casual multi-view photographs of an ob-ject, we produce a physically buildable, colored brick model (Fig. 2). A pose-free reconstructor (FreeSplatter (Xu, Gao, and Shan 2025)) lifts the input views into a set of Gaussians and camera poses, from which TSDF fusion and Marching Cubes recover a watertight textured mesh M.The voxelization stage is a single resolution-transferable network which selects which surface voxels best preserve appearance while keeping a stable assembly feasible un-der a fixed budget (Sec. 3.2). The building stage parti-tions each layer’s 4-connected region into non-overlapping library bricks while enforcing inter-layer grounded connec-tivity, a combinatorially large search related to rectangle par-tition (Lingas 1982). We handle it with a buildability-aware greedy procedure whose repair step guarantees grounded connectivity (Sec. 3.3). Mesh    
+
+> Rρ
+> 3D U-Net
+> pose-free
+> Completed Voxel Greedy Result Lego
+> Post Repair
+> User’s
+> preference
+> Greedy Merge
+> Fill surface voxels
+> Multi-view Photos
+> Layer-wise Greedy Merge
+> Higher Score Lower Score
+> base voxel
+> completed voxel
+> Oracle teacher
+> 3D U-Net student
+> distill
+> score voxels
+
+Figure 2: End-to-end image-to-buildable-brick pipeline. Two stages meet at a low-resolution colored occupancy grid: the voxelization stage (photo →voxel) and the building stage (voxel →brick). 
+
+3.2 Voxelization Stage: Buildability-Aware Occupancy Completion 
+
+The reconstructed mesh M is normalized to [0 , 1] 3. The naive uniform voxelization spends budget on structurally sta-ble regions while neglecting the structurally fragile, percep-tually important thin structures. We instead treat voxeliza-tion as budgeted occupancy completion at a fixed low res-olution K: the unambiguous deep-interior and far-exterior voxels are fixed, and learning is restricted to the surface band S, the shell of voxels straddling the surface where the fill decision is nontrivial. Given a user-controlled tar-get density ρtgt ∈ [0 , 1] , the fill count is set geometrically as nocc (ρtgt ) = nbase + round( |S| ρtgt ), with nbase the uniform-baseline count. We complete the band with a fully-convolutional 3D U-Net (Ronneberger, Fischer, and Brox 2015; Çiçek et al. 2016) with skip connections, conditioned on the target resolution and the realized density [R, ρ ] via FiLM (Perez et al. 2018) so that one set of weights serves 
+
+R ∈ { 24 , 32 , 48 }. As occupancy is discrete, a gap arises between the soft scores seen during training and the thresh-olding applied at inference; we therefore train in two phases: first distilling an optimized completion oracle, then refining it against rendered quality. At inference the user supplies a target density ρtgt , and we take the top-nocc (ρtgt ) scored band voxels as the completed grid. The completed grid finally inherits its appearance from the textured mesh by barycen-tric color sampling and a diversity-aware CIELAB palette; details are in the supplementary material. 
+
+Training phase 1: Oracle Distillation The oracle is an offline-constructed supervision target. It selects, from the surface band S, nocc (ρtgt ) voxels whose filling best recon-structs the object, greedily adding the band voxel that most reduces a geometry-aware perceptual loss Q, measured be-tween six-view renderings of the candidate grid and the target and aggregating depth, silhouette, and normal agreement, 
+
+Q = λd ∥ ˆd − d∥1 + λa ∥ˆα − α∥1
+
++ λn
+
+ 1 − cos(ˆ n, n) + λp LPIPS( ˆd, d ), (1) where d, α, n are the rendered depth, silhouette (coverage) mask, and surface normals, and hats denote the candidate grid. We evaluate LPIPS on the colorless depth rather than on textured renderings: on brick/voxel grids the hard color seams between adjacent cells dominate a natural-image per-ceptual metric and yield spurious scores, whereas depth iso-lates how well the occupancy fits mesh boundary. Because each greedy step re-scores only voxels whose neighborhood changed, we use lazy (CELF-style) greedy evaluation with batched six-view rendering, making the per-object oracle construction tractable. The selection is run at three fill levels 
+
+ρtgt ∈ { 0.4, 0.62 , 0.75 } per object. The greedily selected grid maximizes fidelity but need not be physically buildable, so each candidate is screened and repaired. Objects whose center of mass does not project within the convex hull of their ground-contact footprint are discarded as statically unstable. The rest are repaired to a single 6-connected component, by keeping the largest com-ponent as the trunk and bridging each floating component to its nearest trunk along an L1 stair path within a gap tolerance, or removing it otherwise. Because repair alters the filled count, each grid is re-labeled with its post-repair density ρ, and the U-Net is super-vised on these final band labels with a combined objective, 
+
+Lvox1 = BCE(ˆ y, y ) + Dice(ˆ y, y ) , (2) whose Dice term counters the band’s positive-rate imbalance and desaturates the score distribution for the next stage to refine. At inference ρ remains a user-control input. 
+
+Training phase 2: Annealed STE Refinement Phase 2 refines the network directly against rendered quality under a straight-through estimator (STE) (Bengio, Léonard, and Courville 2013): the forward pass binarizes the soft scores Algorithm 1 Buildability-Aware Greedy Brick Assembling 
+
+Require: Colored occupancy V; max bridge gap dg
+
+Ensure: Grounded, connected brick set B 
+
+> 1:
+
+B ← ∅  
+
+> 2:
+
+for all 4-connected components R over all layers do  
+
+> 3:
+
+while R̸ = ∅ and large candidates remain do  
+
+> 4:
+
+C ← library rectangles fitting R 
+
+> 5:
+
+score each b ∈ C by Eq. (4)  
+
+> 6:
+
+C∗ ← non-overlapping top-scoring subset  
+
+> 7:
+
+B ← B ∪ C ∗; R ← R \ S 
+
+> b∈C ∗
+
+F (b) 
+
+> 8:
+
+end while  
+
+> 9:
+
+fill R with 1×1 bricks (supported cells first)  
+
+> 10:
+
+merge adjacent bricks into library rectangles; absorb leftovers  
+
+> 11:
+
+end for  
+
+> 12:
+
+{Global floating-component repair}  
+
+> 13:
+
+repeat  
+
+> 14:
+
+build union–find; SF ← floating components  
+
+> 15:
+
+pick SK ∈ S F 
+
+> 16:
+
+σ∗ ← first success in ordered list: zero-deformation  
+
+> 17:
+
+(re-merge, re-cut, re-bridge), then voxel-adding (cap, shelf)  
+
+> 18:
+
+if σ∗ verified (floating count decreases) then  
+
+> 19:
+
+apply σ∗ 
+
+> 20:
+
+else  
+
+> 21:
+
+remove SK 
+
+> 22:
+
+end if  
+
+> 23:
+
+until SF = ∅ 
+
+> 24:
+
+return B
+
+to hard occupancy for rendering, while the backward pass treats the threshold as the identity so gradients reach the soft scores. The refinement objective combines perceptual fidelity (LPIPS and SSIM, evaluated on colorless depth ren-derings) with the budget constraint, 
+
+Lvox2 = wℓ LPIPS + ws (1 − SSIM) + wb
+
+ nfilled − nocc 
+
+2, (3) evaluated on renderings of the hard grid against the target. The budget term prevents the degenerate all-fill/all-empty solutions. The STE temperature τ is annealed geometrically from 2.0 to 0.1, so training conditions increasingly resemble deployment. Although Phase 2 optimizes only perceptual fidelity, it preserves the buildability inherited from Phase 1: floating and ungrounded voxel rates stay below 0.05% and the unsupported rate is essentially unchanged (Sec. 4.3). 
+
+3.3 Building Stage: Buildability-Aware Greedy Brick Assembling 
+
+The building stage partitions the colored occupancy grid into standard bricks, splitting each layer into 4-connected com-ponents processed independently. Buildability is handled in two complementary ways: as soft preferences during greedy scoring, and as a hard guarantee from a subsequent repair stage. Algorithm 1 summarizes the procedure. 
+
+Candidate Scoring. Starting from a component of unit cells, the algorithm repeatedly scores every candidate brick 
+
+b (a library rectangle that fits the remaining region R) and greedily commits a non-overlapping set of top-scoring bricks. The score balances coverage, buildability, and color fidelity against a look-ahead penalty: 
+
+S(b | R) = wa |F (b)| + Φ sup (b)+ wc Φcol (b) − Φfut (b | R). (4) The first term rewards large footprints |F (b)|, favoring fewer, larger bricks. 
+
+Buildability-aware support ( Φsup ). The support term is the core of our buildability-aware scoring. Let r(b) ∈ [0 , 1] 
+
+be the fraction of F (b) solidly supported by the layer below and nun (b) the number of unsupported cells the brick covers. Ground-layer bricks are fully supported; otherwise 
+
+Φsup (b) = ws |F (b)| r(b)+ ws nun (b) 1[0 < r (b) < 1] 
+
+| {z }
+
+> rescue bonus
+
+. (5) The first part rewards bricks on solid support. The rescue bonus activates when a brick simultaneously covers sup-ported and unsupported cells: such a brick spans an overhang, anchoring otherwise floating cells to the structure below. 
+
+Color fidelity ( Φcol ). Because a physical brick carries a single color, spanning cells of different colors misrepresents all but one. The color term Φcol weights each such mismatch by an importance–rarity salience, which rises for locally iso-lated colors and for globally rare ones, so brick seams favor color edges over uniform regions (full expressions in the supplementary material). 
+
+Look-ahead penalty ( Φfut ). The look-ahead penalty dis-courages placements that strand cells for later steps, counting residual cells that lack support from below and have fewer than k lateral neighbors, and weighting interior more than boundary cells, 
+
+Φfut (b | R) = λint Uint + λedge Uedge ,λedge < λ int , (6) as improper interior placements are more likely to leave frag-ile, unsupported cells. After greedy placement, residual cells are filled with 1×1
+
+bricks (supported cells first to preserve merge opportunities), hierarchically merged into valid library rectangles in ascend-ing target area, and any leftover 1×1 brick is absorbed into a library-valid neighbor. 
+
+Post-Merge Stability. Merging may leave brick groups disconnected from the ground. A union–find structure flags any floating component, which the repair operators in Algo-rithm 1 resolve in a two-tier order: zero-deformation recom-bination first, including re-merging or re-cutting neighbor-ing bricks into a spanning brick anchored by its supported segment; then voxel-adding cap/shelf bridges as a fallback (Fig. 3). Each attempt is atomic, so the assembly reaches full ground connectivity in finitely many steps. When no repair Figure 3: Two-tier floating repair. (a) Demonstration of one object’s floating and fixed components. Zero-deformation recombination (b) is preferred; voxel-adding bridges (c) are a fallback. operator succeeds, the offending floating component is re-moved as a last resort (Algorithm 1, line 21). In practice, this branch fires rarely and removes a negligible voxel frac-tion (Sec. 4.4). Global static stability is then certified on the finished assembly by a lightweight message-passing network over the assembly graph (bricks as nodes, vertical contacts as edges), which is an encode–process–decode architecture with 
+
+M message-passing layers and a dual head (per-brick stabil-ity verdict and margin) trained on StableLego’s (Liu et al. 2024) per-brick stability labels from force-balance analysis. Its dimensionless features transfer across voxel resolutions, and it emits a per-brick verdict at millisecond cost, repro-ducing the exact force-balance solver at a per-brick AUC of 0.984 ; architecture and full distillation results are in the supplementary material. 
+
+## 4 Experiments 
+
+4.1 Experimental Setup 
+
+Data and protocol. Our voxelization network is trained and evaluated on OmniObject3D (Wu et al. 2023), a large collection of high-quality scanned single objects. We split by instance into 3070 training and 198 validation objects (one held-out instance per category); the same 198 -object vali-dation set is used throughout the voxelization, building, and full-pipeline evaluations. The building stage is additionally evaluated on StableText2Brick (Pun et al. 2025b), a clean buildability benchmark. All full-pipeline and buildability comparisons on OmniObject3D are conducted at R=24 , the coarsest resolution: this is the largest lattice at which the exact force-balance solver and the Gurobi-based baselines remain tractable within our compute budget. BrickGPT’s per-brick Gurobi stability check, which we leave unmodi-fied, times out repeatedly at finer resolutions. All voxeliza-tion comparisons operate under the matched budget nocc (ρ):baselines are derived by construction from the same frozen SDF, camera poses, and mesh. Significance is assessed with per-object paired Wilcoxon signed-rank tests against Ours (∗p<. 05 , ∗∗ p<. 01 , ∗∗∗ p<. 001 ). 
+
+Metrics. Perceptual fidelity is our primary criterion, re-ported as MS-SSIM (Wang, Simoncelli, and Bovik 2003)                 
+
+> Method MS-SSIM ↑LPIPS a↓Stab% ↑
+> BrickGPT 0.940 0.081 82.7 Legolization 0.940 0.082 70.6 BrickLink Studio 0.733 0.204 75.0
+> Ours 0.955 0.075 100
+
+Table 1: Full pipeline on the held-out OmniObject3D set ( 198 
+
+objects, R=24 ). Headline perceptual metrics (MS-SSIM ↑,LPIPS a ↓) and buildability ( Stab% : fraction of assemblies with zero floating and zero statically unbalanced bricks under an exact solver, ↑). Best in bold. and LPIPS (Zhang et al. 2018) (AlexNet) on rendered views. Geometry serves as a guardrail rather than the objective: we report Chamfer distance (Fan, Su, and Guibas 2017) and F-score (Tatarchenko et al. 2019) ( τ =0 .02 , unit-cube normal-ization). All reported stability numbers ( Stab% ) are certified by the exact Gurobi force-balance solver. The full metric set (PSNR, SSIM (Wang et al. 2004), DISTS (Ding et al. 2022), VGG-LPIPS, normal consistency) is given in the sup-plement. Buildability metrics are specific to each stage and defined where they are first used. 
+
+Overview. We structure the experiments to answer the fol-lowing questions: 
+
+Q1 Does ResemBrick’s overall performance beat existing mesh-to-brick systems on fidelity and stability?(Sec. 4.2) 
+
+Q2 Is ResemBrick’s output buildable by hand in the real world? (Sec. 4.2) 
+
+Q3 Is the completion network’s architecture necessary and capacity-efficient? (Sec. 4.3) 
+
+Q4 Under a matched budget, does our completion beat geo-metric selectors? (Sec. 4.3) 
+
+Q5 Does the conditioned network generalize across resolu-tions? (Sec. 4.3) 
+
+Q6 Does our building stage produce more stable, fewer-brick assemblies? (Sec. 4.4) 
+
+Q7 Does the repair achieve zero floating at a negligible cost to shape? (Sec. 4.4) 
+
+4.2 Overall Performance of ResemBrick 
+
+We evaluate the full pipeline from photographs to buildable brick models by chaining reconstruction, voxelization, and building. The comparison uses the held-out OmniObject3D set ( 198 objects) at R=24 , with this resolution choice de-scribed in the setup. We compare with three accessible brick-modeling systems: BrickGPT (Pun et al. 2025a), Legoliza-tion (Luo et al. 2015), and the commercial converter Brick-Link Studio (BrickLink 2026). Ours attains the best percep-tual fidelity while being the only pipeline whose assemblies are fully stable (Table 1, Fig. 4). 
+
+Real-world validation. We physically build four objects spanning diverse categories by hand, following the exported layer-by-layer instructions directly from the pipeline without manual edits (Fig. 5). Every model stands unsupported on Figure 4: End-to-end gallery. Six objects (two per row); for each, left to right: input mesh, brick assemblies from BrickGPT, Legolization, and BrickLink Studio, our completed colored voxels, and our pipeline. 
+
+Figure 5: Real-world validation. Four objects built by hand from the pipeline’s exported layer-by-layer instructions; dig-ital output (left) vs. physical model (right). Minor color dif-ferences reflect same-size substitutions where a color is un-available for the required brick. a flat surface and reproduces the digital shape and colors, confirming that the connectivity constraints and post-repair translate into real physical stability. Minor color differences arise where a color is unavailable in the required brick size, in which case we substitute the closest same-size color. 
+
+4.3 Voxelization Stage 
+
+We assess the voxelization stage in three steps: we first vali-date the completion network’s design, then compare it against alternative selectors under a matched occupancy budget 
+
+nocc (ρ), and finally test its generalization across resolutions. The comparison pits our learned completion (Ours) against five purely geometric selectors and a TSDF-fusion reference that additionally consumes ground-truth depth. Therefore, TSDF served as an oracle-input upper bound rather than a competing selector. Beyond fidelity, we evaluate buildability by the number of connected components (#Comp) and the fraction of floating and unsupported voxels. 
+
+Architecture and capacity ablation. The completion net-work is a fully-convolutional 3D U-Net (channel widths 
+
+8→16 →32 , two down/up-sampling stages, skip connections, GroupNorm layers (Wu and He 2018), and a zero-initialized output layer), with the density–resolution condition [R, ρ ] in-jected through FiLM at every convolutional block. A single set of weights ( 0.10 M parameters) serves all resolutions; full                               
+
+> Architecture Capacity Variant IoU Width Par. IoU FiLM (ref.) 0.657 8(def.) 0.10 M0.653
+> concat 0.655 16 0.38 M0.654
+> cross-attn 0.651 24 0.83 M0.656
+> FiLM @bottleneck 0.657 32 1.45 M0.657
+> no GroupNorm fails 48 3.22 M0.657
+> no skip 0.647 64 5.68 M0.656
+
+Table 2: Architecture ablation (left) and capacity ablation (right), val IoU vs. the completion oracle (avg). no Group-Norm does not train (IoU frozen at initialization, 0.620 ). hyperparameters are in the supplementary material. These design choices are deliberate (Table 2). The archi-tecture and capacity choices in Table 2 were made on the basis of training loss and early stopping together with a parameter-count prior, not on the 198 -object evaluation set, which is re-served exclusively for the final evaluation. The conditioning-injection scheme is not load-bearing, group normalization is essential, and skip connections help modestly. Crucially, ca-pacity is not the bottleneck: our default 0.10 M model matches models up to 57 × larger. 
+
+Completion vs. geometric selectors. Ours is both the most faithful and the most buildable learned grid (Tables 3, 4): it wins perceptual fidelity against all geometric selectors while matching the strongest on the geometry guardrail, and attains the fewest connected components with near-zero floating voxels. Post-hoc repair does not cost appearance: it bridges only ∼0.01% of voxels, leaving fidelity unchanged while restoring full connectivity (#Comp =1 ). Finally, the TSDF control shows that buildability must be targeted during train-ing rather than assumed: even fed ground-truth depth, naive fusion yields markedly less buildable structure than our bud-geted completion. 
+
+Resolution generalization. A single conditioned network handles the full range without retraining (Fig. 6), leading on LPIPS a across all 13 resolutions and on MS-SSIM for 
+
+R ≥ 28 ; at the coarsest grids ( R ≤ 24 ) it trails only the sparse SDF shell, as structural-similarity metrics favour sparse shells on very coarse grids. The advantage holds at both interpolated and extrapolated resolutions, indicating Method LPIPS a ↓ MS-SSIM ↑ Chamfer ↓ F-score ↑                                
+
+> SDF shell 0.110*** 0.930*** 0.045*** 0.523*** Top-K0.103*** 0.923*** 0.037 *** 0.654 *** Dilate 0.104*** 0.922*** 0.038*** 0.653*** 6-sep 0.119*** 0.907*** 0.040*** 0.645 26-sep 0.120*** 0.881*** 0.045*** 0.610*** TSDF ‡0.090*** 0.946*** 0.030*** 0.735***
+> Ours 0.098 0.932 0.038 0.641 +repair †0.099 0.932 0.038 0.641
+
+Table 3: Voxelization fidelity under matched budgets nocc (ρ)
+
+(avg. over ρ ∈ { 0.4, 0.62 , 0.75 }, R ∈ { 24 , 32 , 48 }). Percep-tual: LPIPS a, MS-SSIM; geometry guardrail: Chamfer, F-score ( τ =0 .02 ). TSDF ‡ is an oracle-input reference (ground-truth depth), excluded from the bold best.                            
+
+> Method #Comp ↓Float.% ↓Unsup.% ↓
+> SDF shell 2.12*** 0.30*** 4.41*** Top-K1.78*** 0.02*** 3.32 Dilate 1.76*** 0.09*** 3.31 6-sep 3.25*** 0.43*** 3.56 26-sep 2.34*** 2.38*** 3.48* TSDF ‡1.92*** 0.33*** 3.72**
+> Ours 1.61 0.03 3.14 *** +repair †1.00 0.00 3.52
+
+Table 4: Voxelization buildability under matched budgets 
+
+nocc (ρ) (avg. over ρ ∈ { 0.4, 0.62 , 0.75 }, R ∈ { 24 , 32 , 48 }). #Comp: connected components; Float./Unsup.: float-ing/unsupported voxels; †after repair the budget is no longer exactly nocc .that the FiLM conditioning learns a continuous map over resolution rather than memorizing discrete settings. 
+
+4.4 Building Stage 
+
+We compare against brick-construction methods with a pub-licly available implementation—BrickGPT, Legolization, and STABLE (Xu et al. 2026)—all on the same grid over Sta-bleText2Brick (s2b) and the held-out OmniObject3D subset (omni). Table 5 (bottom) ablates each component. Ours uses the fewest bricks among (near-)fully stable methods while remaining (near-)fully buildable on both sets, and is the only method with zero floating and zero statically unbalanced bricks on the harder held-out omni. The ablation confirms every term contributes: removing repair collapses stabilityon s2b(52.4%), and reintroduces floating/unstable bricks on omni, while support and look-ahead further trim brick count and fragmentation. 
+
+Repair cost. Zero-floating guarantee comes at a negligible cost to shape. On the held-out omni set, the removal fallback fires on only 23 of 198 objects and discards 57 of 61 ,078 
+
+bricks ( 0.093% ; 0.025% of voxels), while the bridging oper-ators add 0.104% of voxels; the two roughly cancel, leaving net coverage slightly positive (+0 .079% ). 
+
+Figure 6: Resolution generalization at ρ=0 .62 . LPIPS a (↓)and MS-SSIM ( ↑) across 13 resolutions. Filled markers are the trained resolutions {24 , 32 , 48 }; open markers are unseen (interpolated 28 /36 /40 /44 ; extrapolated 16 /20 and 52 –64 ). Shaded bands are 95% bootstrap CIs.                                                                    
+
+> s2b ( 42 obj.) omni ( 198 obj., held-out) #Br. nfnuStab% #Br. nfnuStab% Legolization 177.1 0.79 0.79 81 508.7 5.33 4.60 76.5 BrickGPT 140.5 00100 347.2 3.28 3.08 74.2 STABLE 221.7 1.74 2.05 57 330.7 12.98 12.62 14.0
+> Ours 129.5 00.29 97.6 343.1 00100 Ours (col.) ————340.1 00.45 98.0
+> Ablation
+> naive 131.8 0.00 0.43 90.5 350.2 0.00 0.12 96.0 no-supp. 130.5 0.00 0.07 97.6 348.2 0.00 0.02 98.0 no-look. 130.3 0.00 0.29 97.6 355.0 0.00 0.00 100.0 no-repair 127.5 2.17 2.05 52.4 339.3 0.00 0.46 98.0
+
+Table 5: Building stage. Baselines vs. ours (top) and com-ponent ablation (bottom) on s2b and held-out omni; Ours (col.) adds per-brick color. #Br.: brick count; nf /nu: float-ing/locally statically unbalanced bricks; Stab%: fully sta-ble models. Bold : best among (near-)fully stable meth-ods. Dashes: metric that remains the same reported by that method. 
+
+## 5 Conclusion 
+
+We presented ResemBrick , a complete pipeline that turns ca-sual photographs into buildable brick models by coupling a resolution-conditioned occupancy-completion network with a buildability-aware greedy builder. Recasting coarse vox-elization as budget allocation, the learned completion is per-ceptually the most faithful selector while remaining the most connected under a matched budget, and a single set of weights transfers across resolutions. The builder in turn yields as-semblies with zero floating components at the lowest brick count on unconstrained held-out geometry, and the exported instructions are directly buildable by hand. Together these results indicate that how a discrete budget is spent bounds what any downstream assembly can achieve, so allocation and buildability are best co-designed rather than treated as independent stages. Several directions remain open: the in-trinsic ceiling of low-resolution occupancy invites higher-resolution or adaptive budget allocation, and coupling brick-count minimization with stability more tightly could further improve the parsimony–stability balance. Acknowledgments 
+
+This work was partially supported by National Natural Sci-ence Foundation of China (Grant No. 62441619), Guang-dong Basic and Applied Basic Research Foundation (Grant No. 2022A1515110411, Grant No. 2023A1515012883, and Grant No. 2024A1515240009), Shenzhen Science and Tech-nology Program (Grant No. JCYJ20240813113604006, Grant No. KJZD20240903095730039), and Guangxi Sci-ence and Technology Planning Project (Grant No. AA23062031-2, Grant No. AA23062073-2). 
+
+## References 
+
+Bao, N.; Zhang, Y.; Fan, Y.; and Simeone, A. 2024. Stream-lining LEGO Model Design: An Automated Optimisation Approach. Procedia CIRP , 126: 945–950. Bengio, Y.; Léonard, N.; and Courville, A. 2013. Estimating or Propagating Gradients Through Stochastic Neurons for Conditional Computation. arXiv:1308.3432. BrickLink. 2026. BrickLink Studio 2.0. https://www. bricklink.com/v3/studio/download.page. Accessed: 2026-07-25. Charatan, D.; Li, S. L.; Tagliasacchi, A.; and Sitzmann, V. 2024. pixelSplat: 3D Gaussian Splats from Image Pairs for Scalable Generalizable 3D Reconstruction. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pat-tern Recognition (CVPR) .Chen, Y.; Xu, H.; Zheng, C.; Zhuang, B.; Pollefeys, M.; Geiger, A.; Cham, T.-J.; and Cai, J. 2024. MVSplat: Efficient 3D Gaussian Splatting from Sparse Multi-View Images. In 
+
+Proceedings of the European Conference on Computer Vi-sion (ECCV) .Çiçek, Ö.; Abdulkadir, A.; Lienkamp, S. S.; Brox, T.; and Ronneberger, O. 2016. 3D U-Net: Learning Dense Volumet-ric Segmentation from Sparse Annotation. In Medical Image Computing and Computer-Assisted Intervention – MICCAI 2016 , volume 9901 of Lecture Notes in Computer Science ,424–432. Springer. Curless, B.; and Levoy, M. 1996. A Volumetric Method for Building Complex Models from Range Images. In Proceed-ings of the 23rd Annual Conference on Computer Graph-ics and Interactive Techniques , SIGGRAPH ’96, 303–312. ACM. Dai, A.; Qi, C. R.; and Niessner, M. 2017. Shape Completion Using 3D-Encoder-Predictor CNNs and Shape Synthesis. In 
+
+Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition , 5868–5877. Ding, K.; Ma, K.; Wang, S.; and Simoncelli, E. P. 2022. Image Quality Assessment: Unifying Structure and Texture Similarity. IEEE Transactions on Pattern Analysis and Ma-chine Intelligence , 44(5): 2567–2581. Fan, H.; Su, H.; and Guibas, L. J. 2017. A Point Set Gener-ation Network for 3D Object Reconstruction from a Single Image. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR) , 605–613. Ge, J.; Zhou, M.; Bao, W.; Xu, H.; and Fu, C.-W. 2024. Creat-ing LEGO Figurines from Single Images. ACM Transactions on Graphics , 43(4): 153:1–153:12. Ge, J.; Zhou, M.; and Fu, C.-W. 2024. Learning to Create LEGO Micro Buildings. ACM Transactions on Graphics ,43(6): 249:1–249:14. Huang, Y.-C.; Chan, J.; Chien, H.-J.; and Liu, Y.-L. 2025. Voxify3D: Pixel Art Meets Volumetric Rendering. arXiv:2512.07834. Kerbl, B.; Kopanas, G.; Leimkühler, T.; and Drettakis, G. 2023. 3D Gaussian Splatting for Real-Time Radiance Field Rendering. ACM Transactions on Graphics , 42(4): 139:1– 139:14. Kulits, P.; and Schmid, C. 2026. BrickNet: Graph-Backed Generative Brick Assembly. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 39252–39261. Lennon, A.; Buchanan, W.; Lim, T.; Reay, D. S.; and Taylor, N. K. 2021. Image2Lego: Customized LEGO Set Generation from Images. The Visual Computer , 37(9–11): 2929–2941. Leroy, V.; Cabon, Y.; and Revaud, J. 2024. Grounding Im-age Matching in 3D with MASt3R. In Proceedings of the European Conference on Computer Vision (ECCV) .Leskovec, J.; Krause, A.; Guestrin, C.; Faloutsos, C.; Van-Briesen, J.; and Glance, N. 2007. Cost-Effective Outbreak Detection in Networks. In Proceedings of the 13th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining , 420–429. ACM. Lingas, A. 1982. The Power of Non-Rectilinear Holes. In 
+
+Automata, Languages and Programming , volume 140 of Lec-ture Notes in Computer Science , 369–383. Springer. Liu, R.; Deng, K.; Wang, Z.; and Liu, C. 2024. Sta-bleLego: Stability Analysis of Block Stacking Assembly. 
+
+IEEE Robotics and Automation Letters , 9(11): 9383–9390. Lorensen, W. E.; and Cline, H. E. 1987. Marching Cubes: A High Resolution 3D Surface Construction Algorithm. In 
+
+Proceedings of the 14th Annual Conference on Computer Graphics and Interactive Techniques , SIGGRAPH ’87, 163– 169. ACM. Luo, S.-J.; Yue, Y.; Huang, C.-K.; Chung, Y.-H.; Imai, S.; Nishita, T.; and Chen, B.-Y. 2015. Legolization: Optimiz-ing LEGO Designs. ACM Transactions on Graphics , 34(6): 222:1–222:12. Mescheder, L.; Oechsle, M.; Niemeyer, M.; Nowozin, S.; and Geiger, A. 2019. Occupancy Networks: Learning 3D Recon-struction in Function Space. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,4460–4470. Mildenhall, B.; Srinivasan, P. P.; Tancik, M.; Barron, J. T.; Ramamoorthi, R.; and Ng, R. 2020. NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis. In 
+
+Computer Vision – ECCV 2020 , 405–421. Springer. Ni, Z.; Yan, F.; Guo, Y.; and Wang, F. 2026. BrickAny-thing: Geometry-Conditioned Buildable Brick Generation with Structure-Aware Tokenization. arXiv:2605.26182. Nooruddin, F. S.; and Turk, G. 2003. Simplification and Repair of Polygonal Models Using Volumetric Techniques. 
+
+IEEE Transactions on Visualization and Computer Graphics ,9(2): 191–205. Perez, E.; Strub, F.; de Vries, H.; Dumoulin, V.; and Courville, A. 2018. FiLM: Visual Reasoning with a General Conditioning Layer. In Proceedings of the Thirty-Second AAAI Conference on Artificial Intelligence , 3942–3951. Peysakhov, M.; and Regli, W. C. 2003. Using Assembly Representations to Enable Evolutionary Design of LEGO Structures. Artificial Intelligence for Engineering Design, Analysis and Manufacturing , 17(2): 155–168. Pun, A.; Deng, K.; Liu, R.; Ramanan, D.; Liu, C.; and Zhu, J.-Y. 2025a. Generating Physically Stable and Buildable Brick Structures from Text. In Proceedings of the IEEE/CVF In-ternational Conference on Computer Vision (ICCV) , 14798– 14809. Pun, A.; Deng, K.; Liu, R.; Ramanan, D.; Liu, C.; and Zhu, J.-Y. 2025b. StableText2Brick Dataset. https://huggingface.co/ datasets/AvaLovelace/StableText2Brick. Accessed: 2026-07-25. Ronneberger, O.; Fischer, P.; and Brox, T. 2015. U-Net: Convolutional Networks for Biomedical Image Segmenta-tion. In Medical Image Computing and Computer-Assisted Intervention – MICCAI 2015 , volume 9351 of Lecture Notes in Computer Science , 234–241. Springer. Schönberger, J. L.; and Frahm, J.-M. 2016. Structure-from-Motion Revisited. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR) .Sharma, G.; Wu, W.; and Dalal, E. N. 2005. The CIEDE2000 Color-Difference Formula: Implementation Notes, Supple-mentary Test Data, and Mathematical Observations. Color Research & Application , 30(1): 21–30. Silva, L. F. M. S.; Pamplona, V. F.; and Comba, J. L. D. 2009. Legolizer: A Real-Time System for Modeling and Rendering LEGO Representations of Boundary Models. In Proceedings of the XXII Brazilian Symposium on Computer Graphics and Image Processing , 17–23. IEEE. Tatarchenko, M.; Richter, S. R.; Ranftl, R.; Li, Z.; Koltun, V.; and Brox, T. 2019. What Do Single-View 3D Reconstruction Networks Learn? In Proceedings of the IEEE/CVF Confer-ence on Computer Vision and Pattern Recognition (CVPR) ,3405–3414. Testuz, R.; Schwartzburg, Y.; and Pauly, M. 2013. Automatic Generation of Constructable Brick Sculptures. Computer Graphics Forum , 32(2pt3): 339–348. Wang, S.; Leroy, V.; Cabon, Y.; Chidlovskii, B.; and Revaud, J. 2024. DUSt3R: Geometric 3D Vision Made Easy. In Pro-ceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 20697–20709. Wang, Z.; Bovik, A. C.; Sheikh, H. R.; and Simoncelli, E. P. 2004. Image Quality Assessment: From Error Visibility to Structural Similarity. IEEE Transactions on Image Process-ing , 13(4): 600–612. Wang, Z.; Simoncelli, E. P.; and Bovik, A. C. 2003. Multi-Scale Structural Similarity for Image Quality Assessment. In 
+
+The Thirty-Seventh Asilomar Conference on Signals, Systems and Computers , volume 2, 1398–1402. IEEE. Wu, T.; Zhang, J.; Fu, X.; Wang, Y.; Ren, J.; Pan, L.; Wu, W.; Yang, L.; Wang, J.; Qian, C.; Lin, D.; and Liu, Z. 2023. OmniObject3D: Large-Vocabulary 3D Object Dataset for Realistic Perception, Reconstruction and Generation. arXiv:2301.07525. Wu, Y.; and He, K. 2018. Group Normalization. In Pro-ceedings of the European Conference on Computer Vision (ECCV) , 3–19. Xiang, Z.; Wu, J.; Sun, F.; Zheng, H.; and Li, Y. 2026. DVD: Discrete Voxel Diffusion for 3D Generation and Editing. arXiv:2605.07971. Xu, C.; Bai, Z.; Yu, F.; Huang, H.; and Xiong, J. 2026. Rollback-Free Stable Brick Structures Generation. arXiv:2605.06947. Xu, J.; Gao, S.; and Shan, Y. 2025. FreeSplatter: Pose-free Gaussian Splatting for Sparse-view 3D Reconstruction. In 
+
+Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , 25442–25452. Ye, B.; Liu, S.; Xu, H.; Li, X.; Pollefeys, M.; Yang, M.-H.; and Peng, S. 2024. No Pose, No Problem: Surprisingly Simple 3D Gaussian Splats from Sparse Unposed Images. 
+
+arXiv preprint arXiv:2410.24207 .Yun, G.; Park, C.; Yang, H.; and Min, K. 2017. Legorization with Multi-Height Bricks from Silhouette-Fitted Voxeliza-tion. In Proceedings of Computer Graphics International .Zhang, R.; Isola, P.; Efros, A. A.; Shechtman, E.; and Wang, O. 2018. The Unreasonable Effectiveness of Deep Features as a Perceptual Metric. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,586–595. Zhou, J.; Chen, X.; and Xu, Y.-Q. 2019. Automatic Gen-eration of Vivid LEGO Architectural Sculptures. Computer Graphics Forum , 38(6): 31–42. A Overview of Supplementary Material 
+
+This supplementary material provides implementation de-tails and additional analyses that support the main paper. We first give an expanded description of the full pipeline (Sec. B) and of the data splits (Sec. C), then implementation details for the voxelization network and the stability surrogate (Sec. D). We next detail the evaluation protocol, metric defi-nitions, and statistical testing (Sec. E), followed by additional quantitative results (Sec. G)—an architecture/capacity abla-tion, a hyperparameter-selection sanity check, the fidelity– buildability trade-off, the full perceptual-metric table, the geometry guardrail, and hyperparameter settings. We close with an analysis of the scope of our buildability claims (Sec. H.1), a justification of the lazy-greedy oracle construc-tion (Sec. H.2), a discussion of concurrent systems not run as baselines (Sec. H.3), and limitations with future directions (Sec. I). 
+
+## B Pipeline Details 
+
+The full pipeline turns a handful of casual photographs into a colored, hand-buildable brick model through four stages, each consuming the previous stage’s output. 
+
+(1) Pose-free reconstruction. From a few unposed input photographs, a pose-free reconstructor (FreeSplatter (Xu, Gao, and Shan 2025) in our implementation) predicts ge-ometry and appearance without camera calibration; we ex-tract a watertight textured mesh via TSDF fusion (Curless and Levoy 1996) and Marching Cubes (Lorensen and Cline 1987). Output: a textured mesh with per-vertex color. 
+
+(2) Budgeted occupancy completion. The mesh is vox-elized on a coarse lattice, and a single resolution-conditioned network selects, in one feed-forward pass, which surface voxels to fill so as to best preserve appearance under a tar-get occupied-voxel budget nocc (ρ) (main paper, voxelization stage). Output: a completed occupancy grid at the target bud-get, with per-voxel color sampled from the mesh (Sec. D.3). 
+
+(3) Buildable brick assembly. Each layer’s 4-connected region is partitioned into non-overlapping library bricks by a support- and look-ahead-aware greedy placement, and a de-terministic, provably terminating repair grounds every float-ing component (main paper, building stage). Static stability is certified post hoc by the exact force-balance solver, with the distilled surrogate (Sec. D.2) used only as a fast in-loop screen. Output: a grounded brick assembly. 
+
+(4) Color assignment. Each voxel’s continuous color is quantized to the fixed LEGO palette with an adaptive, edge-preserving reduction, and every brick inherits a single repre-sentative color (Sec. D.3, Sec. D.3). Output: the final colored, layer-by-layer buildable brick model. Some of the stage descriptions above necessarily restate the main paper so that this supplement is readable on its own; the main paper remains the authoritative source for the method.                                           
+
+> Stage Spatial Channels enc1 32 3in →8
+> down1 +enc2 16 38→16
+> down2 +bottleneck 8316 →32
+> up2 +dec2 (skip enc2) 16 332 →16 ,cat(16+16) →16
+> up1 +dec1 (skip enc1) 32 316 →8,cat(8+8) →8
+> head 32 38→1(13conv, zero-init)
+
+Table 6: Layer structure of the completion U-Net at base=8 ,shown for input resolution R=32 . Skip connections concate-nate the matching encoder features into the decoder. 
+
+## C Data Splits 
+
+We partition OmniObject3D (Wu et al. 2023) into disjoint sets that are used consistently throughout the paper and this supplement. The completion network is trained on the 3070 -object rho training split (one instance per category with-held). The main-paper evaluation—voxelization, building, and full-pipeline—is reported on the 198 -object held-out validation set. Building-stage hyperparameters are selected on a separate sweep-validation set ( sweepval3 , 35 objects from 12 categories) that never appears in the training split; a hard assert in the split builder verifies zero instance and zero category overlap with training. Tuning building-stage weights on this set therefore never touches the training data, and it is kept small (mean occupancy 671 vs. 2066 for the full set) so a single configuration runs in minutes. The network architecture and checkpoint are fixed on training loss and early stopping, not on any evaluation-set metric (main paper, voxelization stage). 
+
+## D Implementation Details 
+
+D.1 Voxelization Network: Architecture and Training 
+
+The completion network ( OccCompletionNet ) is a fully-convolutional 3D U-Net (Ronneberger, Fischer, and Brox 2015; Çiçek et al. 2016) with two down/up-sampling stages and skip connections. The three channel widths follow a fixed 
+
+1:2:4 ratio c1, c 2, c 3 = (base , 2 base , 4 base) ; our default 
+
+main-result model uses base=8 , i.e. 8→16 →32 channels (0.10 M parameters). At resolution R=32 the spatial grid contracts 32 3→16 3→83 through the encoder and mirrors back in the decoder. Each ConvBlock is two 33 Conv3d layers, each fol-lowed by GroupNorm (Wu and He 2018) with min(8 , C )
+
+groups and a GELU activation. Down-sampling uses a stride-
+
+2 convolution and up-sampling a ConvTranspose3d ;the 13 output head is zero-initialized so the network starts from the identity fill. The density–resolution condition 
+
+[R/ 64 , ρ ] is mapped by a small MLP to per-channel FiLM parameters (Perez et al. 2018) (γ, β ) that modulate ev-ery ConvBlock , so a single set of weights serves R ∈{24 , 32 , 48 } and generalizes to unseen resolutions, as shown by the resolution-generalization figure in the main paper. Training uses the rho split ( 3070 train) on the Voxel-train L40S GPU (Sec. F), with the Adam optimizer at a 10 −3Node features (11 -dim)                   
+
+> h, w footprint dimensions
+> min( h, w )shorter footprint side
+> h w footprint area
+> 1[1 ×X]is a 1×Xbrick
+> mass /mass 1×1mass relative to a unit brick
+> z/z max relative height in the model
+> nbot , n top bottom / top contact counts
+> 1[ground brick ]rests on the ground
+> 1[ground node ]is the virtual ground node
+> Edge features (4-dim)
+> ncontact # overlapping contact cells
+> ncontact /min( AA, A B)contact relative to smaller area
+> 1[up ]edge orientation (up / down)
+> 1[ground ]is a ground-contact edge
+
+Table 7: Dimensionless node and edge features of the sta-bility surrogate ( AA, A B are the two incident brick areas). Using only counts and ratios makes the surrogate resolution-agnostic. learning rate. Phase 1 distills the buildability-aware com-pletion oracle via a ranking loss on the surface-band scores and trains for 80 epochs. Phase 2 refines the network against rendered fidelity under a straight-through estimator (Bengio, Léonard, and Courville 2013) whose temperature is annealed geometrically from τ =2 .0 to 0.1, with a budget term pinning the filled count to nocc (ρ), and trains for 12 epochs. 
+
+D.2 Stability Surrogate 
+
+All stability numbers in the main paper use the exact force-balance solver. For use inside training, we additionally dis-till this solver into a millisecond message-passing surrogate that predicts per-brick stability, reaching a per-brick AUC of 
+
+0.984 and transferring across voxel resolutions without fine-tuning. Because it is a differentiable drop-in for the MILP gate, it can be used as a soft stability signal during opti-mization while all reported evaluation remains on the exact solver. 
+
+Surrogate Architecture The surrogate is an encode– process–decode message-passing network over the assem-bly graph, following the MetaLayer formulation. Bricks are nodes (plus a single virtual ground node); edges connect a brick in layer z to a brick in layer z+1 whose XY foot-prints overlap (a vertical contact), and ground-level bricks to the ground node. Contact edges are directed and instantiated in both orientations (down →up and up →down) so the net-work can encode which brick presses on which; same-layer neighbors are not connected, as lateral adjacency provides no vertical support. All features are deliberately dimensionless (counts and ra-tios only)—this is what lets a single set of weights transfer across voxel resolutions without fine-tuning; in particular only the relative height z/z max enters and absolute coordi-nates are never used. Table 7 lists the 11 node and 4 edge features.                       
+
+> Metric thr. 0.5(uncal.) thr. 0.95 (cal.) AUC 0.984 0.984
+> Accuracy 0.925 0.984
+> Precision 0.462 0.940
+> Recall 0.958 0.801
+> F1 0.623 0.865
+> Object-level agreement 0.718 0.991
+> GT-buildable correct 0.380 0.980
+> GT-unbuildable correct 1.000 1.000
+
+Table 8: Surrogate distillation fidelity on the 110 -object test set (per-brick unless noted). The AUC is threshold-independent; the two columns differ only in the decision threshold, calibrated on validation. The network follows the standard encode–process–decode template: 
+
+• Encoder: two MLPs lift node features 11 →128 →128 
+
+and edge features 4→128 →128 .
+
+• Processor: M =5 MetaLayer blocks. Each block first up-dates every edge from its two endpoints and its own state, then updates every node from its current state and the mean of incoming edge messages, with residual connec-tions on both node and edge states. 
+
+• Decoder: a node MLP 128 →128 →2 with a dual head emitting a per-brick instability logit and a stability margin. The network has 0.628 M parameters. Being purely message-passing over dimensionless features, it is resolution-agnostic (trained at 20 3, applied at 16 –64 3). It is trained on StableLego’s per-brick stability labels (from force-balance analysis) with a per-brick loss combining a class-balanced instability term and a margin-regression term, 
+
+L = BCE  ˆs, y dead ; w+ + λ Huber( ˆ m, m ), (7) where ˆs is the predicted instability logit, ydead the ground-truth instability label, w+=12 .8 the positive class weight, and the Huber margin term ( λ=1 , δ=0 .1) is applied to stable bricks only. Optimization uses Adam ( lr 10 −3, weight decay 
+
+10 −4), with plateau LR scheduling and early stopping on val-idation AUC (best checkpoint reported). Splits are by object (all bricks of an object share a split) to prevent leakage. 
+
+Distillation Results The surrogate is evaluated on a held-out test set of 110 objects ( 880 train / 110 validation / 110 
+
+test, using StableLego dataset, balanced by category). Be-cause the training positive-weighting inflates predicted in-stability probabilities, the decision threshold is calibrated on validation by maximizing object-level agreement (optimum 
+
+≈ 0.95 ); the default 0.5 threshold is not used, and re-reading at the calibrated threshold is a decoding fix, not a change of model (Table 8). The per-brick AUC is threshold- indepen-dent at 0.984 , matching the value quoted in the main paper. At the calibrated threshold the object-level buildability gate agrees with the exact solver on 99 .1% of test objects. 
+
+Cross-resolution transfer. Trained only at 20 3, the surro-gate applies unchanged at other resolutions. On a 32 3 assem-bly (an object of 608 bricks) the per-brick AUC is 0.9955 and accuracy 0.987 , confirming that the ranking of bricks by stability transfers; the absolute decision threshold does not, since the calibrated 0.95 cut from 20 3 is no longer optimal on the far more imbalanced 32 3 distribution (dead bricks 
+
+∼1.2% ), where F1 drops to 0.50 even as AUC rises. In prac-tice the threshold is re-calibrated per deployment resolution. 
+
+Limitation. The per-brick score correlation is modest (Spearman 0.44 ) because the regression target saturates at the margin ceiling for the many clearly- stable bricks, giv-ing a weak continuous ranking signal. This does not affect the binary instability verdict that the gate relies on, but a downstream use requiring a smooth stability gradient field would be limited by it. Separately, on our own OmniOb-ject3D sweep data the surrogate’s deviation from the exact solver is one-sided (it over -predicts instability, i.e. it is con-servative), with object-level agreement 96 .2% ; we therefore use it only for trend/ ordering during optimization and report all final numbers from the exact solver. 
+
+D.3 Additional Implementation Notes 
+
+Color availability. Colors are drawn from the 91 solid LEGO colors (Sec. D.3), and every brick carries a single color. We do not model a per-size color availability: inven-tory is treated as effectively unconstrained, so numerically any brick size can take any color. The “closest same-size color” substitution mentioned in the main paper is a manual 
+
+substitution performed only during our physical hand-builds when a required brick size is unavailable in stock; it is a physical-build step, not a pipeline step. 
+
+Color-Fidelity Term: Full Expressions The main pa-per introduces the per-brick color-fidelity term Φcol as an “importance–rarity salience” that makes brick seams prefer color edges over uniform regions. Here we give the exact expressions used in our implementation. 
+
+Per-voxel color and salience. Each surface voxel v carries a discrete LEGO color id c(v) (an index into the assembly palette; interior voxels are colorless and are excluded from every sum below). We attach to each colored surface voxel a scalar salience weight 
+
+w(v) = imp( v) · rar  c(v), (8) the product of a local isolation (importance) factor and a 
+
+global rarity factor. The isolation factor measures how texturally isolated a voxel is within its 3×3×3 neighborhood N (v) (the 26 
+
+neighbors). Letting Nocc (v) be the occupied neighbors and 
+
+Nsame (v) ⊆ N occ (v) those sharing the voxel’s own color id, 
+
+imp( v) = 1 − |N same (v)||N occ (v)| ,
+
+imp( v) := 1 if |N occ (v)|=0 .
+
+(9) A voxel surrounded by same-color neighbors (flat, uniform region) gets imp → 0; an isolated color speck (e.g. an eye dot, a baked edge) approaches 1.The rarity factor rewards globally scarce colors. Let fc
+
+be the number of colored surface voxels carrying color id 
+
+c, and let N = P 
+
+> c
+
+fc be the total count of colored surface voxels (the sum runs over colored ids only; colorless interior voxels do not contribute). Our default ( inv ) uses the inverse frequency 
+
+rar( c) = Nfc
+
+, (10) with two alternatives we also support, rar log (c) =
+
+− log( fc/N ) and rar √(c) = pN/f c; the inverse form performed best and is used in all reported results. Setting 
+
+w(v) ≡ 1 recovers the plain cell-count behavior. 
+
+Per-brick term. A physical brick b carries a single color, so it can honor only one of the color ids present in its foot-print. We use the salience weights in two related but distinct roles. (i) Assigning the brick’s single representative color is a majority-style vote weighted by the local isolation factor 
+
+imp( v) alone: 
+
+c⋆(b) = arg max 
+
+> c
+
+X
+
+> v∈b, c (v)= c
+
+imp( v), (11) so that isolated texture voxels dominate the choice of which color a mixed-color brick should take. (ii) Scoring the brick during greedy placement uses the full salience w(v) =imp( v) rar( c(v)) , rewarding the honored mass and penal-izing the misrepresented mass: 
+
+Φcol (b) = wcol 
+
+h X
+
+> v∈bc(v)= c⋆(b)
+
+w(v)
+
+− X 
+
+> v∈bc(v)̸=c⋆(b),colored
+
+w(v)
+
+i
+
+,
+
+(12) where wcol is the color weight ( wcol =20 in all experiments; 
+
+wcol =0 disables the term for backward compatibility). Using 
+
+imp alone for the color vote and the full w for the placement 
+
+score reflects our implementation: the representative color follows local texture isolation, while the global rarity factor additionally steers where the greedy merge chooses to cut seams. A single-color brick incurs no penalty and scores proportionally to its (weighted) area, matching the plain area reward; a brick that swallows a high-salience rare/isolated voxel of a different color is heavily penalized, pushing the greedy selector to give such voxels their own small brick and preserve the color. This is the term that recovers fine chromatic detail (e.g. the teddy’s eyes, the biscuit’s baked rim) that a purely area-driven merge would erase. 
+
+Color Assignment and Palette Color enters the pipeline in two decoupled steps: (i) sampling a continuous color for every occupied voxel from the reconstructed textured mesh, and (ii) quantizing those colors to a fixed LEGO color set with an adaptive, edge-preserving reduction. Both run as preprocessing, before brick placement, so the building stage sees a discrete color id per voxel. 
+
+Barycentric color sampling from the mesh. Given the reconstructed mesh M with per-vertex colors, we color each occupied voxel by its center point q. We query an o3d ray-casting scene for the closest surface point to q, which returns the hit triangle (v0, v 1, v 2) and its barycentric coordinates 
+
+(u, v ). The voxel color is the barycentric interpolation of the three vertex colors, 
+
+c(q) = w c0 + u c1 + v c2, w = 1 − u − v, (13) rather than the nearest-vertex color, so that colors vary smoothly when a voxel center projects into a triangle inte-rior. This yields a continuous sRGB color per surface voxel, stored directly in the color channels of the occupancy grid. 
+
+Diversity-aware CIELAB quantization. The continuous colors are quantized to the set of 91 solid LEGO colors. All color distances use the full CIEDE2000 difference (with the 
+
+SL, S C , S H , R T terms) (Sharma, Wu, and Dalal 2005), not a plain CIE76 ∆E∗ 
+
+> ab
+
+Euclidean distance, because CIEDE2000 better matches perceptual color proximity for the saturated hues common in toy objects. Quantization proceeds in three stages and, crucially, never fixes a target number of colors k;the palette size is adaptive per object. 
+
+(1) Nearest-color mapping. Each colored surface voxel is converted to CIELAB and assigned the LEGO color mini-mizing its CIEDE2000 distance (independent per voxel; no clustering). 
+
+(2) Adaptive ∆E merging. We then repeatedly merge the two closest used colors while their CIEDE2000 distance is below a threshold ∆Emin =10 , folding the smaller-area color into the larger. This softly reduces near-duplicate colors with-out a preset k.
+
+(3) Long-tail connectivity test. Colors covering less than 
+
+0.5% of the colored surface voxels are treated as a long tail. For each tail color we run a 3×3×3 connected-component analysis: if its largest connected component still covers at least 0.3% of the voxels, the color is kept (it is a spatially coherent texture feature, e.g. an eye or a printed marking); otherwise it is scattered noise and is folded into its nearest re-tained color under CIEDE2000. This is what preserves small but meaningful chromatic details while discarding speckle. At build time a brick inherits the representative color of Eq. (11). When the required brick size is unavailable in that color, we substitute the closest same-size color (again by CIEDE2000), which accounts for the minor color differences noted in the real-world builds. 
+
+## E Evaluation Protocol and Metrics 
+
+E.1 Metrics and Evaluation Setup 
+
+Baseline protocols. All voxelization-stage comparisons use the matched occupancy budget nocc (ρ). The com-pared selectors are derived from the same frozen SDF, camera poses, and mesh, and are evaluated over ρ ∈{0.4, 0.62 , 0.75 } and R ∈ { 24 , 32 , 48 } unless otherwise stated. The non-oracle voxelization baselines are SDF shell, Top-K, dilation, 6-separating, and 26-separating selectors; each is defined exactly, together with the shared budget-matching rule, in Sec. E.1. TSDF fusion is reported as an oracle-input reference because it additionally uses ground-truth depth, and is therefore excluded when marking the best non-oracle method. The full pipeline is compared with pub-licly available brick-construction systems, BrickGPT (Pun et al. 2025a), Legolization (Luo et al. 2015), and BrickLink Studio (BrickLink 2026), on the held-out OmniObject3D set at R=24 . For the building-stage comparison, BrickGPT, Legolization, and STABLE (Xu et al. 2026) are run on the same input grids over both StableText2Brick and the held-out OmniObject3D subset. 
+
+Voxelization Selectors: Exact Definitions Every vox-elization selector reads the same frozen per-object cache: a continuous signed-distance field ϕ evaluated at voxel cen-ters on the R3 lattice of the unit cube [0 , 1] 3 (so ϕ is in cube-normalized units and the voxel edge is h=1 /R ), the same camera poses, and the same textured mesh. No selec-tor re-runs alignment, surface sampling, or reconstruction, so fairness here is by construction rather than by statistical control. Two derived sets are fixed once per object: the solid core B = {v : ϕ(v) ≤ 0}, the voxels whose centers lie inside the surface, and the surface band S = {v : cov( v) > 0} \ B ,where cov( v) is the fraction of voxel v covered by the mesh, so S is exactly the shell of voxels the surface passes through but whose centers fall outside it. The matched budget is 
+
+nocc (ρ) = |B| + round  |S| ρ, (14) i.e. the core is always kept and only the band is contested. The selectors are: 
+
+• SDF shell is the raw solid core B: fill every voxel whose center is inside the surface, and nothing else. This is the default “just voxelize the mesh” behavior and is the one selector with no budget parameter—at low ρ it is denser than nocc and at high ρ sparser—so it is reported as an unbudgeted reference rather than as a same-budget competitor. 
+
+• Top-K keeps the nocc voxels of smallest ϕ, a single global partial sort on the signed distance. Equivalently, it sweeps one global iso-level until the budget is exactly met. This is the strongest purely geometric selector in our com-parison.(In other sections of this supplement, this same selector may be labeled as uniform : “uniform” and “Top-
+
+K” denote the identical construction and differ only in naming.) 
+
+• Dilate starts from B and applies rounds of 6-connected binary dilation (the 33 cross structuring element) until the count first reaches nocc , then trims back to the budget. It differs from Top-K in that growth is forced to stay contiguous with the core instead of being free to open new components at a distance. 
+
+• 6-separating takes the touched set {v : |ϕ(v)| ≤ 12 h}:voxels whose inscribed sphere (radius h/ 2) reaches the surface. This is the thin, 6-separating criterion of 
+
+binvox -style thin voxelization. 
+
+• 26-separating takes {v : |ϕ(v)| ≤ √32 h}: voxels whose 
+
+circumscribed sphere (radius √3h/ 2, the half body diag-onal) reaches the surface—the conservative rasterization criterion. 
+
+• TSDF fuses six depth observations of the ground-truth 
+
+mesh: for each of the six evaluation camera positions we cast a ray from the eye directly to every voxel center and take sdf view = thit − dvox , truncated to ±μ with μ=2 h. Casting to voxel centers rather than rasterizing a depth image avoids image discretization, so this is equiv-alent to an infinite-resolution depth map under the same camera geometry as the rendered evaluation. Only obser-vations with sdf view > −μ vote (deeply occluded views abstain); a voxel with no valid observation is treated as interior ( −μ). A voxel is occupied when its fused value is 
+
+≤0. Because TSDF consumes ground-truth depth it is an oracle-input reference, not a competing selector. 
+
+• Ours keeps B and hardens the top nocc − |B| band voxels by predicted score, so the contested set is exactly the band and the realized count is nocc by construction. 
+
+Budget matching. Top-K and our network meet Eq. (14) by construction. The two separating selectors and TSDF are threshold-defined, so their raw output does not land on the budget exactly; they are matched by a single shared routine, so that no selector gains or loses from the matching rule itself. Given a raw occupancy set and two per-voxel keys—a 
+
+trim key and a fill key—the routine is: 
+
+• if the raw set is larger than nocc , keep the nocc occupied voxels of smallest trim key, so the retained voxels are those hugging the surface most tightly; 
+
+• if it is smaller , add the unoccupied voxels of smallest fill key, so the additions are the most interior / nearest-surface voxels, until the budget is met. The trim key is |ϕ| for the separating selectors and |tsdf |
+
+for TSDF; the fill key is the corresponding signed value ( ϕ,resp. the fused value), which is what makes “smallest” mean most-interior on the fill side and closest-to-surface on the trim side. Dilate uses the same routine with ϕ as both keys. Selection is a deterministic partial sort, and the realized voxel count is asserted equal to min( nocc , R 3) for every selector and object. 
+
+Caliber note on the separating selectors. The two sep-arating selectors are implemented as a distance-field test at voxel centers rather than as per-triangle separating-axis (SAT) tests. The two thresholds bracket exact SAT: the inscribed-sphere set is contained in the SAT-touched set, which is in turn contained in the circumscribed-sphere set, so 6-sep is never more permissive and 26 -sep never more restrictive than SAT. The sets differ only for voxels grazed at a corner. Because the identical field and thresholds are used for every object and resolution, this affects neither the comparison nor the reported ordering. 
+
+Rendered-view metrics. Perceptual fidelity is measured on rendered views of the predicted output and the target. The headline perceptual metrics are MS-SSIM (Wang, Simon-celli, and Bovik 2003) and LPIPS (Zhang et al. 2018) with an AlexNet backbone (LPIPS a). The full rendered-image metric set additionally includes PSNR, single-scale SSIM (Wang et al. 2004), DISTS (Ding et al. 2022), VGG-LPIPS, and normal consistency. PSNR, SSIM, MS-SSIM, DISTS, and LPIPS are computed on color renderings; normal consis-tency measures cosine agreement between rendered normal maps. Metrics are averaged over the rendered views and then aggregated over the object set, with additional averaging over 
+
+ρ and R where indicated by the table caption. For the ora-cle construction used in Stage A training, the rendering loss is computed from six-view renderings that aggregate depth, silhouette, normal, and LPIPS terms. 
+
+Geometry metrics. Geometry is used as a guardrail rather than as the primary objective. Before geometry evaluation, each object is normalized to the unit cube, and both the pre-dicted and target surfaces are sampled into dense point sets. Chamfer distance is the symmetric mean nearest-neighbor distance between the predicted and target surface point sets under this unit-cube normalization. The F-score at a dis-tance threshold τ is the harmonic mean of precision (frac-tion of predicted points within τ of the target surface) and recall (fraction of target points within τ of the predicted sur-face); we report it at both τ =0 .02 and the tighter τ =0 .01 ,in unit-cube coordinates. Normal consistency (NC) is the mean absolute cosine similarity between the surface normal at each predicted point and the normal at its nearest target point (and symmetrically), so that NC=1 denotes perfectly aligned surface orientation; it measures agreement of local surface orientation rather than point position. 
+
+Buildability metrics. Voxelization buildability is mea-sured directly on the completed occupancy grid. We report the number of connected components (#Comp), the fraction of floating voxels, the fraction of unsupported voxels, and, when repair is applied, whether the repair restores a single grounded component. Building stage metrics are computed on the final brick assembly: #Br. is the brick count, nf is the number of floating bricks, nu is the number of force-balance-unstable bricks under the exact solver, and Stab% is the fraction of models with zero floating and zero unstable bricks. 
+
+E.2 Exact Force-Balance Solver 
+
+All reported stability numbers are certified by an exact force-balance mixed-integer program, StableLego’s global force-balance MILP (Liu et al. 2024). We state the formulation by name rather than re-deriving it. Each brick carries per-contact unknowns—a normal force and a friction/clutch force at the convex stud contacts; the constraints impose per-brick force and moment balance, with equal-and-opposite contact forces applied pairwise between touching bricks; the objective min-imizes the total force residual plus a small α, β regulariza-tion. The physical constants are a per-stud clutch capacity 
+
+T =0 .98 N, a per-cell mass 2.87 ×10 −4 kg, a unit footprint of 
+
+7.8 mm ×9.6 mm, and an equality tolerance EQ_TOL =10 −6;the MILP is solved with Gurobi under MIPFocus =1 .
+
+Alignment with the main-paper nu. The unstable-brick count nu is exactly the main-paper quantity: a brick is counted when its force residual exceeds the tolerance, and 
+
+nu sums such bricks. The floating count nf is a separate ,brick-level union–find count of components not connected to the ground (two bricks are connected when their footprints overlap across adjacent layers, with the ground at z=0 ). The stability rate is Stab% , the fraction of models with nf =0 
+
+and nu=0 . The qualifier “local” in locally unbalanced refers to the fact that the per-brick reading treats a neighbor’s sup-port as given rather than propagating instability transitively— precisely the notion the message-passing surrogate (Sec. D.2) is distilled to reproduce. 
+
+Time limit, timeout, and re-run rule. The per-assembly time limit is 300 s ( 120 s for the surrogate-screened sweep stage). A timeout is detected as nu=nbrick with solver status ̸
+
+= OPTIMAL : the solver returns “all bricks dead” as a degen-erate artifact rather than a genuine verdict. Such assemblies are re-attempted once at a 1800 s limit, applied identically to all four methods; only assemblies still unsolved at 1800 s are excluded, and they are never counted as unstable. Under this rule the recovery counts are 27 /27 for our method, 18 /18 for BrickGPT, and 34 /34 for Legolization, so zero assemblies are excluded for any method. This is empirical evidence, not a guarantee; we note that at R=32 some assemblies remain unsolved even at 1800 s, which is why, for a fair comparison, we do not use R=32 or finer resolutions. 
+
+E.3 Baseline System Settings 
+
+We detail how each comparison system is run, in addition to the matched-budget protocol stated in the main paper. 
+
+Full-pipeline baselines. All full-pipeline baselines con-sume the same input mesh as our method. BrickGPT (Pun et al. 2025a) is driven through the mesh2brick module shipped in its public repository, which uses Open3D for voxelization. Legolization (Luo et al. 2015) is run on the same Open3D-derived input as BrickGPT, because the pub-lic Maya-plugin implementation is not functional; using an identical front end keeps the comparison controlled. Brick-Link Studio (BrickLink 2026) is run through its built-in “im-port 3D mesh / convert to brick” function. 
+
+Building-stage baselines. For the building-stage compar-ison, all methods are given the identical input grid: the SDF-uniform voxelization dilated by 0.2. BrickGPT is natively a 
+
+20 3 method, but because it is not a learned generator but an exact Gurobi solve, it can be manually set to R=24 ; enlarg-ing the grid only increases solve time and does not change the result, so the comparison stays faithful. STABLE (Xu et al. 2026) is a trained-grid method, but the approach itself admits enlargement to R=24 . For a rigorous comparison we therefore report STABLE on both its native benchmark (Sta-bleText2Brick) and the enlarged OmniObject3D subset. To confirm that this enlargement does not penalize STABLE’s stability under our exact-solver protocol, we run it at its na-tive R=20 and at the generalized R=24 on the sweepval3, both certified with Gurobi under the identical graph con-struction as our exact stability check (footprint on XY, z the layer height). Enlargement does not degrade STABLE (Ta-ble 9): the unstable-brick fraction and count are essentially unchanged (indeed slightly lower at R=24 ), so reporting STABLE at R=24 is fair. 
+
+E.4 Statistical Testing 
+
+All significance stars in the main paper (the voxelization-stage tables) denote a two-sided paired Wilcoxon signed-rank test of each baseline against Ours (net) , computed on per-object metric differences. Pairing is per object over               
+
+> R=20 (native) R=24 (generalized) #Brick 181 .7237 .0
+> nufraction 10 .30% 7.72%
+> nu19 .00 18 .00
+> nf19 .00 20 .33
+> all-stable 3/35 2/35
+
+Table 9: STABLE at its native R=20 vs. the generalized 
+
+R=24 on the 35 sweep-validation objects, both certified with Gurobi under the same graph construction as our exact sta-bility check (footprint on XY, z the layer height). Enlarging to R=24 leaves STABLE’s stability essentially unchanged, confirming the R=24 report is not disadvantageous to it. the 198 held-out validation objects, pooled across the re-ported occupancy levels ρ ∈ { 0.4, 0.62 , 0.75 } and resolu-tions R ∈ { 24 , 32 , 48 }. We use the Wilcoxon signed-rank test rather than a paired t-test because the per-object metric distributions are non-normal and contain outliers; the rank-based test makes no normality assumption. Star levels are *p< 0.05 , ** p< 0.01 , *** p< 0.001 ; entries without a star are not statistically distinguishable from Ours at the 0.05 level (e.g., normal consistency vs. the budgeted top-K/dilation se-lectors, and F-score vs. the 6-separating voxelizer). Because most differences are extreme ( p well below 10 −10 ), we re-port star levels only rather than exact p-values; the qualitative conclusions are unaffected. 
+
+E.5 Random Seeds and Determinism 
+
+The building stage is deterministic once hashing is fixed: the only source of run-to-run variation is the iteration or-der of Python set s in the greedy merge, which affects tie-breaking between equally scored candidates. We therefore fix PYTHONHASHSEED=0 across the entire pipeline (the entry scripts re-exec themselves with this variable set so it takes effect before interpreter start-up). With this fixed, the pipeline is bit-for-bit reproducible: re-running the full chain reproduces identical per-object brick counts, and the preprocessing reproduces the cached occupancy grids and color codes exactly. The completion network is trained with fixed seeds for the data split, weight initialization, and data loader; the split is additionally frozen on disk so that the train/validation/test partition is identical across all runs. 
+
+## F Computing Infrastructure 
+
+Our experiments run on two AWS GPU instances that share an identical conda environment. 
+
+Machines. The Voxel-train machine is a g6e.4xlarge 
+
+(ap-northeast-1a ): one NVIDIA L40S GPU ( 48 GB GDDR6 ECC, Ada Lovelace sm_89 ), 16 vCPUs (3rd-gen AMD EPYC), and 128 GiB RAM, on the AWS Deep Learning AMI (Ubuntu 22 .04 ) with NVIDIA driver 
+
+570 .133 .20 and system CUDA 12 .4. The Testing machine is a g5.4xlarge : one NVIDIA A10G GPU ( 24 GB), 16 vC-PUs, and 62 GB RAM, with driver 580 .126 .09 . Both use the same software stack: Python 3.9, PyTorch 2.4.1 (CUDA 12 .1wheels; the L40S host CUDA is 12 .4, the PyTorch wheels re-main cu121 ), NumPy 2.0.2, Open3D 0.19 .0 (mesh handling and barycentric color sampling, EGL surfaceless), trimesh 
+
+4.11 .2, and scikit-image 0.24 .0. Six/twelve-view renderings for the perceptual objective and the final evaluation are pro-duced by a headless EGL rasterizer; all perceptual metrics (PSNR, SSIM, MS-SSIM, LPIPS 0.1.4, DISTS) are com-puted with piq 0.8.0.
+
+What runs where. The voxelization stage—all pre-processing (saliency back-projection, SDF and surface-band caching, oracle target generation), the resolution-conditioned completion training (Phases 1 and 2), the architecture/capacity ablation, and the stability-surrogate distillation—runs on the Voxel-train L40S. The compact main-result network ( base=8 ) is retrained, and the percep-tual and geometry evaluations are run, on the Testing A10G; both machines use the identical environment, so the split does not affect results. Exact static stability is certified with the Gurobi force-balance MILP solver (Sec. E.2); the distilled stability surrogate runs in PyTorch on CPU at ∼0.02 s per object. 
+
+Renderer substitution on Ada GPUs. On the L40S (sm_89 , CUDA 12 .4) the forward renderer of the 
+
+diff_gaussian_rasterization kernel that FreeSplatter depends on (the ashawkey fork) fails deterministically—it reports a fixed, absurd memory figure, and recompiling for sm_89 does not fix it. We therefore re-place the render() call in gaussian_utils.py with 
+
+gsplat 1.5.3 rasterization ( render_mode="RGB+ED" ,forward-only; no differentiability is needed here). Repro-ducers on Ada-class cards will hit the same failure, so we flag the substitution explicitly. Building the native kernels additionally requires CC=gcc-11 , CXX=g++-11 (the environment’s default GCC 15 exceeds the nvcc ceiling), and running requires EGL_PLATFORM=surfaceless .Two dependencies are not pip -installable directly and must be built: diff_gaussian_rasterization (pinned to a fixed commit) and torchmcubes (compiled from source). 
+
+Timing. The two GPUs differ by roughly an order of magnitude on the oracle workload: the same oracle task (alex-fp16-r16 at R=32 ) takes ∼60 s per object on the A10G versus ∼7 s per object on the L40S. 
+
+## G Additional Quantitative Results 
+
+G.1 Architecture and Capacity Ablation 
+
+We first ablate the completion network’s architecture and capacity (Table 10), then evaluate the chosen default model on the sweepval3 set (Table 11). Table 10 reports the full ablation summarized in the main paper. All variants share the training protocol above and differ in a single design choice; we report validation IoU (against the completion oracle) at R ∈ { 24 , 32 , 48 } and ρ=0 .62 ,with the two extreme fill levels ρ ∈ { 0.4, 0.75 } for refer-ence. Three conclusions hold. (i) The conditioning-injection scheme is not load-bearing: FiLM, channel concatenation, and bottleneck cross-attention—all on the same 3D U-Net backbone—agree to within 0.006 IoU, and full-layer FiLM is unnecessary (bottleneck-only matches it). (ii) Group normal-ization is essential: removing it makes training diverge , with validation IoU frozen at its initial 0.620 ; skip connections contribute a smaller but real −0.010 . (iii) Capacity is not the bottleneck: scaling base from 8 (0.10 M) to 64 (5.68 M), a 
+
+57 × increase, moves IoU only within noise ( 0.653 –0.657 ), which is why we adopt the smallest base=8 model as the default. As a hyperparameter-selection sanity check, Table 11 re-ports the base =8 network on the sweepval3 set, aggre-gated across R ∈ { 24 , 32 , 48 } and ρ ∈ { 0.4, 0.62 , 0.75 }
+
+(9 cells), against the two same-budget geometric selectors (an SDF baseline and uniform voxelization). This check con-firms that our selection set touches neither the training nor the main-evaluation data and that the network still leads on it; be-cause sweepval3 is deliberately smaller and easier (mean occupancy 671 vs. 2066 for the held-out set), its absolute numbers are not comparable to the main-paper 198 -object results and are reported only for this sanity-check purpose. 
+
+G.2 Fidelity–Buildability Trade-off Across Selectors 
+
+Figure 7 places every voxelization selector in the fidelity– buildability plane, aggregated over all nine R × ρ cells on the 198 -object held-out set. Our full method (network +
+
+grounding repair) is the only selector that reaches the ideal corner: best-in-class perceptual fidelity among the construc-tive selectors while attaining a single connected component (n_comp =1 ) with zero floating voxels. Two comparisons are instructive. First, grounding repair moves the network from 
+
+n_comp ≈1.6 to exactly 1 and floating to 0 without measur-ably changing fidelity (MS-SSIM 0.9317 → 0.9316 , negligi-ble loss), confirming that connectivity is restored at no ap-pearance cost. Second, the TSDF selector—fed ground-truth 
+
+depth, hence an appearance upper bound—attains the high-est fidelity but remains unbuildable ( n_comp ≈1.9, nonzero floating), showing that buildability must be targeted during training rather than inherited from accurate geometry. 
+
+G.3 Full Perceptual Metrics 
+
+The main-paper end-to-end table (headline MS-SSIM and LPIPS a) reports only two perceptual metrics for space. Table 12 gives the complete six-metric set on the same held-out OmniObject3D set ( 198 objects, R=24 ), rendered from 12 views at 256 2 against the target. The two headline columns match the main paper exactly; the additional PSNR, SSIM, VGG-LPIPS, and DISTS all agree with the headline conclusion—ResemBrick is best on every perceptual metric. 
+
+G.4 Geometry Guardrail (Stage-A) 
+
+Geometry is a guardrail , not the objective: our claims are perceptual, and geometric fidelity only has to remain compet-itive so that spending the occupancy budget on appearance does not distort overall shape. This guardrail is a Stage-A 
+
+(matched-budget voxel-completion) notion; the full-pipeline and building-stage evaluations report perception and build-ability and make no geometric claim. The main paper’s Stage-A fidelity table already reports Chamfer distance and F-score Variant Group Params IoU ( R24 /32 /48 ) ρ0.4 ρ0.75                                                                    
+
+> FiLM (full, ref.) inject. 1.45 M0.695 /0.653 /0.623 0.449 0.774
+> concat 2ch inject. 1.40 M0.691 /0.653 /0.622 0.440 0.770
+> cross-attn @bottleneck inject. 1.49 M0.688 /0.648 /0.618 0.441 0.770
+> FiLM @bottleneck only location 1.42 M0.695 /0.654 /0.621 0.444 0.772
+> no GroupNorm norm 1.45 Mfails to train ——no skip struct. 1.31 M0.675 /0.647 /0.620 0.433 0.768
+> base = 8 (default) capacity 0.10 M0.653 (avg) §0.440 0.770
+> base = 16 capacity 0.38 M0.654 (avg) 0.442 0.770
+> base = 24 capacity 0.83 M0.656 (avg) 0.441 0.772
+> base = 32 capacity 1.45 M0.657 (avg) 0.448 0.774
+> base = 48 capacity 3.22 M0.657 (avg) 0.448 0.773
+> base = 64 capacity 5.68 M0.656 (avg) 0.441 0.773
+
+Table 10: Architecture and capacity ablation on the rho split (same split as the main results). Validation IoU vs. the completion oracle; “ R24 /32 /48 ” column is at ρ=0 .62 . All runs are 80 epochs. no-norm does not train (IoU frozen at initialization). §The default model is within noise of the largest ( 5.68 M) model despite using 57 × fewer parameters.                                            
+
+> Metric net ( base =8 )SDF base uniform PSNR ↑25 .974 25 .417 24 .866
+> SSIM ↑0.9430 0.9388 0.9342
+> MS-SSIM ↑0.9574 0.9456 0.9440
+> LPIPS vgg ↓0.0793 0.0842 0.0836
+> LPIPS alex ↓0.0735 0.0859 0.0786
+> DISTS ↓0.1881 0.1980 0.1905
+> floating ↓0.0000 0.0108 0.0000
+> n_comp ↓1.035 1.324 1.003
+> ungrounded ↓0.0000 0.0024 0.0000
+> unsupported ↓0.0290 0.0317 0.0272
+
+Table 11: Hyperparameter-selection sanity check: retrained 
+
+base =8 network on the sweepval3 set, aggregated over 
+
+R ∈ { 24 , 32 , 48 } × ρ ∈ { 0.4, 0.62 , 0.75 }. This set is de-liberately smaller and easier (mean occupancy 671 vs. 2066 
+
+for the held-out set) and touches neither the training nor the main-evaluation data; its absolute values are therefore not comparable to the main-paper 198 -object results and serve only to verify that hyperparameter selection does not touch train/eval data and that the network still leads. at τ =0 .02 ; Table 13 completes the guardrail with normal consistency (NC) and the tighter F-score at τ =0 .01 , under the identical matched-budget protocol (mean over 198 ob-jects, R ∈ { 24 , 32 , 48 }, ρtgt ∈ { 0.40 , 0.62 , 0.75 }). Ours denotes the completion network with post-hoc connectivity repair. Across all four geometry metrics Ours sits in the top group of learned/geometric selectors—tying the best on Chamfer ( 0.038 ) and NC ( 0.869 ) and staying within the F-score cluster—confirming the main-paper statement that our completion matches the strongest selector on the geom-etry guardrail while winning every perceptual metric . The only method with notably lower Chamfer / higher F-score is TSDF, which is fed ground-truth depth and is therefore an upper bound rather than a competitor. In short, budget-ing occupancy for appearance does not sacrifice geometric fidelity. 
+
+G.5 Buildability Hyperparameters 
+
+Search protocol and selection criterion All building-stage weights were selected on the independent sweep-validation set ( sweepval3 ). Each configuration is judged on two tiers. The distilled sta-bility surrogate (Sec. D.2, ∼0.02 s/object on CPU, ∼1000 ×
+
+faster than the exact solver) sweeps the full grid to reveal trends, and the exact Gurobi force-balance solver then re-certifies the default cell plus the per-metric optima ( 15 cells). Because the surrogate’s deviation from the solver is one-sided and conservative (Sec. D.2), grid orderings are reliable while absolute stability values are read only from the solver. Because the voxel grid is coarse, weights are swept on a roughly logarithmic scale with the default placed cen-trally. The building-stage ranges are: warea ∈ { 5, 15 , 45 , 90 },
+
+wsupport ∈ { 5, 20 , 60 , 120 }, λint ∈ { 0, 4, 12 , 36 }, λedge ∈{0, 1, 4, 12 }, and wcol ∈ {0, 5, 10 , 20 , 40 , 80 }, with the lateral-neighbor threshold fixed at k=2 . The selection cri-terion is: attain full certified stability on sweep-val while keeping brick count low, then take the most color-faithful setting that does not sacrifice stability. 
+
+Sensitivity: weight sweeps The sweeps confirm the de-fault is at or beside the optimum on every axis, and expose one non-trivial interaction. On warea × wsupport (Fig. 8, left) brick count is flat near the default (15 , 20) and stability is at its plateau maximum, so buildability weights are not brittle. On λint ×λedge the differences are within noise (stability con-stant across the grid), indicating the look-ahead term is not load-bearing for stability; we therefore omit its heatmap. The key interaction is wcol × wsupport (Fig. 8, middle and right): raising wcol monotonically improves color fidelity but, in iso-lation, erodes stability (e.g. wcol =80 with wsupport =5 drops Stab% to 88 .6); pairing it with a larger wsupport restores full stability. Color and support must therefore be tuned together rather than treated as independently additive; the wcol ×warea 
+
+sweep shows the same trend and is omitted for brevity. Method PSNR ↑ SSIM ↑ MS-SSIM ↑ LPIPS a ↓ LPIPS v ↓ DISTS ↓
+
+BrickGPT 24.30 0.940 0.940 0.081 0.097 0.233 Legolization 24.33 0.939 0.940 0.082 0.098 0.235 BrickLink Studio 16.88 0.879 0.733 0.204 0.142 0.293 
+
+Ours 26.05 0.949 0.955 0.075 0.089 0.228 
+
+Table 12: Full-pipeline perceptual metrics on the held-out OmniObject3D set ( 198 objects, R=24 ; 12 views at 256 2). Best in 
+
+bold . BrickLink Studio is a manual-authoring commercial converter reported at lower numeric precision. Ours wins all six metrics. 0.88 0.89 0.90 0.91 0.92 0.93 0.94 MS-SSIM ( better )                              
+
+> 1.0 1.5 2.0 2.5 3.0 \#components (  )
+> 0.12 0.12 0.12 0.11 0.10 0.10 0.10 0.09 0.08 LPIPS Alex (better )
+> 1.0 1.5 2.0 2.5 3.0 \#components (  )
+> 0.88 0.89 0.90 0.91 0.92 0.93 0.94 MS-SSIM ( better )
+> 0.0 0.5 1.0 1.5 2.0 Floating voxels \% (  )
+> 0.12 0.12 0.12 0.11 0.10 0.10 0.10 0.09 0.08 LPIPS Alex (better )
+> 0.0 0.5 1.0 1.5 2.0 Floating voxels \% (  )
+> Ours (+repair) Ours (no repair) Uniform SDF Dilation 6-sep. 26-sep. TSDF (GT-depth)
+
+Figure 7: Fidelity vs. buildability for all Stage-A voxeliza-tion selectors, aggregated over R ∈ { 24 , 32 , 48 } × ρ ∈{0.4, 0.62 , 0.75 } on the 198 -object held-out set ( base =8 ). Each axis is oriented so that right is better in fidelity and 
+
+lower is better in buildability; the ideal region is the bottom-right corner. Top: buildability as #connected components (↓, dashed line at the ideal value 1). Bottom: buildability as floating-voxel fraction ( ↓). Left/right: fidelity as MS-SSIM / LPIPS Alex (LPIPS axis reversed, true values on ticks). Ours (+repair) uniquely occupies the ideal corner; TSDF uses ground-truth depth and is an appearance upper bound that is not buildable. The default weights (Table 14) are the unique exact-solver– certified cell that is simultaneously fully stable ( nu=0 ,Stab% =100 on the 35 sweep-validation objects) and among the most color-faithful; since only wcol =80 actually breaks stability, the default wcol =20 sits well inside the safe region. 
+
+G.6 Color Term: Component Decomposition 
+
+The main-paper wcol sweep ( 0/20 /80 ; Sec. G.5) establishes that the color term helps overall. Here we decompose the term’s two factors—local isolation imp( v) and global rar-ity rar( c) of Eq. (8)—to answer whether each is necessary or merely decorative. All runs use the same independent 
+
+35 -object sweep-validation set as Sec. G.5, with stability certified by the exact Gurobi solver. 
+
+Selector Chamfer ↓ F@ 0.01 ↑ F@ 0.02 ↑ NC ↑
+
+Top-K 0.037 0.194 0.654 0.869 
+
+Dilate 0.038 0.194 0.653 0.869 
+
+6-sep 0.040 0.205 0.645 0.787 26-sep 0.045 0.197 0.610 0.777 
+
+Ours 0.038 0.187 0.641 0.869 
+
+TSDF (GT depth) † 0.030 0.242 0.735 0.889 
+
+> †
+
+TSDF consumes ground-truth depth: an oracle-input upper bound, not a competing selector. 
+
+Table 13: Stage-A geometry guardrail under a matched oc-cupancy budget (mean over 198 objects, R ∈ { 24 , 32 , 48 },
+
+ρtgt ∈ { 0.40 , 0.62 , 0.75 }). Ours matches the strongest ge-ometric selector on every geometry metric while winning perception. TSDF consumes ground-truth depth and is an oracle-input upper bound, not a competing selector; it is marked with † for reference. Best among selectors in bold .
+
+Hyperparameter Value 
+
+Building stage — greedy scoring weights 
+
+warea 15 
+
+wsupport 20 
+
+λint 12 
+
+λedge 4
+
+wcol 20 
+
+lateral-neighbor threshold k 2
+
+Table 14: Final building-stage greedy scoring weights, se-lected on the 35 -object sweep-validation set and certified by the exact force-balance solver. 
+
+Two color metrics. Because a brick is single-colored, it is first assigned a representative color by the importance-weighted vote of Eq. (11), c⋆(b) =arg max c
+
+P 
+
+> v∈b, c (v)= c
+
+imp( v). We then measure, over all 
+
+colored surface voxels (occupied with a valid color id; color-less interior voxels are excluded), whether each voxel’s target color matches the representative color of its brick b(v):hit% = 100 · |{ v : c(v) = c⋆(b(v)) }| |{ v}| , (15) weighted% = 100 ·
+
+P  
+
+> v:c(v)= c⋆(b(v))
+
+imp( v)
+
+P 
+
+> v
+
+imp( v) . (16) The unweighted hit% gives every voxel equal weight and is therefore dominated by the large uniform color regions 5 15 45 90                                       
+
+> warea
+> 520 60 120
+> wsup
+> 165.1 164.9 164.9 164.9 165 164.8 164.8 164.8 165 164.8 164.8 164.8 165 164.8 164.8 164.8
+> (a) Brick count
+> 520 80
+> wcol
+> 520 60 120
+> wsup
+> 79.64 83.1 87.44 78.88 81.34 85.96 78.52 79.78 83.37 78.4 78.84 81.42
+> (b) Colour fidelity
+> 0520 80
+> wcol
+> 520 60 120
+> wsup
+> 97.14 94.29 97.14 88.57 97.14 94.29 97.14 94.29 97.14 97.14 97.14 94.29 97.14 97.14 97.14 97.14
+> (c) Stability 11/16 cells tie (not discriminative)
+> 164.80 164.85 164.90 164.95 165.00 165.05
+> #Brick
+> 80 82 84 86
+> Colour fidelity (%)
+> 89 90 91 92 93 94 95 96 97
+> Stable (%)
+> Weight sweep on held-out sweep-val (35 objects, gurobi-verified defaults; brighter = better)
+> best (all tied cells boxed) default (ours)
+
+Figure 8: Building-stage weight sensitivity on the 35 -object sweep-val set (exact-solver–corrected). Left: brick count over 
+
+warea × wsupport ; the default sits on the low-brick-count plateau. Middle/right: the wcol × wsupport interaction, showing color fidelity (middle, ↑) and certified stability (right, ↑): higher wcol improves color but needs a matching wsupport to stay fully stable. In each panel the solid box marks the per-panel optimum and the dashed box marks the default configuration; the default is at or adjacent to the optimum throughout. (which contain most voxels), measuring whether the overall color blocks are right. The weighted% weights by imp( v)
+
+(Eq. (9), 1 minus the same-color neighbor fraction), so iso-lated texture voxels count heavily while the interior of a uniform region has imp ≈ 0 and barely scores; it thus mea-sures whether the key texture is preserved. Crucially, when comparing variants imp is always computed under the full 
+
+definition (the judge does not change with the variant), so the numbers are comparable across rows rather than each variant grading itself. 
+
+Results. Table 15 reports the decomposition. Removing the color term entirely (no-color) costs 2.48 hit-% ( p=1 ×10 −4)and 3.64 weighted-% ( p=4 .5×10 −6) against the full term, at a cost of +7 .4 bricks ( +4 .5% ) and zero stability cost (both 
+
+nu=0 .00 , Stab% =100 ). Removing only the rarity factor (no-rarity) drops weighted fidelity by 1.71 points ( p=0 .024 )while barely moving hit% ( +1 .02 , not significant, p=0 .25 ): rare colors are exactly the few “minority but high-imp ” vox-els, so dropping them hardly changes the equal-weight hit rate but clearly hurts the weighted metric—the rarity factor protects precisely these voxels, matching its design intent. As a cross-check, the full variant’s brick count ( 172 .1) is identi-cal to the wcol =20 cell of Sec. G.5, so the two independent code paths agree. 
+
+Conclusions. (i) The color term is necessary: it improves color hit rate by 2.48 points and weighted fidelity by 3.64 
+
+points over no-color at a modest +4 .5% brick cost and zero 
+
+stability cost. (ii) The rarity factor contributes: without it weighted fidelity drops 1.71 points ( p=0 .024 ), i.e. rare col-ors are no longer preferentially protected; the hit-rate change is small and insignificant precisely because rarity acts on the few key voxels the weighted metric is designed to cap-ture. The imp -only (no-importance) row is reported only for completeness and is discounted for the self-referential reason noted in the table. 
+
+Variant weight w(v) #Br hit% wtd% Stab% 
+
+full (ours) imp × rar 172 .1 82 .90 81 .34 100 .0
+
+no-rarity imp × 1 162 .8 81 .88 79 .62 100 .0
+
+no-color wcol =0 164 .8 80 .42 77 .70 100 .0
+
+no-importance † 1 × rar 175 .2 84 .03 82 .50 97 .1
+
+> †
+
+Reported for completeness only, not read as “importance is harmful.” Both color metrics assign the brick’s representative color by an importance -weighted vote, so a variant that drops imp 
+
+at brick-selection time yet is still graded under an imp -weighted judge is favored by a self-referential bias. Its higher brick count (175 .2, +3 over full) trades more bricks for fidelity rather than being a better operating point, and it is the only variant that breaks stability ( nu=0 .03 , Stab% =97 .1). Visual quality is adjudicated by the colored-render perceptual metrics, which use the target colored voxels as reference and have no such self-reference. 
+
+Table 15: Color-term component decomposition on the 35 -object sweep-validation set (all stability exact-Gurobi certified). #Br: brick count; hit%/wtd%: un-weighted / importance-weighted color-fidelity (defined above); Stab%: fully stable models. Paired Wilcoxon (n=35 ) full vs. no-color: hit +2 .48 (p=1 ×10 −4), weighted 
+
++3 .64 (p=4 .5×10 −6); full vs. no-rarity: weighted +1 .71 
+
+(p=0 .024 ), hit +1 .02 (n.s., p=0 .25 ). 
+
+## H Analysis and Scope of Claims 
+
+H.1 On the Scope of Buildability Claims 
+
+Our method touches four distinct notions of “buildability” that are easy to conflate. We separate them here and state, for each, whether it is a method-level guarantee or an empirical 
+
+result, so that no stronger claim is read into the paper than we make. 
+
+(1) Grounded connectivity — guaranteed by construc-tion. This is our only method-level guarantee. The build-ing stage repairs every assembly to a single ground-anchored component: a union–find pass flags each floating compo-nent, and the two-tier repair (zero-deformation recombina-tion, then cap/shelf bridging, with removal as a last resort) reduces the floating count at every atomic step, so the assem-bly reaches full ground connectivity in finitely many steps (main paper, Building Stage). The output therefore contains 
+
+zero floating components by construction, independent of the input object. This is a structural (graph-connectivity) prop-erty, not a physical force-balance guarantee. 
+
+(2) Local support — soft objective, not guaranteed. The support term in the greedy placement score rewards bricks resting on solid support below and adds a rescue bonus for bricks that anchor otherwise unsupported cells. This biases placement toward well-supported layouts but is a soft prefer-ence optimized during scoring, not a constraint: individual unsupported cells may remain, and the fraction of unsup-ported cells is reported empirically, never claimed to be zero. 
+
+(3) Exact static stability — empirically certified, not a theorem. Static stability is a physical property (does the assembly stand under gravity and contact forces) that our construction does not prove. Every reported stability num-ber ( Stab% ) is certified post hoc by the exact Gurobi force-balance solver on the finished assembly; a distilled message-passing surrogate (per-brick AUC 0.984 ) is used only as a fast in-loop screen and never contributes to reported num-bers. Consequently the 100% in the main results table is an 
+
+empirical fraction measured on the test set , not a method-level theorem: it states that every certified assembly in that evaluation passed the exact solver, not that the method can never produce an unstable assembly. 
+
+(4) Physical hand-buildability — empirical. Whether the exported instructions can actually be assembled by a person is validated empirically by the four real-world builds. The four objects ( fire_extinguisher_010 ,
+
+toy_plant_001 , toy_boat_010 , and timer_005 ,all from OmniObject3D (Wu et al. 2023)) span diverse cat-egories and are built by hand directly from the pipeline’s exported layer-by-layer instructions without manual edits, each standing unsupported on a flat surface (main paper, real-world validation). This is an existence-style empirical demonstration on a handful of objects, not a guarantee for arbitrary inputs. 
+
+Summary and scope. Only grounded connectivity (1) is guaranteed by construction; local support (2) is a soft ob-jective, and exact static stability (3) and physical hand-buildability (4) are empirical, certified respectively by the exact solver and by real builds. This matches our two-stage framing: the completion stage allocates the occupancy bud-get for appearance under a connectivity constraint, and the building stage delivers grounded connectivity by construc-tion while stability is certified rather than proven. We deliber-ately do not fold a brick-level stability or force-balance objec-tive into the occupancy selector: doing so would force every intermediate build state to be self-standing, and thereby ig-nore the cap support that later overlapping layers can provide. Such a constraint can render otherwise-buildable shapes lo-cally infeasible, such as bridge- or arch-like structures, which are transiently unsupported mid-assembly yet fully grounded once the spanning layers close over them. Coupling the two stages into a single joint optimization that reasons about this cross-layer support is left as future work, so we make no joint-optimization guarantee here. 
+
+H.2 Lazy-Greedy Oracle Construction: Justification 
+
+The perceptual completion oracle (main paper, Stage-A ora-cle objective: depth + silhouette + normal + LPIPS terms rendered through the reconstruction) is built by a CELF-style lazy-greedy selector (Leskovec et al. 2007): at each step only the candidates whose local neighborhood changed are re-scored, using a gain-ordered frontier with batched six-view rendering. We clarify here what is and is not claimed by this choice. 
+
+We do not claim submodularity. Strict CELF is provably identical to exhaustive forward greedy when the objective is monotone submodular , because a stale (previously com-puted) marginal gain is then an upper bound on the cur-rent gain, so a freshly re-scored top-of-frontier candidate is provably the argmax. Our objective mixes a deep perceptual distance (LPIPS) with a compositional rendering and is not 
+
+known to be submodular; we therefore make no submod-ularity claim and invoke no 1 − 1/e optimality guarantee. CELF-style lazy evaluation is used purely as an accelerator 
+
+that reproduces the plain-greedy selection while avoiding re-dundant re-scoring, not as an exactness theorem about our loss. 
+
+The shipped selector reproduces strict CELF exactly. 
+
+Our production selector re-scores the top-M (M =48 ) stalest frontier candidates in a single batched pass before commit-ting the argmax, rather than popping one at a time. To confirm this batching introduces no deviation, we compared it against strict one-at-a-time CELF and against exhaustive greedy on sweepval over 3 resolutions( R = (24 /32 /48) ), with can-didate pools Nb from 128 to 1254 . The batched selector is 
+
+index-for-index identical to strict CELF on every object 
+
+(selection overlap = 1 .000 , exactly), so no approximation is introduced by batching. 
+
+Greedy tracks exhaustive within a negligible loss gap. 
+
+Against exhaustive greedy, the lazy selector’s chosen indices 
+
+diverge (mean overlap 0.77 )—direct evidence that the ob-jective is not strictly submodular, since a submodular ob-jective would force overlap 1.0. Yet the resulting loss is es-sentially unchanged: the final objective gap versus exhaus-tive is +0 .6% on average (worst +2 .0% ), and on two ob-jects the lazy selection is marginally better than exhaustive (−0.0003 ), a signature of mild non-monotonicity / near-ties. The objective thus behaves as approximately submodular in our operating regime—greedy picks a different but equally good set—though we do not measure a submodularity ra-tio and make no formal approximation claim beyond this empirical bracket. The oracle is a teacher, not an inference-time selector. 
+
+Crucially, this greedy construction is run offline to gener-ate training targets only: the completion network is distilled against the oracle’s per-voxel ranking (Phase 1), and at in-ference we take the top-nocc scored voxels from the network in a single forward pass—no greedy search is run at test time. The oracle’s role is to provide a strong supervision signal, and it is empirically the strongest selector we have: on the held-out set the oracle-distilled network outperforms uniform voxelization and the budgeted top-K/dilation selec-tors on the perceptual metrics (main paper, Stage-A fidelity table). Any residual sub-optimality in the greedy target is therefore absorbed by distillation rather than propagated to inference. 
+
+H.3 Concurrent Systems Not Run as Quantitative Baselines 
+
+Two recent systems are closely related in spirit but are not included as quantitative baselines, for reasons of both avail-ability and task setup. 
+
+BrickAnything (Ni et al. 2026) is the closest in objec-tive (explicit 3D-geometry input, appearance fidelity, and buildability). We do not compare against it numerically for three reasons: (i) its setup differs from ours—it consumes an explicit point-cloud/3D-geometry input and drives build-ability through a reward-driven autoregressive prior, rather than reconstructing appearance from pose-free images un-der an occupancy budget; (ii) neither public code nor trained weights are available, so it cannot be re-run on our unified data under a matched budget; and (iii) it is a contempora-neous preprint. We therefore position it qualitatively in the related work rather than reporting numbers, to avoid an un-equal comparison on a setup we cannot faithfully reproduce. 
+
+DVD (Xiang et al. 2026) (discrete voxel diffusion) targets a different problem: it generates or edits voxel volumes on a 
+
+fixed 64 3 lattice conditioned on image or text, with no notion of a variable occupancy budget and no brick-level buildability objective. Its task formulation is thus not directly comparable to our budgeted, buildability aware, pose-free reconstruction setting; we cite it as related generative prior work rather than as a baseline. 
+
+## I Limitations and Future Directions 
+
+As stated in the main paper’s conclusion, several limitations bound the current method and point to natural extensions; we expand on them here. 
+
+Intrinsic ceiling of low-resolution occupancy. Our set-ting deliberately targets a coarse lattice under a tight oc-cupancy budget, which is what makes visual resemblance and buildability pull against each other in the first place. This coarse-lattice regime is a design choice rather than a defect—it matches how physical brick models are actually built—but it inherently caps the expressible detail: features finer than a single cell cannot be recovered at a given resolu-tion regardless of how the budget is allocated. As noted in the main paper, raising the resolution or adaptively varying the budget across an object are the direct ways to lift this ceiling, at the cost of the exact solver’s and the buildability base-lines’ tractability, which is precisely why our comparisons are conducted at the coarsest resolution. 
+
+Two-stage design rather than joint optimization. We treat occupancy completion and brick assembly as two stages: the completion network allocates the budget for appearance under a connectivity constraint, and the building stage de-livers grounded connectivity by construction with stability certified post hoc. As discussed in the scope of our claims (Sec. H.1), we do not fold a brick-level stability or brick-count objective into the occupancy selector, so the two stages are not jointly optimized. This keeps each stage simple and an-alyzable and is sufficient because the budget allocated in the first stage upper-bounds what any assembly can achieve; tightening the coupling—e.g. propagating a differentiable brick-count or force-balance signal back into completion—is a promising direction for further improving the parsimony– stability balance. 
+
+Dependence on the front-end reconstruction. Our con-tribution is downstream of the recovered mesh: we take a watertight textured mesh from a pose-free reconstructor (FreeSplatter in our implementation) and convert it into a buildable brick model. As stated in the main paper, any com-parable reconstructor that yields such a mesh could substitute for the front end, but errors in that upstream stage (missing thin structures, texture bleeding, or geometry artifacts) prop-agate into the brick model, since our method does not attempt to correct the input geometry. Coupling the brick-conversion objective with the reconstruction front end, so that down-stream buildability and fidelity can inform the recovered ge-ometry, is left for future work.

@@ -1,0 +1,450 @@
+Title: JSGS: JPEG State-Guided Supervision for 3D Gaussian Splatting from Mixed-Quality Views
+
+URL Source: https://arxiv.org/pdf/2608.08659v1
+
+Published Time: Tue, 11 Aug 2026 01:18:01 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+# JSGS: JPEG State-Guided Supervision for 3D Gaussian Splatting from Mixed-Quality Views 
+
+Jinhua Cui 1 Anhong Wang 1 Kai Hu 1 Donghan Bu 1 Peihao Li 2 Tammam Tillo 1 Hao Jing 1 Shiao Xu 1
+
+> 1
+
+Taiyuan University of Science and Technology 
+
+> 2
+
+Chn Energy Digital Intelligence Technology Development (Beijing) 
+
+Abstract 
+
+Standard 3D Gaussian Splatting (3DGS) assumes that ev-ery input image faithfully samples scene radiance. However, mixed-quality JPEG images violate this assumption because compression-induced blocking and ringing artifacts can cor-rupt updates to Gaussians shared across views. To address this problem, we propose JPEG State-Guided Supervision for 3D Gaussian Splatting from Mixed-Quality Views (JSGS). JSGS uses luminance and chrominance quantization tables stored in each JPEG file to construct a view-specific JPEG observation operator. This operator encodes and decodes each rendered view for domain-matched comparison with the correspond-ing decoded input image. The luminance quantization table supplies continuous weights within a fixed middle frequency band. A loss in the low frequency band anchors coarse struc-ture, while the weighted middle frequency loss redistributes supervision among the selected DCT coordinates. The result-ing block disagreement also guides the Gaussian Controller to regularize small primitives with high opacity in disagreement regions. Across seven scenes and three mixed-quality sched-ules, JSGS achieves the lowest mean LPIPS and the highest mean SSIM under every schedule while rendering at approxi-mately 150 FPS.Code: https://github.com/Jayden-Cui/JSGS. 
+
+# Introduction 
+
+3D Gaussian Splatting (3DGS) represents a scene with ex-plicit Gaussian primitives optimized using photometric su-pervision from multiple views (Kerbl et al. 2023). This op-timization treats each decoded training image as a faithful observation of scene radiance. In practical image collections, however, JPEG quality can vary from one view to another, producing blocking and ringing whose strength and spatial support differ across views. Because the training views jointly update a shared set of geometry, opacity, and appearance pa-rameters, these structured residuals can alter primitives that also contribute to other views. The resulting challenge there-fore involves both degradation within individual images and unequal supervision of a shared 3D representation across views. Figure 1 illustrates the variation in JPEG quality across training views and summarizes reconstruction quality and efficiency. Recent work has increasingly relaxed the assumption that every 3DGS input provides a faithful observation. 
+
+Copyright © 2027, Association for the Advancement of Artificial Intelligence (www.aaai.org). All rights reserved. 
+
+Degradation-specific methods model motion or defocus blur and challenging illumination, while more general approaches improve robustness to low resolution, noise, blur, and com-pression artifacts (Lee et al. 2024; Zhao, Wang, and Liu 2024; Cui, Chu, and Harada 2025; Lin et al. 2025). Anti-aliasing methods address a related but distinct mismatch caused by changes in rendering scale rather than by the stored training views (Yu et al. 2024). When JPEG appears in degraded-scene 3DGS, however, it is typically treated as one mem-ber of a broad degradation set, rather than through the per-view quantization tables that specify the quantization steps at different block-DCT coordinates. Recent compression-aware 3DGS considers frame-wise quality variation in long videos (Song et al. 2026), but does not use the JPEG quantization table of each image to condition supervision. Consequently, how per-view JPEG quantization information should con-dition the supervision of Gaussians shared across cameras remains underexplored. To address this open question, we propose JSGS for 3D Gaussian Splatting from mixed-quality views. Our key in-sight is that the quantization tables stored in each JPEG file should influence both how a rendering is compared with its observation and how frequency disagreement updates the shared Gaussian representation. At the observation level, the JPEG Observation Operator (JO) passes each rendered image through a differentiable JPEG process using the correspond-ing luminance and chrominance tables before comparing it with the decoded input. At the frequency level, JSGS anchors coarse structure in the low frequency band and uses the lu-minance table to weight residuals in the middle frequency band. At the representation level, these weighted residuals are projected to visible Gaussians, where they regularize small primitives with high opacity in regions where disagreement remains. Across seven scenes and three schedules that mix JPEG quality levels, JSGS achieves the lowest LPIPS in all 21 combinations and the highest mean SSIM for each schedule. In summary, our contributions are as follows: 
+
+• We formulate mixed JPEG quality as unequal observation fidelity in 3DGS, where multiple views jointly update a shared Gaussian representation. 
+
+• We design a JPEG Observation Operator and comple-mentary losses in the low and middle frequency bands. Continuous quantization-table weights redistribute resid-ual contributions within the fixed middle frequency band, arXiv:2608.08659v1 [cs.CV] 9 Aug 2026 Figure 1: JPEG quality variation across views and aggregate performance. (a) Nine training views from the bicycle scene have different JPEG compression qualities, denoted by q; lower q indicates stronger compression. The crop at q ≈ 10 highlights blocking and ringing around the bicycle frame and wheel. (b) The radar chart summarizes PSNR, SSIM, and LPIPS over all combinations of seven scenes and three schedules, together with training time and rendering speed. JSGS achieves the lowest aggregate LPIPS, the highest aggregate SSIM, and ties for the highest reported rendering speed. Raw values are reported in Tables 1 and 4. and the resulting block disagreement guides Gaussian regularization. 
+
+• We test seven scenes and three schedules. JSGS achieves the lowest LPIPS in all combinations and the highest mean SSIM under all three schedules. 
+
+# Related Work 
+
+3DGS under Degraded Observations 
+
+Research on degraded 3DGS covers low resolution and sparse views (Feng et al. 2024; Wan et al. 2025), blur (Lee et al. 2024; Chen and Liu 2024; Zhao, Wang, and Liu 2024), illumination and low light (Cui, Chu, and Harada 2025; Ye et al. 2024a; Li et al. 2024), and transient distractors (Kul-hanek et al. 2024; Sabour et al. 2025). HQGS and ReSplat address several degradation types through structural guid-ance or restoration assisted reconstruction (Lin et al. 2025; Yoon and Yoon 2026). HQGS includes compression artifacts but does not use the quantization table stored in each JPEG file. CompSplat uses frame quality in unposed videos to regu-late weighting, densification, and pruning (Song et al. 2026). JSGS instead uses each JPEG view’s quantization tables to supervise the shared representation rather than assigning a scalar weight to each frame. 
+
+Quantization Information in JPEG Images 
+
+JPEG stores block DCT quantization tables in each file header (ITU-T 1992). Prior restoration operates in the pixel domain (Dong et al. 2015; Zhang et al. 2017), combines pixel and DCT representations (Guo and Chao 2016; Zheng et al. 2020), or learns continuous cosine coefficients for decod-ing (Han et al. 2024). QGAC conditions artifact correction on the input quantization matrix, whereas FBCNN estimates a quality factor when the compression setting is unknown (Ehrlich et al. 2020; Jiang, Zhang, and Timofte 2021). These methods restore images independently. JSGS instead uses the luminance and chrominance tables to determine how each decoded observation supervises a shared 3D representation without first restoring the training image. 
+
+Frequency and Density Control in 3DGS 
+
+FreGS, Mip-Splatting, FDS-GS, and Revising Densification use frequency, scale, or pixel error to improve representation and density control (Zhang et al. 2024a; Yu et al. 2024; Zeng et al. 2025; Rota Bulò, Porzi, and Kontschieder 2024). Other strategies use gradient magnitude, coverage, propagation, or stochastic relocation to allocate Gaussians (Ye et al. 2024b; Zhang et al. 2024b; Fang and Wang 2024; Cheng et al. 2024; Kheradmand et al. 2024; Lu et al. 2024). JSGS instead treats DCT coordinates as observation evidence whose precision varies with each JPEG quantization table. 
+
+# Method 
+
+Problem Setup 
+
+Let {(Ii, π i, T Yi , T Ci )}Ni=1 denote the JPEG training data, where Ii is the decoded image, πi = ( Ki, R i, t i) denotes the calibrated camera parameters for view i, and T Yi and 
+
+T Ci are the luminance and chrominance quantization tables parsed from the corresponding JPEG file. Here Ki is the intrinsic matrix, while Ri and ti are the extrinsic rotation and translation. Following standard 3DGS (Kerbl et al. 2023), the shared scene representation is Θ = {(μj , q j , s j , α j , c j )}Mj=1 ,and rendering it under πi produces ˆIi. Here μj , qj , sj , αj , and 
+
+cj denote the center, rotation, scale, opacity, and appearance of Gaussian j, respectively, while R(qj ) denotes its rotation matrix. At pixel p, let aij (p) and tij (p) denote the projected footprint and accumulated transmittance of Gaussian j. Its compositing weight is therefore tij (p)αj aij (p). All training views optimize the same Θ; JSGS uses the quantization ta-bles associated with view i to determine how that observation supervises the shared representation. Standard rasterization and table parsing conventions are provided in the supplemen-tary material. 
+
+Framework Overview 
+
+Figure 2 summarizes the design of JSGS. JSGS treats the quantization tables of each view as JPEG state rather than a scalar quality label. JO applies this state to the rendered image ˆIi, producing the JPEG observation ˆIJi for image-domain comparison with the decoded input Ii. DS applies frequency-domain supervision to the same image pair, using the luminance table to weight DCT residuals and identify disagreement for GC. Thus, both image-domain supervision and Gaussian regularization depend on the compression state of the current view. 
+
+JPEG Compression State and Frequency Reliability 
+
+The luminance and chrominance quantization tables recorded in each file header jointly define the JPEG com-pression state of view i. JO uses both tables. The LF and MF losses operate on luminance DCT residuals. Only MF weighting and GC use reliability derived from T Yi . Imple-mentation and protocol details are provided in Supplemen-tary Section C. Let (u, v ) ∈ K := {0, . . . , 7}2 index a DCT table in natural coordinate order, and let F (u, v ) = u + v. For the 8-bit tables considered here, T Yi (u, v ) ∈ { 1, . . . , 255 } and 
+
+F (u, v ) ∈ { 0, . . . , 14 }. We convert the luminance quantiza-tion step into a monotone reliability weight: 
+
+ωi(u, v ) = exp 
+
+
+
+−2 T Yi (u, v ) − 1254 − F (u, v )14 
+
+
+
+. (1) Smaller quantization steps produce larger weights, while the second factor discounts higher DCT coordinates. The con-stants 254 and 14 normalize the two finite ranges, and the coefficient 2 controls DQT-dependent decay. Because subse-quent weighted means normalize ωi, it redistributes supervi-sion within the selected band according to relative DQT re-liability. The MF support remains fixed across views, while the recorded table values determine the influence of each selected coordinate. We use ϵsm to control the smooth abso-lute penalty near zero. The constants ϵloss DCT , ϵblock DCT , and ϵproj 
+
+are denominator safeguards for the DCT losses, the block score, and Gaussian attribution, respectively. Their values are reported in the experimental setup and Supplementary Section C. 
+
+JPEG Observation Operator 
+
+For view i, JO maps the rendered image through the quanti-zation tables recorded in the corresponding JPEG file: 
+
+ˆIJi = CJPEG ( ˆIi; T Yi , T Ci ). (2) The output ˆIJi is the JPEG observation used by Li
+
+> obs
+
+.JO applies a fixed 4:2:0 JPEG transform using the recorded quantization tables. Let Tenc and Tdec collect the standard fixed JPEG operations outside DCT and quantization, and let 
+
+D denote the orthonormal 8 × 8 block DCT. The tuple Ti =(T Yi , T Ci , T Ci ) assigns the recorded tables to the luminance and chrominance components. For a scalar z ∈ R, where z denotes one DCT coeffi-cient divided by its corresponding quantization step before rounding, we define the elementwise soft rounding function: 
+
+rsoft (z) = round( z) + [ z − round( z)] 3 . (3) The backward pass treats round as zero-gradient. The JO is defined as follows: 
+
+ui = D
+
+
+
+Tenc ( ˆIi)
+
+
+
+, ui = ( uYi , u Cb  
+
+> i
+
+, u Cr  
+
+> i
+
+),
+
+ˆui = Quant i(ui) = Ti rsoft 
+
+ ui
+
+Ti
+
+
+
+,
+
+ˆIJi = clip  Tdec 
+
+ D−1(ˆ ui) , 0, 1 .
+
+(4) All coefficient operations are elementwise, and the recon-structed RGB output is clipped to [0 , 1] . Exact color conver-sion, chroma sampling, block assembly, inverse transform, clipping, and backward conventions are provided in Supple-mentary Section A. For two RGB images X, Y ∈ [0 , 1] H×W ×3, we write the standard ℓ1–D-SSIM photometric loss as 
+
+ℓph (X, Y ) = (1 − λssim ) ∥X − Y ∥1
+
+3HW 
+
++ λssim [1 − SSIM( X, Y )] .
+
+(5) Here λssim ∈ [0 , 1] controls the mixture. The JPEG observa-tion loss is 
+
+Li 
+
+> obs
+
+= ℓph ( ˆIJi , I i). (6) This loss compares the decoded input with the rendered im-age after JO processing. 
+
+Domain-Matched DCT Supervision 
+
+Matched observation processing places bIJi and Ii in the same decoded JPEG domain, but it does not distinguish DCT co-ordinates with different quantization steps. JSGS therefore uses the recorded luminance quantization table T Yi to de-scribe the JPEG state of view i at each DCT coordinate. Together with the coordinate index, this table defines the con-tinuous weights ωi(u, v ) within the fixed middle frequency band, while the low frequency branch uses a fixed mask. We compute the DCT residuals between Ii and bIJi .For an RGB image X ∈ [0 , 1] H×W ×3, we define the 8-bit luminance map used for DCT supervision as 
+
+Y8(X) = 255 (0 .299 XR + 0 .587 XG + 0 .114 XB ) . (7) Before applying the block DCT, we perform the 8-bit level shift as follows: 
+
+YIi = Y8(Ii) − 128 , YbIJi
+
+= Y8(bIJi ) − 128 . (8) Figure 2: Overview of JSGS. Ii, ˆIi, and ˆIJi denote the input JPEG images, rendered images, and corresponding JPEG Observation Operator (JO) outputs, respectively. The Define Quantization Table (DQT) block reads T Yi and T Ci from each JPEG header. JO applies differentiable JPEG encoding and decoding operations to ˆIi using these tables, producing ˆIJi ; Lobs compares ˆIJi with Ii.Domain-Matched DCT Supervision (DS) forms the luminance DCT residual between Ii and ˆIJi and computes Llow and Lmid .DS also projects MF disagreement to the Gaussian Controller (GC) for Lfro .Let Bi denote the set of valid, nonoverlapping 8 × 8 blocks, and let Pb extract the luminance block indexed by b. Using the orthonormal block DCT D, we define: 
+
+Ci,b I (u, v ) = [ D (Pb(YIi ))] u,v ,Ci,b J (u, v ) = 
+
+h
+
+D
+
+
+
+Pb(YbIJi
+
+)
+
+i 
+
+> u,v
+
+. (9) Here Ci,b I (u, v ) and Ci,b J (u, v ) are the luminance DCT coeffi-cients of the decoded observation and the JPEG Observation Operator output, respectively. Unless stated otherwise, sums over b, u, v range over Bi × K .We compute scaled DCT coefficient residuals and apply a smooth absolute penalty: 
+
+∆bi (u, v ) = Ci,b J (u, v ) − Ci,b I (u, v )255 ,ψϵsm (x) = px2 + ϵ2sm − ϵsm , ϵsm > 0.
+
+(10) Here ∆bi (u, v ) is the signed DCT coefficient discrepancy after fixed scaling, and ψϵsm is a smooth approximation to the absolute value. Division by 255 sets a fixed coefficient scale, while ∆bi (u, v ) remains an unconstrained signed residual. The low and middle frequency masks and the correspond-ing view dependent middle frequency weights are 
+
+Mlow (u, v ) = 1{F (u, v ) ≤ 3},Mmid (u, v ) = 1{3 < F (u, v ) ≤ 5},Wmid ,i (u, v ) = Mmid (u, v )ωi(u, v ).
+
+(11) Here 1{·} equals one when its condition holds and zero oth-erwise. Because F (u, v ) = u + v is integer valued, Mmid 
+
+selects exactly the coordinates with F (u, v ) ∈ { 4, 5}. Both frequency masks are fixed across views. All selected MF co-ordinates remain active, and the positive continuous weights 
+
+ωi(u, v ) adapt their relative contributions to view i.For each block b, JSGS defines the weighted middle fre-quency error: 
+
+ebi = X
+
+> u,v
+
+Wmid ,i (u, v )ψϵsm 
+
+ ∆bi (u, v ) . (12) JSGS then uses the following two DCT losses for view i:
+
+Li 
+
+> low
+
+=
+
+P 
+
+> b,u,v
+
+Mlow (u, v )ψϵsm 
+
+ ∆bi (u, v )P 
+
+> b,u,v
+
+Mlow (u, v ) + ϵloss DCT 
+
+,Li 
+
+> mid
+
+=
+
+P 
+
+> b∈B i
+
+ebi
+
+P 
+
+> b,u,v
+
+Wmid ,i (u, v ) + ϵloss DCT 
+
+.
+
+(13) 
+
+Li 
+
+> low
+
+anchors coarse luminance structure. Li 
+
+> mid
+
+is a normal-ized weighted mean over the fixed middle frequency band. Within this band, Wmid ,i (u, v ) scales the relative contribu-tion of each residual according to ωi(u, v ). Coordinates with smaller quantization steps receive larger relative weights. The normalization keeps the loss scale comparable while allow-ing each DQT to determine which MF residuals dominate supervision. 
+
+Residual Projection and Gaussian Controller 
+
+The weighted middle frequency error also supports Gaussian attribution. For each block, JSGS defines: 
+
+rbi = ebi
+
+P 
+
+> u,v
+
+Wmid ,i (u, v ) + ϵblock DCT 
+
+. (14) 
+
+Li 
+
+> mid
+
+aggregates ebi over all valid blocks, whereas rbi pre-serves the location of block b for Gaussian attribution. The score rbi measures block-level DQT weighted disagreement in the fixed middle frequency band. Assigning this score to the pixels in block b preserves the native JPEG block support for Gaussian attribution. Let bi(p) ∈ B i denote the non-overlapping block containing pixel p. We set ri(p) = rbi(p) 
+
+> i
+
+.Let Ωi denote the pixel grid. All sums over p below use 
+
+p ∈ Ωi. JSGS defines visibility and pools residuals as fol-lows: 
+
+νij = X
+
+> p
+
+tij (p)αj aij (p), Vi = {j : νij > 0},κij (p) = tij (p)aij (p),
+
+¯rij = sg 
+
+" P 
+
+> p
+
+κij (p)ri(p)
+
+P 
+
+> p
+
+κij (p) + ϵproj 
+
+#
+
+.
+
+(15) Here νij is the rendered contribution mass, Vi is the contribu-tor set from the current rasterizer pass, κij (p) is the footprint weight excluding the current Gaussian’s opacity αj , and sg[ ·]
+
+denotes stop gradient. The pooled score ¯rij is detached and recomputed at each forward pass. Visibility, normalization, and boundary conventions are detailed in Supplementary Section B. Let Jij be the camera-to-pixel projection Jacobian and Wi
+
+the linear part of the world-to-camera map. We define: 
+
+Aij = sg [ Jij WiR(qj )] ,
+
+¯sij =
+
+r 12 tr  Aij diag( sj )2A⊤
+
+> ij
+
+. (16) The quantity ¯sij is the projected RMS scale before fixed screen-space dilation. The stop gradient in Aij freezes cen-ter, rotation, and camera variables. The standard covariance-projection derivation and its Frobenius-norm equivalence are provided in Supplementary Section B. We set τs = 1 .0 pixel at the training resolution. We compute: 
+
+Li 
+
+> fro
+
+= 1
+
+|Vi|
+
+X
+
+> j∈Vi
+
+¯rij α2 
+
+> j
+
+exp 
+
+
+
+− ¯sij 
+
+τs
+
+
+
+, |Vi| > 0, (17) With ¯rij detached, Li 
+
+> fro
+
+directly regularizes opacity and pro-jected scale where middle frequency disagreement remains. Gradient directions, empty set handling, and interactions with density control are provided in Supplementary Sec-tion B. 
+
+Overall Objective 
+
+The final training objective for view i is 
+
+Li = λbase ℓph ( ˆIi, I i) + λobs Li
+
+> obs
+
++ λlow Li 
+
+> low
+
++ λmid Li 
+
+> mid
+
++ λfro Li
+
+> fro
+
+. (18) During training, uniform stochastic view sampling esti-mates 1
+
+> N
+
+PNi=1 Li. The same fixed loss weights are used for all scenes and quality schedules. These terms supervise the JPEG observation, low frequency structure, middle fre-quency detail weighted by the DQT, and Gaussian regular-ization. 
+
+# Experiments 
+
+Experimental Setup 
+
+Datasets. We evaluate four LLFF scenes (Mildenhall et al. 2019)—flower, fortress, horns, and trex—and three Mip-NeRF 360 scenes (Barron et al. 2022)—bicycle, garden, and stump. LLFF covers forward-facing captures, while Mip-NeRF 360 covers unbounded scenes with wider camera mo-tion. For every scene, we reserve one uncompressed view from each group of eight for testing. This gives a 7:1 train-test split. We compress only the training views. 
+
+Implementation details. All methods are trained for 10,000 iterations. We evaluate the models at iterations 3,000, 7,000, and 10,000 and report the results at iteration 10,000 in the main tables. JSGS uses the same Gsplat backbone, initial-ization, optimizer settings, and density control configuration as the Gsplat baseline. We use λssim = 0 .2, λobs = 0 .2,
+
+λlow = 0.02 , λmid = 0.03 , and λfro = 0.05 . We set 
+
+ϵsm = 10 −3 and τs = 1 .0 pixel at the training resolution. To avoid division by zero, we add 10 −6 to the denominators of the DCT losses, block score, and Gaussian attribution, corresponding to ϵloss DCT , ϵblock DCT , and ϵproj , respectively. The same JSGS parameter set is used for every scene and quality schedule. Each run uses one NVIDIA GeForce RTX 5090 GPU with 32 GB memory. Supplementary Section C pro-vides more information regarding the training process, den-sity control, JPEG generation, and evaluation configuration. The mixed-quality regime draws from qualities 10–90 in steps of 10. Uniform assigns equal mass to all nine qualities. Gaussian weights nine positions in [−2, 2] by 
+
+exp( −x2/2) . Descending uses weights 9:8: · · · :1 from q =90 to q = 10 . Fixed-quality controls set every training view to 
+
+q ∈ { 30 , 50 }. Mixed schedules combine several JPEG states within one reconstruction, whereas fixed-quality controls re-move this variation. Supplementary Section C consolidates these implementation details. Method Uniform Gaussian Descending PSNR ↑ SSIM ↑ LPIPS ↓ PSNR ↑ SSIM ↑ LPIPS ↓ PSNR ↑ SSIM ↑ LPIPS ↓                                             
+
+> Gsplat 25.40 0.812 0.200 25.53 0.812 0.197 25.61 0.816 0.186 3DGS 25.72 0.798 0.216 25.69 0.788 0.218 25.82 0.802 0.200 SRGS 25.25 0.835 0.309 25.20 0.834 0.308 25.35 0.838 0.299 FDS-GS 26.55 0.811 0.214 26.57 0.814 0.211 26.70 0.820 0.203 JSGS (ours) 26.13 0.836 0.159 26.13 0.839 0.158 26.30 0.847 0.135
+
+Table 1: Metrics are computed using uncompressed reference images and averaged over seven scenes for each mixed-quality schedule. JSGS achieves the lowest LPIPS in all 21 combinations of scenes and schedules. It also achieves the highest mean SSIM for every schedule. FDS-GS achieves the highest mean PSNR. 
+
+Figure 3: Qualitative comparison on bicycle and stump from Mip-NeRF 360, and trex and horns from LLFF. The first column shows a JPEG-compressed input, the next five columns show renderings from different methods, and the final column shows the uncompressed ground truth (GT). The two small images below each main image show the enlarged crops. 
+
+Baselines and metrics. We compare Gsplat (Ye et al. 2025), standard 3DGS, SRGS (Feng et al. 2024), FDS-GS (Zeng et al. 2025), and JSGS under both regimes. We com-pute PSNR, SSIM, and LPIPS using uncompressed reference images (Wang et al. 2004; Zhang et al. 2018). PSNR mea-sures pixel fidelity, SSIM measures structural similarity, and LPIPS measures perceptual distance. We construct inputs using scalar JPEG encoder settings, while JSGS conditions training on the file-header quantization tables rather than the scalar quality labels. 
+
+Comparison with Existing Methods 
+
+Quantitative comparison. The mixed-quality comparison evaluates reconstruction under three schedules spanning nine JPEG quality levels. Motivated by prior work on frame-wise variations in compression quality (Song et al. 2026), the schedules assign different proportions of the training views to these quality levels, enabling comparison across distinct JPEG-quality distributions. As shown in Table 1, relative to Gsplat, JSGS lowers average LPIPS by 20 .7% , 20 .1% , and 27 .1% across the three schedules. It also achieves the highest schedule-average SSIM. FDS-GS attains 0.40 –0.44 dB higher PSNR than JSGS, whereas JSGS achieves lower LPIPS and higher SSIM in every schedule. These metric-specific differences remain consistent as the distribution of JPEG qualities changes. 
+
+Qualitative comparison. Figure 3 compares four scenes using aligned image regions across all methods. The bicycle and horns examples emphasize thin contours, while stump and trex expose repeated textures and occlusion boundaries. The two crops below each result make blocking and ring-ing differences directly comparable. The aggregate results complement these local observations. 
+
+Ablation Study 
+
+Table 2 compares five configurations of the three JSGS com-ponents: JO, DS, and GC.                                     
+
+> Variant JO DS GC PSNR ↑SSIM ↑LPIPS ↓
+> Baseline –––26.02 0.849 0.118 JO only ✓––26.09 0.860 0.105 JO + DS ✓✓–26.32 0.860 0.101 JO + GC ✓–✓26.13 0.866 0.104 Full JSGS ✓✓✓26.38 0.866 0.099
+
+Table 2: Ablation on LLFF flower under the Gaussian mixed-quality schedule. JO, DS, and GC denote the JPEG Obser-vation Operator, Domain-Matched DCT Supervision, and Gaussian Controller, respectively. As shown in Table 2, adding JO lowers LPIPS from 0.118 
+
+to 0.105 , showing the benefit of matching the rendered ob-servation to the JPEG state. Relative to the JO-only variant, adding DS raises PSNR by 0.23 dB and lowers LPIPS by 
+
+0.004 , while adding GC raises SSIM by 0.006 . Combining all three components achieves the best PSNR and LPIPS and ties the best SSIM. These gains are consistent with the complementary roles of DCT supervision and Gaussian reg-ularization. Both DS and GC operate on the JO output; accordingly, ev-ery configuration containing either component also includes JO. Because DS combines Llow and Lmid , its column eval-uates their joint effect rather than the two frequency bands separately. 
+
+Robustness and Efficiency 
+
+Fixed-quality controls. Table 3 removes cross-view qual-ity variation and reports the q = 30 and q = 50 controls. JSGS achieves the lowest LPIPS at both qualities. It reduces LPIPS relative to Gsplat by 13 .7% and 15 .4% , respectively. FDS-GS achieves the highest PSNR, while SRGS achieves the highest SSIM at both qualities. The LPIPS advantage therefore persists when all training views share one JPEG quality. 
+
+Mixed-quality interpretation. JSGS achieves the lowest LPIPS in all 21 mixed-quality and all 14 fixed-quality scene-level comparisons. Under mixed quality, its average LPIPS reduction ranges from 20 .1% to 27 .1% . At q = 30 and                                        
+
+> Method q= 30 q= 50
+> PSNR ↑SSIM ↑LPIPS ↓PSNR ↑SSIM ↑LPIPS ↓
+> Gsplat 24.94 0.767 0.232 25.09 0.778 0.213 3DGS 25.46 0.780 0.235 25.76 0.795 0.214 SRGS 25.24 0.830 0.322 25.34 0.836 0.307 FDS-GS 25.86 0.795 0.234 26.04 0.807 0.215 JSGS (ours) 25.48 0.791 0.200 25.73 0.806 0.180
+
+Table 3: Seven-scene fixed-quality means at q = 30 and 
+
+q = 50 .
+
+q = 50 , the reduction ranges from 13 .7% to 15 .4% . Un-der fixed quality, all views introduce a common compres-sion level. Mixed schedules instead produce view-dependent residuals whose updates meet in shared Gaussians. A low-quality view can therefore alter primitives that higher-quality cameras also use. JSGS conditions these updates through ob-servation matching, frequency masks, and the Gaussian Con-troller. The larger mixed-quality margin is consistent with the target setting in which several JPEG states jointly supervise one representation.                       
+
+> Method Training Time (min) ↓Rendering Speed (FPS) ↑
+> Gsplat ≈3≈150
+> 3DGS ≈19 ≈80
+> SRGS ≈40 ≈80
+> FDS-GS ≈25 ≈80
+> JSGS (ours) ≈10 ≈150
+
+Table 4: Approximate training time and rendering speed. 
+
+Efficiency. Table 4 reports approximate training time and rendering speed. JSGS trains in approximately 10 minutes, which is slower than Gsplat but faster than 3DGS, SRGS, and FDS-GS. Its rendering speed is approximately 150 FPS and matches Gsplat. 
+
+# Conclusion and Limitations 
+
+We study 3D Gaussian Splatting from mixed-quality JPEG views. JSGS uses per-view quantization tables to align obser-vations, reweight DCT residuals, and regularize shared Gaus-sians. Across seven scenes and three schedules, it achieves the lowest LPIPS in every scene–schedule comparison and the highest mean SSIM for each schedule, while FDS-GS retains higher mean PSNR. The LPIPS advantage persists in both fixed-quality controls, and ablations support JO, DS, and GC. JSGS retains Gsplat’s approximately 150-FPS ren-dering speed. We have not considered double JPEG compression: the final JPEG header records only the quantization tables of the last encoding stage and cannot fully represent the preceding compression history. In addition, our data are produced by controlled JPEG encoding of existing scene datasets and do not yet cover data generated by diverse real-world communi-cation devices, encoders, and transmission links. References 
+
+Barron, J. T.; Mildenhall, B.; Verbin, D.; Srinivasan, P. P.; and Hedman, P. 2022. Mip-NeRF 360: Unbounded Anti-Aliased Neural Radiance Fields. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 5470–5479. Chen, W.; and Liu, L. 2024. Deblur-GS: 3D Gaussian Splat-ting from Camera Motion Blurred Images. Proceedings of the ACM on Computer Graphics and Interactive Techniques ,7(1): 18:1–18:15. Cheng, K.; Long, X.; Yang, K.; Yao, Y.; Yin, W.; Ma, Y.; Wang, W.; and Chen, X. 2024. GaussianPro: 3D Gaus-sian Splatting with Progressive Propagation. In Proceedings of the 41st International Conference on Machine Learning ,volume 235 of Proceedings of Machine Learning Research ,8123–8140. Cui, Z.; Chu, X.; and Harada, T. 2025. Luminance-GS: Adapting 3D Gaussian Splatting to Challenging Lighting Conditions with View-Adaptive Curve Adjustment. In Pro-ceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 26472–26482. Dong, C.; Deng, Y.; Loy, C. C.; and Tang, X. 2015. Com-pression Artifacts Reduction by a Deep Convolutional Net-work. In Proceedings of the IEEE International Conference on Computer Vision (ICCV) , 576–584. Ehrlich, M.; Davis, L. S.; Lim, S.-N.; and Shrivastava, A. 2020. Quantization Guided JPEG Artifact Correction. In 
+
+Proceedings of the European Conference on Computer Vi-sion (ECCV) , 293–309. Fang, G.; and Wang, B. 2024. Mini-Splatting: Representing Scenes with a Constrained Number of Gaussians. In Pro-ceedings of the European Conference on Computer Vision (ECCV) , 165–181. Feng, X.; He, Y.; Wang, Y.; Yang, Y.; Li, W.; Chen, Y.; Kuang, Z.; Ding, J.; Fan, J.; and Yu, J. 2024. SRGS: Super-Resolution 3D Gaussian Splatting. ArXiv preprint arXiv:2404.10318v2. Guo, J.; and Chao, H. 2016. Building Dual-Domain Rep-resentations for Compression Artifacts Reduction. In Pro-ceedings of the European Conference on Computer Vision (ECCV) , 628–644. Han, W. K.; Im, S.; Kim, J.; and Jin, K. H. 2024. JDEC: JPEG Decoding via Enhanced Continuous Cosine Coefficients. In 
+
+Proceedings of the IEEE/CVF Conference on Computer Vi-sion and Pattern Recognition (CVPR) , 2784–2793. ITU-T. 1992. Information Technology—Digital Com-pression and Coding of Continuous-Tone Still Images— Requirements and Guidelines . Recommendation T.81 / ISO/IEC 10918-1:1994. Jiang, J.; Zhang, K.; and Timofte, R. 2021. Towards Flexi-ble Blind JPEG Artifacts Removal. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , 4997–5006. Kerbl, B.; Kopanas, G.; Leimkühler, T.; and Drettakis, G. 2023. 3D Gaussian Splatting for Real-Time Radiance Field Rendering. ACM Transactions on Graphics , 42(4): 1–14. Kheradmand, S.; Rebain, D.; Sharma, G.; Sun, W.; Tseng, Y.-C.; Isack, H.; Kar, A.; Tagliasacchi, A.; and Yi, K. M. 2024. 3D Gaussian Splatting as Markov Chain Monte Carlo. In Advances in Neural Information Processing Systems , vol-ume 37. Kulhanek, J.; Peng, S.; Kukelova, Z.; Pollefeys, M.; and Sat-tler, T. 2024. WildGaussians: 3D Gaussian Splatting in the Wild. In Advances in Neural Information Processing Sys-tems , volume 37. Lee, B.; Lee, H.; Sun, X.; Ali, U.; and Park, E. 2024. Deblur-ring 3D Gaussian Splatting. In Proceedings of the European Conference on Computer Vision (ECCV) , 127–143. Li, Z.; Wang, Y.; Kot, A. C.; and Wen, B. 2024. From Chaos to Clarity: 3DGS in the Dark. In Advances in Neural Information Processing Systems , volume 37. Lin, X.; Luo, S.; Shan, X.; Zhou, X.; Ren, C.; Qi, L.; Yang, M.-H.; and Vasconcelos, N. 2025. HQGS: High-Quality Novel View Synthesis with Gaussian Splatting in Degraded Scenes. In International Conference on Learning Represen-tations (ICLR) .Lu, T.; Yu, M.; Xu, L.; Xiangli, Y.; Wang, L.; Lin, D.; and Dai, B. 2024. Scaffold-GS: Structured 3D Gaussians for View-Adaptive Rendering. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 20654–20664. Mildenhall, B.; Srinivasan, P. P.; Ortiz-Cayon, R.; Kalantari, N. K.; Ramamoorthi, R.; Ng, R.; and Kar, A. 2019. Local Light Field Fusion: Practical View Synthesis with Prescrip-tive Sampling Guidelines. ACM Transactions on Graphics ,38(4): 29:1–29:14. Rota Bulò, S.; Porzi, L.; and Kontschieder, P. 2024. Revising Densification in Gaussian Splatting. In Proceedings of the European Conference on Computer Vision (ECCV) , 347– 362. Sabour, S.; Goli, L.; Kopanas, G.; Matthews, M. J.; Lagun, D.; Guibas, L. J.; Jacobson, A.; Fleet, D. J.; and Tagliasac-chi, A. 2025. SpotLessSplats: Ignoring Distractors in 3D Gaussian Splatting. ACM Transactions on Graphics , 44(2): 17:1–17:11. Song, H.; Choi, H.; Kim, A.; Song, C.-y.; Kim, G.; Kim, S. Y.; Lee, J.; and Park, S.-h. 2026. CompSplat: Compression-aware 3D Gaussian Splatting for Real-world Video. ArXiv preprint arXiv:2602.09816. Wan, Y.; Shao, M.; Cheng, Y.; and Zuo, W. 2025. S2Gaussian: Sparse-View Super-Resolution 3D Gaussian Splatting. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 711–721. Wang, Z.; Bovik, A. C.; Sheikh, H. R.; and Simoncelli, E. P. 2004. Image Quality Assessment: From Error Visibility to Structural Similarity. IEEE Transactions on Image Process-ing , 13(4): 600–612. Ye, S.; Dong, Z.-H.; Hu, Y.; Wen, Y.-H.; and Liu, Y.-J. 2024a. Gaussian in the Dark: Real-Time View Synthesis from In-consistent Dark Images Using Gaussian Splatting. Computer Graphics Forum , 43(7): e15213. Ye, V.; Li, R.; Kerr, J.; Turkulainen, M.; Yi, B.; Pan, Z.; Seiskari, O.; Ye, J.; Hu, J.; Tancik, M.; and Kanazawa, A. 2025. gsplat: An Open-Source Library for Gaussian Splat-ting. Journal of Machine Learning Research , 26(34): 1–17. Ye, Z.; Li, W.; Liu, S.; Qiao, P.; and Dou, Y. 2024b. Ab-sGS: Recovering Fine Details in 3D Gaussian Splatting. In 
+
+Proceedings of the ACM International Conference on Multi-media , 1053–1061. Yoon, Y.; and Yoon, K.-J. 2026. ReSplat: Degradation-Agnostic Feed-Forward Gaussian Splatting via Self-Guided Residual Diffusion. In International Conference on Learning Representations (ICLR) . ICLR 2026 poster. Yu, Z.; Chen, A.; Huang, B.; Sattler, T.; and Geiger, A. 2024. Mip-Splatting: Alias-Free 3D Gaussian Splatting. In Pro-ceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 19447–19456. Zeng, Z.; Wang, Y.; Ju, L.; and Guan, T. 2025. Frequency-Aware Density Control via Reparameterization for High-Quality Rendering of 3D Gaussian Splatting. Proceedings of the AAAI Conference on Artificial Intelligence , 39(9): 9833– 9841. Zhang, J.; Zhan, F.; Xu, M.; Lu, S.; and Xing, E. 2024a. FreGS: 3D Gaussian Splatting with Progressive Frequency Regularization. In Proceedings of the IEEE/CVF Confer-ence on Computer Vision and Pattern Recognition (CVPR) ,21424–21433. Zhang, K.; Zuo, W.; Chen, Y.; Meng, D.; and Zhang, L. 2017. Beyond a Gaussian Denoiser: Residual Learning of Deep CNN for Image Denoising. IEEE Transactions on Image Processing , 26(7): 3142–3155. Zhang, R.; Isola, P.; Efros, A. A.; Shechtman, E.; and Wang, O. 2018. The Unreasonable Effectiveness of Deep Features as a Perceptual Metric. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR) , 586– 595. Zhang, Z.; Hu, W.; Lao, Y.; He, T.; and Zhao, H. 2024b. Pixel-GS: Density Control with Pixel-Aware Gradient for 3D Gaussian Splatting. In Proceedings of the European Conference on Computer Vision (ECCV) , 326–342. Zhao, L.; Wang, P.; and Liu, P. 2024. BAD-Gaussians: Bun-dle Adjusted Deblur Gaussian Splatting. In Proceedings of the European Conference on Computer Vision (ECCV) ,233–250. Zheng, B.; Chen, Y.; Tian, X.; Zhou, F.; and Liu, X. 2020. Im-plicit Dual-Domain Convolutional Network for Robust Color Image Compression Artifact Reduction. IEEE Transactions on Circuits and Systems for Video Technology , 30(11): 3982– 3994.
