@@ -6,61 +6,62 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-11
-- 运行时间：2026-08-11 21:04:30 UTC
+- 最新运行日期：2026-08-12
+- 运行时间：2026-08-12 21:13:25 UTC
 - 运行状态：成功
 - 本次总论文数：13
-- 精读区：11
-- 速读区：2
+- 精读区：7
+- 速读区：6
 
 ### 今日简报（AI）
-今日精读两篇10分顶会论文，聚焦3D感知前沿——从单帧LiDAR分割到室内外统一占用预测。  
-最值得关注：利用入射角重采样突破稀疏点云分割瓶颈，以及统一室内外场景的3D占用预测新范式。  
-建议持续追踪自监督表征与统一空间理解方向，它们正快速重塑自动驾驶与具身智能的感知基石。
-- 详情：[/202608/11/README](/202608/11/README)
+- 今日共生成 13 篇推荐（精读 7 篇，速读 6 篇）
+- 精读：《OccAnyScene: Towards Unified Indoor-Outdoor 3D Occupancy Prediction》（9.0/10）, 《LEGO: Leveled Language Gaussian Splatting》（9.0/10）
+- 速读：《Self-Geometry: GT-Free and Plug-and-Play Test-Time Adaptation for Geometrically Consistent 3D Vision Foundation Models》（8.0/10）, 《SmartMage: Dynamic Modality Orchestration for 3D Scene Understanding》（7.0/10）, 《EvTrajGS: Accurate and Efficient 3D Gaussian Splatting from Unposed Event Streams》（7.0/10）
+- 这些结果覆盖了当下较热的方向，建议先看精读区论文的关键问题与方法。
+- 详情：[/202608/12/README](/202608/12/README)
 
 ### 精读区论文标签
-1. [Rethinking 3D Segmentation from Individual LiDAR Scans: Incidence-Aware Sampling on the SIP Benchmark](/202608/11/2608.07757v1-rethinking-3d-segmentation-from-individual-lidar-scans-incidence-aware-sampling-on-the-sip-benchmark)  
-   标签：评分：10.0/10、query:d-gen-recon
-   evidence：来自激光雷达扫描的三维分割，直接对应三维场景语义分割
-2. [OccAnyScene: Towards Unified Indoor-Outdoor 3D Occupancy Predictio](/202608/11/2608.08696v1-occanyscene-towards-unified-indoor-outdoor-3d-occupancy-predictio)  
-   标签：评分：10.0/10、query:d-gen-recon
-   evidence：跨场景的统一三维语义占用预测，本质上为三维语义分割
-3. [To See a World in a Living Context: Unified Indoor-Outdoor Urban World Generation](/202608/11/2608.05879v1-to-see-a-world-in-a-living-context-unified-indoor-outdoor-urban-world-generation)  
+1. [OccAnyScene: Towards Unified Indoor-Outdoor 3D Occupancy Prediction](/202608/12/2608.08696v2-occanyscene-towards-unified-indoor-outdoor-3d-occupancy-prediction)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：文本驱动的统一室内外三维世界生成，实现跨尺度对应
-4. [FlexSplat: Flexible Feed-Forward 3D Gaussian Splatting without Point Cloud Correspondence](/202608/11/2608.07937v1-flexsplat-flexible-feed-forward-3d-gaussian-splatting-without-point-cloud-correspondence)  
+   evidence：跨场景3D语义占用预测，直接处理3D语义场景分割。
+2. [LEGO: Leveled Language Gaussian Splatting](/202608/12/2608.10057v1-lego-leveled-language-gaussian-splatting)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：从未标定多视角图像集合中进行前馈3D重建
-5. [When Does An Extra View Help? Adapting Single-View 3D Reconstruction with Extra Imagery](/202608/11/2608.08132v1-when-does-an-extra-view-help-adapting-single-view-3d-reconstruction-with-extra-imagery)  
+   evidence：跨视图一致的多层级三维场景分割
+3. [CasDeblurGS: Cascaded 2D-to-3D Multi-View Consistency for 3D Gaussian Splatting from Two Blurry Images](/202608/12/2608.10345v1-casdeblurgs-cascaded-2d-to-3d-multi-view-consistency-for-3d-gaussian-splatting-from-two-blurry-images)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：将单视图3D物体重建适配为测试时可利用额外视图
-6. [RayLift: Lifting Complementary Ray-Wise Evidence with 3D Geometry Priors for Semantic Scene Completion](/202608/11/2608.08476v1-raylift-lifting-complementary-ray-wise-evidence-with-3d-geometry-priors-for-semantic-scene-completion)  
+   evidence：从两幅运动模糊图像重建3D场景，直接针对多视图3D重建。
+4. [Gaussian Sculpting: End-to-End Controllable Surface Reconstruction via Field Optimization](/202608/12/2608.10602v1-gaussian-sculpting-end-to-end-controllable-surface-reconstruction-via-field-optimization)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：从立体图像完成三维语义场景补全
-7. [ERF-GS: Reconstructing Fast Motion from Disjoint Event-RGB Viewpoints](/202608/11/2608.08531v1-erf-gs-reconstructing-fast-motion-from-disjoint-event-rgb-viewpoints)  
+   evidence：基于锚定SDF优化的三维高斯溅射端到端表面重建
+5. [Compact Feed-Forward 3D Gaussians via Saliency-Guided Primitive Merging](/202608/12/2608.10712v1-compact-feed-forward-3d-gaussians-via-saliency-guided-primitive-merging)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：从多视图事件-RGB输入进行动态三维场景重建
-8. [JSGS: JPEG State-Guided Supervision for 3D Gaussian Splatting from Mixed-Quality Views](/202608/11/2608.08659v1-jsgs-jpeg-state-guided-supervision-for-3d-gaussian-splatting-from-mixed-quality-views)  
+   evidence：从稀疏输入视图进行前馈3D重建
+6. [Beyond Pixels: From Video Priors to 4D Worlds](/202608/12/2608.10744v1-beyond-pixels-from-video-priors-to-4d-worlds)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：从多视角JPEG图像进行三维高斯泼溅重建，处理压缩伪影
-9. [View-Adaptive Renderer for View-Consistent 2D-to-3D Generation](/202608/11/2608.09110v1-view-adaptive-renderer-for-view-consistent-2d-to-3d-generation)  
+   evidence：从视频先验直接潜变量到4D生成，由文本或图像合成动态3D场景
+7. [Cross-View Feature Matching: Survey, Benchmarking, and Foundation-Model Perspectives](/202608/12/2608.11093v1-cross-view-feature-matching-survey-benchmarking-and-foundation-model-perspectives)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：视角自适应渲染器实现单图到3D形状的一致性生成
-10. [TeaMatch: Teachable Cross-Modal Representation Learning for 2D-3D Matching](/202608/11/2608.09590v1-teamatch-teachable-cross-modal-representation-learning-for-2d-3d-matching)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：二维-三维匹配方法，学习图像与点云间的可靠对应关系
-11. [ResemBrick: Brick Reconstruction from Photographs with Perceptual Fidelity and Buildability](/202608/11/2608.09597v1-resembrick-brick-reconstruction-from-photographs-with-perceptual-fidelity-and-buildability)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：从几张普通照片重建可手动搭建的彩色积木三维模型
+   evidence：跨视角特征匹配综述，针对大视角变化下的对应关系
 
 ### 速读区论文标签
-1. [Semi-Dense Matching Uncertainty Is Not Just Local Confidence](/202608/11/2608.08685v1-semi-dense-matching-uncertainty-is-not-just-local-confidence)  
+1. [Self-Geometry: GT-Free and Plug-and-Play Test-Time Adaptation for Geometrically Consistent 3D Vision Foundation Models](/202608/12/2608.10708v1-self-geometry-gt-free-and-plug-and-play-test-time-adaptation-for-geometrically-consistent-3d-vision-foundation-models)  
    标签：评分：8.0/10、query:d-gen-recon
-   evidence：几何视觉中半稠密匹配的不确定性估计
-2. [EgoTrack3D: A Modular Framework for Egocentric 3D Object Tracking](/202608/11/2608.08016v1-egotrack3d-a-modular-framework-for-egocentric-3d-object-tracking)  
+   evidence：测试时适配以增强3D基础模型的多视图几何一致性
+2. [SmartMage: Dynamic Modality Orchestration for 3D Scene Understanding](/202608/12/2608.05137v3-smartmage-dynamic-modality-orchestration-for-3d-scene-understanding)  
    标签：评分：7.0/10、query:d-gen-recon
-   evidence：从第一人称RGB视频直接重建并维护动态三维场景表示
+   evidence：动态模态编排用于语义感知3D场景理解
+3. [EvTrajGS: Accurate and Efficient 3D Gaussian Splatting from Unposed Event Streams](/202608/12/2608.08585v1-evtrajgs-accurate-and-efficient-3d-gaussian-splatting-from-unposed-event-streams)  
+   标签：评分：7.0/10、query:d-gen-recon
+   evidence：从未标定事件流进行稠密3D重建
+4. [Diffuse the object, keep its label: curating detector training data from a few unlabeled photographs via VLM-built 3D vegetation scenes](/202608/12/2608.09691v1-diffuse-the-object-keep-its-label-curating-detector-training-data-from-a-few-unlabeled-photographs-via-vlm-built-3d-vegetation-scenes)  
+   标签：评分：7.0/10、query:d-gen-recon
+   evidence：从单张照片生成粗略三维植被场景以合成标注训练数据
+5. [CausalSplat: Towards Comprehensive Hierarchical Reasoning in 3D Gaussian Splatting](/202608/12/2608.11150v1-causalsplat-towards-comprehensive-hierarchical-reasoning-in-3d-gaussian-splatting)  
+   标签：评分：7.0/10、query:d-gen-recon
+   evidence：面向3D高斯分割的推理基准与框架
+6. [ThinkAfford: Affordance-Centric Reasoning for Fine-Grained 3D Grounding in Cluttered Scenes](/202608/12/2608.10981v1-thinkafford-affordance-centric-reasoning-for-fine-grained-3d-grounding-in-cluttered-scenes)  
+   标签：评分：6.0/10、query:d-gen-recon
+   evidence：杂乱场景中的细粒度3D可供性定位
 
 
 <div class="dpr-home-promo-card">
