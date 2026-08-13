@@ -1,0 +1,253 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-13T20:58:33.935012+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2608.12175v1",
+      "source": "arxiv",
+      "title": "TGRHuman: Text-Guided Realistic 3D Human Generation via Diffusion Renderer",
+      "abstract": "Realistic 3D human generation plays a crucial role in many graphics applications. However, current methods still struggle to generate high-quality human geometry and texture while maintaining 3D consistency and inference efficiency. In this work, we address these limitations by introducing TGRHuman, a novel approach for generating realistic 3D humans from text. Our method decouples geometry and texture generation to alleviate the issues commonly encountered in NeRF-based methods. Instead of relying on slow, implicit score-distillation-based optimization, we directly use explicit multi-view observation generation and optimization for efficient 3D synthesis. For geometry generation, we propose a high-resolution generative module for multi-view normals together with a geometry-carving strategy that preserves view consistency and supports loose clothing. For texture generation, we produce spatially consistent RGB observations from densely sampled surrounding views using a carefully designed texture-prior acquisition strategy and a diffusion renderer, enabling detailed human texture synthesis. Experiments show that our method can generate high-quality and consistent 3D human geometry and texture efficiently. TGRHuman outperforms existing text-to-3D human methods in both geometry and texture quality.",
+      "authors": [
+        "Muxin Zhang",
+        "Chaohui Yu",
+        "Yuanwang Yang",
+        "Min Wei",
+        "Zhuo Su",
+        "Kun Li"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-12T15:32:50+00:00",
+      "link": "https://arxiv.org/pdf/2608.12175v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "text-guided realistic 3D human generation via diffusion renderer",
+      "llm_evidence_cn": "文本引导的逼真3D人体生成",
+      "llm_evidence": "文本引导的逼真3D人体生成",
+      "canonical_evidence": "文本引导的逼真3D人体生成",
+      "llm_tldr_en": "Proposes TGRHuman for realistic 3D human generation from text, decoupling geometry and texture and using explicit multi-view normal generation for efficiency.",
+      "llm_tldr_cn": "针对现有文本生成3D人体方法难以同时保证高质量几何、纹理、3D一致性和推理效率的问题，提出TGRHuman方法。该方法解耦几何与纹理生成，不再依赖慢速隐式分数蒸馏优化，而是使用显式多视图观测生成与优化进行高效3D合成。几何生成采用高分辨率多视图法向生成模块。实验表明TGRHuman在生成质量和效率上均有提升，为文本到3D人体生成提供新方案。",
+      "llm_tldr": "针对现有文本生成3D人体方法难以同时保证高质量几何、纹理、3D一致性和推理效率的问题，提出TGRHuman方法。该方法解耦几何与纹理生成，不再依赖慢速隐式分数蒸馏优化，而是使用显式多视图观测生成与优化进行高效3D合成。几何生成采用高分辨率多视图法向生成模块。实验表明TGRHuman在生成质量和效率上均有提升，为文本到3D人体生成提供新方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.11150v2",
+      "source": "arxiv",
+      "title": "CausalSplat: Towards Comprehensive Hierarchical Reasoning in 3D Gaussian Splatting",
+      "abstract": "While 3D Gaussian Splatting (3DGS) has advanced open vocabulary scene understanding, existing methods remain confined to explicit queries. They struggle to interpret implicit intents, complex spatial constraints, and commonsense reasoning required for practical embodied interactions. To address this gap, we introduce the task of reasoning 3D Gaussian segmentation and construct two benchmarks, Causal-LERF and Causal-ScanNet. These benchmarks systematically evaluate commonsense, spatial, affordance, and counterfactual reasoning. Evaluations reveal that current state of the art methods perform poorly on these reasoning challenges. Therefore, we propose CausalSplat, a framework that integrates vision-language models with 3D scene graphs to disentangle explicit structural perception from implicit logical inference. Extensive experiments demonstrate that CausalSplat achieves state of the art performance on our reasoning benchmarks while showing strong generalizability on standard referring and open vocabulary 3D segmentation tasks. Project Page: https://jiayuding031020.github.io/CausalSplat",
+      "authors": [
+        "Jiayu Ding",
+        "Meilu Song",
+        "Yun Chen",
+        "Wei Gao",
+        "Ge Li"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-11T17:09:49+00:00",
+      "link": "https://arxiv.org/pdf/2608.11150v2",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "reasoning 3D Gaussian segmentation and scene understanding",
+      "llm_evidence_cn": "三维高斯分割与场景理解推理",
+      "llm_evidence": "三维高斯分割与场景理解推理",
+      "canonical_evidence": "三维高斯分割与场景理解推理",
+      "llm_tldr_en": "Proposes CausalSplat to integrate vision-language models with 3D scene graphs for hierarchical reasoning in 3D Gaussian segmentation, with new benchmarks showing current methods fail on complex reasoning tasks.",
+      "llm_tldr_cn": "现有3D高斯场景理解局限于显式查询，难以处理隐式意图和复杂空间约束。该工作提出因果分割任务与基准Causal-LERF和Causal-ScanNet，并设计CausalSplat框架，将视觉语言模型与3D场景图结合，提升常识、空间、可供性与反事实推理能力。评估表明现有方法在推理挑战上表现不佳，该框架为具身交互中的3D语义分割提供了新路径。",
+      "llm_tldr": "现有3D高斯场景理解局限于显式查询，难以处理隐式意图和复杂空间约束。该工作提出因果分割任务与基准Causal-LERF和Causal-ScanNet，并设计CausalSplat框架，将视觉语言模型与3D场景图结合，提升常识、空间、可供性与反事实推理能力。评估表明现有方法在推理挑战上表现不佳，该框架为具身交互中的3D语义分割提供了新路径。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.11876v1",
+      "source": "arxiv",
+      "title": "D3D-GEN: Robot-Aware Domain-Grounded Interactive 3D World Generation for Social Robotics",
+      "abstract": "Training and validation of Embodied AI for social navigation critically depends on realistic simulation environments, yet many current approaches fail to find a balance between realism and simulability. We propose D3D-GEN, a novel world generation system that combines a domain agent with a retrieval-augmented generation (RAG) pipeline grounded in that domain. Our system enables users to rapidly generate domain-grounded, fully interactive 3D worlds by automating both the collection of domain knowledge and the synthesis of realistic floorplans and object placements, without dependence on any fixed 3D model database. Given a domain description prompt, the research agent collects publicly accessible domain-specific data and constructs a persistent domain database. Using this database, our RAG pipeline generates plausible floorplans and object placements by dynamically querying a user-provided semantic database, which can be easily extended or modified. The output is a fully interactive 3D world loadable by the popular simulators Isaac Sim and Gazebo. With our approach, we have built databases for several common domains (indoor residential, hospital, office) and generated dozens of distinct, plausible simulation environments for each domain. We present D3D-GEN with a local web frontend that facilitates rapid, interactive world generation for robot simulation.",
+      "authors": [
+        "Anh Duc Do",
+        "Volodymyr Scherbyna",
+        "Tai Duc Nguyen",
+        "Spaarsh Thakkar",
+        "Zhengcheng Shen",
+        "Teham Buiyan",
+        "Archan Misra",
+        "Linh Kästner"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.HC"
+      ],
+      "published": "2026-08-12T10:03:01+00:00",
+      "link": "https://arxiv.org/pdf/2608.11876v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Domain-grounded interactive 3D world generation from text for robotics",
+      "llm_evidence_cn": "面向机器人的基于文本的领域接地交互式3D世界生成",
+      "llm_evidence": "面向机器人的基于文本的领域接地交互式3D世界生成",
+      "canonical_evidence": "面向机器人的基于文本的领域接地交互式3D世界生成",
+      "llm_tldr_en": "D3D-GEN combines a domain agent with retrieval-augmented generation to produce domain-grounded, interactive 3D worlds for social robotics, automating floorplan and object placement synthesis from a domain description.",
+      "llm_tldr_cn": "针对社交导航的具身AI训练需要既真实又可模拟的仿真环境，但现有方法难以平衡，D3D-GEN提出结合领域智能体和检索增强生成的世界生成系统，自动收集领域知识并综合真实楼层平面和物体放置，生成无固定模型库依赖的领域接地、完全交互式的3D世界，为社交机器人训练提供高效环境生成。",
+      "llm_tldr": "针对社交导航的具身AI训练需要既真实又可模拟的仿真环境，但现有方法难以平衡，D3D-GEN提出结合领域智能体和检索增强生成的世界生成系统，自动收集领域知识并综合真实楼层平面和物体放置，生成无固定模型库依赖的领域接地、完全交互式的3D世界，为社交机器人训练提供高效环境生成。",
+      "llm_tags": [
+        "query:d-gen-recon:composite"
+      ],
+      "matched_query_tag": "query:d-gen-recon:composite",
+      "matched_query_text": "Papers central to 3D场景生成、重建、物体生成、分割与特征匹配相关文章, especially work that connects or combines: 3D scene reconstruction from multi-view images; generating 3D scenes from image collections; generating 3D objects from images or text; semantic segmentation of 3D scenes; matching 3D features across multiple views; multi-view stereo 3D reconstruction; 3D scene generation and reconstruction using unlabeled internet photos; unsupervised 3D object generation and semantic segmentation from multi view images; feature matching and 3D scene understanding from large scale image collections.",
+      "matched_requirement_id": "req-composite-d-gen-recon",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.11699v1",
+      "source": "arxiv",
+      "title": "STAR: A Spatial-Topology Aware Routing Framework for Generalizable 3D Scene Understanding",
+      "abstract": "Constructing a unified 3D scene understanding model has long been hindered by the topological discrepancies across sensor modalities. While applying the Mixture-of-Experts (MoE) architecture is a flexible approach for multi-domain 3D understanding, we observe that conventional feature-only MoE routers may underrepresent local sampling topology under semantic supervision, making expert allocation difficult when semantic consistency coexists with geometric heterogeneity. To overcome this challenge, we propose STAR (Spatial-Topology Aware Routing Framework). Specifically, we introduce a multi-attribute self-supervised pre-training branch, covering topological and textural variations, to anchor cross-domain structural priors. Building upon this, we design a domain-aware expert branch with two mechanisms: Domain-Spatial-Guided Routing (DSR), which captures local topological variations from spatial context, and Entropy-controlled Dynamic Allocation (EDA), which adjusts the number of activated experts according to routing uncertainty. Together, these branches combine stable cross-domain representation learning with adaptive expert allocation. Extensive experiments across various tasks, encompassing both indoor and outdoor scenes, demonstrate the effectiveness of STAR. It achieves 80.1% mIoU on the ScanNet validation set and 77.2% mIoU on S3DIS, consistently improving over strong baselines. Code is available at our project page (https://xmw666.github.io/STAR/).",
+      "authors": [
+        "Mingwei Xing",
+        "Xinliang Wang",
+        "Yifeng Shi"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-12T06:21:59+00:00",
+      "link": "https://arxiv.org/pdf/2608.11699v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "generalizable 3D scene understanding via spatial-topology aware routing",
+      "llm_evidence_cn": "通过空间拓扑感知路由实现可泛化的三维场景理解",
+      "llm_evidence": "通过空间拓扑感知路由实现可泛化的三维场景理解",
+      "canonical_evidence": "通过空间拓扑感知路由实现可泛化的三维场景理解",
+      "llm_tldr_en": "STAR proposes a spatial-topology aware MoE routing framework with self-supervised pre-training to address topological discrepancies across 3D sensor modalities for generalizable scene understanding.",
+      "llm_tldr_cn": "针对不同传感器模态间拓扑差异阻碍统一三维场景理解的问题，该论文提出STAR框架。该框架在MoE路由中引入空间拓扑感知机制，并结合多属性自监督预训练分支来锚定跨域结构先验。实验表明，STAR在多种三维传感数据上提升了专家分配的合理性与场景理解的泛化能力。该工作为跨域三维场景理解提供了新的路由设计思路。",
+      "llm_tldr": "针对不同传感器模态间拓扑差异阻碍统一三维场景理解的问题，该论文提出STAR框架。该框架在MoE路由中引入空间拓扑感知机制，并结合多属性自监督预训练分支来锚定跨域结构先验。实验表明，STAR在多种三维传感数据上提升了专家分配的合理性与场景理解的泛化能力。该工作为跨域三维场景理解提供了新的路由设计思路。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "feature matching and 3D scene understanding from large scale image collections",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.11938v1",
+      "source": "arxiv",
+      "title": "Surfsvr: 2D Surface Priors as 3D Geometric Regularizers for Sparse Voxel Reconstruction",
+      "abstract": "Sparse voxel reconstruction offers an efficient representation for high-fidelity 3D modeling, yet its geometry is commonly optimized from local photometric evidence and discrete visibility statistics. This often leads to fragmented surfaces, excessive subdivision, and floating artifacts, particularly in weakly textured or sparsely observed regions. We introduce SurfSVR, a novel sparse voxel reconstruction paradigm that treats 2D surface priors as explicit 3D geometric regularizers. Instead of directly lifting noisy pixel-wise depth predictions, SurfSVR first organizes each image into coherent surface regions by jointly reasoning over appearance, monocular depth, normals and cross-view geometry. Each region is then represented by an adaptively selected planar or quadratic surface model based on fitting reliability and geometric complexity, while cross-model agreement distinguishes reliable geometry from ambiguous predictions. These structured 2D priors are lifted into 3D and integrated throughout the reconstruction pipeline. They guide surface-adaptive voxel subdivision, provide region-level depth and normal supervision during optimization, enhance geometrically reliable sparse-observed surfaces in voxel pruning, and suppress off-surface floaters during post-refinement training. This unified design converts semantic and geometric coherence in image space into persistent structural constraints in 3D. Extensive experiments on 3 public benchmarks demonstrate that SurfSVR consistently improves sparse voxel reconstruction across scenes with substantially different visibility and geometry characteristics, achieving state-of-the-art reconstruction quality. Codes and models will be released soon.",
+      "authors": [
+        "Yan Di",
+        "Chengxi Li",
+        "Yaoxing Wang",
+        "Mengge Liu",
+        "Zhigang Li",
+        "Ruida Zhang",
+        "Mingyang Li",
+        "Pengyuan Wang",
+        "Shan Gao",
+        "Xiangyang Ji"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-12T11:25:31+00:00",
+      "link": "https://arxiv.org/pdf/2608.11938v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Treats 2D surface priors as 3D geometric regularizers for sparse voxel reconstruction",
+      "llm_evidence_cn": "将2D表面先验作为稀疏体素重建的3D几何正则化器",
+      "llm_evidence": "将2D表面先验作为稀疏体素重建的3D几何正则化器",
+      "canonical_evidence": "将2D表面先验作为稀疏体素重建的3D几何正则化器",
+      "llm_tldr_en": "SurfSVR organizes images into coherent surface regions using appearance, monocular depth, normals, and cross-view geometry, then treats these 2D surface priors as explicit 3D geometric regularizers to improve sparse voxel reconstruction quality and reduce artifacts.",
+      "llm_tldr_cn": "针对稀疏体素重建中因局部光度证据和离散可见性统计导致的表面碎片、过度细分和漂浮伪影问题，提出SurfSVR方法，将2D表面先验作为显式3D几何正则化器。它联合外观、单目深度、法线和跨视图几何将图像组织为一致表面区域，再以自适应方式在体素重建中正则化几何。实验表明该方法能有效减少伪影，提高弱纹理和稀疏观测区域的建模保真度，为多视图立体重建提供了新思路。",
+      "llm_tldr": "针对稀疏体素重建中因局部光度证据和离散可见性统计导致的表面碎片、过度细分和漂浮伪影问题，提出SurfSVR方法，将2D表面先验作为显式3D几何正则化器。它联合外观、单目深度、法线和跨视图几何将图像组织为一致表面区域，再以自适应方式在体素重建中正则化几何。实验表明该方法能有效减少伪影，提高弱纹理和稀疏观测区域的建模保真度，为多视图立体重建提供了新思路。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "multi-view stereo 3D reconstruction",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.09238v1",
+      "source": "arxiv",
+      "title": "RealDenseFace: Real-time Monocular 3D Face Reconstruction from Dense UV-space Priors",
+      "abstract": "Recent monocular 3D face reconstruction methods achieve high fidelity by fitting a 3D Morphable Model (3DMM) to dense priors predicted by networks, but the optimization stage is computationally expensive, often taking tens of seconds per image. We present RealDenseFace, a real-time optimization-based 3D face reconstruction method with dense UV-space network predictions. Our key idea is to formulate 3DMM fitting as a nonlinear least-squares problem and solve it with a tailored Gauss-Newton solver that converges in only a few iterations. The reconstruction is conducted in two stages. In the first stage, the network predicts two dense UV-space maps from a single RGB image: a correspondence map for UV-to-image alignment, and a relative-depth map for geometric constraints along the viewing direction. In the second stage, the solver fits per-vertex targets sampled from these maps at the vertex UV coordinates. The solver supports all three reconstruction settings: single-image fitting, offline sequence reconstruction, and online tracking. Our method achieves state-of-the-art accuracy on the NeRSemble SVFR benchmark. The online tracker runs at 80+ FPS, and the offline sequence reconstruction is over 20 times faster than previous optimization-based baselines.",
+      "authors": [
+        "Linzhou Li",
+        "Tianjia Shao",
+        "Kun Zhou"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-10T08:04:36+00:00",
+      "link": "https://arxiv.org/pdf/2608.09238v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "monocular 3D face reconstruction from single RGB image",
+      "llm_evidence_cn": "从单张RGB图像进行单目三维人脸重建",
+      "llm_evidence": "从单张RGB图像进行单目三维人脸重建",
+      "canonical_evidence": "从单张RGB图像进行单目三维人脸重建",
+      "llm_tldr_en": "RealDenseFace proposes a real-time optimization-based monocular 3D face reconstruction method using dense UV-space priors and a tailored Gauss-Newton solver that converges in few iterations.",
+      "llm_tldr_cn": "现有单目三维人脸重建方法优化阶段耗时较长。该工作提出RealDenseFace，基于密集UV空间先验，将三维可变形模型拟合形式化为非线性最小二乘问题，并用定制高斯-牛顿求解器在少量迭代内收敛。方法分两阶段预测UV空间对应图和相对深度图，实现高质量实时重建，为三维人脸建模提供了高效方案。",
+      "llm_tldr": "现有单目三维人脸重建方法优化阶段耗时较长。该工作提出RealDenseFace，基于密集UV空间先验，将三维可变形模型拟合形式化为非线性最小二乘问题，并用定制高斯-牛顿求解器在少量迭代内收敛。方法分两阶段预测UV空间对应图和相对深度图，实现高质量实时重建，为三维人脸建模提供了高效方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
