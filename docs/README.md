@@ -6,41 +6,44 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-13
-- 运行时间：2026-08-13 21:06:38 UTC
+- 最新运行日期：2026-08-14
+- 运行时间：2026-08-14 21:20:48 UTC
 - 运行状态：成功
-- 本次总论文数：6
-- 精读区：5
-- 速读区：1
+- 本次总论文数：7
+- 精读区：3
+- 速读区：4
 
 ### 今日简报（AI）
-- 今日共生成 6 篇推荐（精读 5 篇，速读 1 篇）
-- 精读：《TGRHuman: Text-Guided Realistic 3D Human Generation via Diffusion Renderer》（9.0/10）, 《CausalSplat: Towards Comprehensive Hierarchical Reasoning in 3D Gaussian Splatting》（8.0/10）
-- 速读：《RealDenseFace: Real-time Monocular 3D Face Reconstruction from Dense UV-space Priors》（6.0/10）
+- 今日共生成 7 篇推荐（精读 3 篇，速读 4 篇）
+- 精读：《LocusGS: Spatially Grounded Tokens for Feed-Forward 3D Gaussian Splatting》（9.0/10）, 《Semantic Radiance Fields as Simulators for Spatial Reasoning in Real-World Scenes》（9.0/10）
+- 速读：《GeoCache: Training-Free Acceleration of Multi-View Texture Diffusion via Geometric Delta Transport》（7.0/10）, 《GS$^{2}$CI: Robust Gaussian Splatting For Snapshot Compressive Imaging via Large Vision Model Priors》（7.0/10）, 《SCULPT: Subtractive Composition for 3D Part Generation》（7.0/10）
 - 这些结果覆盖了当下较热的方向，建议先看精读区论文的关键问题与方法。
-- 详情：[/202608/13/README](/202608/13/README)
+- 详情：[/202608/14/README](/202608/14/README)
 
 ### 精读区论文标签
-1. [TGRHuman: Text-Guided Realistic 3D Human Generation via Diffusion Renderer](/202608/13/2608.12175v1-tgrhuman-text-guided-realistic-3d-human-generation-via-diffusion-renderer)  
+1. [LocusGS: Spatially Grounded Tokens for Feed-Forward 3D Gaussian Splatting](/202608/14/2608.12825v1-locusgs-spatially-grounded-tokens-for-feed-forward-3d-gaussian-splatting)  
    标签：评分：9.0/10、query:d-gen-recon
-   evidence：文本引导的逼真3D人体生成
-2. [CausalSplat: Towards Comprehensive Hierarchical Reasoning in 3D Gaussian Splatting](/202608/13/2608.11150v2-causalsplat-towards-comprehensive-hierarchical-reasoning-in-3d-gaussian-splatting)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：三维高斯分割与场景理解推理
-3. [STAR: A Spatial-Topology Aware Routing Framework for Generalizable 3D Scene Understanding](/202608/13/2608.11699v1-star-a-spatial-topology-aware-routing-framework-for-generalizable-3d-scene-understanding)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：通过空间拓扑感知路由实现可泛化的三维场景理解
-4. [D3D-GEN: Robot-Aware Domain-Grounded Interactive 3D World Generation for Social Robotics](/202608/13/2608.11876v1-d3d-gen-robot-aware-domain-grounded-interactive-3d-world-generation-for-social-robotics)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：面向机器人的基于文本的领域接地交互式3D世界生成
-5. [Surfsvr: 2D Surface Priors as 3D Geometric Regularizers for Sparse Voxel Reconstruction](/202608/13/2608.11938v1-surfsvr-2d-surface-priors-as-3d-geometric-regularizers-for-sparse-voxel-reconstruction)  
-   标签：评分：8.0/10、query:d-gen-recon
-   evidence：将2D表面先验作为稀疏体素重建的3D几何正则化器
+   evidence：前馈三维高斯泼溅聚合多视图证据
+2. [Semantic Radiance Fields as Simulators for Spatial Reasoning in Real-World Scenes](/202608/14/2608.13095v1-semantic-radiance-fields-as-simulators-for-spatial-reasoning-in-real-world-scenes)  
+   标签：评分：9.0/10、query:d-gen-recon
+   evidence：将二维语义分割提升到联合编码几何、外观和类别语义的三维辐射场
+3. [Online Learning of Correspondences between Images](/202608/14/2608.13104v1-online-learning-of-correspondences-between-images)  
+   标签：评分：9.0/10、query:d-gen-recon
+   evidence：跨图像序列迭代学习点对应关系以估计3D几何
 
 ### 速读区论文标签
-1. [RealDenseFace: Real-time Monocular 3D Face Reconstruction from Dense UV-space Priors](/202608/13/2608.09238v1-realdenseface-real-time-monocular-3d-face-reconstruction-from-dense-uv-space-priors)  
+1. [GeoCache: Training-Free Acceleration of Multi-View Texture Diffusion via Geometric Delta Transport](/202608/14/2608.13255v1-geocache-training-free-acceleration-of-multi-view-texture-diffusion-via-geometric-delta-transport)  
+   标签：评分：7.0/10、query:d-gen-recon
+   evidence：加速几何条件下的多视图纹理扩散用于三维生成
+2. [GS$^{2}$CI: Robust Gaussian Splatting For Snapshot Compressive Imaging via Large Vision Model Priors](/202608/14/2608.13502v1-gs2ci-robust-gaussian-splatting-for-snapshot-compressive-imaging-via-large-vision-model-priors)  
+   标签：评分：7.0/10、query:d-gen-recon
+   evidence：利用3DGS和大型视觉先验从快照压缩成像重建三维场景
+3. [SCULPT: Subtractive Composition for 3D Part Generation](/202608/14/2608.13541v1-sculpt-subtractive-composition-for-3d-part-generation)  
+   标签：评分：7.0/10、query:d-gen-recon
+   evidence：通过减式组合实现部件感知的3D生成
+4. [SR-JEPA: Learning Predictive Latent State in 3D Scenes](/202608/14/2608.05774v1-sr-jepa-learning-predictive-latent-state-in-3d-scenes)  
    标签：评分：6.0/10、query:d-gen-recon
-   evidence：从单张RGB图像进行单目三维人脸重建
+   evidence：面向3D场景理解的点云原生预测潜在状态学习
 
 
 <div class="dpr-home-promo-card">

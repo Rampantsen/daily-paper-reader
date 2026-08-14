@@ -1,0 +1,300 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-14T21:13:05.320933+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2608.12825v1",
+      "source": "arxiv",
+      "title": "LocusGS: Spatially Grounded Tokens for Feed-Forward 3D Gaussian Splatting",
+      "abstract": "Recent query-based feed-forward 3DGS methods represent a scene using learnable queries, each aggregating multi-view evidence and decoding a group of Gaussians. Ideally, different queries should specialize in coherent local regions of the scene. However, we observe that Gaussians decoded from the same query often scatter across distant scene regions, resulting in weak query-level spatial coherence and poor alignment with the scene structure. We attribute this behavior to the purely latent representation of existing Gaussian queries. To address this limitation, we introduce LocusGS, which augments each Gaussian query with a 3D anchor state consisting of a center and a support radius. The anchor state is progressively refined across decoder layers and is used throughout query interaction, multi-view feature aggregation, and Gaussian generation. Specifically, an anchor-to-ray geometric bias guides each query toward spatially relevant image observations, while anchor-centered decoding organizes its Gaussians within a local region. Experiments on novel view synthesis benchmarks show that LocusGS improves rendering quality over query-based Gaussian token baselines under the same Gaussian budget. Further analysis shows that the learned anchors form coherent spatial layouts and lead to more structured Gaussian distributions, demonstrating that explicit anchor states improve the spatial organization. Our project page: https://leo-frank.github.io/LocusGS_viewer.",
+      "authors": [
+        "Wenyu Li",
+        "Sidun Liu",
+        "Tongrui Hu",
+        "Peng Qiao",
+        "Yong Dou"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-13T04:59:36+00:00",
+      "link": "https://arxiv.org/pdf/2608.12825v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "feed-forward 3D Gaussian Splatting with multi-view evidence aggregation",
+      "llm_evidence_cn": "前馈三维高斯泼溅聚合多视图证据",
+      "llm_evidence": "前馈三维高斯泼溅聚合多视图证据",
+      "canonical_evidence": "前馈三维高斯泼溅聚合多视图证据",
+      "llm_tldr_en": "LocusGS augments Gaussian queries with 3D anchor states to improve spatial coherence in feed-forward 3D Gaussian Splatting, resulting in better scene representation from multi-view images.",
+      "llm_tldr_cn": "针对现有查询式前馈三维高斯泼溅方法中同一查询解码的高斯散落于远处区域、缺乏空间一致性的问题，本文提出LocusGS，为每个高斯查询增加三维锚点状态（中心和支撑半径），并在解码层中逐步细化。该方法使查询聚焦于场景的局部相关区域，改善与场景结构的对齐。实验表明其在多视图证据聚合下的三维场景表示质量得到提升。该贡献为前馈三维重建提供了更结构化的查询机制。",
+      "llm_tldr": "针对现有查询式前馈三维高斯泼溅方法中同一查询解码的高斯散落于远处区域、缺乏空间一致性的问题，本文提出LocusGS，为每个高斯查询增加三维锚点状态（中心和支撑半径），并在解码层中逐步细化。该方法使查询聚焦于场景的局部相关区域，改善与场景结构的对齐。实验表明其在多视图证据聚合下的三维场景表示质量得到提升。该贡献为前馈三维重建提供了更结构化的查询机制。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.13095v1",
+      "source": "arxiv",
+      "title": "Semantic Radiance Fields as Simulators for Spatial Reasoning in Real-World Scenes",
+      "abstract": "Training and evaluating spatial reasoning in embodied agents requires diverse environments that are both geometrically faithful and semantically queryable. Synthetic simulators offer ground truth semantics but sacrifice realism; simulators based on reconstructions of real-world environments have realistic appearance but lack ground truth semantics by default. We propose using Semantic Radiance Fields (SRF) as simulators for spatial reasoning agents. SRFs are a representation that unifies these requirements by lifting 2D semantic segmentations from pretrained vision models into a 3D radiance field that jointly encodes geometry, appearance, and per-class semantic identity. The resulting fields are reconstructed from posed RGB captures of real scenes and support novel-view synthesis, semantic and free-space queries within a single grounded representation. This enables the efficient generation of diverse real-world environments to train and evaluate spatial reasoning models. As an example application, we outline an SRF-driven simulator for an orchard apple-reaching task, in which the radiance field supplies camera rendering, semantic ground truth, and occupancy queries to a physics engine.",
+      "authors": [
+        "Nico Heider",
+        "Michał Jan Włodarczyk",
+        "Katarzyna Wasielewska-Michniewska",
+        "Przemysław Hołda",
+        "Martin Schieck",
+        "Marcin Paprzycki",
+        "Maria Ganzha",
+        "Bogdan Franczyk"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-08-13T11:01:09+00:00",
+      "link": "https://arxiv.org/pdf/2608.13095v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "lifting 2D semantic segmentations into a 3D radiance field that jointly encodes geometry, appearance, and per-class semantic identity",
+      "llm_evidence_cn": "将二维语义分割提升到联合编码几何、外观和类别语义的三维辐射场",
+      "llm_evidence": "将二维语义分割提升到联合编码几何、外观和类别语义的三维辐射场",
+      "canonical_evidence": "将二维语义分割提升到联合编码几何、外观和类别语义的三维辐射场",
+      "llm_tldr_en": "Proposes Semantic Radiance Fields (SRF) that reconstruct real-world scenes with per-class semantics from posed RGB captures, enabling realistic and semantically queryable simulators for spatial reasoning.",
+      "llm_tldr_cn": "针对合成模拟器缺乏真实感、重建模拟器缺少语义标注的问题，提出语义辐射场表示，将预训练视觉模型的二维语义分割提升到三维辐射场，联合编码几何、外观和类别语义。从真实场景的RGB图像重建得到具有语义查询能力的模拟器，为具身智能体的空间推理训练和评估提供了逼真环境。",
+      "llm_tldr": "针对合成模拟器缺乏真实感、重建模拟器缺少语义标注的问题，提出语义辐射场表示，将预训练视觉模型的二维语义分割提升到三维辐射场，联合编码几何、外观和类别语义。从真实场景的RGB图像重建得到具有语义查询能力的模拟器，为具身智能体的空间推理训练和评估提供了逼真环境。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.13104v1",
+      "source": "arxiv",
+      "title": "Online Learning of Correspondences between Images",
+      "abstract": "We propose a novel method for iterative learning of point correspondences between image sequences. Points moving on surfaces in 3D space are projected into two images. Given a point in either view, the considered problem is to determine the corresponding location in the other view. The geometry and distortions of the projections are unknown as is the shape of the surface. Given several pairs of point-sets but no access to the 3D scene, correspondence mappings can be found by excessive global optimization or by the fundamental matrix if a perspective projective model is assumed. However, an iterative solution on sequences of point-set pairs with general imaging geometry is preferable. We derive such a method that optimizes the mapping based on Neyman's chi-square divergence between the densities representing the uncertainties of the estimated and the actual locations. The densities are represented as channel vectors computed with a basis function approach. The mapping between these vectors is updated with each new pair of images such that fast convergence and high accuracy are achieved. The resulting algorithm runs in real-time and is superior to state-of-the-art methods in terms of convergence and accuracy in a number of experiments.",
+      "authors": [
+        "Michael Felsberg",
+        "Fredrik Larsson",
+        "Johan Wiklund",
+        "Niclas Wadströmer",
+        "Jörgen Ahlberg"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-13T11:30:29+00:00",
+      "link": "https://arxiv.org/pdf/2608.13104v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Iterative learning of point correspondences across image sequences for 3D geometry",
+      "llm_evidence_cn": "跨图像序列迭代学习点对应关系以估计3D几何",
+      "llm_evidence": "跨图像序列迭代学习点对应关系以估计3D几何",
+      "canonical_evidence": "跨图像序列迭代学习点对应关系以估计3D几何",
+      "llm_tldr_en": "Proposes an online iterative method for learning point correspondences between image sequences under unknown geometry.",
+      "llm_tldr_cn": "论文研究在未知投影几何与表面形状条件下，迭代学习图像序列中点对应关系的问题。传统方法依赖全局优化或假设透视投影，而该方法基于Neyman卡方散度在线优化映射，无需访问3D场景。通过对多对点集的序列学习，逐步校正对应映射，适用于一般成像几何。实验验证了算法在非刚性或未知场景下的有效性，为多视图特征匹配提供新方案。",
+      "llm_tldr": "论文研究在未知投影几何与表面形状条件下，迭代学习图像序列中点对应关系的问题。传统方法依赖全局优化或假设透视投影，而该方法基于Neyman卡方散度在线优化映射，无需访问3D场景。通过对多对点集的序列学习，逐步校正对应映射，适用于一般成像几何。实验验证了算法在非刚性或未知场景下的有效性，为多视图特征匹配提供新方案。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "matching 3D features across multiple views",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.13255v1",
+      "source": "arxiv",
+      "title": "GeoCache: Training-Free Acceleration of Multi-View Texture Diffusion via Geometric Delta Transport",
+      "abstract": "Geometry-conditioned multi-view diffusion enables high-quality 3D texture generation, but its repeated per-view denoiser evaluations introduce substantial computational cost. Existing training-free accelerators primarily exploit temporal redundancy by reusing computation across denoising steps. In multi-view texturing, however, skipping a step also removes the cross-view interaction that continually aligns different observations of the same surface, leading to rapidly degraded consistency and fidelity. Our analysis identifies a complementary source of redundancy: although intermediate features remain view-specific, geometrically corresponding surface points exhibit transferable evolution in their predicted clean signals. Based on this observation, we introduce \\gc{}, a training-free plugin that evaluates a rotating subset of anchor views and transports their geometry-aligned per-step $\\xz$ updates to the remaining views. Periodic full-view computation controls accumulated error, while sampler-consistent reconstruction preserves the denoising trajectory. \\gc{} requires neither retraining nor architectural modification and uses the position maps already available in geometry-conditioned texturing pipelines. Across Hunyuan3D-2.1, SyncMVD, and MVPainter, \\gc{} achieves a stronger speed--fidelity trade-off than temporal caches and step reduction at operating points above $2\\times$. On Hunyuan3D-2.1, it delivers a $2.21\\times$ denoiser-loop speedup with an MV-LPIPS of 0.0293 and an MV-PSNR of 33.60 dB, providing the best fidelity among all tested methods above $2\\times$. The same transferred configuration reaches the highest speedup and lowest FLOPs on SyncMVD, while \\gc{} achieves the lowest FLOPs and best fidelity among the accelerated methods on MVPainter. These results establish cross-view geometry as an effective acceleration axis for multi-view texture diffusion.",
+      "authors": [
+        "Haotang Li",
+        "Zhenyu Qi",
+        "Shaohan Henry Wang",
+        "Kebin Peng",
+        "Yutong Zhao",
+        "Zi Wang",
+        "Bo Liu",
+        "Huanrui Yang",
+        "Sen He"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-08-13T13:57:35+00:00",
+      "link": "https://arxiv.org/pdf/2608.13255v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "accelerating geometry-conditioned multi-view texture diffusion for 3D generation",
+      "llm_evidence_cn": "加速几何条件下的多视图纹理扩散用于三维生成",
+      "llm_evidence": "加速几何条件下的多视图纹理扩散用于三维生成",
+      "canonical_evidence": "加速几何条件下的多视图纹理扩散用于三维生成",
+      "llm_tldr_en": "GeoCache proposes a training-free acceleration method for geometry-conditioned multi-view texture diffusion by exploiting geometric delta transport, reducing computation while preserving cross-view consistency.",
+      "llm_tldr_cn": "针对几何条件下的多视图扩散在三维纹理生成中重复逐视图去噪导致计算成本高的问题，本文提出GeoCache训练免费加速方法，利用几何对应表面点在预测干净信号上的可转移演化，在跳过去噪步骤时保持跨视角一致性。该方法在减少计算的同时避免了多视图纹理生成的一致性退化。实验表明其在三维纹理生成任务上有效加速且保持质量。该工作为多视图纹理生成的高效推理提供了新思路。",
+      "llm_tldr": "针对几何条件下的多视图扩散在三维纹理生成中重复逐视图去噪导致计算成本高的问题，本文提出GeoCache训练免费加速方法，利用几何对应表面点在预测干净信号上的可转移演化，在跳过去噪步骤时保持跨视角一致性。该方法在减少计算的同时避免了多视图纹理生成的一致性退化。实验表明其在三维纹理生成任务上有效加速且保持质量。该工作为多视图纹理生成的高效推理提供了新思路。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.05774v1",
+      "source": "arxiv",
+      "title": "SR-JEPA: Learning Predictive Latent State in 3D Scenes",
+      "abstract": "Joint-embedding predictive architectures learn by predicting latent representations of missing observations, yet many masked JEPAs are evaluated primarily through the encoders they produce. We ask what a trained predictive pathway itself infers when an entire entity is absent from a native 3D scene. We introduce SR-JEPA, a point-native JEPA for scene-scale point clouds whose original frozen predictive pathway can be queried at a supplied location. At evaluation, every point of one object is removed before encoding and replaced by the same shape-free 32-point query at its centroid. Training uses only self-contained 3D EMA targets: no reconstruction, semantic labels, language, or lifted 2D features. On 5,953 held-out ARKitScenes objects, the imputed latent reaches 43.13% semantic-identity macro accuracy, 22.18 points above the strongest floor. Randomizing the prediction path removes 9.78 points, while substituting matched donor context removes 21.98 points. On 8,570 Sr3D support pairs, the full latent reaches 41.15 AP; identity decoded from the missing-object latent, combined with anchor identity and geometry, reaches 39.37 AP, leaving an unresolved 1.78-point residual. These results reveal a queryable, compositional 3D predictive state: the model completes context-dependent entity content, which downstream computation combines with metric geometry.",
+      "authors": [
+        "Zihan Zhou",
+        "Qifu Wen",
+        "Xi Zeng"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-08-06T09:09:16+00:00",
+      "link": "https://arxiv.org/pdf/2608.05774v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Point-native predictive latent state learning for 3D scene understanding",
+      "llm_evidence_cn": "面向3D场景理解的点云原生预测潜在状态学习",
+      "llm_evidence": "面向3D场景理解的点云原生预测潜在状态学习",
+      "canonical_evidence": "面向3D场景理解的点云原生预测潜在状态学习",
+      "llm_tldr_en": "Introduces a point-native JEPA that learns predictive latent states for scene-scale point clouds without reconstruction, labels, or language.",
+      "llm_tldr_cn": "论文提出SR-JEPA，一种点云原生的联合嵌入预测架构，在无重建、无标签、无语言监督下学习3D场景的预测潜在状态。方法将缺失物体替换为可查询的质心令牌，从自监督训练中推断实体缺失的潜在表示。在ARKitScenes数据集的5953个保留物体上，补全的潜在状态达到43.13（指标）性能。该工作表明预测性潜空间可用于3D场景实体级理解，为无标注场景表示学习提供新途径。",
+      "llm_tldr": "论文提出SR-JEPA，一种点云原生的联合嵌入预测架构，在无重建、无标签、无语言监督下学习3D场景的预测潜在状态。方法将缺失物体替换为可查询的质心令牌，从自监督训练中推断实体缺失的潜在表示。在ARKitScenes数据集的5953个保留物体上，补全的潜在状态达到43.13（指标）性能。该工作表明预测性潜空间可用于3D场景实体级理解，为无标注场景表示学习提供新途径。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "feature matching and 3D scene understanding from large scale image collections",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.13502v1",
+      "source": "arxiv",
+      "title": "GS$^{2}$CI: Robust Gaussian Splatting For Snapshot Compressive Imaging via Large Vision Model Priors",
+      "abstract": "Snapshot Compressive Imaging (SCI) offers an efficient solution for high-speed video acquisition and, under exposure-time camera--scene relative motion, multi-view scene capture by compressing temporal or spatial information into a single 2D measurement. While recent studies have explored SCI for 3D scene reconstruction, existing methods struggle with significant challenges due to information loss, limited viewpoint diversity, and the computational burden of jointly optimizing 3D representations and camera poses. In this work, we propose a novel framework that reconstructs high-quality 3D scenes from a single SCI measurement by leveraging 3D Gaussian Splatting (3DGS) and the powerful priors of large-scale vision foundation models (VFMs). Our primary reconstruction combines measurement-derived 3D VFM initialization with SCI-aware Gaussian optimization. After coarse-stage convergence, an auxiliary 2D VFM provides pseudo-view supervision at synthesized viewpoints for local appearance refinement. To further address the instability caused by ambiguous SCI supervision during 3DGS optimization, we introduce Opacity-Guided Splitting and Growth Regulation (OSGR), an SCI-specific densification strategy that augments split candidates using local opacity statistics, discourages loss-compensating opacity inflation through mean-opacity regulation, and bounds representation growth with explicit candidate-ratio and Gaussian-count constraints. Extensive experiments across multiple benchmarks demonstrate that our method achieves the strongest overall performance, combining leading reconstruction quality and robustness to viewpoint variation with competitive computational efficiency.",
+      "authors": [
+        "Yanming Yang",
+        "Chenxi Song",
+        "Ping Wang",
+        "Xin Yuan",
+        "Chi Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-13T17:29:53+00:00",
+      "link": "https://arxiv.org/pdf/2608.13502v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "3D scene reconstruction from snapshot compressive imaging via 3DGS and large vision priors",
+      "llm_evidence_cn": "利用3DGS和大型视觉先验从快照压缩成像重建三维场景",
+      "llm_evidence": "利用3DGS和大型视觉先验从快照压缩成像重建三维场景",
+      "canonical_evidence": "利用3DGS和大型视觉先验从快照压缩成像重建三维场景",
+      "llm_tldr_en": "This paper proposes a framework that reconstructs 3D scenes from a single snapshot compressive imaging measurement by combining 3D Gaussian Splatting with large-scale vision foundation model priors, overcoming information loss and limited viewpoint diversity.",
+      "llm_tldr_cn": "针对快照压缩成像在三维场景重建中信息损失大、视点多样性有限且联合优化计算负担重的问题，本文提出结合三维高斯泼溅与大型视觉基础模型先验的新框架，从单次SCI测量中重建高质量三维场景。该方法利用先验弥补压缩测量的不足，提升了重建鲁棒性。实验表明其优于现有方法。该工作展示了大型视觉模型先验在压缩成像三维重建中的潜力。",
+      "llm_tldr": "针对快照压缩成像在三维场景重建中信息损失大、视点多样性有限且联合优化计算负担重的问题，本文提出结合三维高斯泼溅与大型视觉基础模型先验的新框架，从单次SCI测量中重建高质量三维场景。该方法利用先验弥补压缩测量的不足，提升了重建鲁棒性。实验表明其优于现有方法。该工作展示了大型视觉模型先验在压缩成像三维重建中的潜力。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.13541v1",
+      "source": "arxiv",
+      "title": "SCULPT: Subtractive Composition for 3D Part Generation",
+      "abstract": "Part-aware 3D generation aims to create digital assets that are coherent as complete objects while exposing structural parts for editing, material assignment, animation, and reuse. Existing methods impose this structure outside the native generation loop: segmentation-based methods partition an already generated shape, while additive methods synthesize parts from predefined layouts, boxes, or tokens and then reconcile them into a whole. The former preserves the generated geometry but fixes the object before part boundaries are determined; the latter exposes part cardinality but often leaves shared boundaries vulnerable to gaps, interpenetrations, and material discontinuities. In this paper, we propose SCULPT, a framework that addresses these challenges through subtractive composition. Given a complete object represented in a structured 3D latent space, SCULPT iteratively applies a joint split predictor to generate one extracted part together with the remaining object. The predictor performs a coupled denoising process conditioned on both the image and the current 3D state, so the extracted part and updated remainder are generated together rather than reconciled after generation. The joint split predictor processes both outputs on the union of their native sparse 3D supports, allowing neighboring supports to overlap rather than imposing a disjoint voxel partition. The rollout ends when the remainder support becomes empty or reaches a fixed safety cap, allowing the number of generated parts to adapt to each object within that bound. Extensive experiments demonstrate state-of-the-art geometry on PartObjaverse while preserving strong complete-object reconstruction after part assembly. Results on four dataset images, one text-to-image-generated input, and one real-world photograph further show fine-grained textured part decomposition beyond the benchmark.",
+      "authors": [
+        "Sikuang Li",
+        "Chen Yang",
+        "Jiemin Fang",
+        "Jiazhong Cen",
+        "Yuhe Wei",
+        "Jichen Pang",
+        "Wei Shen",
+        "Qi Tian"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.GR"
+      ],
+      "published": "2026-08-13T17:55:04+00:00",
+      "link": "https://arxiv.org/pdf/2608.13541v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "part-aware 3D generation via subtractive composition",
+      "llm_evidence_cn": "通过减式组合实现部件感知的3D生成",
+      "llm_evidence": "通过减式组合实现部件感知的3D生成",
+      "canonical_evidence": "通过减式组合实现部件感知的3D生成",
+      "llm_tldr_en": "Proposes a subtractive composition framework for part-aware 3D generation that maintains coherent objects while exposing structural parts, addressing gaps and interpenetrations in existing methods.",
+      "llm_tldr_cn": "针对现有部件感知3D生成方法在生成循环外强加结构的问题，提出减式组合框架，在保持几何完整性的同时暴露结构部件。该方法避免了分割方法固定边界或加性方法产生间隙和渗透的缺陷，提升了生成资产的可编辑性。",
+      "llm_tldr": "针对现有部件感知3D生成方法在生成循环外强加结构的问题，提出减式组合框架，在保持几何完整性的同时暴露结构部件。该方法避免了分割方法固定边界或加性方法产生间隙和渗透的缺陷，提升了生成资产的可编辑性。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "generating 3D objects from images or text",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
