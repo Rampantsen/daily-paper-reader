@@ -1,0 +1,54 @@
+{
+  "label": "2026-08-15",
+  "date": "2026-08-15",
+  "generated_at": "2026-08-15T19:43:08",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202608/15/2608.10682v1-visual-geometry-foundation-aware-gaussians-for-single-frame-surround-view-driving-reconstruction",
+      "section": "deep",
+      "title_en": "Visual Geometry Foundation-Aware Gaussians for Single-Frame Surround-View Driving Reconstruction",
+      "authors": "Junhong Lin, Jinlong Wang, Xianda Guo, Yanlun Peng, Wei Zheng, Guoqing Liu, Hanli Wang, Tiesong Zhao, Wei Gao",
+      "date": "2026-08-11",
+      "pdf": "https://arxiv.org/pdf/2608.10682v1",
+      "score": "8.0",
+      "evidence": "基于3D高斯泼溅的前馈环视驾驶重建",
+      "tldr": "单帧环视重建因相机间重叠极小面临严重几何不稳定和渲染伪影，现有方法受限于上游特征几何容量不足。VGGD提出视觉几何基础感知的3D高斯泼溅框架，将几何建模前移并利用VGGT多视角先验token，通过双路径颈部解耦几何与外观、尺度预热稳定学习。在nuScenes单帧基准上取得最佳渲染质量并改善相对几何一致性，表明前端几何先验可有效缓解稀疏环视的几何歧义。该框架无需复杂解码器或辅助线索，为单帧环视驾驶重建提供了新思路。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Single-frame surround-view reconstruction faces severe geometric instability and rendering artifacts due to minimal inter-camera overlap. While existing methods rely on complex decoders or auxiliary cues, they remain bottlenecked by the weak geometric capacity of upstream features. We argue that leveraging pretrained visual geometry priors strengthens upstream representations and alleviates the geometric ambiguity in sparse surround views. To this end, we propose VGGD, a visual geometry foundation-aware 3D Gaussian Splatting framework for feed-forward surround-view driving reconstruction, which shifts geometric modeling to the frontend and adapts foundation priors to the driving camera setting. First, VGGD leverages VGGT to provide transferable multi-view geometric prior tokens. Next, we introduce a Dual-Path Neck to decouple geometry-consistent and appearance-aware representations, improving appearance completion in weakly observed regions. We further apply Scale Warmup to stabilize early geometry learning and suppress scale drift under ego-pose changes. Finally, we use a hybrid pixel--volume Gaussian decoder to produce a renderable 3D Gaussian scene for novel-view synthesis. Experiments on the nuScenes single-frame benchmark show that VGGD achieves the best overall rendering quality among the compared methods and improves relative geometric consistency.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/15/2608.11928v1-seed2gs-camera-free-training-free-object-extraction-from-3d-gaussian-scenes-via-a-single-reference-view-grounding",
+      "section": "deep",
+      "title_en": "Seed2GS: Camera-Free, Training-Free Object Extraction from 3D Gaussian Scenes via a Single Reference-View Grounding",
+      "authors": "Zongjian Ding, Yudong Gao, Jiale Liu, Xinglin Yu, Junxing Ren, Dong Wei, Yajing Chen, Shan Huang, Mingjun Cheng, Min Li",
+      "date": "2026-08-12",
+      "pdf": "https://arxiv.org/pdf/2608.11928v1",
+      "score": "8.0",
+      "evidence": "基于参考视图定位的训练免制物体提取从三维高斯场景",
+      "tldr": "从预构建3DGS场景提取目标对象时，现有方法需场景训练或原始重建相机，限制交互编辑。Seed2GS通过单参考视图定位，用QD-SAM3选择可靠掩码固定目标身份，再借虚拟轨道跟踪传播，免训练地仅优化临时前景logit。在LERF-MASK上，该方法仅用9.3秒达到92.1% mIoU，分别比最强场景训练基线和最近无相机基线高3.7和7.6点。这证明身份与覆盖分离及冻结场景监督策略，可实现相机无关的高效精确提取。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Extracting a target object from a pre-built 3D Gaussian Splatting (3DGS) scene enables interactive 3D editing. Existing methods either train for tens of minutes per scene, sacrifice accuracy, or require original reconstruction cameras that pre-built assets may not include. We present Seed2GS, which achieves the highest reported LERF-MASK accuracy without original reconstruction cameras or scene-specific representation training. Its key insight is to separate target identity from 3D coverage. QD-SAM3 selects one reliable reference mask from several open-vocabulary candidates, fixing identity once. Seed lift and visibility-adaptive virtual orbits then expose the object from new viewpoints, while tracking propagates the seed without repeated detection. Because the scene remains frozen, these masks supervise only one temporary foreground logit per Gaussian. On LERF-MASK, Seed2GS reaches 92.1% mean intersection over union (mIoU) with a measured compute-only latency of 9.3 seconds, 3.7 points above the strongest scene-trained baseline and 7.6 points above the closest camera-free baseline. With one fixed test reference per scene, the complete pipeline retains 91.1% mIoU; replacing its predicted seed with a ground-truth mask improves mIoU by only 0.72 points. On 3D-OVS, Seed2GS reaches 95.7% mIoU.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/15/2608.13147v1-geometry-grounded-unified-3d-perception-for-autonomous-driving",
+      "section": "quick",
+      "title_en": "Geometry-Grounded Unified 3D Perception for Autonomous Driving",
+      "authors": "Longfei Xu, Xiaohui Wang, Zehao Huang, Han Li, Ya Yang, Naiyan Wang, Si Liu",
+      "date": "2026-08-13",
+      "pdf": "https://arxiv.org/pdf/2608.13147v1",
+      "score": "6.0",
+      "evidence": "将VGGT的重建导向潜在表示适配到多相机驾驶场景，实现几何锚定的3D感知",
+      "tldr": "现有图像自动驾驶感知框架多依赖语义预训练骨干，难以在共享表示中保留显式度量3D结构。GeoUP将重建导向隐变量VGGT适配到标定多相机流，分解自/时序/跨视角注意力并注入raymap编码。在多数据集联合训练下，GeoUP在nuScenes、Waymo等基准上实现检测、占用和深度估计SOTA。该几何接地表示验证了统一3D驾驶感知的有效性。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Camera-based autonomous driving perception requires a shared representation that preserves metric 3D structure across synchronized multi-camera streams. However, existing image-based frameworks often rely on backbones pretrained for semantic recognition, and introduce 3D geometry through downstream task-specific modules. As a result, their shared representations may fail to preserve explicit metric geometry and consistent 3D scene structure. In this paper, we present a Geometry-grounded Unified 3D Perception (GeoUP) framework that adapts the reconstruction-oriented latent of VGGT to calibrated, streaming multi-camera driving scenes. GeoUP factorizes cross-image interaction into self, temporal, and view attention to capture structurally distinct temporal and cross-view correspondences. It further injects calibration-aware raymap encodings to provide metric scale and camera geometry. The resulting geometry-grounded latent is decoded for metric depth estimation, 3D object detection, and semantic occupancy prediction, corresponding to surface-, instance-, and volume-level readouts of the same 3D scene. Through joint multi-task and multi-dataset training, GeoUP effectively leverages heterogeneous annotations and generalizes across diverse sensor configurations and perception ranges. Extensive experiments on nuScenes, Argoverse 2, Waymo, KITTI, and DDAD demonstrate that GeoUP achieves SOTA performance across detection, occupancy, and depth estimation. These results validate the effectiveness of geometry-grounded representations for unified 3D driving perception.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

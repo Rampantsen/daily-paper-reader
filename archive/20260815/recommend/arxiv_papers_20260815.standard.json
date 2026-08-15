@@ -1,0 +1,144 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-15T19:35:53.452922+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2608.10682v1",
+      "source": "arxiv",
+      "title": "Visual Geometry Foundation-Aware Gaussians for Single-Frame Surround-View Driving Reconstruction",
+      "abstract": "Single-frame surround-view reconstruction faces severe geometric instability and rendering artifacts due to minimal inter-camera overlap. While existing methods rely on complex decoders or auxiliary cues, they remain bottlenecked by the weak geometric capacity of upstream features. We argue that leveraging pretrained visual geometry priors strengthens upstream representations and alleviates the geometric ambiguity in sparse surround views. To this end, we propose VGGD, a visual geometry foundation-aware 3D Gaussian Splatting framework for feed-forward surround-view driving reconstruction, which shifts geometric modeling to the frontend and adapts foundation priors to the driving camera setting. First, VGGD leverages VGGT to provide transferable multi-view geometric prior tokens. Next, we introduce a Dual-Path Neck to decouple geometry-consistent and appearance-aware representations, improving appearance completion in weakly observed regions. We further apply Scale Warmup to stabilize early geometry learning and suppress scale drift under ego-pose changes. Finally, we use a hybrid pixel--volume Gaussian decoder to produce a renderable 3D Gaussian scene for novel-view synthesis. Experiments on the nuScenes single-frame benchmark show that VGGD achieves the best overall rendering quality among the compared methods and improves relative geometric consistency.",
+      "authors": [
+        "Junhong Lin",
+        "Jinlong Wang",
+        "Xianda Guo",
+        "Yanlun Peng",
+        "Wei Zheng",
+        "Guoqing Liu",
+        "Hanli Wang",
+        "Tiesong Zhao",
+        "Wei Gao"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-11T09:04:33+00:00",
+      "link": "https://arxiv.org/pdf/2608.10682v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "feed-forward surround-view driving reconstruction with 3D Gaussian Splatting",
+      "llm_evidence_cn": "基于3D高斯泼溅的前馈环视驾驶重建",
+      "llm_evidence": "基于3D高斯泼溅的前馈环视驾驶重建",
+      "canonical_evidence": "基于3D高斯泼溅的前馈环视驾驶重建",
+      "llm_tldr_en": "Proposes VGGD, a visual geometry foundation-aware 3D Gaussian Splatting framework that shifts geometric modeling to frontend for feed-forward surround-view driving reconstruction.",
+      "llm_tldr_cn": "针对单帧环视重建中相机重叠少导致的几何不稳定和渲染伪影，提出VGGD框架。该框架利用预训练视觉几何先验强化上游表示，并将几何建模前置到前端。在驾驶场景中实现了前馈环视重建，缓解了几何歧义。该工作展示了基础几何先验对稀疏多相机重建的增益。",
+      "llm_tldr": "针对单帧环视重建中相机重叠少导致的几何不稳定和渲染伪影，提出VGGD框架。该框架利用预训练视觉几何先验强化上游表示，并将几何建模前置到前端。在驾驶场景中实现了前馈环视重建，缓解了几何歧义。该工作展示了基础几何先验对稀疏多相机重建的增益。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "3D scene reconstruction from multi-view images",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.11928v1",
+      "source": "arxiv",
+      "title": "Seed2GS: Camera-Free, Training-Free Object Extraction from 3D Gaussian Scenes via a Single Reference-View Grounding",
+      "abstract": "Extracting a target object from a pre-built 3D Gaussian Splatting (3DGS) scene enables interactive 3D editing. Existing methods either train for tens of minutes per scene, sacrifice accuracy, or require original reconstruction cameras that pre-built assets may not include. We present Seed2GS, which achieves the highest reported LERF-MASK accuracy without original reconstruction cameras or scene-specific representation training. Its key insight is to separate target identity from 3D coverage. QD-SAM3 selects one reliable reference mask from several open-vocabulary candidates, fixing identity once. Seed lift and visibility-adaptive virtual orbits then expose the object from new viewpoints, while tracking propagates the seed without repeated detection. Because the scene remains frozen, these masks supervise only one temporary foreground logit per Gaussian. On LERF-MASK, Seed2GS reaches 92.1% mean intersection over union (mIoU) with a measured compute-only latency of 9.3 seconds, 3.7 points above the strongest scene-trained baseline and 7.6 points above the closest camera-free baseline. With one fixed test reference per scene, the complete pipeline retains 91.1% mIoU; replacing its predicted seed with a ground-truth mask improves mIoU by only 0.72 points. On 3D-OVS, Seed2GS reaches 95.7% mIoU.",
+      "authors": [
+        "Zongjian Ding",
+        "Yudong Gao",
+        "Jiale Liu",
+        "Xinglin Yu",
+        "Junxing Ren",
+        "Dong Wei",
+        "Yajing Chen",
+        "Shan Huang",
+        "Mingjun Cheng",
+        "Min Li"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-12T11:16:44+00:00",
+      "link": "https://arxiv.org/pdf/2608.11928v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "training-free object extraction from 3D Gaussian scenes via reference-view grounding",
+      "llm_evidence_cn": "基于参考视图定位的训练免制物体提取从三维高斯场景",
+      "llm_evidence": "基于参考视图定位的训练免制物体提取从三维高斯场景",
+      "canonical_evidence": "基于参考视图定位的训练免制物体提取从三维高斯场景",
+      "llm_tldr_en": "Seed2GS extracts target objects from pre-built 3D Gaussian Splatting scenes without original cameras or scene-specific training, using QD-SAM3 and visibility-adaptive virtual orbits.",
+      "llm_tldr_cn": "本文针对从预建三维高斯泼溅场景中提取目标物体需原始重建相机或昂贵训练的问题，提出Seed2GS，实现无需原始相机和场景特定训练的高精度物体提取。该方法通过QD-SAM3选择可靠参考掩码固定目标身份，再结合种子提升和可见性自适应虚拟轨道从新视角追踪物体。实验表明在LERF-MASK上达到最高精度。该工作为三维场景中的物体分割与编辑提供了训练自由的实用工具。",
+      "llm_tldr": "本文针对从预建三维高斯泼溅场景中提取目标物体需原始重建相机或昂贵训练的问题，提出Seed2GS，实现无需原始相机和场景特定训练的高精度物体提取。该方法通过QD-SAM3选择可靠参考掩码固定目标身份，再结合种子提升和可见性自适应虚拟轨道从新视角追踪物体。实验表明在LERF-MASK上达到最高精度。该工作为三维场景中的物体分割与编辑提供了训练自由的实用工具。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "semantic segmentation of 3D scenes",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.13147v1",
+      "source": "arxiv",
+      "title": "Geometry-Grounded Unified 3D Perception for Autonomous Driving",
+      "abstract": "Camera-based autonomous driving perception requires a shared representation that preserves metric 3D structure across synchronized multi-camera streams. However, existing image-based frameworks often rely on backbones pretrained for semantic recognition, and introduce 3D geometry through downstream task-specific modules. As a result, their shared representations may fail to preserve explicit metric geometry and consistent 3D scene structure. In this paper, we present a Geometry-grounded Unified 3D Perception (GeoUP) framework that adapts the reconstruction-oriented latent of VGGT to calibrated, streaming multi-camera driving scenes. GeoUP factorizes cross-image interaction into self, temporal, and view attention to capture structurally distinct temporal and cross-view correspondences. It further injects calibration-aware raymap encodings to provide metric scale and camera geometry. The resulting geometry-grounded latent is decoded for metric depth estimation, 3D object detection, and semantic occupancy prediction, corresponding to surface-, instance-, and volume-level readouts of the same 3D scene. Through joint multi-task and multi-dataset training, GeoUP effectively leverages heterogeneous annotations and generalizes across diverse sensor configurations and perception ranges. Extensive experiments on nuScenes, Argoverse 2, Waymo, KITTI, and DDAD demonstrate that GeoUP achieves SOTA performance across detection, occupancy, and depth estimation. These results validate the effectiveness of geometry-grounded representations for unified 3D driving perception.",
+      "authors": [
+        "Longfei Xu",
+        "Xiaohui Wang",
+        "Zehao Huang",
+        "Han Li",
+        "Ya Yang",
+        "Naiyan Wang",
+        "Si Liu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-13T12:17:50+00:00",
+      "link": "https://arxiv.org/pdf/2608.13147v1",
+      "tags": [
+        "keyword:D-gen-recon",
+        "query:D-gen-recon"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "adapts VGGT's reconstruction-oriented latent to multi-camera driving scenes for geometry-grounded 3D perception",
+      "llm_evidence_cn": "将VGGT的重建导向潜在表示适配到多相机驾驶场景，实现几何锚定的3D感知",
+      "llm_evidence": "将VGGT的重建导向潜在表示适配到多相机驾驶场景，实现几何锚定的3D感知",
+      "canonical_evidence": "将VGGT的重建导向潜在表示适配到多相机驾驶场景，实现几何锚定的3D感知",
+      "llm_tldr_en": "The paper addresses the lack of metric geometry in shared representations for camera-based autonomous driving perception. It proposes GeoUP, which adapts the reconstruction-oriented latent of VGGT to calibrated streaming multi-camera scenes, factorizing cross-image interaction into self, temporal, and view attention to preserve 3D scene structure.",
+      "llm_tldr_cn": "该工作针对自动驾驶相机感知中共享表征缺乏显式度量几何的问题，提出几何锚定的统一3D感知框架GeoUP。将重建导向的VGGT潜在表示适配到多相机流式场景，通过因式分解自注意力、时序注意力和视角注意力捕获结构差异。实验表明GeoUP在多任务感知中有效保持三维场景结构与度量几何，为下游任务提供可靠基础。",
+      "llm_tldr": "该工作针对自动驾驶相机感知中共享表征缺乏显式度量几何的问题，提出几何锚定的统一3D感知框架GeoUP。将重建导向的VGGT潜在表示适配到多相机流式场景，通过因式分解自注意力、时序注意力和视角注意力捕获结构差异。实验表明GeoUP在多任务感知中有效保持三维场景结构与度量几何，为下游任务提供可靠基础。",
+      "llm_tags": [
+        "query:d-gen-recon"
+      ],
+      "matched_query_tag": "query:d-gen-recon",
+      "matched_query_text": "feature matching and 3D scene understanding from large scale image collections",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

@@ -6,44 +6,32 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-14
-- 运行时间：2026-08-14 21:20:48 UTC
+- 最新运行日期：2026-08-15
+- 运行时间：2026-08-15 19:42:44 UTC
 - 运行状态：成功
-- 本次总论文数：7
-- 精读区：3
-- 速读区：4
+- 本次总论文数：3
+- 精读区：2
+- 速读区：1
 
 ### 今日简报（AI）
-- 今日共生成 7 篇推荐（精读 3 篇，速读 4 篇）
-- 精读：《LocusGS: Spatially Grounded Tokens for Feed-Forward 3D Gaussian Splatting》（9.0/10）, 《Semantic Radiance Fields as Simulators for Spatial Reasoning in Real-World Scenes》（9.0/10）
-- 速读：《GeoCache: Training-Free Acceleration of Multi-View Texture Diffusion via Geometric Delta Transport》（7.0/10）, 《GS$^{2}$CI: Robust Gaussian Splatting For Snapshot Compressive Imaging via Large Vision Model Priors》（7.0/10）, 《SCULPT: Subtractive Composition for 3D Part Generation》（7.0/10）
+- 今日共生成 3 篇推荐（精读 2 篇，速读 1 篇）
+- 精读：《Visual Geometry Foundation-Aware Gaussians for Single-Frame Surround-View Driving Reconstruction》（8.0/10）, 《Seed2GS: Camera-Free, Training-Free Object Extraction from 3D Gaussian Scenes via a Single Reference-View Grounding》（8.0/10）
+- 速读：《Geometry-Grounded Unified 3D Perception for Autonomous Driving》（6.0/10）
 - 这些结果覆盖了当下较热的方向，建议先看精读区论文的关键问题与方法。
-- 详情：[/202608/14/README](/202608/14/README)
+- 详情：[/202608/15/README](/202608/15/README)
 
 ### 精读区论文标签
-1. [LocusGS: Spatially Grounded Tokens for Feed-Forward 3D Gaussian Splatting](/202608/14/2608.12825v1-locusgs-spatially-grounded-tokens-for-feed-forward-3d-gaussian-splatting)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：前馈三维高斯泼溅聚合多视图证据
-2. [Semantic Radiance Fields as Simulators for Spatial Reasoning in Real-World Scenes](/202608/14/2608.13095v1-semantic-radiance-fields-as-simulators-for-spatial-reasoning-in-real-world-scenes)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：将二维语义分割提升到联合编码几何、外观和类别语义的三维辐射场
-3. [Online Learning of Correspondences between Images](/202608/14/2608.13104v1-online-learning-of-correspondences-between-images)  
-   标签：评分：9.0/10、query:d-gen-recon
-   evidence：跨图像序列迭代学习点对应关系以估计3D几何
+1. [Visual Geometry Foundation-Aware Gaussians for Single-Frame Surround-View Driving Reconstruction](/202608/15/2608.10682v1-visual-geometry-foundation-aware-gaussians-for-single-frame-surround-view-driving-reconstruction)  
+   标签：评分：8.0/10、query:d-gen-recon
+   evidence：基于3D高斯泼溅的前馈环视驾驶重建
+2. [Seed2GS: Camera-Free, Training-Free Object Extraction from 3D Gaussian Scenes via a Single Reference-View Grounding](/202608/15/2608.11928v1-seed2gs-camera-free-training-free-object-extraction-from-3d-gaussian-scenes-via-a-single-reference-view-grounding)  
+   标签：评分：8.0/10、query:d-gen-recon
+   evidence：基于参考视图定位的训练免制物体提取从三维高斯场景
 
 ### 速读区论文标签
-1. [GeoCache: Training-Free Acceleration of Multi-View Texture Diffusion via Geometric Delta Transport](/202608/14/2608.13255v1-geocache-training-free-acceleration-of-multi-view-texture-diffusion-via-geometric-delta-transport)  
-   标签：评分：7.0/10、query:d-gen-recon
-   evidence：加速几何条件下的多视图纹理扩散用于三维生成
-2. [GS$^{2}$CI: Robust Gaussian Splatting For Snapshot Compressive Imaging via Large Vision Model Priors](/202608/14/2608.13502v1-gs2ci-robust-gaussian-splatting-for-snapshot-compressive-imaging-via-large-vision-model-priors)  
-   标签：评分：7.0/10、query:d-gen-recon
-   evidence：利用3DGS和大型视觉先验从快照压缩成像重建三维场景
-3. [SCULPT: Subtractive Composition for 3D Part Generation](/202608/14/2608.13541v1-sculpt-subtractive-composition-for-3d-part-generation)  
-   标签：评分：7.0/10、query:d-gen-recon
-   evidence：通过减式组合实现部件感知的3D生成
-4. [SR-JEPA: Learning Predictive Latent State in 3D Scenes](/202608/14/2608.05774v1-sr-jepa-learning-predictive-latent-state-in-3d-scenes)  
+1. [Geometry-Grounded Unified 3D Perception for Autonomous Driving](/202608/15/2608.13147v1-geometry-grounded-unified-3d-perception-for-autonomous-driving)  
    标签：评分：6.0/10、query:d-gen-recon
-   evidence：面向3D场景理解的点云原生预测潜在状态学习
+   evidence：将VGGT的重建导向潜在表示适配到多相机驾驶场景，实现几何锚定的3D感知
 
 
 <div class="dpr-home-promo-card">
