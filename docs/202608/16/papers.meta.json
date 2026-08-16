@@ -1,0 +1,24 @@
+{
+  "label": "2026-08-16",
+  "date": "2026-08-16",
+  "generated_at": "2026-08-16T19:49:54",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202608/16/2608.10938v1-gs-cpe-unified-6-degree-of-freedom-camera-pose-estimation-via-3d-gaussian-splatting",
+      "section": "quick",
+      "title_en": "GS-CPE: Unified 6-Degree-of-Freedom Camera Pose Estimation via 3D Gaussian Splatting",
+      "authors": "Huaiyuan Weng, Chul Min Yeum, Su-Min Kang",
+      "date": "2026-08-11",
+      "pdf": "https://arxiv.org/pdf/2608.10938v1",
+      "score": "6.0",
+      "evidence": "使用3D高斯泼溅进行六自由度相机位姿估计，支持多视角重建流程",
+      "tldr": "视觉定位中，鲁棒泛化与高精度常难以兼得。GS-CPE提出粗到细框架：先基于检索引导几何估计在3D高斯泼溅场景上获得粗位姿，再通过最小化可见性感知掩码的RGB扭曲目标进行多尺度优化细化。在7Scenes、Cambridge Landmarks、FAST-LIVO2及自定义数据集上取得最优精度与泛化性能。该工作统一了几何位姿估计与渲染优化，显著提升6-DoF相机位姿估计的准确性与泛化能力。",
+      "tags": "query:d-gen-recon",
+      "abstract_en": "Despite substantial progress in visual localization, from scene coordinate regression to direct camera pose regression, achieving both robust generalization and high accuracy remain challenging. This study introduces GS-CPE (Gaussian Splatting based Camera Pose Estimation), a coarse-to-fine framework for 6-DoF camera pose estimation that unifies geometry-based coarse pose estimation with robust 3D Gaussian Splatting (3DGS) warping based pose refinement. GS-CPE first estimates a coarse pose via retrieval-guided geometric pose estimation on a 3DGS scene representation, then refines it by minimizing a visibility aware masked RGB warping objective in a multi-scale optimization framework, with adaptive re-rendering. Extensive experiments on indoor and outdoor benchmarks including 7Scenes, Cambridge Landmarks, FAST-LIVO2 datasets, and a custom dataset demonstrate state-of-the-art performance, consistently outperforming in both accuracy and generalization.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

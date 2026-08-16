@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-08-16 <!--dpr-date:20260816-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/16/2608.10938v1-gs-cpe-unified-6-degree-of-freedom-camera-pose-estimation-via-3d-gaussian-splatting" data-sidebar-item="{&quot;title&quot;: &quot;GS-CPE: Unified 6-Degree-of-Freedom Camera Pose Estimation via 3D Gaussian Splatting&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.10938v1-gs-cpe-unified-6-degree-of-freedom-camera-pose-estimation-via-3d-gaussian-splatting&quot;, &quot;score&quot;: &quot;6.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;d-gen-recon&quot;}], &quot;evidence&quot;: &quot;使用3D高斯泼溅进行六自由度相机位姿估计，支持多视角重建流程&quot;}">GS-CPE: Unified 6-Degree-of-Freedom Camera Pose Estimation via 3D Gaussian Splatting</a>
   * 2026-08-15 <!--dpr-date:20260815-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202608/15/2608.10682v1-visual-geometry-foundation-aware-gaussians-for-single-frame-surround-view-driving-reconstruction" data-sidebar-item="{&quot;title&quot;: &quot;Visual Geometry Foundation-Aware Gaussians for Single-Frame Surround-View Driving Reconstruction&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2608.10682v1-visual-geometry-foundation-aware-gaussians-for-single-frame-surround-view-driving-reconstruction&quot;, &quot;score&quot;: &quot;8.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;d-gen-recon&quot;}], &quot;evidence&quot;: &quot;基于3D高斯泼溅的前馈环视驾驶重建&quot;}">Visual Geometry Foundation-Aware Gaussians for Single-Frame Surround-View Driving Reconstruction</a>
