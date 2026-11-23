@@ -5,6 +5,7 @@ from datetime import date, timedelta
 from query_boolean import parse_boolean_expr
 from long_range_review import fingerprint, write_json
 from paper_dates import resolve_publication_date, publication_window_status
+import time
 import json
 from pathlib import Path
 
@@ -20,6 +21,20 @@ def _expression(node, window):
     if node.kind == "NOT":
         return f"({window} ANDNOT {_expression(node.left, window)})"
     return f"({_expression(node.left, window)} {node.kind} {_expression(node.right, window)})"
+
+
+def _query_results(client, search):
+    import arxiv
+
+    for attempt in range(3):
+        try:
+            return list(client.results(search))
+        except arxiv.HTTPError as exc:
+            if exc.status != 429 or attempt == 2:
+                raise
+            delay = 60 * (2 ** attempt)
+            print(f"[arXiv API] 请求受限，等待 {delay} 秒后重试", flush=True)
+            time.sleep(delay)
 
 
 def add_arxiv_results(result, plan, root):
@@ -54,7 +69,7 @@ def add_arxiv_results(result, plan, root):
             rows = json.loads(path.read_text())
         else:
             rows = []
-            for hit in client.results(search):
+            for hit in _query_results(client, search):
                 row = dict(
                     id=hit.get_short_id(),
                     title=hit.title,
