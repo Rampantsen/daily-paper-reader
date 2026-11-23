@@ -1,0 +1,1334 @@
+S-BFM: A Behavioral Foundation Model for Humanoid Control
+from Sparse Spatiotemporal Goals
+Kun Yang1,4,∗
+Xuanyu Chen2,4,∗
+Jing Tan1
+Yanjing Liu1
+Yubo Zhao3
+Renjing Xu1,†
+Addison Lin Wang2,‡
+1The Hong Kong University of Science and Technology (Guangzhou)
+2Nanyang Technological University
+3Shenzhen MSU-BIT University
+4AGIBOT
+kyang556@connect.hkust-gz.edu.cn, XUANYU005@e.ntu.edu.sg
+colinjing1@gmail.com, yliu449@connect.hkust-gz.edu.cn, 1120230573@smbu.edu.cn
+renjingxu@hkust-gz.edu.cn, linwang@ntu.edu.sg
+∗Equal contribution.
+†First corresponding author.
+‡Second corresponding author.
+Figure 1. S-BFM on a real humanoid. Given sparse spatiotemporal goals, the robot autonomously transitions from a shared initial pose to
+five target postures. Translucent silhouettes show intermediate poses, while gold outlines mark the target postures and positions.
+Abstract
+General-purpose whole-body trackers can execute diverse
+humanoid motions, but they require dense reference trajec-
+tories. However, tasks usually specify only where, in which
+posture, and when the robot should arrive, leaving the mo-
+tion in between to a separate planner. Inspired by human mo-
+tor coordination, our key idea is that a low-level controller
+can organize the intervening motion and its pace by itself
+from sparse goals with arrival times. In this paper, we pro-
+pose S-BFM, a novel behavioral foundation model superior
+in its autonomy: it generates whole-body transitions from
+target postures, poses, and arrival times alone. Specifically,
+we first introduce Spatial Grounding, which adds world-
+frame position and heading to a forward-backward behavior
+representation through spatial reconstruction. Then, Time-
+Conditioned Distillation is designed to learn transitions and
+1
+arXiv:2611.27552v1  [cs.RO]  20 Nov 2026
+
+
+pace from real motion through closed-loop imitation of a
+dense-reference teacher. Lastly, Generative Fine-Tuning
+is introduced to broaden the covered distances and arrival
+times with a distilled motion generator. In simulation, S-
+BFM lowers global joint-position error by over 32% relative
+to the best baseline under fixed and mixed horizons, and
+raises fixed-goal reach from 43.5% to 74.6% while cutting
+terminal position error from 1.67 to 0.26 m. We further de-
+ploy S-BFM on the full-size AGIBOT A3 humanoid. Sparse
+spatiotemporal goals thus suffice for natural, well-timed
+whole-body motion.
+1. Introduction
+Humanoid control is moving from task-specific skill policies
+toward general-purpose whole-body control. Large motion
+datasets and physics simulation have enabled universal track-
+ers that turn diverse motion references into executable joint
+commands. These trackers connect motion generators and
+multimodal interfaces to the robot. TextOp continuously
+generates short motion segments for a tracking policy to exe-
+cute [39], SONIC links input modalities to control through a
+unified motion interface [21], and SuperMimic trains whole-
+body trackers efficiently with a shared differentiable world
+model [19]. These trackers can execute diverse humanoid
+motions, but they require dense reference trajectories.
+However, task planning and interactive control require
+robots to organize motion around task goals and adapt as
+those goals change. With dense-reference interfaces, this
+responsibility falls to a separate planner or generator. It must
+supply the intervening motion and update future references
+when the task changes while ensuring a smooth transition
+from the motion already underway [21, 39]. Human move-
+ment instead combines goal-directed decisions with auto-
+matic coordination. For example, when walking toward a
+table, the cerebral cortex helps select the goal and route.
+Brainstem–spinal circuits support gait and posture while the
+cerebellum uses sensory feedback to coordinate movement.
+Together, these mechanisms allow people to focus on their
+destination and surroundings without consciously control-
+ling every step [6]. Inspired by this coordination, we ask
+a novel question: Can a low-level controller accept sparse
+goals with arrival times and organize the intervening motion
+from its current physical state?
+Prior work provides foundations: BFM-Zero supports
+goal reaching and motion tracking via a shared behavior
+space [18], and BeJEPA models whole-body posture together
+with world position and heading [41]. MaskedMimic and
+KINO produce physics-based motion from partial constraints
+or keyframes [2, 32], and BFMTrack tracks sparse timed
+goals by latent optimization [28]. Yet no existing method
+delivers all three sparse-goal requirements at once: accurate
+control of the world-frame pose, natural transitions between
+goals, and timing that adapts to the requested arrival. A target
+state alone does not specify how the intervening motion
+should unfold, and imitating the pace of a demonstration
+does not adapt it to new distances and durations.
+Inspired by human motor coordination, our key idea is
+that a low-level controller can organize the intervening
+motion and its pace by itself from sparse goals with ar-
+rival times. In this paper, we propose S-BFM (Sparse Be-
+havioral Foundation Model), which is superior in its au-
+tonomy: it generates whole-body transitions from target
+postures, poses, and arrival times alone (Fig. 1). S-BFM is
+trained in three stages within a reusable forward-backward
+behavior space [8, 18, 34, 36]. Each stage targets one re-
+quirement. Specifically, we first propose Spatial Grounding
+(Sec. 3.3), which adds world-frame position and heading to
+the behavior representation and uses spatial reconstruction
+to make the encoder retain them. Then, Time-Conditioned
+Distillation (Sec. 3.4) is designed to learn transitions and
+pace from real motion: with the encoder and actor frozen,
+a controller conditioned on the remaining time imitates a
+dense-reference teacher in closed loop. As real demonstra-
+tions cover only a limited range of distances and durations,
+Generative Fine-Tuning (Sec. 3.5) is lastly introduced to
+broaden this range with a lightweight motion generator dis-
+tilled from Kimodo [25]. At deployment, S-BFM acts from
+robot observations, sparse goals, and the remaining time,
+without any intermediate reference.
+We evaluate S-BFM in simulation on a 29-DoF Unitree
+G1 against SONIC, UFO, BeJEPA, and PLAT, and on the
+AGIBOT A3 humanoid. Under both fixed and mixed com-
+mand horizons, S-BFM lowers global joint-position error
+by over 32% relative to the best baseline. For fixed goals,
+it raises the reach rate from 43.5% to 74.6% over BeJEPA,
+increases the rate of holding the goal for five seconds from
+7.4% to 35.2%, and cuts terminal position error from 1.67
+to 0.26 m. At 3 to 4 m under lateral and downward pushes, it
+still reaches 68.0% of goals, against 23.6% for BeJEPA. On
+the real robot, S-BFM moves from a shared start pose to five
+distinct goal postures (Fig. 1). Sparse spatiotemporal goals
+thus suffice for natural, well-timed whole-body motion.
+In summary, our main contributions are threefold:
+1) We formulate sparse spatiotemporal goal control, in which
+a low-level policy, much like the cerebellum, generates natu-
+ral whole-body transitions that reach target postures at pre-
+scribed world poses and times.
+2) We propose S-BFM, trained through Spatial Grounding,
+Time-Conditioned Distillation, and Generative Fine-Tuning,
+which combines spatial goal reaching with the transitions
+and pace of real motion.
+3) In simulation, S-BFM outperforms all evaluated baselines
+in sparse tracking accuracy, spatial goal reaching, and goal
+retention, with over 32% lower global joint-position error
+than the best baseline, and it runs on the full-size AGIBOT
+A3 humanoid.
+2
+
+
+2. Related Work
+Dense-reference whole-body control. Physics-based mo-
+tion imitation learns whole-body skills by tracking reference
+trajectories in simulation [4, 20, 23, 31]. H2O, TWIST,
+and ExBody series enable versatile humanoid motion track-
+ing and teleoperation [5, 11, 12, 16, 45, 46].
+SONIC
+scales tracking with model capacity, data, and compute [21],
+SuperMimic and BlinkMimic train trackers with differ-
+entiable world models [1, 19], and other work extends
+whole-body control to rough terrain and highly dynamic
+skills [3, 9, 13, 14, 17, 22, 30]. These trackers are general,
+but they execute a reference rather than create one: given
+only sparse goals, they still need another module to supply
+the motion in between. In contrast, S-BFM needs no such
+module at deployment.
+Sparse and time-conditioned motion control. Sparse con-
+trol specifies only desired states and leaves the intermediate
+motion to the controller [15, 44]. Goal-conditioned value
+functions and temporal difference models support goal- and
+horizon-conditioned control [24, 29]. Forward-backward
+representations enable zero-shot goal reaching and track-
+ing, as demonstrated by BFM-Zero [18, 34, 35]. BeJEPA
+adds world position and heading to body representation [41].
+MaskedMimic inpaints physics-based motion from partial
+constraints [32], KINO links vision-language planning to
+control through whole-body keyframes [2], PLAT learns priv-
+ileged latent transitions for sparse timed tracking [37], and
+BFMTrack optimizes latent behavior sequences [28]. Un-
+fortunately, none of these methods delivers accurate world-
+frame pose control, natural transitions, and adaptive timing
+at once. S-BFM addresses all three within one forward-
+backward behavior space, with one stage per requirement.
+Motion in-betweening and controllable generation. Mo-
+tion in-betweening generates transitions between constrained
+states. Robust Motion In-Betweening conditions on time-to-
+arrival embeddings [10], diffusion models such as MDM and
+CondMDI generate motion under keyframe constraints [7,
+33], Kimodo supports text and kinematic constraints [25, 42],
+and ARDY handles streaming prompts and sparse con-
+straints [47]. To connect generation with execution, TextOp
+pairs a generator with a tracker [39], InterPrior learns gener-
+ative control for physical interaction [40, 43], and GRAIL
+generates interaction demonstrations with video world mod-
+els [38]. However, a kinematically valid motion does not
+guarantee that the target pose and timing are kept during
+closed-loop physical execution. S-BFM therefore uses a
+generator only during training, to broaden the distances and
+durations its controller learns from.
+3. Method
+Our goal is a single controller that receives a target posture,
+position, heading, and arrival time, and produces the whole-
+body motion that gets there on time. We first define this
+problem (Sec. 3.1) and then describe how S-BFM learns it
+in three stages (Fig. 2).
+3.1. Problem Formulation
+Each goal g specifies a target body state at a planar position
+and heading, together with an arrival time T. The controller
+must generate the intervening motion and reach g at time
+T. The full state xt contains the whole-body configuration
+and motion together with the root pose, and the control
+observation ot contains proprioception, the estimated root
+pose, and a short history of observations and actions.
+Reference frame. Goals are placed in the world, so the
+robot and all goals share a fixed frame W defined at the
+start of execution. Its origin is the initial planar root position
+p0,xy, and its reference direction is the initial heading ψ0:
+pW
+t,xy = R(−ψ0)(pt,xy −p0,xy),
+ψW
+t
+= wrap(ψt −ψ0),
+(1)
+where R is a planar rotation and wrap maps angles to
+[−π, π).
+Timing. The controller is told how much time remains,
+∆t = max(T −t, 0),
+(2)
+which decreases while the goal stays fixed; a new command
+replaces both g and T. A binary mode m states whether the
+robot should hold the goal or continue after arrival. At de-
+ployment, the controller maps (ot, g, ∆t, m) to joint targets
+for a low-level PD controller. Dense reference motions are
+available only during training.
+3.2. Overview
+Reaching a sparse goal on time requires the controller to
+know where the goal is and how to move toward it at
+the right pace. S-BFM learns this in three stages (Fig. 2).
+Stage I (Sec. 3.3) builds a forward-backward behavior rep-
+resentation that retains world-frame position and heading.
+Stage II (Sec. 3.4) freezes this representation and trains a
+time-conditioned controller to master the transitions and
+pace of real motion. Stage III (Sec. 3.5) fine-tunes the con-
+troller on generated motions that cover distances and time
+horizons missing from real data.
+The stages are trained in sequence rather than jointly so
+that later stages do not overwrite what earlier ones learned.
+After Stage I, the encoder and actor are frozen, and Stages II
+and III train only a controller on top of them. At inference,
+the encoder maps the goal to a goal code, the controller
+combines this code with ot, ∆t, and m, and the actor turns
+the resulting behavior code into joint actions. The spatial
+readout, the dense teacher, and the motion generator are used
+only during training.
+3
+
+
+I · Spatial Grounding
+II · Time-Conditioned Distillation
+III · Generative Fine-tuning
+0
+0.2T
+0.4T
+0.6T
+0.8T
+T
+0
+0.2T
+0.4T
+0.6T
+0.8T
+T
+0
+0.2T
+0.4T
+0.6T
+0.8T
+T
+(��, ��, −���°)
+(��, ��, −���°, ��)
+(��, ��, −���°, ��)
+I · Spatial Grounding
+II · Time-Conditioned Distillation
+III · Generative Fine-tuning
+State Encoder
+ Latent Space
+�
+��
+Full state
+Spatial Decoder
+�, �
+Forward 
+network
+��
+��
+�
+��
+�
+Motion Generator
+Root pose �̂
+��
+Distance × Horizon
+(�, �)
+��
+Tracking Checks
+������
+Mixed References
+��
+Fine-tune Time 
+Controller
+�����
+�(���)
+��
+Dense Reference
+Sparse Goal
+�
+Actor
+Action �
+Time-conditioned control
+��
+��
+Actor
+��
+��������
+Dense Teacher
+Sparse Student
+��
+Stage I Outputs
+State Encoder �0 · Actor ��
+&
+Same Goal, Different Arrival Times
+Actor
+��
+Time-varying 
+Latent
+��
+Poorly Timed Posture Changes
+“Without Timing Control”
+Unnatural Get-Up Transition
+Natural Transition to Goal
+“Target Arrival Time: 5 s”
+More Natural Get-Up Transition
+Supports Shorter Get-Up Times
+“ 5s → 3s ”
+State Encoder
+State Encoder
+��,�
+��, ���� ��, ���� �
+Trainable
+Frozen
+��
+��
+Figure 2. Overview of our S-BFM framework. Stage I learns a behavior representation grounded in world-frame position and heading.
+Stage II distills reference-guided transitions conditioned on the remaining time. Stage III broadens the range of distances and horizons
+through generative fine-tuning.
+3.3. Stage I: Spatial Grounding
+We build on the forward-backward (FB) behavior model of
+BFM-Zero [18] for whole-body behaviors in a shared latent
+space. Its behavior codes are not trained to encode where
+the robot is in the world, so we add world-frame root pose
+to both the representation and training signal.
+Root-pose features. In the frame of Eq. (1), root position
+and heading are encoded as
+ρ(xt) =
+"
+pW
+t,x
+sp
+, pW
+t,y
+sp
+, sin ψW
+t , cos ψW
+t
+#
+,
+(3)
+where sp scales position and the sine-cosine pair avoids the
+discontinuity at ±π. These features are appended to the
+encoder input and to the control observation and its history.
+Behavior learning. The backward encoder Bϕ maps a full
+state to a behavior embedding, which is projected to a be-
+havior code by P(v) = √dz v/∥v∥2, with dz the latent
+dimension. The forward network Fψ predicts long-term
+state visitation under a behavior code z:
+Mz(ξ, a, x′) = Fψ(ξ, a, z)⊤Bϕ(x′),
+Qz(ξ, a) = Fψ(ξ, a, z)⊤z,
+(4)
+where ξ is the training observation.
+We retain the FB
+temporal-difference objective LFB on simulator transitions,
+together with motion prior and physical regularization of
+BFM-Zero. The property of this model is that encoding a tar-
+get state, z = P(Bϕ(g)), yields a code whose policy moves
+the robot toward that state; Stage I extends this property
+from body posture to world-frame position and heading.
+Spatial supervision. To make the embedding retain root
+pose, a readout Hη reconstructs the normalized root-pose
+features from it:
+Lsp = Ex∼Dsp
+
+1
+4
+W 1/2eρ(x)
+
+2
+2
+
+,
+eρ(x) = Hη(P(Bϕ(x))) −eρ(x),
+(5)
+where eρ is the normalized target and W balances position
+against heading. This loss updates both the readout and
+backward encoder. The data Dsp mix robot-visited states
+and reference goals in equal proportion, with goal positions
+and headings randomized near the robot. Each reference
+segment is moved by a single planar rigid transformation,
+keeping its internal geometry and kinematics. Also, these
+samples are used only for Lsp, not for FB learning. The full
+4
+
+
+objective is as follows:
+Lrepr = LFB + λorthLorth + λspLsp,
+(6)
+where Lorth is the orthogonality regularizer of FB. Stage I
+produces the state encoder B0 and the actor π0, which stay
+frozen afterwards.
+3.4. Stage II: Time-Conditioned Distillation
+After Stage I, the policy can reach a goal, but the goal state
+alone does not determine the path or the speed. Stage II
+learns both from real motion by distilling a teacher that
+follows a dense reference into a student that sees only the
+sparse goal and the remaining time.
+Training tasks. From a reference motion, we sample a start
+time us and a goal time ug. The state at ug becomes the
+sparse goal g, and the segment duration sets the arrival time,
+T = ts + (ug −us),
+(7)
+where ts denotes execution start. The reference is replayed at
+native speed and supplies the teacher’s intermediate targets.
+Student. We freeze B0, π0, and the observation normalizer
+and train only a controller Cθ. The goal is encoded once as
+zg = P(B0(g)),
+(8)
+and the remaining time is normalized as τt = ∆t/sτ. At
+every step, the controller produces a behavior code, which
+the frozen actor executes:
+ζt = P(Cθ(ot, zg, τt, m)) ,
+aS
+t = π0(ot, ζt).
+(9)
+The goal code zg is constant between keyframes, while ζt
+adapts to the current observation and the time left.
+Teacher. The teacher uses the same observation, replacing
+the sparse goal with a time-aligned reference state rt:
+aT
+t = π0(ot, P(B0(rt))) .
+(10)
+Since the teacher sees where the reference is at each moment
+while the student sees only the endpoint and the time left,
+matching the teacher’s actions teaches the student both the
+transition and its pace.
+Closed-loop distillation. As in DAgger [27], the student
+executes its own actions and the teacher labels the states the
+student visits, so the student also learns to recover from its
+own drift. Paired inputs and teacher actions are stored in a
+buffer BIL, and the controller minimizes
+Ldistill = EBIL
+"aS
+t −sg(aT
+t )
+2
+2
+na
+#
+,
+(11)
+where na is the action dimension and sg is the stop-gradient.
+Gradients flow through the frozen actor into Cθ, which is ini-
+tialized to output zg so that training starts from goal-reaching
+behavior of Stage I. For hold commands, the goal stays active
+after T with zero remaining time, and the teacher continues
+to supervise the robot as it holds the pose.
+3.5. Stage III: Generative Fine-Tuning
+Real motion pairs each transition with one distance and
+one time horizon, whereas at deployment the same pair of
+postures may be requested at other distances and horizons.
+Stage III fills these gaps with generated motion and fine-
+tunes the controller on it.
+Distance-horizon expansion. We distill a pretrained Ki-
+modo model [25] into a compact conditional motion gener-
+ator Gω that accepts a text description together with spatial
+and temporal constraints. For an initial state xs and a goal g,
+we vary the travel distance d and horizon H and generate
+¯Xd,H = Gω(ℓd,H, Kd,H, ϵ),
+Kd,H = K(xs, Td(g), H),
+(12)
+where Td moves the target to distance d without changing
+its posture or heading, K attaches the endpoint pose and
+position constraints to their times, and ϵ is sampling noise.
+The text ℓd,H comes from reusable templates that describe
+the motion and its pace, while the numerical constraints fix
+distance and horizon. For the same endpoint postures, differ-
+ent (d, H) thus produce different intermediate postures and
+velocities, which supervise the controller across remaining-
+time conditions.
+Fine-tuning.
+Generated motions are kept only if they
+pass boundary-consistency processing and physical tracking
+checks. Accepted motions enter a reference buffer that is
+sampled together with the real references,
+DIII = (1 −α)Dbase + αDcross,
+(13)
+where Dcross holds the references expanded across distances
+and horizons and α is the mixing ratio. Starting from the
+Stage II controller, with the encoder and actor still frozen, we
+fine-tune with Eq. (11) on teacher targets from this mixture.
+Generated references with new timing use a 0.6 s teacher pre-
+view. All other references keep the one-step (0.02 s) target.
+The generator is used only to create training references, so
+deployment keeps the interface of Sec. 3.1.
+4. Experiments
+We evaluate S-BFM through four questions: Q1: Can S-
+BFM jointly track posture and world-space position from
+sparse timed keyframes? Q2: Can S-BFM autonomously
+reach and maintain spatial goals across distances and
+perturbations without intermediate reference trajectories?
+Q3: What control capabilities do spatial grounding, time-
+conditioned distillation, and generative fine-tuning each con-
+tribute? Q4: How does S-BFM perform on physical robots?
+4.1. Experimental Setup
+Environment and data. Simulation uses a 29-DoF Unitree
+G1 in MuJoCo at 50 Hz with a 2 ms physics timestep. Q1–Q4
+5
+
+
+Table 1. Sparse timed keyframe tracking under fixed and mixed command horizons.
+Fixed horizons: 0.1–3.5 s
+Mix: 0.02–2.5 s
+Method
+Local
+(cm)↓
+Global
+(cm)↓
+XY
+(m)↓
+Yaw
+(◦)↓
+AR
+(%)↑
+Local
+(cm)↓
+Global
+(cm)↓
+XY
+(m)↓
+Yaw
+(◦)↓
+AR
+(%)↑
+SONIC [21]
+13.00
+158.86
+1.558
+24.72
+35.73
+14.29
+173.67
+1.704
+27.15
+33.99
+UFO [26]
+14.36
+187.87
+1.859
+53.08
+32.77
+15.18
+201.71
+1.996
+56.83
+31.93
+BeJEPA [41]
+10.20
+59.35
+0.572
+20.90
+77.89
+10.57
+57.93
+0.555
+21.73
+77.65
+PLAT [37]
+16.61
+70.45
+0.639
+38.38
+71.33
+14.29
+55.49
+0.498
+30.60
+79.26
+S-BFM (ours)
+8.87
+38.35
+0.362
+16.80
+85.47
+8.88
+37.60
+0.354
+16.38
+86.04
+0.1
+0.5
+1.0
+1.5
+2.0
+2.5
+3.0
+3.5
+Command horizon (s)
+10
+20
+50
+100
+200
+400
+Global MPJPE
+(cm; log scale)
+Short
+Medium
+Long
+Extra-long
+(a) Global body tracking
+0.1
+0.5
+1.0
+1.5
+2.0
+2.5
+3.0
+3.5
+Command horizon (s)
+10
+20
+50
+100
+200
+400
+Root pose error
+(cm; log scale)
+Short
+Medium
+Long
+Extra-long
+(b) Root translation + heading
+SONIC
+UFO
+BeJEPA
+PLAT
+S-BFM (ours)
+Figure 3. Tracking error versus command horizon. Both panels use logarithmic error scales. Root-pose error is defined in Eq. 14.
+use evaluation tasks constructed from LAFAN and BONES-
+SEED. Within each experiment, methods share test data,
+goal configurations and command sequences. Real-robot
+experiments use the AGIBOT A3 humanoid robot.
+Baselines. SONIC [21] and UFO [26] use released G1 poli-
+cies; UFO uses the Forward–Backward implementation
+(UFO-FB). BeJEPA [41] uses our reproduced actor with-
+out online model predictive control (MPC). Our PLAT [37]
+reproduction includes the Stage I PPO teacher and Stage
+II distilled policy, excluding Stage III latent residual rein-
+forcement learning. For sparse commands, SONIC’s future-
+reference slots repeat the issued target. Reference inputs
+are limited to the issued keyframes; intermediate frames are
+used for scoring. For fixed spatial goals, SONIC and UFO
+retain their native interfaces without target XY input.
+Evaluation metrics. Tracking errors compare each control
+step with the reference motion at the same time.
+1. Tracking accuracy. We report mean per-joint position
+error (MPJPE, cm) locally after removing pelvis translation
+while retaining orientation differences, and globally in world
+coordinates. Root XY error (m) and yaw error (degrees)
+measure planar root-position distance and the shortest head-
+ing difference. Terminal errors average these four quantities
+over the final 5 s of fixed-goal trials. For command-horizon
+analysis, root-pose error combines translation and heading:
+epose(t) =
+r
+exy(t)2 + 4r2
+G1 sin2
+eψ(t)
+2
+
+.
+(14)
+Here rG1 = 0.1376 m, exy is in meters and eψ in radians;
+results are reported in cm. Root-pose comparisons use the
+same heading-valid reference frames for all methods.
+2. Goal acquisition and timing. Arrival rate (AR) is the
+fraction of complete commands jointly attaining local/global
+MPJPE ≤20/50 cm, XY error ≤0.5 m and yaw error ≤45◦
+between issuance and the scheduled time plus 0.3 s. On-
+time rate (OTR) uses the same commands and thresholds,
+requiring first attainment within ±0.3 s of the scheduled time.
+Goal-reaching rate (Reach) is the fraction of fixed-goal
+trials jointly attaining local/global MPJPE ≤20/40 cm, XY
+error ≤20 cm and yaw error ≤45◦within the rollout.
+3. Target retention. Hold5 is the fraction of all fixed-goal
+trials maintaining XY error ≤20 cm continuously for 5 s
+after the first Reach event. Maximum holding error (Emax,
+cm) is the median across all short-command trials of the
+maximum XY error in this same 5 s window.
+4. Motion smoothness. Joint jerk is the RMS of d3q/dt3
+over joints and time, reported in 103 rad/s3.
+4.2. Sparse Timed Keyframe Tracking
+To answer Q1, we evaluate tracking under successive timed
+keyframes using two command schedules. Fixed comprises
+20 distinct horizons across four ranges: Short spans 0.1–
+0.5 s in 0.1 s increments; Medium, Long and Extra-long span
+0.5–1.5 s, 1.5–2.5 s and 2.5–3.5 s in 0.2 s increments. Shared
+boundaries are counted once. Mix samples H = 0.02K
+with K uniform over {1, . . . , 125}. Targets switch at their
+scheduled times.
+Coordinated posture and spatial tracking. Table 1 shows
+that S-BFM achieves the best tracking metrics under both
+6
+
+
+0.4–1 1–2
+2–3
+3–4
+None
+Lateral
+1.8
+0.9
+0.2
+0.0
+1.8
+0.7
+0.0
+0.0
+1.6
+0.4
+0.0
+0.0
+SONIC
+0.4–1 1–2
+2–3
+3–4
+1.8
+0.4
+0.2
+0.0
+1.1
+0.2
+0.2
+0.2
+0.7
+0.4
+0.0
+0.0
+UFO
+0.4–1 1–2
+2–3
+3–4
+66.4 48.2 34.4 24.9
+71.3 50.4 32.2 24.2
+71.8 45.8 35.1 23.6
+BeJEPA
+0.4–1 1–2
+2–3
+3–4
+11.6 6.2
+3.6
+1.1
+13.3 5.1
+2.4
+0.7
+2.4
+2.2
+0.9
+0.0
+PLAT
+0.4–1 1–2
+2–3
+3–4
+78.4 75.8 76.9 67.1
+73.6 72.4 78.0 67.3
+61.6 66.7 74.7 68.0
+S-BFM (ours)
+0
+50
+100
+Target-distance annulus (m)
+Reach (%)
+Lateral +
+downward
+Figure 4. Goal-reaching rates across target distances and external perturbations. Rows denote perturbation conditions and columns
+denote target-distance ranges. Cells report Reach (%), with a shared 0–100% color scale across methods.
+Table 2. Fixed spatial goal reaching and retention without
+external perturbations.
+Attainment (%)
+Terminal error ↓
+Method
+Reach ↑
+Hold5 ↑
+XY
+(m)
+Yaw
+(◦)
+Local
+(cm)
+Global
+(cm)
+SONIC [21]
+0.72
+0.28
+2.195
+26.25
+17.35
+223.97
+UFO [26]
+0.61
+0.00
+2.491
+91.62
+24.24
+250.68
+BeJEPA [41]
+43.50
+7.39
+1.667
+25.97
+12.68
+168.24
+PLAT [37]
+5.61
+4.72
+1.779
+100.85
+40.66
+194.16
+S-BFM (ours)
+74.56
+35.22
+0.257
+21.56
+10.89
+29.88
+Table 3. P3 ablation: Goal retention under short remaining-
+time commands.
+2 m
+3 m
+Training stages
+Hold5
+(%)↑
+Emax
+(cm)↓
+Hold5
+(%)↑
+Emax
+(cm)↓
+P1+P2
+13.6
+21.87
+39.2
+20.55
+P1+P2+P3
+92.0
+19.81
+89.6
+19.73
+P1
+P1+P2
+P1+P2+P3
+0.00 s
+0.60 s
+1.20 s
+2.00 s
+3.60 s
+Figure 5. Qualitative comparison across training stages in sim-
+ulation. Transitions from a shared start to a prone goal 2 m away.
+Gold: target; faint blue: past poses.
+Fixed and Mix, with global MPJPE of 38.35 and 37.60 cm,
+respectively, and similar performance across schedules.
+SONIC and UFO exhibit relatively small local errors but
+large world-space deviations. BeJEPA and PLAT provide
+stronger baselines, yet S-BFM improves both posture and
+world-space tracking.
+Robustness to sparse guidance. Figure 3 shows that PLAT
+has low errors at short horizons, but its global body and
+root-pose errors rise sharply as reference updates become
+sparser. S-BFM maintains flatter curves and the lowest er-
+rors across Extra-long horizons (2.5–3.5 s), indicating more
+reliable world-space tracking under sparse guidance.
+4.3. Spatial Goal Reaching and Retention
+For Q2, we evaluate autonomous reaching of fixed, zero-
+velocity goals over 25 s rollouts. We pair 15 initial and
+15 target configurations covering prone and seated poses,
+crouching, bowing and single-leg stance. For each pair,
+two area-uniform target placements in each of four distance
+annuli (0.4–1, 1–2, 2–3 and 3–4 m) yield 1,800 trials per
+method and perturbation condition, with 450 trials per annu-
+lus. S-BFM and PLAT receive a 4 s countdown that remains
+zero after expiration. We evaluate unperturbed reaching and
+goal completion with torso forces applied at 1 s for 0.2 s.
+Disturbances use a lateral impulse per unit mass of 0.5 m/s,
+or stronger lateral/downward impulses of 1.5/ −1.0 m/s.
+Goal acquisition and retention. S-BFM achieves the high-
+est Reach and Hold5 and the lowest terminal errors (Table 2).
+Compared with BeJEPA, Reach increases from 43.5% to
+74.6% and Hold5 from 7.4% to 35.2%, while terminal XY
+error decreases from 1.667 to 0.257 m. The larger relative re-
+duction in global than local MPJPE indicates more accurate
+world-space placement alongside posture matching.
+Long-range reaching under perturbations. Figure 4
+shows that S-BFM maintains high goal-completion rates
+over longer distances and under disturbances. In the 3–4 m
+annulus, Reach is 67.1% for S-BFM versus 24.9% for Be-
+JEPA without perturbations, and 68.0% versus 23.6% under
+stronger lateral/downward perturbations. These results show
+that S-BFM coordinates whole-body posture and world-
+space displacement to autonomously reach goals across dis-
+tances and perturbation conditions.
+7
+
+
+Table 4. Ablation of training stages for motion tracking and spatial goal control. P1, P2 and P3 denote spatial grounding, time-
+conditioned distillation and generative fine-tuning. Time-conditioned indicates support for a specified arrival time.
+Training stages
+Capability
+Dense
+Sparse timed tracking
+Fixed-goal error
+P1
+P2
+P3
+Time-
+conditioned
+Global
+(cm)↓
+Local
+(cm)↓
+Global
+(cm)↓
+AR
+(%)↑
+OTR
+(%)↑
+Jerk
+(103 rad/s3)↓
+XY
+(m)↓
+Yaw
+(◦)↓
+✓
+–
+–
+×
+34.65
+9.81
+36.62
+90.63
+4.63
+1.38
+0.739
+8.75
+–
+✓
+–
+✓
+130.39
+14.64
+188.10
+31.16
+2.13
+1.36
+3.502
+80.87
+✓
+✓
+–
+✓
+37.00
+9.34
+38.95
+84.67
+17.35
+1.24
+0.597
+8.99
+✓
+✓
+✓
+✓
+36.84
+9.05
+38.20
+85.51
+17.33
+1.14
+0.621
+9.33
+(a) Sparse tracking
+(b) Goal reaching
+G3 · End
+Start
+G1
+G2
+0 s
+1 s
+2 s
+3.5 s
+0 s
+1.4 s
+1.7 s
+3 s
+Figure 6. Real-robot executions. (a) Sparse tracking with a 2 s command horizon; selected poses are highlighted in gold and intermediate
+poses are shown translucently. (b) Two continuous goal-reaching transitions, with elapsed video time shown below each frame.
+Figure 7. Time-conditioned real-robot motions. Left and middle: the robot walks with 5 s remaining and runs with 3 s remaining to reach
+the target. Right: the robot autonomously organizes a coordinated whole-body transition from lying on the ground to standing.
+4.4. Ablation Study
+To answer Q3, we compare P1, P2 without spatial grounding,
+P1+P2, and P1+P2+P3 on the same motion tracking and
+fixed-goal tasks (Table 4). P2 alone uses the released UFO
+policy as its base.
+Contributions of the training stages. P1 alone provides
+effective motion and world-space position tracking, but its
+on-time rate is only 4.63%. Without explicit supervision
+of transition motions and execution timing, it may adopt
+the prone goal posture while still far from the target loca-
+tion (Fig. 5). This premature posture change can restrict
+subsequent locomotion, making it difficult to complete the
+remaining displacement and potentially preventing the robot
+from reaching the target. P2 without P1 yields a terminal
+XY error of 3.502 m, indicating that reference-motion dis-
+tillation alone has not provided this variant with reliable
+goal-position control in world coordinates. Combining P1
+and P2 raises the on-time rate to 17.35% and reduces termi-
+nal XY error to 0.597 m; the robot also approaches the target
+before lying prone. These results show that time-conditioned
+distillation built on the spatial behavior model coordinates
+target-position control with transition organization. Adding
+P3 further reduces sparse tracking errors and joint jerk.
+Target retention under short commands. To assess P3 un-
+der short remaining-time commands, we fine-tune the same
+P1+P2 checkpoint for 10M steps using equal proportions of
+real and generated references. We evaluate standing goals
+at 2 and 3 m with remaining-time commands from 1 to 3 s
+in 0.5 s increments, using 250 paired trials per distance. Ta-
+ble 3 shows that P3 increases Hold5 from 13.6% to 92.0% at
+2 m and from 39.2% to 89.6% at 3 m, while reducing Emax
+at both distances. P3 thus substantially improves the reli-
+ability of target-position retention after arrival under short
+remaining-time commands.
+8
+
+
+4.5. Real-Robot Experiments
+To answer Q4, we deploy the complete three-stage S-BFM
+on the full-size AGIBOT A3 humanoid. Figure 6 presents
+representative sparse tracking and transitions between whole-
+body goal postures. Figure 7 illustrates time-adaptive lo-
+comotion and natural get-up. From the issued goals, the
+robot organizes intermediate steps and coordinates adjust-
+ments of its arms, legs and trunk throughout the transitions.
+Together with the goal-posture examples in Fig. 1, these
+demonstrations show that the sparse-goal interface supports
+coordinated whole-body control on physical hardware.
+5. Conclusion, Limitation and Future Work
+S-BFM enables humanoid robots to organize whole-body
+motion and execution pace from sparse spatiotemporal goals,
+without dense reference trajectories at deployment. Spatial
+grounding and time-conditioned distillation support accurate
+spatial control and coordinated transitions. Generative fine-
+tuning extends control across a broader range of arrival-time
+commands. Our current approach has three main limitations.
+First, these capabilities are acquired through three succes-
+sive training stages, which complicates the training pipeline.
+Future work will explore incorporating remaining time and
+explicit terminal conditions into forward–backward repre-
+sentations and Bellman updates. Combining this formulation
+with goal- and time-conditioned adversarial motion priors
+may enable spatial control, natural transitions, and timing
+control to be learned within a single stage.
+Second, integration with vision–language–action and
+world-action models remains unexplored. We will investi-
+gate interfaces that allow these models to specify executable
+spatial goals and arrival times. This will involve developing
+suitable real-robot data collection procedures and adapting
+high-level outputs and training objectives.
+Third, we have not studied how high-level architectures
+should be redesigned around S-BFM’s control capabilities.
+Future work will explore architectures that focus on scene
+understanding, task reasoning, and behavior goals critical to
+task success, while S-BFM organizes intermediate motion.
+Reachability and execution feedback could further help high-
+level models refine their goals and timing decisions.
+References
+[1] Fuyi Chen. BlinkMimic: Training a humanoid motion tracker
+in minutes on a single GPU, 2026. 3
+[2] Sitong Chen, Fatemeh Zargarbashi, Jin Cheng, Tianxu
+An, and Stelian Coros. KINO: A Keyframe Interface for
+VLM Planning and Whole-Body Control in Humanoid Loco-
+Manipulation. arXiv preprint arXiv:2609.18869, 2026. 2,
+3
+[3] Xuanyu Chen, Mohan Liu, Dengchen Mei, Zhihao Gu,
+Haitian Zhang, Kaimin Mao, Haiyue Zhu, Shijun Yan, and
+Lin Wang. Physics-guided biomechanical gait adaptation for
+humanoid locomotion on extreme sloped terrains, 2026. 3
+[4] Zixuan Chen, Mazeyu Ji, Xuxin Cheng, Xuanbin Peng,
+Xue Bin Peng, and Xiaolong Wang. GMT: General motion
+tracking for humanoid whole-body control, 2025. 3
+[5] Xuxin Cheng, Yandong Ji, Junming Chen, Ruihan Yang, Ge
+Yang, and Xiaolong Wang. Expressive whole-body control
+for humanoid robots. In Robotics: Science and Systems (RSS),
+2024. 3
+[6] David J. Clark. Automaticity of walking: functional signif-
+icance, mechanisms, measurement and rehabilitation strate-
+gies. Frontiers in Human Neuroscience, 9:246, 2015. 2
+[7] Setareh Cohan, Guy Tevet, Daniele Reda, Xue Bin Peng, and
+Michiel van de Panne. Flexible motion in-betweening with
+diffusion models. In ACM SIGGRAPH Conference Papers,
+2024. 3
+[8] Ziqi Han, Yitang Li, Junhan Sun, Fanrong Dong, Yaojie Shen,
+Lei Ye, Zetong Jing, Yongqi Zhang, Yiming Zhang, Xue
+Wang, and Hao Zhao. I-BFM: Reward-conditioned robust hu-
+manoid interaction via unsupervised reinforcement learning,
+2026. 2
+[9] Sudarshan Harithas, Chen Yu, Juan Borbon, Shubhankar
+Mondal, Winston Zha, Srinath Sridhar, Dingqi Zhang, and
+Jiuguang Wang. BRACE: Adapting whole-body references
+for force and terrain aware humanoid motion tracking, 2026.
+3
+[10] F´elix G. Harvey, Mike Yurick, Derek Nowrouzezahrai, and
+Christopher Pal. Robust Motion In-betweening. ACM Trans-
+actions on Graphics, 39(4):60, 2020. 3
+[11] Tairan He, Zhengyi Luo, Xialin He, Wenli Xiao, Chong
+Zhang, Weinan Zhang, Kris Kitani, Changliu Liu, and Guanya
+Shi. OmniH2O: Universal and dexterous human-to-humanoid
+whole-body teleoperation and learning. In Conference on
+Robot Learning (CoRL), 2024. 3
+[12] Tairan He, Zhengyi Luo, Wenli Xiao, Chong Zhang, Kris
+Kitani, Changliu Liu, and Guanya Shi. Learning Human-
+to-Humanoid Real-Time Whole-Body Teleoperation.
+In
+IEEE/RSJ International Conference on Intelligent Robots and
+Systems, 2024. 3
+[13] Tairan He, Jiawei Gao, Wenli Xiao, Yuanhang Zhang, Zi
+Wang, Jiashun Wang, Zhengyi Luo, Guanqi He, Nikhil Soban-
+babu, Chaoyi Pan, Zeji Yi, Guannan Qu, Kris Kitani, Jessica
+Hodgins, Linxi ”Jim” Fan, Yuke Zhu, Changliu Liu, and
+Guanya Shi.
+ASAP: Aligning simulation and real-world
+physics for learning agile humanoid whole-body skills. arXiv
+preprint arXiv:2502.01143, 2025. 3
+9
+
+
+[14] Yifan Hu, Luhang Hong, Mingkang Long, Danning Wang,
+Chengfeng Jia, Rong Su, Junjie Fu, and Guanghui Wen.
+MASkillBlender: Decentralized whole-body coordination for
+multi-humanoid loco-manipulation via skill blending, 2026.
+3
+[15] Tao Huang, Huayi Wang, Junli Ren, Kangning Yin, Zirui
+Wang, Xiao Chen, Feiyu Jia, Wentao Zhang, Junfeng Long,
+Jingbo Wang, and Jiangmiao Pang. Towards adaptable hu-
+manoid control via adaptive motion tracking, 2025. 3
+[16] Mazeyu Ji, Xuanbin Peng, Fangchen Liu, Jialong Li, Ge Yang,
+Xuxin Cheng, and Xiaolong Wang. ExBody2: Advanced
+Expressive Humanoid Whole-Body Control. arXiv preprint
+arXiv:2412.13196, 2024. 3
+[17] Hongyi Li, Li Peizhuo, Yucheng Tao, Ze Wang, Fangzhou
+Xu, Jinyi Chen, Yanyan Yuan, Dapeng Jia, Yongbin Jin,
+Mingfeng Fan, Guillaume Sartoretti, and Hongtao Wang.
+PGMT: Perceptive General Motion Tracking for Humanoid
+Robots. arXiv preprint arXiv:2609.08511, 2026. 3
+[18] Yitang Li, Zhengyi Luo, Tonghe Zhang, Cunxi Dai, Anssi
+Kanervisto, Andrea Tirinzoni, Haoyang Weng, Kris Kitani,
+Mateusz Guzek, Ahmed Touati, Alessandro Lazaric, Matteo
+Pirotta, and Guanya Shi. BFM-Zero: A Promptable Behav-
+ioral Foundation Model for Humanoid Control Using Unsu-
+pervised Reinforcement Learning. In International Confer-
+ence on Learning Representations, 2026. 2, 3, 4
+[19] Qiayuan Liao, Yiyang Shao, Junfeng Long, Kevin Zakka,
+Roberto Horowitz, Pieter Abbeel, and Koushil Sreenath. Su-
+perMimic: Scaling Humanoid Whole-Body Control with One
+Differentiable World Model. In Conference on Robot Learn-
+ing, 2026. 2, 3
+[20] Zhengyi Luo, Jinkun Cao, Alexander Winkler, Kris Kitani,
+and Weipeng Xu. Perpetual humanoid control for real-time
+simulated avatars. In IEEE/CVF International Conference on
+Computer Vision (ICCV), 2023. 3
+[21] Zhengyi Luo, Ye Yuan, Tingwu Wang, Chenran Li, Fernando
+Casta˜neda, Sirui Chen, Zi-Ang Cao, Jiefeng Li, David Minor,
+Qingwei Ben, Jinhyung Park, David Sami, Zi Wang, Xingye
+Da, Runyu Ding, Cyrus Hogg, Lina Song, Edy Lim, Eugene
+Jeong, Tairan He, Haoru Xue, Wenli Xiao, Simon Yuen, Jan
+Kautz, Yan Chang, Umar Iqbal, Linxi ”Jim” Fan, and Yuke
+Zhu. SONIC: Supersizing Motion Tracking for Natural Hu-
+manoid Whole-Body Control. Science Robotics, 11(117):
+eaed4592, 2026. 2, 3, 6, 7
+[22] Yubiao Ma, Han Yu, Kai Guo, Changtai Lv, Zhengquan
+Mao, Boyang Xing, Xuemei Ren, and Dongdong Zheng.
+Extreme-RGMT: Continual Learning of Highly Dynamic
+Skills for Robust Generalist Humanoid Control.
+arXiv
+preprint arXiv:2607.20110, 2026. 3
+[23] Xue Bin Peng, Pieter Abbeel, Sergey Levine, and Michiel
+van de Panne. DeepMimic: Example-guided deep reinforce-
+ment learning of physics-based character skills. ACM Trans-
+actions on Graphics, 37(4):143, 2018. 3
+[24] Vitchyr Pong, Shixiang Gu, Murtaza Dalal, and Sergey
+Levine. Temporal Difference Models: Model-Free Deep
+RL for Model-Based Control. In International Conference on
+Learning Representations, 2018. 3
+[25] Davis Rempe, Mathis Petrovich, Ye Yuan, Haotian Zhang,
+Xue Bin Peng, Yifeng Jiang, Tingwu Wang, Umar Iqbal,
+David Minor, Michael de Ruyter, Jiefeng Li, Chen Tessler,
+Edy Lim, Eugene Jeong, Sam Wu, Ehsan Hassani, Michael
+Huang, Jin-Bey Yu, Chaeyeon Chung, Lina Song, Olivier
+Dionne, Jan Kautz, Simon Yuen, and Sanja Fidler. Kimodo:
+Scaling Controllable Human Motion Generation.
+arXiv
+preprint arXiv:2603.15546, 2026. 2, 3, 5
+[26] RoboParty Lab Team. UFO: An Unsupervised Reinforce-
+ment Learning Framework for Humanoid Control. https:
+//github.com/Roboparty/UFO, 2026. Project page:
+https://roboparty.github.io/UFO/. 6, 7
+[27] Stephane Ross, Geoffrey Gordon, and Drew Bagnell. A Re-
+duction of Imitation Learning and Structured Prediction to
+No-Regret Online Learning. In Proceedings of the Fourteenth
+International Conference on Artificial Intelligence and Statis-
+tics, pages 627–635. PMLR, 2011. 5
+[28] Thomas Rupf, Agon Serifi, David M¨uller, Sammy Christen,
+Ruben Grandia, Espen Knoop, and Moritz B¨acher. BFM-
+Track: Latent Sequence Optimization for Physics-Based Mo-
+tion Tracking with Behavioral Foundation Models. arXiv
+preprint arXiv:2606.25056, 2026. 2, 3
+[29] Tom Schaul, Daniel Horgan, Karol Gregor, and David Silver.
+Universal value function approximators. In International
+Conference on Machine Learning (ICML), 2015. 3
+[30] Jing Tan, Shiting Chen, Yangfan Li, Weisheng Xu, and Ren-
+jing Xu. FARM: Frame-accelerated augmentation and resid-
+ual mixture-of-experts for physics-based high-dynamic hu-
+manoid control. Proceedings of the AAAI Conference on
+Artificial Intelligence, 40(22):18575–18583, 2026. 3
+[31] Jing Tan, Weisheng Xu, Xiangrui Jiang, Jiaxi Zhang, Kun
+Yang, Kai Wu, Jiaqi Xiong, Shiting Chen, Yangfan Li, Yixiao
+Feng, Yuetong Fang, Yujia Zou, Yiqun Song, and Renjing
+Xu. Spherical latent motion prior for physics-based simulated
+humanoid control. arXiv preprint arXiv:2603.01294, 2026. 3
+[32] Chen Tessler, Yunrong Guo, Ofir Nabati, Gal Chechik, and
+Xue Bin Peng. MaskedMimic: Unified Physics-Based Char-
+acter Control Through Masked Motion Inpainting. ACM
+Transactions on Graphics, 43(6):209, 2024. 2, 3
+[33] Guy Tevet, Sigal Raab, Brian Gordon, Yonatan Shafir, Daniel
+Cohen-Or, and Amit H. Bermano. Human motion diffusion
+model. In International Conference on Learning Representa-
+tions (ICLR), 2023. 3
+[34] Ahmed Touati and Yann Ollivier. Learning one representation
+to optimize all rewards. In Advances in Neural Information
+Processing Systems, pages 13–23. Curran Associates, Inc.,
+2021. 2, 3
+[35] Ahmed Touati, J´er´emy Rapin, and Yann Ollivier. Does zero-
+shot reinforcement learning exist? In International Confer-
+ence on Learning Representations (ICLR), 2023. 3
+[36] Xue Wang, Yitang Li, Yiming Zhang, Siqin Wang, Junhan
+Sun, Zhihao Liu, Yaojie Shen, Jingbo Yuan, Hao Zhao, and
+Qingdu Li. P-BFM: Perceptive behavioral foundation models
+for humanoid control via unsupervised reinforcement learn-
+ing, 2026. 2
+[37] Zepeng Wang, Jiangxing Wang, Chao Ma, Xiaochuan Shi,
+and Zongqing Lu. PLAT: Sparse Timed Keyframe Motion
+Tracking for Humanoid Control via Privileged Latent Transi-
+10
+
+
+tion Learning. arXiv preprint arXiv:2609.25754, 2026. 3, 6,
+7
+[38] Tianyi Xie, Haotian Zhang, Jinhyung Park, Zi Wang, Bowen
+Wen, Jiefeng Li, Xueting Li, Qingwei Ben, Haoyang Weng,
+Yufei Ye, David Minor, Tingwu Wang, Chenfanfu Jiang, Sanja
+Fidler, Jan Kautz, Linxi Fan, Yuke Zhu, Zhengyi Luo, Umar
+Iqbal, and Ye Yuan. GRAIL: Generating Humanoid Loco-
+Manipulation from World Models. In Conference on Robot
+Learning, 2026. 3
+[39] Weiji Xie, Jiakun Zheng, Jinrui Han, Jiyuan Shi, Weinan
+Zhang, Chenjia Bai, and Xuelong Li. TextOp: Real-time
+Interactive Text-Driven Humanoid Robot Motion Generation
+and Control. arXiv preprint arXiv:2602.07439, 2026. 2, 3
+[40] Sirui Xu, Samuel Schulter, Morteza Ziyadi, Xialin He, Xi-
+aohan Fei, Yu-Xiong Wang, and Liangyan Gui. InterPrior:
+Scaling Generative Control for Physics-Based Human-Object
+Interactions. arXiv preprint arXiv:2602.06035, 2026. 3
+[41] Liyun Yan, Haoyang Li, Yang Zhang, Jialing Zhu, Zhanxiang
+Cao, Zihao Zhou, Keqi Zhu, Yizhi Chen, Huang Chuxuan,
+Shengcheng Fu, Zhong Jiangwei, Qiao Sun, Chen Zhang,
+and Yue Gao. BeJEPA: A Goal-Conditioned Humanoid Be-
+havior World Model via Unsupervised RL. arXiv preprint
+arXiv:2610.23127, 2026. 2, 3, 6, 7
+[42] Kun Yang, Haihan Duan, Yubo Zhao, Jiale Cheng, Runhao
+Zeng, and Xiping Hu. UniqueNFT: Uniqueness protection of
+digital assets in decentralized web. ACM Transactions on the
+Web, 20(1):1–30, 2026. 3
+[43] Lei Ye, Haibo Gao, Yitang Li, Peng Xu, Zetong Jing, Junhan
+Sun, Fanrong Dong, Ziqi Han, Xue Wang, Jianhua Sun, Cewu
+Lu, Hao Zhao, and Liang Ding. PredActor: Predictive Action
+Diffusion for Steerable Onboard Humanoid Control. arXiv
+preprint arXiv:2609.24840, 2026. 3
+[44] Fatemeh Zargarbashi, Jin Cheng, Dongho Kang, Robert Sum-
+ner, and Stelian Coros. RobotKeyframing: Learning loco-
+motion with high-level objectives via mixture of dense and
+sparse rewards, 2024. 3
+[45] Yanjie Ze, Zixuan Chen, Jo˜ao Pedro Ara´ujo, Zi ang Cao,
+Xue Bin Peng, Jiajun Wu, and C. Karen Liu. TWIST: Teleop-
+erated whole-body imitation system, 2025. 3
+[46] Yanjie Ze, Siheng Zhao, Weizhuo Wang, Angjoo Kanazawa,
+Rocky Duan, Pieter Abbeel, Guanya Shi, Jiajun Wu, and
+C. Karen Liu.
+TWIST2: Scalable, Portable, and Holis-
+tic Humanoid Data Collection System.
+arXiv preprint
+arXiv:2511.02832, 2025. 3
+[47] Kaifeng Zhao, Mathis Petrovich, Haotian Zhang, Tingwu
+Wang, Siyu Tang, and Davis Rempe. ARDY: Autoregressive
+Diffusion with Hybrid Representation for Interactive Human
+Motion Generation. ACM Transactions on Graphics, 45(4):
+86, 2026. 3
+11

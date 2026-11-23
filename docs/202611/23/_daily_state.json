@@ -1,0 +1,89 @@
+{
+  "date": "20261123",
+  "date_label": "",
+  "generated_at": "2026-11-23 11:44:58 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2611.27552v1",
+      "route": "202611/23/2611.27552v1-s-bfm-a-behavioral-foundation-model-for-humanoid-control-from-sparse-spatiotemporal-goals",
+      "title": "S-BFM: A Behavioral Foundation Model for Humanoid Control from Sparse Spatiotemporal Goals",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "humanoid"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "从稀疏时空目标生成人形机器人全身运动",
+      "first_seen_at": "2026-11-23 11:44:58 UTC",
+      "updated_at": "2026-11-23 11:44:58 UTC"
+    },
+    {
+      "paper_id": "2611.27648v1",
+      "route": "202611/23/2611.27648v1-trust-what-repeats-capped-world-model-policy-gradients-for-humanoid-motion-tracking",
+      "title": "Trust What Repeats: Capped World-Model Policy Gradients for Humanoid Motion Tracking",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "humanoid"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "在仿真器中训练人形运动跟踪的世界模型策略梯度",
+      "first_seen_at": "2026-11-23 11:44:58 UTC",
+      "updated_at": "2026-11-23 11:44:58 UTC"
+    },
+    {
+      "paper_id": "2611.27845v1",
+      "route": "202611/23/2611.27845v1-humanoid-robots-for-safety-critical-electrical-switching-a-perception-informed-runtime-constraint-filter",
+      "title": "Humanoid robots for safety-critical electrical switching: A perception-informed runtime constraint filter",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "humanoid"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向人形机器人控制的感知信息运行时安全滤波器",
+      "first_seen_at": "2026-11-23 11:44:58 UTC",
+      "updated_at": "2026-11-23 11:44:58 UTC"
+    },
+    {
+      "paper_id": "2611.27939v1",
+      "route": "202611/23/2611.27939v1-what-must-a-model-tell-a-planner-outcome-interfaces-for-risk-aware-planning-after-robot-damage",
+      "title": "What Must a Model Tell a Planner? Outcome Interfaces for Risk-Aware Planning After Robot Damage",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "humanoid"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "在H1人形上基于结果接口的风险感知路径规划",
+      "first_seen_at": "2026-11-23 11:44:58 UTC",
+      "updated_at": "2026-11-23 11:44:58 UTC"
+    },
+    {
+      "paper_id": "2611.27645v1",
+      "route": "202611/23/2611.27645v1-efficient-vla-reinforcement-learning-via-subchunk-rollouts-in-latent-world-models",
+      "title": "Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "humanoid"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "基于模型强化学习的视觉-语言-动作策略改进",
+      "first_seen_at": "2026-11-23 11:44:58 UTC",
+      "updated_at": "2026-11-23 11:44:58 UTC"
+    }
+  ]
+}

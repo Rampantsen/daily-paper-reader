@@ -1,0 +1,1759 @@
+Trust What Repeats: Capped World-Model
+Policy Gradients for Humanoid Motion Tracking
+Xuzhe Dang and Stefan Edelkamp
+Faculty of Electrical Engineering, Czech Technical University in Prague
+Faculty of Mathematics and Physics, Charles University
+Prague, Czech Republic
+dangxuzh@fel.cvut.cz, stefan.edelkamp@gmail.com
+Abstract—Training a humanoid motion tracker by backprop-
+agating imagined returns through a learned world model is fast,
+because the model gives a first-order policy gradient. We ask how
+much of that gradient holds in the simulator. On a tracker for
+the Unitree G1, the 0.5% of imagined rollouts with the largest
+gradients carry 22% of the summed gradient norm, yet neither
+a second rollout from the same state nor the simulator confirms
+them. When the actions are moved along the model’s gradient, the
+simulator returns 94% of the predicted change in return where
+the gradient norm is below the batch median, 48% between 3
+and 10 times the median, and 1% above 30 times; the part of
+a gradient that either check confirms stops growing at a few
+times the median. We therefore cap each rollout’s action-gradient
+norm at 10 times the batch median, draw imagination starts
+in proportion to their predicted gradient norm so that the cap
+removes less, and reset episodes where the world model and critic
+predict the lowest return. Trained on 223 hours of motion and
+tested on 353 motions that no actor performed in training, the
+method raises the normalized return of SuperMimic, the baseline
+it builds on, from 0.953 to 0.967 and the lowest 1% of test clips
+from 0.65 to 0.76, halves the test clips that fall persistently, from
+15–18 to 7–10, and reaches the baseline’s final return in 40% of
+the baseline’s iterations and half its training time. On LAFAN1,
+trained and evaluated on the same clips as prior work, it reaches
+0.935 against 0.906.
+I. INTRODUCTION
+A general motion tracker turns a library of human motion
+into a single policy that a humanoid can run: given the next
+frames of a reference, the policy outputs joint targets that
+make the robot follow it. Such trackers are the low-level layer
+under teleoperation, motion generation and learned skills, and
+their quality is set by how many motions they follow without
+falling and by how long they take to train. With model-free
+reinforcement learning the second number is large: trackers
+for libraries of a hundred hours and more are trained for days
+on many GPUs [1]–[3].
+SuperMimic [4] changed that. It fits a world model to the
+simulator’s transitions and improves the policy by backprop-
+agating the imagined return through the model, a first-order
+gradient that needs no likelihood ratio and no exploration
+in action space. The authors report the return of a strong
+model-free tracker after hours on one GPU. The price of a
+first-order gradient is known from differentiable simulation:
+through contact and over long horizons the gradient of a
+rollout can be large, wrong, or both [5]–[7], and a model
+that is accurate in its predictions need not be accurate in its
+derivatives.
+This paper measures that price for motion tracking and
+removes most of it. It rests on two measurements on a trained
+tracker.
+A few rollouts carry the gradient. Among imagined rollouts,
+the 0.5% whose action-gradient norm G exceeds 30 times the
+batch median hold 22% of the summed norm and 99% of
+the summed squared norm, while 88% of rollouts lie below
+3 times the median. Heavy tails of this kind are known
+for gradients through simulators [7] and were reported for
+humanoid tracking in concurrent work [8]; what has not been
+asked is whether the tail is signal.
+The large gradients are not backed. We roll the same start
+state out twice under independent sensor noise and ask how
+much of one rollout’s gradient the other reproduces; and we set
+the simulator to states from the replay buffer, step it along the
+model’s gradient, and ask how much of the predicted change
+of the return appears. The two tests agree (Fig. 1). Up to about
+3 times the median, both confirm most of a gradient’s norm.
+Beyond that the confirmed part stops growing: from 5 times
+on, both confirm about 3 to 4 times the median whatever the
+norm, and the simulator returns 48% of the model’s predicted
+change between 3 and 10 times the median, 12% between 10
+and 30 times and 1% above.
+The part of a rollout’s gradient that both tests confirm is
+thus roughly min(G, k·med G), with med G the batch median
+and k a few units, and we make that the update rule: the
+norm of each rollout’s action gradient is capped at k = 10
+times the batch median. The cap acts as a trust region on the
+model’s derivative, set per rollout and measured against the
+batch’s own median. Two further changes go with it. Start
+states whose gradients the cap would cut are drawn more
+often and weighted down, which leaves the expected gradient
+unchanged and gives the cap less to remove. And episodes
+are reset where the world model and critic predict the lowest
+return, ranked over the whole library every 2,000 iterations,
+which directs data to the motions the policy cannot yet follow
+and finds them without first visiting them.
+We evaluate on a split that no tracker of this kind has
+reported, to our knowledge: BONES-SEED retargeted to the
+Unitree G1, divided by motion, so that no test motion was
+performed by any actor in training. On 11,828 test clips of
+arXiv:2611.27648v1  [cs.RO]  20 Nov 2026
+
+
+353 unseen motions and three seeds, the method raises the
+normalized return from 0.953 to 0.967, the lowest 1% of clips
+from 0.65 to 0.76, and halves the clips that fall in at least
+half of the last six snapshots (Fig. 4). It passes the baseline’s
+final test return at 10,000 of 25,000 iterations, after 1.2 hours
+against 2.4 to 2.6. The cap is what raises the mean and the
+model-ranked resets what raise the tail; the start draw adds
+little at this scale. Doubling the baseline’s learning rate gives
+it about a third of the method’s gain at 15,000 iterations and
+none of the drop in failing clips. On LAFAN1, the motion set
+on which this line of work reports results, the method reaches
+0.935 against 0.906 and passes the baseline’s final return at
+7,600 to 9,600 of 15,000 iterations.
+Our contributions are:
+• two tests of a world model’s policy gradient, one against
+a redraw of the same start and one against the simulator,
+and the finding that both level off at a few times the batch
+median of the gradient norm;
+• an update built on that finding: a cap on each rollout’s
+action-gradient norm, a start distribution drawn by gradi-
+ent norm, which reduces what the cap removes without
+adding bias but adds little once the resets are model-
+ranked, and a reset distribution for motion tracking that
+is ranked by the world model and critic instead of by
+visits;
+• an evaluation of world-model motion tracking on mo-
+tions unseen in training, with ablations of each part, on
+two versions of the Unitree G1, and a comparison on
+LAFAN1.
+II. RELATED WORK
+Motion tracking at scale. Since DeepMimic [9], physics-
+based trackers are trained with model-free reinforcement learn-
+ing from random reference phases with early termination.
+Scaling them to large libraries has relied on where episodes
+start. PHC [1] evaluates the whole dataset and samples the
+clips the policy fails; BeyondMimic [2] and SONIC [3] keep a
+failure rate per bin of a clip and sample bins by it; GMT [10]
+adapts sampling to tracking error. SuperMimic [4] keeps a
+return per bin from the simulator’s rollouts. All of these score
+a bin from episodes that visited it. We score every bin through
+the world model and critic without visiting it.
+First-order policy gradients. Differentiating a simulator or a
+learned model gives low-variance policy gradients [11], [12],
+and a known set of failures: the gradient’s variance grows with
+the horizon in chaotic systems [5], [6], and through contact a
+first-order estimate can be biased by rare large samples [7].
+The usual remedies are short horizons closed by a critic and a
+clip on the norm of the batch gradient [12], [13], or a horizon
+adapted to contact stiffness [14]. SuperMimic [4] showed that
+a learned model makes the approach practical for humanoid
+tracking. Our redraw and simulator tests address the question
+of [7] directly for a learned model: whether the rare large
+samples carry the true gradient. In our setting they do not.
+Clipping and truncation. The operator we use, a clip of each
+sample’s gradient at a threshold set by a quantile of the norms,
+is that of differentially private training [15], [16], used there
+for privacy and here for accuracy; what is ours is the unit it
+acts on, a rollout’s action gradient, and the evidence for its
+level. Clipping biases the update [17], and the trade between
+that bias and the variance removed is the one studied for
+truncated importance weights [18], [19]; [19] derive clipping
+as the minimizer of a worst-case bias plus the second moment,
+an argument that carries over to gradients.
+Sampling by gradient norm. Drawing training examples
+in proportion to their gradient norm and weighting them
+by the inverse is the variance-optimal importance sampling
+for stochastic gradient descent [20]–[23], and prioritized re-
+play [24] does the same with the temporal-difference error.
+We apply it to the start states of imagined rollouts, with the
+norm predicted from the critic’s value, and note that its purpose
+here is different: it leaves a cap less to remove.
+Curricula from critics and models. Prioritized level re-
+play [25] ranks tasks by a value loss from actual rollouts.
+ProCuRL [26] and SPaCE [27] score every task with one
+forward pass of the critic, which is our ranking at a horizon
+of zero. Closest in mechanism are methods that roll the policy
+through a world model to score goals or start states [28], [29],
+and the score itself is a model-based value expansion [30]. We
+are not aware of a reset distribution for motion tracking that
+is ranked by a learned model.
+Weight averaging. Evaluating an average of the weights that
+never acts in training [31] is standard in imitation learning and
+uncommon in reinforcement-learning trackers. We use it for
+both methods and claim nothing for it.
+Concurrent work. ∇Mimic [8] reports heavy-tailed first-
+order gradients for humanoid tracking and clips the action gra-
+dient of each step and environment at a multiple of the batch
+median inside the backward pass; we cap once per rollout
+and test what the capped part is worth. InstantTrack [32] and
+BlinkMimic [33] speed up SuperMimic’s line with a different
+optimizer, a residual policy, GPU graph capture and, in the
+latter, resets from failures of the deployed policy in simulation,
+and train 40 LAFAN1 clips in minutes; InstantMimic [34] is a
+GPU-native system for model-free tracking. These changes are
+largely orthogonal to ours. None of them evaluates on motions
+held out from training.
+III. BACKGROUND
+A. Motion tracking with a world model
+We build on SuperMimic [4] and keep its environment,
+networks and losses, in our own implementation. The robot is a
+Unitree G1, simulated in Newton [35] with its MuJoCo Warp
+solver [36], [37] at 200 Hz and controlled at 50 Hz through
+joint position targets. A motion library holds retargeted clips;
+an episode starts at a frame of a clip and ends when the clip
+ends or when the robot’s height or tilt leaves a band around
+the reference. The reward combines exponential kernels on the
+tracking errors of body positions, orientations and velocities
+with small action penalties. As in [4] we report the normalized
+return of a clip: the sum of its rewards when played from the
+
+
+first frame to the last, over the largest value that sum can take,
+so that 1 is perfect and a fall forfeits the rest of the clip.
+The policy πθ sees a history of 10 noisy proprioceptive
+observations and the next 10 reference frames and outputs an
+action at. A world model fω predicts the next simulator state
+from the state and the action, st+1 = fω(st, at), and is fit to
+transitions that 4,096 parallel environments write to a replay
+buffer. A critic Vψ is fit to λ-returns of imagined rollouts.
+Reward, termination and the observations are known functions
+of the state, so nothing but the dynamics is learned.
+B. The first-order policy gradient
+Each iteration draws B states from the replay buffer and
+rolls each out for H steps with the policy inside the model.
+With ct ∈[0, 1] a smooth survival probability, a smoothed
+version of the termination test computed from the model’s
+state, the objective of rollout b is
+Jb(θ) =
+H−1
+X
+t=0
+γt ¯cb,t rb,t + γH¯cb,H Vψ(sb,H),
+(1)
+where ¯cb,t = Q
+u<t cb,u is the probability of surviving to step
+t. A rollout that reaches the end of its clip before step H stops
+there and is closed by the critic in the same way. The policy
+ascends ∇θ 1
+B
+P
+b Jb, computed by backpropagation through
+the H model steps. SuperMimic uses H = 32 and B = 4,096.
+Write gb,t = dJb/dab,t for the total derivative of a rollout’s
+objective with respect to its action at step t, including the
+change of later actions through the policy. The policy gradient
+is then a sum over rollouts and steps of these action gradients
+pulled back through the policy at the observation ob,t it saw,
+∇θJ = 1
+B
+X
+b
+X
+t
+∂πθ(ob,t)
+∂θ
+⊤
+gb,t,
+(2)
+and we call Gb =
+  P
+t∥gb,t∥21/2 the gradient norm of rollout
+b. It is the quantity this paper measures and caps.
+C. Where episodes start
+Episodes that end are reset to a frame of the library.
+SuperMimic divides clips into bins of about one second and
+keeps for each bin a score from the returns of the episodes
+started there. A reset goes to a uniformly drawn bin with
+probability 0.5, to a bin drawn with a probability that grows
+as its score falls with probability 0.4, and to a bin drawn by
+how often bins were drawn so far with probability 0.1. The
+score of a bin changes only when the bin is visited.
+IV. HOW MUCH OF THE MODEL’S GRADIENT IS REAL?
+The measurements of this section are made on trained
+trackers with the policy and the models held fixed. We make
+them on two policies trained on the full 29-dof library for
+25,000 iterations, the baseline’s and the one the method below
+trains, and they agree. Where one number is given it is of the
+method’s policy, since an update rule has to hold at the policies
+it produces, and the baseline’s follows in brackets or beside it.
+The same conclusions hold for policies trained on a subset of
+the 23-dof library under other update rules and at an earlier
+checkpoint (Appendix A).
+A. A few rollouts carry the gradient
+Over 65,536 rollouts of H = 64 steps, the horizon the
+method trains with, from states of the replay buffer, 88% have
+a gradient norm Gb below 3 times the median and 0.45%
+above 30 times. That last half percent holds 22% of P
+b Gb
+and 99% of P
+b G2
+b (0.73% of rollouts, 24% and 93% for the
+baseline’s policy). A batch mean of the gradients is therefore
+set by a handful of rollouts, and its effective sample size is a
+small fraction of B. The same has been observed for gradients
+through differentiable simulators [5]–[7]; the question for a
+learned model is whether those few rollouts are right.
+B. Test 1: does the gradient repeat?
+An imagined rollout is a deterministic function of its start
+state except for the sensor noise added to the policy’s obser-
+vations. We roll each of 32,768 start states out twice under
+independent noise, with action gradients g and g′ of norms G
+and G′. If g = µ(s) + n with µ(s) the part of the gradient
+that belongs to the start and n the part that the noise adds,
+then E⟨g, g′⟩= ∥µ(s)∥2. The scalar ρ that makes ρ g the best
+estimate of µ in mean square is ρ = ⟨g, µ⟩/G2, and we call
+the norm ρ G of that estimate the worth of a rollout of norm
+G:
+c⋆(G) = E
+
+G′ cos ∠(g, g′)
+ G
+
+,
+(3)
+the expected projection of the redraw onto it. Fig. 1 plots c⋆
+by band of G. Up to 3 times the median a rollout is worth 0.81
+to 0.86 of its norm. From 5 to 30 times the median it is worth
+3.8 medians (95% interval 2.6 to 4.6), while the mean norm in
+that band is 10 medians, and 4.8 (4.4 to 5.2) for the baseline’s
+policy. Above 30 times the worth is not measured well: these
+rollouts are 0.45% of the sample, and their estimates scatter
+from 0 to 12 medians.
+C. Test 2: does the simulator agree?
+The first test asks whether the model’s gradient is consistent
+with itself. The second asks the simulator. From 5,456 replay
+states we take the model’s action gradient g of the 64-step
+rollout, set the simulator to the same state, and play the policy
+with its actions at all 64 steps shifted by ±δ, δ = ϵ g/G,
+where ϵ is chosen so that the largest element of δ is 0.05, half
+the exploration noise; a step five times smaller gives the same
+trust in every band of Table I to within 0.04, for both methods
+(Appendix A). Sensor noise is off and the two perturbed runs
+share everything else. With J the objective of Eq. (1) evaluated
+on the simulator’s states, the model predicts a change of 2ϵG
+and we define
+trust = J(+δ) −J(−δ)
+2 ϵ G
+.
+(4)
+A trust of 1 means the simulator returns the whole predicted
+change. Three controls bound the test’s own error: a state
+written to the simulator reads back to 10−7; two identical
+copies differ by 0.3% to 1.4% of the predicted change; and
+
+
+TABLE I
+SHARE OF THE CHANGE OF THE RETURN PREDICTED BY THE WORLD
+MODEL’S GRADIENT THAT APPEARS WHEN THE SAME PERTURBATION IS
+APPLIED IN THE SIMULATOR (MEDIAN OVER START STATES), AND THE
+SAME FOR THE MODEL’S OWN FINITE DIFFERENCE. FULL-LIBRARY
+29-DOF POLICIES AT ITERATION 25,000; 5,456 START STATES EACH,
+PERTURBATION WITH LARGEST ELEMENT 0.05.
+G / batch median
+0–1
+1–3
+3–10
+10–30
+> 30
+simulator
+0.94
+0.81
+0.48
+0.12
+0.01
+model, finite difference
+0.98
+0.98
+0.94
+0.43
+0.04
+simulator, sign agrees
+0.97
+0.98
+0.91
+0.76
+0.65
+simulator, baseline’s policy
+0.93
+0.75
+0.45
+0.12
+0.01
+0.5
+1
+3
+10
+30
+Norm of a rollout's action gradient / batch median
+0
+2
+4
+6
+8
+10
+12
+14
+What the gradient is worth / median
+the model's own gradient
+cap at 10 x the median
+The part of the gradient that
+repeats when the start is rolled out again
+is confirmed by the simulator
+Fig. 1. What a rollout’s action gradient is worth, against its norm, both in
+units of the batch median. Blue circles: the expected projection of a second
+rollout from the same start state (Eq. 3). Teal squares: the slope the simulator
+confirms along the model’s gradient, trust times G. Bars are 95% intervals.
+Both follow the dashed line, on which a gradient is worth its whole norm, up
+to about 3 times the median and level off after; the grey line is a cap at 10
+times the median.
+the unperturbed return of the model’s rollout is within 0.5%
+of the simulator’s.
+Table I gives the result. Below the median the simulator
+returns 94% of what the model predicts. The share falls to
+48% between 3 and 10 times the median, 12% between 10 and
+30, and 1% above, and the baseline’s policy gives the same
+numbers to within 0.06. The direction survives longer than
+the size: above 10 times the median the simulator’s change
+still has the predicted sign on 65% to 76% of states (third
+row). Two things are lost. Between 3 and 10 times the median
+the model’s own finite difference still agrees with its gradient
+(0.94), so the model is smooth there and simply wrong about
+the simulator. Above 10 times the model’s finite difference
+departs from its gradient as well (0.43, then 0.04): the gradient
+is a derivative at a point that says little about a change of the
+actions as large as the perturbation. The slope the simulator
+confirms, trust times G, is 3.1 medians (2.8 to 3.6) from 5
+to 30 times the median, flat in G like the worth of Eq. (3)
+(Fig. 1).
+D. What the tests say about the update
+Trust is a matter of the norm, not of the state. One might
+expect the model to be wrong where the motion is hard.
+Within the band of 3 to 10 times the median, ranking states
+by the critic’s value or by how far the policy falls short of the
+reference from them, the third where the policy tracks worst
+has a trust of 0.51 to 0.53 and the third where it tracks best
+0.40 to 0.41. The large gradients are common on hard states,
+but a gradient of a given norm is no less reliable there, and if
+anything more.
+The rule. Both tests give a rollout of norm G a worth near
+min(G, k · med G) with k of a few units. An update that
+weights every rollout by its full gradient spends most of its
+step on the part neither test backs. An update that normalizes
+every rollout to the same norm discards the difference between
+a gradient of 0.3 medians and one of 3, which both tests say
+is real, and on a subset of the library it leaves more than ten
+times as many clips persistently failing in training as the cap
+(Appendix C). The cap sits between the two.
+The level. The tests do not single out a value of k. A lower
+cap removes more of the worth and leaves less noise. Capping
+at 10 removes 24% of P
+b Gb but 3% (1 to 6%) of the summed
+worth; capping at 3 removes 39% and 16% (12 to 19%),
+and leaves 2.4 times less energy E[min(G, k med G)2], which
+above a few medians is mostly noise. We use k = 10, the level
+of these two that removes least of the worth.
+V. METHOD
+The method changes three things in SuperMimic: the weight
+of each rollout in the policy gradient, the distribution of the
+states that imagination starts from, and the distribution of the
+frames that episodes are reset to. A fourth, an average of the
+policy’s weights, is used for evaluation only. Fig. 2 gives an
+overview, and Appendix B shows each part in detail.
+A. A cap on each rollout’s gradient
+With Gb the gradient norm of rollout b (Sec. III) and med G
+the median over the batch, each rollout receives the weight
+wb = min
+
+1, k med G
+Gb
+
+,
+k = 10,
+(5)
+and the policy ascends
+1
+B
+P
+b wb∇θJb with the weights held
+constant. This is per-sample clipping at a quantile of the
+norms [15], [16], applied to a rollout’s action gradient. A
+rollout below the cap contributes its gradient unchanged; one
+above it contributes its direction at the norm k med G. The
+cap is relative, so it needs no tuning to the scale of the reward
+or of the model, and it follows the gradient’s scale as training
+proceeds.
+Computing it. The weights depend on the gradients they
+scale, so one backward pass does not suffice. We add a zero
+tensor to the action of every step, backpropagate P
+b Jb to
+these tensors only, which gives all gb,t and hence Gb at the
+cost of one pass through the model, and then evaluate the
+policy once more at the stored observations and backpropagate
+P
+b,t wb g⊤
+b,tπθ(ob,t) into its parameters. By Eq. (2) this is
+
+
+Motion library
+223 h, 109k clips
+Simulator
+4,096 robots
+Replay buffer
+states, actions
+World model
+imagined rollouts, H = 64
+Policy
+πθ
+resets
+transitions
+starts
+gradients
+the policy acts in the simulator
+1
+2
+3
+≤0.8
+0.9
+1
+Imagined return of a bin
+(32 model steps and the critic)
+0.0
+0.1
+0.2
+Share of bins
+hard set: the lowest 5%
+of 746k bins get 40%
+of the resets
+Resets ranked by the models
+low
+high
+Critic's value at the start state
+(32 quantile bins)
+0
+1
+2
+3
+Draw rate q
+uniform
+each rollout is
+weighted by 1/q:
+the expected gradient
+is unchanged
+Starts drawn by gradient norm
+0.1
+1
+10
+100
+Norm of a rollout's action gradient
+/ batch median
+0.1%
+1%
+10%
+Share of rollouts
+above the cap,
+2% of rollouts:
+direction kept,
+norm set to 10
+A cap on each rollout
+Fig. 2. The training loop and the three places the method changes it, each shown on the quantity it acts on. 1: every bin of the training library is ranked by
+its imagined return, and the lowest 5% receive 40% of the resets (plotted from a full-library run at iteration 25,000). 2: imagination starts are drawn at a rate
+set by a table of the gradient norm per quantile of the critic’s value, here 3.4 times uniform for the lowest-value states and 0.27 times for the highest, and
+each rollout is weighted by the inverse (the same run’s table). 3: the norm of each rollout’s action gradient is capped at 10 times the batch median, which
+binds on 2% of rollouts (the same run).
+exactly the weighted gradient. The second pass touches the
+policy alone.
+Why per rollout. A cap on the norm of the whole batch
+gradient, as in standard gradient clipping [13], rescales the
+step and leaves its direction to the largest rollouts. A cap
+on each step’s action gradient inside the backward pass, as
+in concurrent work [8], changes the direction of a rollout’s
+gradient. The tests of Sec. IV are statements about a rollout
+as a whole, and the rule acts on that unit: about 60% of the
+variance of log∥gb,t∥lies between rollouts, so the norm of a
+step’s action gradient is mostly set by the rollout it belongs
+to. Measured offline against a large-batch reference, a per-step
+cap gives a gradient of similar quality (Appendix A); we did
+not train with it.
+Horizon, batch and learning rate. With the cap we use H =
+64 imagined steps and B = 1,024 rollouts in place of 32 and
+4,096. A longer horizon gives the policy more of the reference
+to plan over and a later bootstrap, and is affordable once its
+heavier gradient tail is cut; fewer rollouts keep the number
+of imagined steps per iteration the same. We also double the
+baseline’s policy learning rate, a setting carried over from early
+short runs in which it helped, and not tuned for the cap.
+B. Starts drawn by gradient norm
+The cap takes weight from the states whose rollouts have
+large gradients, and those are not a random subset: the gradient
+norm is largely a function of the start state (rank correlation
+0.96 between two rollouts of a start). Instead of cutting a large
+gradient, we can sample its state more often and weight each
+of its rollouts down, as in importance sampling of training
+examples by gradient norm [21], [23]. Let q(s) be the rate at
+which a replay state is drawn relative to uniform. Weighting
+each rollout by 1/q leaves the batch gradient’s expectation
+unchanged for any q > 0, and if q is proportional to the
+gradient norm the weighted contributions all have the same
+norm, so a cap finds nothing to remove. We call this the start
+draw.
+We approximate this with a small table. Each iteration takes
+8B candidate states from the replay buffer and evaluates the
+critic on each. The candidates are divided into 32 quantiles of
+the critic’s value, and a table holds for each quantile a running
+mean, over about 200 updates, of the gradient norms of the
+rollouts started in it (norms above 30 medians count as 30).
+The B starts are drawn with q proportional to the table’s entry
+for their quantile, kept within a factor of 30 of the median
+quantile’s. Every rollout is weighted by 1/q in the policy
+gradient, before the cap of Eq. (5) is applied to the weighted
+norms, and by the same 1/q in the critic’s loss. The critic’s
+value predicts the gradient norm because both are functions
+of how well the policy tracks from a state: the table explains
+58% of the variance of log G. With the policy held fixed, the
+draw lowers what a cap removes of the worth from 3% to 1%
+at k = 10 and from 16% to 5% at k = 3 (Appendix A).
+C. Model-ranked resets
+The baseline’s reset distribution learns which bins are hard
+from episodes started in them. On a large library that is slow:
+a bin’s score changes only when it is visited, and at 4,096
+environments the 746,000 bins of our training library are swept
+once in about 25,000 iterations. The world model and the critic
+can score every bin without visiting it. Every 2,000 iterations
+we start an imagined rollout at the reference state of each bin,
+
+
+follow the policy for 32 steps and bootstrap with the critic,
+as in Eq. (1); the lowest 5% of bins by this imagined return
+form the hard set. Resets keep the baseline’s mix and go to a
+uniformly drawn bin with probability 0.5, to a bin of the hard
+set with probability 0.4, and to a bin of earlier hard sets with
+probability 0.1. No episode is started in the last 50 frames of
+a clip, where too little of the motion is left for a return to
+say how well it was tracked. The ranking is cheap: scoring all
+bins of our training library takes about 30 s, and the twelve
+rankings of a run add 3% to its training time.
+On held-out clips the lowest imagined bin of a clip predicts
+whether the policy fails on it with an area under the ROC
+curve of 0.91 to 0.92, against 0.74 to 0.77 for the critic’s
+value alone, which is the signal of critic-based curricula [26],
+[27].
+D. An average of the policy for evaluation
+The policy that acts in training is noisy from update to
+update: at the last checkpoint the baseline’s test return ranges
+over 0.018 across three seeds, and that of an exponential
+average of its weights with a time constant of 1,000 iterations
+over 0.003. We keep such an average from iteration 5,000
+and evaluate it. It never acts in training and is applied to the
+baseline as well, so no difference we report comes from it.
+VI. EXPERIMENTS
+A. Setup
+Data and split. We use BONES-SEED [38], a library of
+142,220 motion-capture clips, without the clips on stairs,
+ladders and chairs, retargeted to the Unitree G1 with 29 and
+with 23 actuated joints by a whole-trajectory solver whose
+validator rejects clips with penetration, unsupported frames or
+discontinuities. For the 29-dof robot 121,061 clips pass. We
+split them by motion: all recordings of a motion by all actors,
+and their mirrored versions, go to the same side. Of 3,578
+motions, the motions of each of the library’s eight packages
+are ordered by their number of clips, and every tenth, from a
+random offset, is held out. The training library has 109,233
+clips (222.7 h) and the test library 11,828 clips of 353 motions
+(21.3 h) that no actor performed in training. Both robots share
+the split.
+Protocol. The main runs train for 25,000 iterations with
+4,096 simulated robots and is evaluated on every clip of the
+test library, played from its first frame to its last by the
+deterministic policy without exploration noise. We report the
+normalized return averaged over clips; its mean over the lowest
+10% and 1% of a run’s clips; and the number of clips that end
+in a fall in at least three of the six snapshots taken every 1,000
+iterations from 20,000 to 25,000, which we call persistently
+failing. All returns are of the averaged policy and are means
+over those six snapshots unless a single iteration is named. The
+lowest 10% and 1% in the tables are of each run’s own clips;
+a gain on the worst clips in the text compares two methods on
+the same clips, the worst by the mean of the two. Confidence
+intervals on differences between methods are 95% bootstrap
+TABLE II
+TEST MOTIONS NEVER PERFORMED IN TRAINING, UNITREE G1 WITH 29
+DOF, THREE SEEDS PER METHOD. RETURNS ARE OF THE AVERAGED
+POLICY OVER ITERATIONS 20,000 TO 25,000 UNLESS AN ITERATION IS
+NAMED.
+SuperMimic
+Ours
+Normalized return
+0.9531
+0.9671
+per seed
+.9524, .9536, .9533
+.9669, .9675, .9670
+Lowest 10% of clips
+0.811
+0.886
+Lowest 1% of clips
+0.648
+0.756
+Persistently failing clips
+17, 15, 18
+10, 7, 10
+Return at iteration 25,000
+0.9543
+0.9681
+on training motions
+0.9666
+0.9759
+raw policy
+0.9385
+0.9637
+Iterations to 0.9543
+25,000
+9,900
+Hours to 0.9543
+2.4–2.6
+1.2
+Seconds per iteration
+0.34–0.37
+0.42–0.45
+intervals that resample motions, not clips, since the clips of a
+motion are not independent.
+Baseline and hardware. The baseline is SuperMimic with
+its published settings, to which we add only the policy average
+of Sec. V, for evaluation. It is our reimplementation from the
+paper: the original simulates with MuJoCo Warp [37], which
+we run through Newton [35], and we did not use the authors’
+code. Both methods share the environment, networks, world-
+model updates and critic, so every difference we report is
+between two updates in one code base. Each run uses one
+RTX 6000 Ada.
+B. Main result
+Table II and Fig. 3 give the main comparison. The method
+raises the test return from 0.9531 to 0.9671, a difference of
++0.0140 (95% interval +0.0087 to +0.0211), and is higher
+on 98% of clips and 99% of motions. The distance to perfect
+tracking falls by 30%. Seeds of one method differ by 0.001,
+a tenth of the difference between the methods.
+Hard motions. The gain is largest where tracking is worst:
++0.076 (+0.051 to +0.091) on the worst 10% of clips and
++0.007 on the rest. The lowest 1% of clips rises from 0.65
+to 0.76, and the persistently failing clips fall from 15–18 to
+7–10. By package of the library the gain is +0.035 on sport,
++0.020 on dances and +0.019 on locomotion, and +0.002 to
++0.007 on gestures, interactions and everyday motions, which
+the baseline already tracks at 0.97 to 0.99 (Fig. 5). Longer
+clips gain more: +0.011 under 4 s and +0.021 over 15 s.
+Speed. The method passes the baseline’s test return at
+iteration 25,000, 0.9543, at iteration 10,002, 10,118 and 9,473
+on its three seeds, after 1.22 to 1.25 hours; the baseline’s
+25,000 iterations take 2.4 to 2.6 hours. An iteration of the
+method costs 22% more, and the cost is the cap’s. By phase
+(medians over training), the policy update, which includes the
+second pass of the cap, takes 0.23 to 0.25 s against 0.16 s, and
+collecting data and updating the world model and critic take
+0.17 s against 0.18 s. A run with H = 64, B = 1,024 and no
+cap updates its policy in 0.16 to 0.17 s and iterates as fast as
+the baseline, so the longer horizon on fewer rollouts costs no
+
+
+0
+5
+10
+15
+20
+25
+Training iterations (thousands)
+0.88
+0.90
+0.92
+0.94
+0.96
+Test return, mean over clips
+SuperMimic
+Ours
+the baseline's final return,
+passed at 9.9k iterations
+0
+5
+10
+15
+20
+25
+Training iterations (thousands)
+0.2
+0.4
+0.6
+0.8
+Lowest 1% of test clips
+SuperMimic
+Ours
+Fig. 3. Test return (left) and the mean return of the lowest 1% of test clips (right) during training, for SuperMimic (red, dashed) and our method (blue).
+Lines are means over three seeds and bands their range. The raw policy is evaluated up to iteration 4,000 and the averaged one from 5,000.
+time. The reset rankings add 3% to a run. After as many hours
+as the baseline trains, the method is at 0.966.
+Generalization. At iteration 25,000 the gap between the
+return on training motions and on test motions is 0.008 for
+the method and 0.012 for the baseline, so the gain does not
+come from fitting the training library more closely.
+Failures. Five test clips fail persistently for both methods on
+every seed, a handstand and burpees, at returns of 0.1 to 0.6.
+The cause is the data, not either update. The retargeter records
+the joint torques its inverse dynamics needs to play each
+reference; divided by the G1’s actuator limits, the handstand
+needs up to 5.8 times a limit and exceeds one on 74% of
+its frames, and the burpees 3.3 to 3.8 times on 27%, in every
+case at the wrists, whose motors give 5 Nm, as the hands carry
+the body. Every clip that fails persistently for our method on
+every seed is among the 1.9% of test clips whose reference
+needs more than three times a limit; no clip below that does.
+Exceeding a limit does not by itself make a clip fail: 94% of
+the clips above three times are tracked by both methods on
+every seed. Our filter removed motions on stairs, ladders and
+chairs and kept these; a filter on the reference’s torque would
+remove them. Two sitting motions with bent legs, six clips,
+fail for the baseline on at least two seeds and on none for the
+method, at a return of 0.86 against 0.51.
+Fig. 4 shows two test clips played by the first seed of
+both methods: one on which the baseline falls, and one on
+which both complete the motion and the baseline tracks it
+less closely.
+C. What each part does
+Table III removes the parts one at a time, at 15,000
+iterations, and adds two controls for the settings the method
+changes besides its three parts: the doubled learning rate alone,
+and the method’s horizon, batch and learning rate without the
+cap.
+The cap gives the mean. With the baseline’s own resets, the
+cap and the start draw raise the return by +0.0157 (+0.0116 to
+TABLE III
+ABLATION ON THE 29-DOF TEST SET AT ITERATION 15,000 (AVERAGED
+POLICY OVER ITERATIONS 10,000 TO 15,000), THREE SEEDS PER ROW.
+RETURNS ARE MEANS OVER SEEDS; TAILS ARE OF EACH RUN’S OWN
+CLIPS, MEANS OVER SEEDS; FAILING IS THE RANGE OVER SEEDS OF THE
+CLIPS FAILING IN THREE OR MORE OF THE SIX SNAPSHOTS. EACH ROW
+NAMES THE PARTS IT USES, AND WHERE RESETS ARE NOT NAMED THEY
+ARE THE BASELINE’S. THE UPPER ROWS USE THE BASELINE’S HORIZON,
+BATCH AND LEARNING RATE UNLESS STATED, THE LOWER ONES H = 64,
+B = 1,024 AND THE DOUBLED LEARNING RATE.
+return
+low 10%
+low 1%
+failing
+−base
+H = 32, B = 4,096
+SuperMimic
+.9403
+.751
+.564
+21–24
+learning rate ×2
+.9458
+.778
+.595
+19–24
++.0055
+model-ranked resets
+.9444
+.820
+.681
+10–11
++.0040
+H = 64, B = 1,024, learning rate ×2
+resets, no cap
+.9341
+.775
+.656
+4–10
+−.0063
+cap, start draw
+.9560
+.815
+.647
+17–25
++.0157
+cap, resets
+.9587
+.856
+.721
+7–14
++.0183
+Ours (cap, draw, resets)
+.9589
+.859
+.729
+6–13
++.0186
++0.0211), on 99% of clips. They do not reduce the persistently
+failing clips (17 to 25 against 21 to 24).
+Not the learning rate or the horizon. Doubling the base-
+line’s learning rate raises its return by +0.0055 (+0.0034 to
++0.0086), on 88% of clips, and leaves the failing clips where
+they were (19 to 24); our method is +0.0131 (+0.0076 to
++0.0206) above it. The method’s horizon, batch and learning
+rate with the plain gradient, with the model-ranked resets,
+are 0.0063 below the baseline and 0.0103 (0.0071 to 0.0150)
+below the resets alone. Adding the cap to that run, its only
+difference from the row with the cap and resets, raises the
+return by +0.0246 (+0.0199 to +0.0311), on all but 0.2% of
+clips. The longer horizon pays off only with the cap. Without
+it, that run leaves the fewest clips persistently failing (4 to 10),
+but its worst 1% are tracked worse than with the cap (0.656
+against 0.721). We have not found why the run with the lowest
+return leaves the fewest clips failing. Its low return may partly
+come from the doubled learning rate, which was chosen for a
+
+
+1 s
+3 cm
+2 s
+5 cm
+3 s
+23 cm
+3.7 s
+fell at
+3.7 s
+4.6 s
+6 s
+2 cm
+5 cm
+9 cm
+6 cm
+8 cm
+22 cm
+1 s
+5 cm
+2 s
+5 cm
+3 s
+25 cm
+4 s
+13 cm
+5 s
+69 cm
+6.5 s
+4 cm
+5 cm
+4 cm
+3 cm
+9 cm
+13 cm
+6 cm
+Sitting down, hands behind: SuperMimic falls
+SuperMimic
+return 0.50
+Ours
+return 0.88
+Hip-hop shuffle: SuperMimic drifts from the reference
+SuperMimic
+return 0.73
+Ours
+return 0.91
+Fig. 4. Two test motions, never performed in training, played by SuperMimic (top row of each pair) and our method (bottom row), with the reference in
+translucent green; the numbers in the frames are the mean position error of the tracked bodies. Top: one of the only two test clips that the baseline fails on
+all three seeds at iteration 25,000 and our method on none. Bottom: the clip with the largest difference on the first seed among those of the hip-hop shuffle,
+one of the five motions with the largest gain, on which both complete the motion. The policies are the averaged ones at iteration 25,000 of the first seed.
+Frames are rendered from rollouts in stock MuJoCo, not the training simulator; outcomes and returns (left) agree with the benchmark’s to within 0.012. After
+the baseline’s fall the rollout goes on for one second (faded frames), outside the episode.
+normalized gradient in early runs and may not suit the plain
+one.
+The model-ranked resets give the tail. Adding the model-
+ranked resets to the cap raises the worst 10% of clips by
++0.044 (+0.026 to +0.057) and the lowest 1% from 0.65 to
+0.73, and cuts the failing clips from 17–25 to 6–13, at a cost
+of 0.002 on the other 90% of clips. Alone, on the baseline’s
+update, the resets raise the worst 10% by +0.073 and lower the
+rest by 0.004; their effect on the mean, +0.0040 (−0.0011 to
++0.0110), is not distinguishable from zero. Resetting to hard
+motions trades a little on the easy ones, and only with the cap
+does the policy turn the extra data into a higher mean.
+The size of the hard share. The mix of resets (0.5 uniform,
+0.4 hard, 0.1 earlier hard sets) is SuperMimic’s; only the
+choice of the hard bins differs. In earlier runs with the
+baseline’s update on the whole 23-dof library, one seed each
+and judged on the training clips, halving the hard share to 0.2
+raised the mean by 0.0011 but left four clips failing in four
+or more of six snapshots, against none; keeping the share and
+widening the hard set from the lowest 2% of bins to 5%, the
+setting we use, raised it by 0.0018 with none failing. The share
+trades mean for tail, and spreading it over more bins raised
+the mean without giving up the tail.
+The start draw adds little at this scale. Without the draw
+the return is 0.9587 against 0.9589, a difference of +0.0003
+(interval from 0.0000 to +0.0007), and +0.0028 (+0.0005 to
++0.0058) on the worst 10% of clips. The lowest 1% is 0.721
+against 0.729 and the failing clips 7 to 14 against 6 to 13,
+and the run without the draw passes the baseline’s final return
+as early (9,688 to 10,128 iterations against 9,473 to 10,118).
+In training the draw does what it was built to do, drawing
+starts from the most-drawn quantile of the critic’s value 2 to
+
+
+0.90
+0.95
+1.00
+Test return
+Sport (434)
+Dances (825)
+Other (80)
+Locomotion (6,010)
+Everyday (458)
+Gaming (613)
+Interactions (1,331)
+Communication (2,077)
++0.034
++0.020
++0.025
++0.019
++0.007
++0.006
++0.004
++0.002
+SuperMimic
+Ours
+Fig. 5. Test return by package of the library, with the number of test clips
+in brackets, for SuperMimic (red squares) and our method (blue circles), and
+the gain.
+4.6 times as often as from the median one. Its gain is larger
+where the resets are the baseline’s: on a subset of the library,
+where the cap alone left 43 clips persistently failing, the draw
+reduced them to 2 (Appendix C). We read this as two ways
+of directing the update to hard states, and the model-ranked
+resets already do most of what the draw does.
+The cap level. On a 15% subset of the 23-dof library
+we trained caps at 3, 5, 7, 10 and 30 times the median
+(Appendix C). With the start draw and the resets, caps from 3
+to 7 are 0.0003 to 0.0006 above 10 in mean return but leave up
+to four clips persistently failing, against one or two at 10. With
+the resets and without the draw, a cap at 30 is 0.0014 below
+a cap at 10. A lower cap leaves less noise in the update and
+removes more of the worth, and from 10 down to 3 the two
+effects come to +0.0011 and −0.0007 in return. The worth
+a cap removes lies on the states where gradients are large,
+which are hard states, so the mean is flat in k and the tail is
+not. Normalizing every rollout to the median, the limit of a
+low cap, leaves 36 to 42 clips persistently failing on the subset
+against 2 to 3 for the cap at 10.
+What did not help. On the subset we also tried a cap on
+the mean gradient of each start over two rollouts (−0.0022),
+returning the removed part of the gradient through a slow
+average (−0.0004 to −0.0041), a longer momentum on the
+uncapped gradient, and an adaptive rule that sets the weights
+each iteration, between the cap and normalization, to reach
+a target effective sample size. None improved on the cap.
+Halving the world-model updates per iteration saves 13% of
+an iteration and costs 23% more iterations.
+D. A second robot
+On the G1 with 23 actuated joints, trained on its own
+retargeting of the same library (109,708 training clips, 11,859
+test clips of the same 353 motions) with one seed per method,
+the method reaches 0.9746 against 0.9648, a difference of
++0.0098 (+0.0066 to +0.0140); the lowest 1% of clips is
+0.80 against 0.64; and the method passes the baseline’s final
+TABLE IV
+LAFAN1, UNITREE G1 WITH 29 DOF, TRAINED AND EVALUATED ON THE
+SAME 40 CLIPS, THREE SEEDS PER METHOD. RETURNS ARE OF THE
+AVERAGED POLICY OVER ITERATIONS 10,000 TO 15,000 UNLESS AN
+ITERATION IS NAMED; – MEANS NOT REACHED BY 15,000.
+SuperMimic
+Ours
+Normalized return
+0.9061
+0.9347
+per seed
+.9049, .9065, .9068 .9333, .9347, .9360
+Return at iteration 15,000
+0.9174
+0.9422
+Iterations to 0.9174
+14,700, 14,900, –
+7,600–9,600
+Hours to 0.9174
+1.43–1.45
+0.84–1.10
+Seconds per iteration
+0.35
+0.39–0.42
+return at iteration 7,919, after 0.94 hours of the baseline’s
+2.18.
+E. A second motion set
+LAFAN1 [39] is the motion set on which SuperMimic and
+the systems that build on it [32], [33] report results. We use
+Unitree’s retargeting to the 29-dof G1 [40]: 40 clips of 15
+motions, each performed by up to five actors, 2.45 h in all
+and 1.7 to 4.6 minutes per clip. It is retargeted with kinematic
+constraints only. We resample it to 50 Hz and raise every root
+by 5 mm, because its feet otherwise sit that much lower than
+in BONES-SEED. As in that line of work, the methods train
+and are evaluated on the same clips, so this measures how
+well each fits a small library, not generalization. Both train
+for 15,000 iterations with the settings of the main experiment,
+three seeds each, and each clip is played whole from its first
+frame.
+Table IV gives the result. The method reaches 0.9347
+against 0.9061, a difference of +0.0286 (+0.0214 to +0.0375,
+resampling motions), and is higher on 38 of the 40 clips and on
+all 15 motions. The distance to perfect tracking falls by 30%,
+as on BONES-SEED. The six clips of falling and getting up
+gain +0.063 on average (+0.041 to +0.088), against +0.023
+for the other clips. The method passes the baseline’s final
+return at 7,600 to 9,600 iterations, after 0.84 to 1.10 hours;
+two seeds of the baseline reach it at 14,700 and 14,900 and
+the third does not reach it by 15,000. Both methods are still
+improving at 15,000 iterations, so this compares them at one
+training budget.
+VII. LIMITATIONS
+The cap level is chosen, not derived. The two tests locate
+where a gradient stops being worth its norm, at a few times
+the median, and training is flat in the cap from 3 to 10. They
+do not give a value, and we did not tune k on the full library.
+The baseline’s settings. The baseline runs at its published
+settings apart from the learning rate, which we tested: doubled,
+it raises the baseline’s return by 0.0055 at 15,000 iterations,
+about a third of the method’s gain there, and leaves its failing
+clips unchanged (Table III). We have not tuned its other
+settings, and the main comparison at 25,000 iterations is
+against the published ones.
+
+
+0 s
+0 cm
+1 s
+2 cm
+2 s
+31 cm
+2.4 s
+fell at
+2.1 s
+3.4 s
+0 cm
+1 cm
+18 cm
+39 cm
+fell at
+2.4 s
+Handstand: neither method
+SuperMimic
+return 0.23
+Ours
+return 0.25
+Fig. 6. A test motion neither method learns: going into a handstand, played
+as in Fig. 4. Its reference needs up to 5.8 times the torque limit of the G1’s
+wrist motors as the hands take the body’s weight, and both policies fall when
+the hands reach the ground.
+An iteration costs more. The cap’s second pass through the
+policy makes an iteration 22% slower on the GPU we trained
+on; without the cap, the method’s horizon and batch cost what
+the baseline’s do. Folding the two passes into one, or capturing
+the update in a GPU graph as recent systems do [33], [34],
+may remove part of that cost; we have not tried either.
+What the tests measure. The simulator test perturbs actions
+along one direction per state, the model’s gradient, at two
+scales, and it compares the model with the simulator it was
+trained on, not with a robot. Both tests are of policies at the
+end of training; at an early checkpoint, with a model that has
+seen less data, the simulator confirms less in the middle bands
+(Appendix A).
+Motions beyond the robot. A handstand and burpees fail for
+both methods on every seed (Fig. 6). Their references need
+several times the torque of the G1’s wrist motors (Sec. VI-B),
+so the failures come from our data filter, which kept them, and
+not from either method. Filtering the library by the reference’s
+torque, which the retargeter already computes, would remove
+them. Since both methods train and are tested on the same
+clips, these failures favor neither.
+VIII. CONCLUSION
+A learned world model gives an exact gradient of itself,
+and for most imagined rollouts of a humanoid tracker that
+gradient is nearly the simulator’s. For the few rollouts with
+the largest gradients it is not: neither a redraw of the same
+state nor the simulator backs more than a few medians of it.
+Capping each rollout’s gradient at that level, drawing starts so
+that the cap has less to remove, and resetting episodes where
+the models predict failure turns this observation into a tracker
+that follows unseen motions more closely, fails on fewer of
+them, and reaches the baseline’s quality in less than half the
+training time. The tests themselves need only a trained policy,
+its world model and the simulator, and apply to any method
+that differentiates a learned model.
+ACKNOWLEDGMENT
+Motion Data by Bones Studio (https://bones.studio/).
+REFERENCES
+[1] Z. Luo, J. Cao, A. Winkler, K. Kitani, and W. Xu, “Perpetual humanoid
+control for real-time simulated avatars,” in International Conference on
+Computer Vision (ICCV), 2023.
+[2] Q. Liao, T. E. Truong, X. Huang, Y. Gao, G. Tevet, K. Sreenath, and
+C. K. Liu, “BeyondMimic: From motion tracking to versatile humanoid
+control via guided diffusion,” Science Robotics, vol. 11, no. 117, p.
+eadx8924, 2026.
+[3] Z. Luo, Y. Yuan, T. Wang, C. Li, F. Castañeda, S. Chen et al., “SONIC:
+Supersizing motion tracking for natural humanoid whole-body control,”
+Science Robotics, vol. 11, no. 117, p. eaed4592, 2026.
+[4] Q. Liao, Y. Shao, J. Long, K. Zakka, R. Horowitz, P. Abbeel, and
+K. Sreenath, “SuperMimic: Scaling humanoid whole-body control with
+one differentiable world model,” in Conference on Robot Learning
+(CoRL), 2026, arXiv:2610.28480.
+[5] P. Parmas, C. E. Rasmussen, J. Peters, and K. Doya, “PIPPS: Flexible
+model-based policy search robust to the curse of chaos,” in International
+Conference on Machine Learning (ICML), 2018.
+[6] L. Metz, C. D. Freeman, S. S. Schoenholz, and T. Kachman, “Gradients
+are not all you need,” 2021, arXiv:2111.05803.
+[7] H. J. T. Suh, M. Simchowitz, K. Zhang, and R. Tedrake, “Do dif-
+ferentiable simulators give better policy gradients?” in International
+Conference on Machine Learning (ICML), 2022.
+[8] W. Lu and Y. Chen, “∇Mimic: Ultra-efficient humanoid control with
+differentiable simulation,” 2026, arXiv:2610.41654.
+[9] X. B. Peng, P. Abbeel, S. Levine, and M. van de Panne, “DeepMimic:
+Example-guided deep reinforcement learning of physics-based character
+skills,” ACM Transactions on Graphics (SIGGRAPH), 2018.
+[10] Z. Chen, M. Ji, X. Cheng, X. Peng, X. B. Peng, and X. Wang,
+“GMT: General motion tracking for humanoid whole-body control,”
+2025, arXiv:2506.14770.
+[11] D. Hafner, T. Lillicrap, J. Ba, and M. Norouzi, “Dream to control:
+Learning behaviors by latent imagination,” in International Conference
+on Learning Representations (ICLR), 2020.
+[12] J. Xu, V. Makoviychuk, Y. Narang, F. Ramos, W. Matusik, A. Garg, and
+M. Macklin, “Accelerated policy learning with parallel differentiable
+simulation,” in International Conference on Learning Representations
+(ICLR), 2022.
+[13] R. Pascanu, T. Mikolov, and Y. Bengio, “On the difficulty of training
+recurrent neural networks,” in International Conference on Machine
+Learning (ICML), 2013.
+[14] I. Georgiev, K. Srinivasan, J. Xu, E. Heiden, and A. Garg, “Adaptive
+horizon actor-critic for policy learning in contact-rich differentiable
+simulation,” in International Conference on Machine Learning (ICML),
+2024.
+[15] M. Abadi, A. Chu, I. Goodfellow, H. B. McMahan, I. Mironov, K. Tal-
+war, and L. Zhang, “Deep learning with differential privacy,” in ACM
+Conference on Computer and Communications Security (CCS), 2016.
+[16] G. Andrew, O. Thakkar, H. B. McMahan, and S. Ramaswamy, “Differ-
+entially private learning with adaptive clipping,” in Advances in Neural
+Information Processing Systems (NeurIPS), 2021.
+[17] A. Koloskova, H. Hendrikx, and S. U. Stich, “Revisiting gradient clip-
+ping: Stochastic bias and tight convergence guarantees,” in International
+Conference on Machine Learning (ICML), 2023.
+[18] E. L. Ionides, “Truncated importance sampling,” Journal of Computa-
+tional and Graphical Statistics, vol. 17, no. 2, pp. 295–311, 2008.
+[19] Y. Su, M. Dimakopoulou, A. Krishnamurthy, and M. Dudík, “Doubly
+robust off-policy evaluation with shrinkage,” in International Conference
+on Machine Learning (ICML), 2020.
+[20] D. Needell, N. Srebro, and R. Ward, “Stochastic gradient descent,
+weighted sampling, and the randomized Kaczmarz algorithm,” in Ad-
+vances in Neural Information Processing Systems (NeurIPS), 2014.
+[21] P. Zhao and T. Zhang, “Stochastic optimization with importance sam-
+pling for regularized loss minimization,” in International Conference on
+Machine Learning (ICML), 2015.
+[22] G. Alain, A. Lamb, C. Sankar, A. Courville, and Y. Bengio, “Vari-
+ance reduction in SGD by distributed importance sampling,” 2015,
+arXiv:1511.06481.
+[23] A. Katharopoulos and F. Fleuret, “Not all samples are created equal:
+Deep learning with importance sampling,” in International Conference
+on Machine Learning (ICML), 2018.
+
+
+[24] T. Schaul, J. Quan, I. Antonoglou, and D. Silver, “Prioritized experi-
+ence replay,” in International Conference on Learning Representations
+(ICLR), 2016.
+[25] M. Jiang, E. Grefenstette, and T. Rocktäschel, “Prioritized level replay,”
+in International Conference on Machine Learning (ICML), 2021.
+[26] G. Tzannetos, B. G. Ribeiro, P. Kamalaruban, and A. Singla, “Proximal
+curriculum for reinforcement learning agents,” Transactions on Machine
+Learning Research, 2023.
+[27] T. Eimer, A. Biedenkapp, F. Hutter, and M. Lindauer, “Self-paced con-
+text evaluation for contextual reinforcement learning,” in International
+Conference on Machine Learning (ICML), 2021.
+[28] E. S. Hu, R. Chang, O. Rybkin, and D. Jayaraman, “Planning goals for
+exploration,” in International Conference on Learning Representations
+(ICLR), 2023.
+[29] A. H. Güzel, M. Jackson, J. Liesen, T. Rocktäschel, J. Foerster, I. Bo-
+gunovic, and J. Parker-Holder, “Imagined autocurricula,” in Advances in
+Neural Information Processing Systems (NeurIPS), 2025.
+[30] V. Feinberg, A. Wan, I. Stoica, M. I. Jordan, J. E. Gonzalez, and
+S. Levine, “Model-based value estimation for efficient model-free re-
+inforcement learning,” 2018, arXiv:1803.00101.
+[31] E. Nikishin, P. Izmailov, B. Athiwaratkun, D. Podoprikhin, T. Garipov,
+P. Shvechikov, D. Vetrov, and A. G. Wilson, “Improving stability in deep
+reinforcement learning with weight averaging,” in UAI 2018 Workshop:
+Uncertainty in Deep Learning, 2018.
+[32] Huy-Quang-Dao,
+“InstantTrack:
+Whole-body
+motion
+tracking
+for
+the
+Unitree
+G1
+in
+minutes
+on
+one
+GPU,”
+https://github.com/
+Huy-Quang-Dao/instantTrack, 2026.
+[33] F. Chen, “BlinkMimic: Training a humanoid motion tracker in minutes
+on a single GPU,” 2026, arXiv:2611.16422.
+[34] I. Choi, G. Leem, and J. Won, “InstantMimic: A high performance
+system for learning physics-based skills in seconds,” in SIGGRAPH Asia
+2026 Conference Papers, 2026, arXiv:2609.09821.
+[35] The Newton Contributors, “Newton: GPU-accelerated physics sim-
+ulation
+for
+robotics
+and
+simulation
+research,”
+https://github.com/
+newton-physics/newton, 2026, version 1.2.
+[36] E. Todorov, T. Erez, and Y. Tassa, “MuJoCo: A physics engine for
+model-based control,” in IEEE/RSJ International Conference on Intelli-
+gent Robots and Systems (IROS), 2012.
+[37] Google DeepMind and NVIDIA, “MuJoCo Warp,” https://github.com/
+google-deepmind/mujoco_warp, 2025.
+[38] Bones
+Studio,
+“BONES-SEED:
+Skeletal
+Everyday
+Embodiment
+Dataset,” https://huggingface.co/datasets/bones-studio/seed, 2026.
+[39] F. G. Harvey, M. Yurick, D. Nowrouzezahrai, and C. Pal, “Robust motion
+in-betweening,” ACM Transactions on Graphics, vol. 39, no. 4, 2020.
+[40] Unitree Robotics, “LAFAN1 retargeting dataset,” https://huggingface.
+co/datasets/lvhaidong/LAFAN1_Retargeting_Dataset, revision ce15729,
+2024.
+APPENDIX A
+DETAILS OF THE ANALYSIS
+Policies. The tests of Sec. IV use the first seed of the method
+and of the baseline on the full 29-dof library at iteration
+25,000, the policy that acts in training, not its average. Start
+states are replay states collected by the policy under test, for
+both policies under the method’s reset distribution. Before the
+full-library runs the same tests were made on policies trained
+on a stratified 15% of the 23-dof library (18,237 clips): the
+method at iterations 15,000 and 4,000, the cap without the
+start draw, and per-rollout normalization.
+What a cap removes. Table V gives the share of the
+summed norm and of the summed worth that a cap removes
+at the method’s policy, and the energy E[c2]/ med2 of the
+capped contributions c = min(G, k med), which we call noise
+since above a few medians almost none of it repeats. At the
+baseline’s policy a cap at 10 removes 27% of the norm and
+4% (0 to 7%) of the worth, and a cap at 3 removes 47% and
+23%.
+TABLE V
+WHAT A CAP REMOVES OF THE GRADIENT’S NORM AND OF ITS WORTH
+(IN BRACKETS, 95% INTERVAL), AND THE NOISE ENERGY IT LEAVES. THE
+METHOD’S FULL-LIBRARY POLICY; 32,768 START STATES, TWO
+ROLLOUTS EACH.
+rule
+norm
+worth
+noise
+cap 3
+.39
+.16 [.12, .19]
+2.5
+cap 5
+.32
+.08 [.05, .11]
+3.7
+cap 10
+.24
+.03 [.01, .06]
+6.0
+cap 30
+.15
+.01 [.00, .02]
+12.6
+cap 3, starts drawn
+.29
+.05 [.02, .08]
+3.1
+cap 5, starts drawn
+.24
+.02 [.00, .05]
+4.2
+cap 10, starts drawn
+.18
+.01 [.00, .02]
+6.4
+The same tests on other policies. On the subset’s policies a
+rollout between 5 and 30 times the median is worth 4.1 (3.0
+to 5.1) medians for the method, 3.8 (2.7 to 4.7) for the cap
+without the draw and 5.1 (4.4 to 5.9) for normalization. The
+median trust by band of G (0–1, 1–3, 3–10, 10–30, above 30
+medians) is there 0.94, 0.84, 0.56, 0.11, 0.01 for the method
+at iteration 15,000; 0.95, 0.84, 0.57, 0.12, 0.01 for the cap
+without the draw; and 0.92, 0.72, 0.38, 0.10, 0.00 for the
+method at iteration 4,000, when the model has seen less data:
+more data improves the middle bands and not the tail. With a
+perturbation five times smaller, the full-library policy of Table I
+gives 0.93, 0.83, 0.44, 0.10, 0.00.
+Per-step and per-rollout caps. On six checkpoint and hori-
+zon combinations of earlier trackers we compared, offline, a
+cap on each rollout with a cap on each step’s action gradient,
+applied after the backward pass or inside it, by the alignment
+of the resulting batch gradient with a reference from 4,096
+rollouts. The two caps are within 0.02 of each other in five of
+six cases; at an early checkpoint and a horizon of 128 the per-
+rollout cap is ahead (0.76 against 0.65 to 0.71). Between 58%
+and 64% of the variance of log∥gb,t∥lies between rollouts.
+APPENDIX B
+THE THREE PARTS IN DETAIL
+Figs. 7–9 show each part of the method on the first seed of
+its full-library 29-dof run at iteration 25,000, with the steps it
+adds to an iteration.
+APPENDIX C
+EXPERIMENTS ON A SUBSET OF THE LIBRARY
+Before the full-library runs, the parts of the method were
+developed on a stratified 15% of the 23-dof library, training
+for 15,000 iterations and evaluating on the clips trained on
+(Table VI).
+Why the cap level is flat. Over the eleven runs of the seven
+cap rules in Table VI, the mean return is described to 10−4
+by a plane in the noise energy N a rule leaves and the share
+R of the worth it removes, both measured on the subset’s
+policies: 0.9785 −0.00033 N −0.0119 R. From a cap of 10
+to a cap of 3 on drawn starts the two terms are +0.0011 and
+−0.0007; without the draw they are +0.0012 and −0.0014.
+On the hardest quarter of clips the coefficient of R is ten times
+that on the other three quarters and the coefficient of N four
+
+
+64 rollouts of a batch, smallest to largest
+(evenly spaced quantiles)
+0
+5
+10
+15
+20
+25
+Gradient norm / batch median
+cap: 10 x the median
+median
+removed: the norm
+above the cap
+(a) Only the largest are cut
+0
+50%
+100%
+Share of the batch gradient's summed norm
+no cap
+cap 30
+cap 10 (ours)
+cap 3
+normalize
+44%
+22%
+12%
+22%
+52%
+27%
+14%
+58%
+30%
+10%
+73%
+23%
+88%
+10%
+(b) No few rollouts decide the step
+1
+3
+10
+30
+100
+Cap k, times the batch median
+0
+20%
+40%
+60%
+Share removed
+norm removed
+worth removed
+at k = 10:
+24% of the norm
+3% of the worth
+(c) It cuts norm, not worth
+each iteration
+1  Backward to the actions
+one pass through the model
+gives every gb, t
+2  Norms
+Gb over the rollout's 64 steps,
+and the batch median
+3  Weights
+wb = min(1, k med G / Gb),
+held constant
+4  Into the policy
+the policy runs again on the stored
+observations; backpropagate
+∑wb g ⊤
+b, tπθ(ob, t)
+rollouts by norm / median (share of rollouts)
+0-3 (88.2%)
+3-10 (9.8%)
+10-30 (1.6%)
+>30 (0.5%)
+Fig. 7. The cap on each rollout’s gradient (32,768 start states, two rollouts each). (a) The norms of a batch as 64 evenly spaced quantiles: a cap at 10 times
+the median shortens only the largest, the 2% of rollouts above it. (b) The share of the batch gradient’s summed norm held by the rollouts of each band of
+norm under each rule. Without a cap, the 0.5% of rollouts above 30 times the median hold 22%; normalizing every rollout to the same norm gives each
+band no more than its share of rollouts. (c) What a cap at k removes of the summed norm (dashed) and of the summed worth, the part that a second rollout
+from the same start repeats (solid, with its 95% interval over starts). Below: the steps of one policy update.
+TABLE VI
+SUBSET OF THE 23-DOF LIBRARY (18,237 CLIPS), AVERAGED POLICY
+OVER ITERATIONS 10,000 TO 15,000, EVALUATED ON THE TRAINING
+CLIPS. TWO ENTRIES ARE TWO SEEDS.
+return
+failing
+low 1%
+SuperMimic
+.9666
+4
+.736
+model-ranked resets
+.9682
+0
+.828
+normalize, resets
+.9739, .9741
+42, 36
+.713, .745
+cap 10
+.9734
+43
+.698
+cap 10, start draw
+.9747
+2
+.790
+cap 3, resets
+.9755, .9752
+21, 36
+.786, .769
+cap 10, resets
+.9755, .9754
+2, 3
+.841, .844
+cap 30, resets
+.9741
+0
+.844
+cap 3, draw, resets
+.9764
+4
+.842
+cap 5, draw, resets
+.9764, .9763
+0, 4
+.856, .845
+cap 7, draw, resets
+.9762
+1
+.855
+cap 10, draw, resets (ours)
+.9759, .9758
+2, 1
+.850, .854
+times, which is why a lower cap leaves the mean unchanged
+and costs the tail.
+APPENDIX D
+SETTINGS
+TABLE VII
+SETTINGS. EVERYTHING NOT LISTED IS SUPERMIMIC’S.
+SuperMimic
+Ours
+Imagination horizon H
+32
+64
+Imagined rollouts B
+4,096
+1,024
+Policy learning rate
+2 × 10−4
+4 × 10−4
+Cap k on Gb/ med G
+–
+10
+Start candidates per rollout
+1
+8
+Start-draw quantiles, memory
+–
+32, 200 updates
+Start draw rate, range
+–
+[1/30, 30]
+Reset mix (uniform, hard, past) 0.5, 0.4, 0.1
+0.5, 0.4, 0.1
+Hard bins by
+visit score
+lowest 5%, imagined
+Ranking: horizon, interval
+–
+32 steps, 2,000 it.
+Ranking: bins scored at a time
+–
+32,768
+No reset in a clip’s last
+–
+50 frames
+Simulator
+Newton (MuJoCo Warp), 200 Hz
+Simulated robots, control
+4,096, 50 Hz
+World model
+MLP 3 × 2,048; 10 batches per it.
+Policy encoder, decoder
+2048-1024-512-256 each
+Critic
+MLP 256-128, 5 epochs per it.
+Discount γ, λ
+0.99, 0.95
+Replay
+1,000 steps per robot
+Policy average (eval.)
+time const. 1,000 it., from 5,000
+
+
+lowest
+highest
+Critic's value at the start
+(32 quantiles; low = hard starts)
+0
+1
+2
+3
+4
+Mean norm / median quantile
+median quantile
+(a) The norm follows the value
+lowest
+highest
+Critic's value at the start
+(32 quantiles)
+0
+20
+40
+60
+80
+100
+Starts in a batch of 1,024
+uniform: 32 each
+weight 1/q = 0.30
+weight 3.7
+(b) Drawn by it, weighted by 1/q
+1
+3
+10
+30
+100
+Cap k, times the batch median
+0
+20%
+40%
+60%
+Share of the worth removed
+starts as held
+starts drawn
+held -> drawn
+at k = 3: 16% -> 5%
+at k = 10: 3% -> 1%
+(c) So the cap removes less
+each iteration
+1  Candidates
+8B states from the replay buffer
+and the critic's value of each
+2  Draw
+B starts, each at rate q from
+its value quantile's table entry
+3  Weight
+each rollout times 1/q: in the
+policy gradient before the cap,
+and in the critic's loss
+4  Table
+per quantile, a running mean of
+the rollouts' norms (~200 updates)
+Fig. 8.
+The start draw. (a) The run’s table: the mean gradient norm of the rollouts started in each quantile of the critic’s value, over that of the median
+quantile. Starts of low value, where the policy tracks worst, have up to 4.4 times the median norm. (b) The starts of a batch of 1,024 drawn by that table,
+against 32 per quantile when drawn uniformly, and the weight 1/q each of their rollouts carries. (c) The share of the worth that a cap removes with the starts
+as the replay buffer holds them (dashed) and drawn by a table fitted to the same rollouts (solid), each with its 95% interval, as in Table V. Below: the steps
+of one draw.
+0
+2
+4
+6
+8
+10
+Time in the clip, s (one bin = 1 s)
+clip E
+clip D
+clip C
+clip B
+clip A
+(a) Every bin scored, the lowest 5% hard
+1
+2
+3
+4
+5+
+Episodes started in a bin over a whole run
+(the baseline's sampler, 25,000 iterations)
+0
+20%
+40%
+Share of the 746k bins
+43%
+32%
+16%
+6%
+3%
+mean 2.0 visits:
+a bin's score rests on
+one or two episodes
+(b) Visits are too rare to score
+1%
+5%
+10%
+The simulator's hardest bins
+(test motions)
+0
+40%
+80%
+Found among the score's hardest
+43
+58
+58
+34
+38
+53
+(c) The models find the hard bins
+by chance
+imagined return (ours)
+critic's value alone
+every 2,000 iterations (1, 2) and at each reset (3, 4)
+1  Score
+from each bin's reference state,
+32 model steps, then the critic
+2  Hard set
+the lowest 5% of bins by that
+return, none in a clip's
+last 50 frames
+3  Reset mix
+0.5 a uniform bin, 0.4 the hard
+set, 0.1 earlier hard sets
+4  Simulator
+an episode that ends restarts
+at a frame of the drawn bin
+imagined
+return
+≤.85
+.90
+.95
+1
+in the hard set
+last 50 frames: no reset
+Fig. 9. The model-ranked resets. (a) Five training clips, each bin coloured by its imagined return. Underlined bins are in the hard set, the lowest 5% of the
+library’s bins, and no reset starts in the hatched frames. (b) How many episodes the baseline’s sampler starts in a bin over its whole run of 25,000 iterations:
+75% of the bins are visited once or twice, so a score from visits rests on one or two episodes. (c) On the bins of the test motions, the share of the simulator’s
+hardest 1%, 5% and 10%, by the return of a rollout started in the bin, that each score places among its own hardest share; dashes mark chance. Below: the
+steps of a ranking and of a reset.

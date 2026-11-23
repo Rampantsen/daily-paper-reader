@@ -1,0 +1,1274 @@
+EFFICIENT VLA REINFORCEMENT LEARNING VIA SUBCHUNK
+ROLLOUTS IN LATENT WORLD MODELS
+A PREPRINT
+Nan Tang1,2,*, Han-Tao Zhang1,*, Jing-Cheng Pang1,*, Hao-Nan Wang1,2,*, Hao-Xiang Ren1,2,
+Yi-Fei Sheng1,2, Jun-Yin Ye2, Tian Xu1, Fan-Ming Luo1,2, Hao-Xin Lin1,2, Yang Yu1,⋄
+1 National Key Laboratory for Novel Software Technology &
+School of Artificial Intelligence, Nanjing University, China
+2Cirquar Technologies, Nanjing, China
+* Equal contribution
+⋄Corresponding: yuy@nju.edu.cn
+ABSTRACT
+Model-based reinforcement learning (MBRL) can improve pretrained vision-language-action
+(VLA) policies through imagined experiences. However, existing VLA-MBRL methods
+primarily rely on large-scale image or video generation world models, incurring large
+computational overhead. Latent world models offer a more efficient alternative but face
+two challenges: compounding errors during recursive prediction and incompatibility with
+VLAs’ visual input interfaces. In this work, we propose LS-MBPO, a lightweight residual
+MBRL framework that leverages latent world models to improve upon pretrained VLAs.
+LS-MBPO introduces two key techniques: (1) Hierarchical Forcing, which combines dense
+causal supervision with autoregressive feedback to mitigate compounding prediction errors;
+and (2) Latent Subchunk Rollouts, which leverage action chunks from a frozen VLA policy
+and a latent residual policy for successive subchunk refinement, bridging the gap between
+latent imagination and VLA policy execution. We further introduce a Progress-Conditioned
+Branch-Start Curriculum that progressively shifts rollout starting points from later to earlier
+task stages, enabling effective policy learning from short imagined rollouts. Extensive
+experiments on LIBERO, RoboTwin, and a real-world ALOHA robot show that LS-MBPO
+achieves superior task performance and training efficiency compared to existing methods.
+1
+Introduction
+World models [Yu et al., 2026, Zhang et al., 2026b] provide a promising avenue for improving vision-
+language-action (VLA) policies through model-based reinforcement learning (MBRL) [Janner et al., 2019],
+as they enable the generation of imagined experiences for policy optimization while reducing reliance on
+costly real-world interactions. Recent approaches [Zhang et al., 2026b, Zhu et al., 2026, Sheng et al., 2026]
+have primarily explored this direction by leveraging large-scale generative world models to predict future
+observations in the pixel space. However, generating high-dimensional visual observations introduces
+substantial computational overhead, while pixel-level prediction does not necessarily provide the compact
+state representations most suitable for downstream policy learning. Latent world models offer a promising
+alternative by modeling environment dynamics directly in a compact representation space, avoiding the
+need for explicit future image generation. Moreover, recent advances in latent world modeling, such as
+LeWorldModel [Maes et al., 2026], demonstrate the potential of learning task-relevant representations that
+capture essential information for downstream decision-making. These properties make latent world models
+particularly appealing for developing more computationally efficient MBRL frameworks for VLA policies.
+Despite these advantages, integrating latent world models into VLA-based MBRL remains challeng-
+ing due to two fundamental challenges.
+First, latent world models suffer from compounding pre-
+arXiv:2611.27645v1  [cs.LG]  20 Nov 2026
+
+
+Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models
+(1) Latent World Model Training
+Multi-view Observation
+Encoder
+zt
+Dynamics Predictor
+zt+h
+zt+kh
+Predicts future latents with 
+Hierarchical Forcing
+(2) Latent Subchunk Rollout
+Frozen VLA
+Base Action Chunk  Bt
+ℓ
+Residual Policy
+πψ
+ΔA
+β
+Corrected Action
+Â
+Latent World Model
+zt+h
+Next
+Subchunk
+…
+Next Subchunk
+Trajectory Correction
+VLA Trajectory
+Residual Update
+Corrected Trajectory
+st+h
+st+2h
+st+3h
+st+4h
+st+5h
+start
+(3) RL Optimization
+Success Detector 
+Reward
+TD3 + BC
+…
+Optimizes the residual policy πψ
+on imagined latent rollouts
+Policy 
+Update
+Imagined 
+rollouts
+Actions
+Latent
+Condition
+Figure 1: Overview of LS-MBPO. (1) LS-MBPO first trains a latent world model to predict future latents with Hierarchical
+Forcing. (2) LS-MBPO uses Latent Subchunk Rollout to generate imagined experiences with a residual policy attached to
+a frozen VLA. (3) A success detector is trained to reward the imagined rollouts, with which a residual policy is optimized
+using TD3 + BC.
+diction errors [Talvitie, 2014, Janner et al., 2019, Xu et al., 2020] during recursive rollouts.
+Existing ap-
+proaches [Zhou et al., 2025, Maes et al., 2026] typically train latent dynamics using one-step prediction
+objectives, where predictions are conditioned on ground-truth latent histories. However, during imag-
+ined rollouts, the model must recursively take its own predictions as inputs, creating a discrepancy between
+training and inference conditions. Prediction errors at earlier steps can propagate to subsequent predictions,
+while the resulting deviations in latent inputs may further amplify these errors, leading to increasingly unre-
+liable imagined trajectories. Second, there exists a mismatch between the interfaces of latent world models
+and pretrained VLAs. Latent world models predict future states in compact latent spaces, whereas pretrained
+VLAs typically require visual observations as inputs, making it difficult to directly use predicted latent
+states for subsequent action generation. Besides the interface mismatch, existing VLA-MBRL approaches,
+such as VLA-MBPO [Zhang et al., 2026b], often rely on fine-tuning all VLA parameters using imagined
+experiences. Such full-parameter optimization introduces substantial computational and memory overhead,
+which undermines the computational advantage of using latent world models for policy learning. These
+challenges raise an important question: how can we leverage latent imagination for VLA reinforcement
+learning while ensuring reliable recursive prediction and computationally efficient policy optimization?
+To address these challenges, we propose Latent Subchunk Rollout for MBPO (LS-MBPO), a lightweight
+residual model-based reinforcement learning framework for VLA using latent world models, which is
+shown in Fig. 1. First, we introduce Hierarchical Forcing to improve the reliability of latent dynamics under
+recursive prediction. It combines dense causal prediction supervision within each temporal window with
+autoregressive feedback across consecutive windows, enabling the world model to progressively adapt to
+its own predictions while mitigating compounding errors. Second, we propose Latent Subchunk Rollouts
+to bridge the interface gap between pretrained VLAs and latent world models. Specifically, we freeze the
+pretrained VLA and divide its generated action chunk into shorter subchunks as base actions, while training
+a lightweight residual policy conditioned on the current latent state and the corresponding base actions.
+During imagination, the residual policy progressively refines the base actions based on the updated latent
+states predicted by the world model. In this way, a single VLA query provides a behavioral prior for multiple
+successive residual decisions, allowing the policy to be optimized through the lightweight residual policy
+and value network. Furthermore, we introduce a Progress-Conditioned Branch-Start Curriculum that gradually
+shifts the sampling distribution from states near task completion to earlier task stages, enabling more efficient
+learning from imagined rollouts. On LIBERO Long, LS-MBPO completes the world model training on 4
+RTX 5090s and the RL stage on a single RTX 5090 with a success rate of 71.2%, compared with 64.4% for
+VLA-MBPO trained on 4 H100 GPUs, demonstrating a practical route towards resource-efficient VLA policy
+improvement.
+Our contributions are as follows: First, we propose LS-MBPO, a lightweight residual model-based reinforce-
+ment learning framework for improving VLA with latent world models. To our knowledge, this is the first
+2
+
+
+Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models
+work attempting to integrate VLA with latent world models for model-based RL. Second, we address two
+core limitations of VLA-MBRL in latent world models, i.e., compounding error and interface mismatch by
+proposing Hierarchical Forcing and Latent Subchunk Rollouts. Finally, through extensive experiments on
+LIBERO, RoboTwin and a real-world ALOHA robot, we demonstrate that LS-MBPO not only improves
+sample efficiency but also achieves superior policy performance, offering a practical solution to efficient
+VLA reinforcement learning through latent imagination.
+2
+Related Works
+2.1
+World Models for Visual Control
+World models have been widely explored for visual control by learning action-conditioned environment
+dynamics. Early approaches, such as Visual Foresight [Finn and Levine, 2017], predict future visual observa-
+tions to support planning. Advances in generative modeling have enabled increasingly general and realistic
+world simulation: UniSim [Yang et al., 2024] learns an interactive simulator supporting vision-language
+planning and reinforcement learning, while NVIDIA Cosmos [NVIDIA et al., 2025] demonstrates the po-
+tential of large-scale video models for physical world simulation and synthetic data generation. More
+recently, Ctrl-World [Guo et al., 2026] enables policy-in-the-loop imagination for robot manipulation, allow-
+ing pretrained vision-language-action (VLA) policies to be evaluated and improved using generated visual
+trajectories. However, synthesizing high-dimensional visual observations incurs substantial computational
+overhead, and visual fidelity alone does not guarantee representations suited to downstream control. In par-
+allel, latent world models learn action-conditioned dynamics in compact representation spaces, supporting
+planning and policy learning without decoding images during imagined rollouts. Representative meth-
+ods, including PlaNet [Hafner et al., 2019], Dreamer [Hafner et al., 2020], and TD-MPC [Hansen et al., 2022],
+demonstrate the effectiveness of latent-space imagination for model-based control. More recent methods
+[Pang et al., 2025, Zhou et al., 2025, Maes et al., 2026, Liu et al., 2026, Zhang et al., 2026a] further explore vi-
+sual control through predictive dynamics over pretrained visual features and jointly learned representations.
+These advances motivate investigating how latent-space imagination can support efficient reinforcement
+learning of VLA policies while remaining compatible with their visual observation interfaces.
+2.2
+Reinforcement Learning for VLA Models
+Recent works have explored reinforcement learning to improve pretrained VLA policies.
+Model-
+free
+approaches,
+such
+as
+πRL
+[Chen et al., 2025a],
+SimpleVLA-RL
+[Li et al., 2026],
+and
+π∗
+0.6
+[Physical Intelligence et al., 2025], optimize VLA policies through environment interactions.
+RLT
+[Xu et al., 2026] introduces a lightweight actor-critic architecture to refine the actions of a frozen pretrained
+policy, avoiding full-parameter policy updates.
+Model-based reinforcement learning further enables
+VLA policies to learn from imagined experiences generated by world models. WMPO [Zhu et al., 2026]
+leverages generative world models to perform policy optimization through imagined rollouts. VLA-MBPO
+[Zhang et al., 2026b] introduces multi-view world modeling and branched rollouts for model-based VLA
+fine-tuning. Later, U-GROW [Sheng et al., 2026] improves rollout efficiency through uncertainty-guided
+starting state selection. Despite these advances, existing VLA-MBRL methods primarily rely on pixel-based
+world models, requiring the generation of high-dimensional visual observations during imagination.
+Although latent world models offer a more computationally efficient alternative, their integration with
+pretrained VLAs remains challenging due to the mismatch between predicted latent states and the visual
+inputs expected by VLAs.
+Our work addresses this challenge by combining latent-space subchunk
+imagination with efficient residual policy learning.
+3
+Method
+This section presents the method LS-MBPO, a lightweight residual model-based reinforcement learning
+framework for VLA using latent world models. It is supposed that there exists an offline dataset D and a
+small-scale expert dataset G. We will use D to train a latent world model W (Sec. 3.1) and optimize the latent
+residual policy using W and G (Sec. 3.2). We also include a branch-start sampling strategy to improve the
+training efficiency in Sec. 3.3.
+3
+
+
+Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models
+3.1
+Learning Latent World Models with Hierarchical Forcing
+We first describe how we learn a latent world model W from the offline dataset D, which is shown in
+Fig. 2. Following LeWorldModel, we employ a Vision Transformer (ViT) encoder to map visual observations
+into a latent representation space. Unlike conventional single-view settings, however, robotic observations
+typically consist of multiple camera views. In LS-MBPO, given an observation containing m views, denoted
+by ot = {Ik
+t }m
+k=1, we independently encode each view using the shared visual encoder and concatenate the
+features corresponding to the [CLS] tokens to form a joint latent representation:
+zt = Concatm
+k=1
+
+Eθ(Ik
+t )
+
+Given the latent representations, we learn an action-conditioned dynamics model to predict future states
+directly in the latent space. We employ an action-conditioned predictor Fϕ that takes a history of latent
+representations and the corresponding actions as input, and predicts the next-step latent representations.
+Prior works [Zhou et al., 2025, Maes et al., 2026] typically train the predictor using one-step prediction
+objectives. However, training a latent world model for imagination requires more than accurate one-step
+prediction. During imagined rollouts, the model must recursively predict future states by taking its own
+predictions as inputs. In contrast, conventional one-step training primarily exposes the predictor to ground-
+truth latent histories, creating a discrepancy between the training and inference conditions. As the model
+recursively feeds its predictions back as inputs, prediction errors may accumulate and degrade the reliability
+of imagined trajectories.
+To bridge this gap, we introduce Hierarchical Forcing, which combines dense causal prediction supervision
+within each temporal window with autoregressive feedback across consecutive windows.
+Specifically, we initialize the prediction process with a window of K consecutive ground-truth latent repre-
+sentations under the frame skip of h:
+W0 = [zt, zt+h, · · · , zt+(K−1)·h]
+At the r-th recursive step, the predictor takes the current latent window Wr and its corresponding action
+conditions Ur as input, and predicts the next-step latent representations at all positions:
+ˆYr = Fϕ(Wr, Ur) = [ˆz⟨r⟩
+t+(r+1)·h, · · · , ˆz⟨r⟩
+t+(r+K)·h]
+As recursive prediction proceeds, the input window gradually incorporates model predictions. We denote
+the latent representation at each position by ˜z, which can be either a ground-truth or a predicted latent:
+˜zt+(r+i)·h =
+(
+zt+(r+i)·h,
+r + i < K
+ˆz⟨r+i−K⟩
+t+(r+i)·h,
+r + i ≥K
+Accordingly, the input window at the r-th recursive step is expressed as
+Wr = [˜zt+r·h, · · · , ˜zt+(r+K−1)·h]
+We employ causal attention in the predictor, ensuring that each position only attends to its current and
+preceding latent representations. This enables the predictor to perform next-step prediction at every position
+within the window.
+We supervise the predictions at all positions within each window using their corresponding ground-truth
+latent representations from the offline trajectories. The prediction objective can be formulated as
+Lpred =
+1
+RK
+R−1
+∑
+r=0
+K−1
+∑
+i=0
+ ˆYr[i] −zt+(r+i+1)·h
+
+2
+2
+where R denotes the number of recursive prediction steps. By supervising all positions within each window,
+our approach provides dense learning signals for latent dynamics prediction, rather than relying solely on
+the prediction at the final position.
+As illustrated in Fig. 2, the input window gradually transitions from entirely ground-truth representations
+to fully predicted representations as recursive prediction proceeds, while dense next-step supervision is
+4
+
+
+Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models
+1 · Multi-view Encoding — offline dataset D
+m camera views
+shared ViT Eθ
+[CLS] × m
+concat
+zt
+t
+t+h
+t+2h
+t+3h
+t+4h
+t+5h
+t+6h
+Ground-truth latent sequence
+2 · Hierarchical Forcing — recursive window training (K = 3)
+t
+t+h
+t+2h
+t+3h
+t+4h
+t+5h
+Recursive time 
+W0
+r = 0
+zt
+zt+h
+zt+2h
+W1
+r = 1
+zt+h
+zt+2h
+W2
+r = 2
+zt+2h
+𝑧̂!"#$
+𝑧̂!"%$
+W3
+r = 3
+𝑧̂!"#$
+𝑧̂!"%$
+𝑧̂!"&$
+input window Wr (r=1)
+zt+h
+zt+2h
+𝑧̂!"#$
+Ur (actions)
+Predictor Fφ
+𝑧̂!"'(
+zt+2h
+𝑧̂!"#$
+zt+3h
+𝑧̂!"%$
+zt+4h
+Ground-truth z (from 
+D)
+ground-truth z
+predicted 𝑧̂
+𝑧̂!"#$
+Decoder
+Image Reconstruction Loss
+Prediction Loss
+Figure 2: Training pipeline of the latent world model.
+maintained at every position. This allows the predictor to progressively adapt to the autoregressive input
+conditions encountered during imagined rollouts.
+Finally, following LeWorldModel, we incorporate SIGReg to prevent representation collapse. We additionally
+train a CNN decoder to reconstruct images from every predicted latent in the output window at each
+recursive step. The reconstructed images may have limited visual fidelity, as illustrated in the qualitative
+results presented in Appx. B.4. We therefore use the decoder solely to provide auxiliary supervision that
+encourages the latent representations to retain visual information, rather than to generate observations for
+policy learning. The overall training objective is
+LWM = Lpred + λregLSIGReg + λimgLimg
+(1)
+where Limg denotes the image reconstruction loss. The encoder, predictor, and decoder are jointly optimized,
+with gradients propagated through both the reconstruction and recursive feedback paths.
+3.2
+Residual Policy Optimization via Latent Subchunk Rollouts
+To optimize VLA policies using imagined trajectories generated by the latent world model, we need to
+enable closed-loop policy decisions within latent imagination. However, directly integrating pretrained
+VLAs with latent world models is non-trivial due to their inherent interface mismatch: while latent world
+models predict future states in a compact latent space, pretrained VLAs typically require visual observations
+as input to generate actions. Consequently, the predicted latent states cannot be directly fed into the original
+VLA to continue the rollout. To address this issue, we introduce a lightweight residual policy that directly
+takes the latent states predicted by the world model as input to do Latent Subchunk Rollouts.
+Our key idea is to decouple the provision of behavioral priors from state-dependent action refinement. To
+this end, we keep the pretrained VLA πVLA frozen and use it to generate a base action chunk of length H at
+the branch starting point:
+Bt = πVLA(ot, ℓ) = [a0
+t , . . . , a0
+t+H−1]
+We then divide the base action chunk into N shorter subchunks, each containing h consecutive actions, such
+that H = Nh. The j-th base action subchunk is denoted as
+B(j)
+t
+= [a0
+t+jh, . . . , a0
+t+(j+1)h−1],
+j = 0, . . . , N −1
+At each subchunk decision step, the residual policy takes the current latent state, the corresponding base
+action subchunk, and the language instruction as input to generate an action correction:
+∆Aj ∼πψ
+
+· | ˆzt+jh, B(j)
+t , ℓ
+
+The corrected action subchunk is obtained by
+eAj = clip
+
+B(j)
+t
++ β∆Aj, Amin, Amax
+
+(2)
+5
+
+
+Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models
+where β controls the magnitude of the residual correction and clip(·) constrains the resulting actions to the
+valid action range. Here, we initialize ˆzt = zt, while subsequent latent states are predicted by the world
+model.
+After obtaining the corrected action subchunk, we feed it into the latent world model to predict the subse-
+quent latent state. Since the world model is trained with a frame skip of h, each prediction corresponds to
+the transition over one action subchunk:
+ˆzt+(j+1)h =
+h
+Fϕ
+
+b
+Hj, bAj
+i
+K−1
+where b
+Hj and bAj denote the current latent history window and its corresponding action conditions, respec-
+tively. We take the prediction at the last position of the output window as the next latent state. The predicted
+latent state is then used to condition the residual policy for refining the next base action subchunk. This
+process forms a closed-loop interaction between the residual policy and the latent world model, following
+an iterative procedure of action refinement and latent state prediction.
+To provide task-level rewards for imagined trajectories, we train a lightweight success detector ξ using
+datasets G and D. We construct positive and negative training samples based on the temporal positions
+within each trajectory. We treat the last n1 frames of trajectories in G as positive samples, while frames
+preceding the last n2 frames of trajectories in both G and D are labeled as negative samples. The success
+detector is trained to distinguish these two types of states based on their latent representations and task
+descriptions:
+ˆqt = ξ(zt, ℓ)
+During imagined rollouts, we evaluate the predicted latent state after each subchunk and assign a binary
+reward according to a predefined threshold τ:
+ˆrj = I
+h
+ξ(ˆzt+(j+1)h, ℓ) ≥τ
+i
+(3)
+where ˆzt+(j+1)h denotes the predicted latent state after executing the j-th corrected action subchunk. The
+reward is set to 1 if the predicted state satisfies the success criterion and 0 otherwise.
+We then optimize the residual policy using TD3+BC [Fujimoto and Gu, 2021], following the action refinement
+paradigm of RL Token [Xu et al., 2026]. The imagined transitions are used to update the residual actor and
+critic, enabling policy optimization with additional training experience without requiring the VLA to be
+updated or repeatedly queried during imagined rollouts.
+3.3
+Progress-Conditioned Branch-Start Curriculum
+Although latent subchunk rollouts provide an efficient way to generate imagined experiences, their limited
+rollout horizon may prevent branches starting from early task stages from reaching successful states. This
+makes it difficult for the residual policy to obtain informative success feedback, particularly during early
+training. To address this issue, we introduce a Progress-conditioned Branch-start Curriculum (PBC), which
+gradually shifts the sampling distribution of imagined rollout starting points from later task stages to earlier
+ones.
+We train a progress predictor gp using the expert dataset G to estimate task completion levels from latent
+representations and corresponding language instructions:
+ˆpt = gp(zt, ℓ)
+where ˆpt denotes the estimated progress at time step t. We use the predicted progress exclusively for
+branch-start sampling rather than directly as a reward signal. The progress predictor is trained on expert
+demonstrations, making its predictions unreliable on states induced by imperfect or exploratory policies.
+Using such predictions as dense rewards may introduce exploitable estimation errors, allowing the policy to
+optimize the predictor’s outputs rather than make genuine task progress. In contrast, branch-start sampling
+does not require highly accurate progress estimates, as it primarily relies on coarse task-stage information.
+For example, a state with an actual progress of 0.9 may be predicted as 0.7, but it can still be recognized as a
+relatively late-stage state and assigned a higher sampling probability.
+To be specific, let Kstart denote the set of candidate branch starting states sampled from trajectories collected
+through environment interaction. At training epoch e, we construct a progress-conditioned sampling
+distribution:
+Pe(i) =
+we( ˆpi)
+∑j∈Kstart we( ˆpj)
+(4)
+6
+
+
+Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models
+where we(·) denotes a progress-dependent weighting function that evolves throughout training. In the
+early epochs, higher-progress states receive larger sampling weights, allowing short imagined rollouts to
+more frequently reach task completion and obtain successful feedback. As training progresses, the sampling
+distribution gradually expands toward lower-progress states, encouraging the residual policy to improve its
+behavior over increasingly earlier stages of the task.
+4
+Experiments
+In this section, we conduct extensive experiments to evaluate our proposed method LS-MBPO. We first
+introduce the experiment setup.
+4.1
+Experiment Setup
+Benchmarks.
+We
+conduct
+our
+experiments
+on
+two
+robotic
+manipulation
+benchmarks:
+LIBERO [Liu et al., 2023] and RoboTwin [Chen et al., 2025b]. (1) LIBERO: LIBERO is a widely adopted
+benchmark consisting of four task suites: Spatial, Object, Goal, and Long. The offline dataset D for LIBERO
+contains 200 trajectories for each task, which are collected by a π0.5 SFT checkpoint with random noise added
+to the generated action chunks. The expert dataset G contains 10 episodes for each task. We evaluate 50
+episodes for each task in four task suites. (2) RoboTwin: RoboTwin is a large-scale benchmark for bimanual
+robotic manipulation. In our experiments, we select three representative tasks for evaluation: Adjust Bottle,
+Beat Block Hammer and Click Alarmclock. The offline dataset D for RoboTwin contains 800 trajectories for
+each task collected in a similar way to LIBERO. The expert dataset G contains 50 episodes for each task. We
+evaluate 80 episodes for each RoboTwin task. (3) ALOHA: We include a real-world ALOHA robot to do two
+tasks: Pen into Holder and Plug Charger. The offline dataset D contains 400 trajectories for each task while the
+expert dataset G consists of 100 episodes for each task. We evaluate 20 episodes for each ALOHA task.
+Baselines.
+Since our method adopts a residual policy attached to a frozen pretrained VLA for RL optimiza-
+tion, we follow the same design principle for all other baselines to ensure a fair comparison. Comparisons
+with methods that update the full VLA parameters are deferred to the ablation studies. The baselines are as
+follows: (1) π0.5-SFT: The base model trained using SFT for LS-MBPO along with the other baselines. (2)
+RLT-BC: A residual policy which takes RL token as the task feature input and is trained with BC. Unlike the
+original RLT, we follow the approach adopted in VLARLKit [Sun, 2026] and directly apply mean pooling to
+the PaliGemma embeddings to obtain the RL Token. (3) Latent-BC:A residual policy which takes the world
+model latent of W as the task feature input and is trained with BC. (4) RLT-RL: A residual policy which takes
+RL token as the task feature input and is trained using online RL. (5) Latent-RL: A residual policy which
+takes the world model latent of W as the task feature input and is trained using online RL. (6) Dreamer: A
+latent MBRL baseline that trains the latent world model in a Dreamer [Hafner et al., 2023] style and uses
+subchunk rollouts for residual policy optimization.
+Implementation Details.
+For the residual policies trained by both LS-MBPO and the baselines, we adopt
+the following inference procedure: the VLA generates a base action chunk of length H, and the residual
+policy refines its first h actions. These refined actions are executed in the environment before querying the
+VLA again with the updated observation. During imagined rollouts in LS-MBPO, we instead reuse a single
+VLA-generated base action chunk and successively refine its subchunks as described in Sec. 3.2. We denote
+the actual imagined rollout horizon by L ≤H, measured in environment steps, where L is a multiple of
+h. Each branch therefore processes the first L/h subchunks without re-querying the VLA. We use h = 5,
+H = 50, and L = 50 for all tasks unless otherwise specified.
+During the training of MBRL algorithms, including LS-MBPO and Dreamer, the residual policy interacts
+with the simulator to collect 10 trajectories per epoch, following the rollout procedure described above. These
+10 trajectories are then used as starting points for branch rollouts within the corresponding epoch. After
+completing the branch rollouts, we perform RL updates using the collected rollout data. The algorithms
+are trained for a total of 10 epochs. For RLT-RL and Latent-RL, we ensure the same number of simulator
+interactions as LS-MBPO and Dreamer, resulting in a total of 100 trajectories.
+4.2
+Main Results
+Simulation Results.
+Tab. 1 shows the average success rate of different approaches on LIBERO and
+RoboTwin benchmarks. In general, our proposed method LS-MBPO outperforms the baselines for all
+7
+
+
+Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models
+Table 1: Performance comparison on LIBERO and RoboTwin benchmarks.
+Model
+LIBERO
+RoboTwin
+Spatial
+Object
+Goal
+Long
+Adjust
+Bottle
+Beat Block
+Hammer
+Click
+Alarmclock
+π0.5-SFT
+78.4
+87.2
+73.6
+52.0
+90.0
+82.5
+51.3
+RLT-BC
+83.2
+88.8
+74.4
+59.6
+92.5
+80.0
+63.8
+Latent-BC
+84.0
+83.2
+75.2
+68.0
+91.3
+85.0
+67.5
+RLT-RL
+86.4
+92.0
+76.8
+68.8
+93.8
+87.5
+72.5
+Latent-RL
+85.6
+90.4
+75.2
+66.2
+91.3
+86.3
+68.8
+Dreamer
+88.0
+92.8
+77.6
+69.6
+95.0
+92.5
+80.0
+LS-MBPO
+92.0
+96.0
+84.8
+71.2
+97.5
+95.0
+83.8
+task environments. Since all baselines use π0.5-SFT as the base VLA, most of them achieve improved success
+rates compared with the base model. For RLT-BC and Latent-BC, we observe that Latent-BC generally
+performs better than RLT-BC across most tasks. We attribute this phenomenon to the potentially more
+task-relevant representations provided by our world model compared with the RL Token representations,
+which may facilitate better generalization during behavior cloning. However, when switching from behavior
+cloning to online RL, the performance gap between the two approaches becomes less pronounced. We con-
+jecture that this is because online RL allows policies to explore and learn through trial and error, potentially
+reducing their reliance on the quality of the underlying representations. Both MBRL approaches, namely
+LS-MBPO and Dreamer, outperform the BC-based and online RL baselines in most tasks. This improvement
+can be attributed to the additional imagined trajectories generated by the latent world model, which provide
+extra training experiences beyond real-env interactions under the same interaction budget. Furthermore,
+LS-MBPO achieves better performance than Dreamer. We think this might be caused by the combination
+of Hierarchical Forcing and SIGReg, which facilitates learning more effective latent representations and
+mitigates compounding errors during recursive world model rollouts, thereby improving the quality of
+imagined experiences.
+Real-world Results.
+We further evaluate our method on real-world manipulation tasks using an ALOHA
+robot. As shown in Fig. 3(a), both Dreamer and LS-MBPO achieve higher success rates than the SFT-trained
+π0.5 baseline through MBRL with latent subchunk rollouts. Moreover, the Hierarchical Forcing helps mitigate
+the compounding error of the latent world model, which empowers LS-MBPO to outperform Dreamer in
+both tasks.
+4.3
+Effectiveness of Hierarchical Forcing
+To evaluate the effectiveness of Hierarchical Forcing, we compare the latent world model in LS-MBPO with:
+(1) LeWM, a LeWM-style baseline [Maes et al., 2026] trained with one-step latent prediction under teacher
+forcing and auxiliary multi-view image reconstruction; and (2) Recursive-only, which uses the same recursive
+feedback as Hierarchical Forcing but applies the latent prediction loss only to the final output position of
+each window. All variants use the same model architecture and auxiliary loss terms. We evaluate the three
+world models on 10 held-out trajectories from LIBERO Long, using identical initial image observations and
+recorded action sequences. Each model recursively predicts 100 environment steps, corresponding to 20
+subchunks. We report two metrics: (1) PSNR-FINAL, evaluated at the final prediction step; and (2) PSNR-
+ALL, averaged over all prediction steps. Both metrics compare decoded images with their corresponding
+ground-truth observations. The results are reported in Tab. 2. Hierarchical Forcing achieves the highest
+PSNR-FINAL and PSNR-ALL, indicating improved decoded-image fidelity during recursive rollouts. More
+qualitative comparisons are provided in Appx. B.4.
+Furthermore, we train separate residual policies using subchunk rollouts generated by the three world
+models, while keeping the base VLA and policy optimization protocol identical. The corresponding success
+rates are reported in the Policy column of Tab. 2. Compared with Recursive-only, Hierarchical Forcing
+improves policy success from 68.0% to 71.2%. Together, these results support the benefit of dense within-
+window latent prediction supervision for both recursive prediction quality and downstream residual policy
+learning.
+8
+
+
+Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models
+Table 2: Ablation study of Hierarchical Forcing on LIBERO Long. PSNR is reported in dB, and Policy denotes the success
+rate (%).
+Method
+PSNR-FINAL
+PSNR-ALL
+Policy
+LeWM
+15.53
+18.51
+61.4
+Recursive-only
+23.84
+25.65
+68.0
+LS-MBPO
+25.22
+27.90
+71.2
+Pen into Holder
+Plug Charger
+0
+10
+20
+30
+40
+50
+Success Rate (%)
+π0.5 (SFT)
+Dreamer
+LS-MBPO
+(a) Real-world results on ALOHA tasks.
+LIBERO Long
+0
+25
+50
+55
+60
+65
+70
+75
+Success Rate (%)
+71.2
+52.2
+64.0
+68.6
+54.4
+64.8
+LS-MBPO
+VLA-Requery
+LS-MBPO with uniform sampling
+LS-MBPO with late-stage sampling
+LS-MBPO with progress reward
+LS-MBPO with progress reward + binary reward
+(b) Ablation results of LS-MBPO on LIBERO Long tasks.
+Figure 3: Real-world evaluation on ALOHA and ablation study on LIBERO Long.
+4.4
+Effectiveness of Latent Subchunk Rollouts
+Since our latent world model is trained with an auxiliary decoder, it is also possible to perform recursive
+rollouts by re-querying the VLA with reconstructed observations. After each corrected h-step subchunk,
+we decode the predicted latent state into multi-view observations and query the frozen VLA to generate
+a new base action chunk. The residual policy then refines the first h actions of this chunk to continue the
+imagined rollout. This process can be repeated to enable closed-loop recursive rollouts. The performance
+is reported in Fig. 3(b), where LS-MBPO outperforms this decoder-based VLA requery approach, which
+we call VLA-Requery in the figure. Two factors, in our perspective, contribute to the performance drop.
+First, in our latent subchunk rollouts, the VLA already provides a complete base action chunk that serves
+as a strong behavioral prior for multiple successive residual decisions, making repeated VLA inference
+unnecessary. Second, image reconstruction inevitably introduces extra errors, which may further affect the
+actions generated by the VLA when conditioned on reconstructed observations.
+4.5
+Ablation Study
+Effect of PBC.
+To evaluate the effectiveness of Progress-Conditioned Branch-Start Curriculum (PBC), we
+compare it with two alternatives: (1) Uniform sampling, which samples branch starting states uniformly;
+and (2) Late-stage sampling, which favors later-stage states using a fixed sampling rule throughout training.
+All variants are trained for the same number of epochs. As shown in Fig. 3(b), both uniform sampling and
+late-stage sampling achieve lower success rates than PBC. These results suggest that prioritizing later-stage
+states benefits policy learning, while gradually expanding the branch-start distribution toward earlier task
+stages yields further improvement.
+Binary Success Reward Versus Progress Reward.
+Our method uses binary success rewards (0/1) to
+optimize the residual policy, while the progress predictor is exclusively used for PBC. A natural question is
+whether replacing the binary reward with progress-based rewards could provide denser learning signals
+and potentially lead to better performance. To investigate this, we conduct two additional comparison
+experiments: (1) using the progress predictor as the reward function; (2) using the combination of progress
+reward and binary reward. However, the results, seen in Fig. 3(b), show that progress-based rewards do
+not yield satisfactory performance. We consider this is caused by limited generalization capability of the
+progress predictor, which is trained on a small set of expert demonstrations and may produce unreliable
+estimates on states outside the expert distribution. As the policy explores such states, inaccurate progress
+predictions can introduce misleading reward signals and distort policy updates.
+9
+
+
+Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models
+Table 3: Comparison with VLA-MBPO on LIBERO Long. LS-MBPO achieves higher success rate while using fewer
+computational resources and training time.
+Method
+Success
+Rate (%)
+Training Time
+GPU Configuration
+WM
+RL
+WM
+RL
+VLA-MBPO
+64.4
+18 h
+12 h
+4 × H100
+(80 GB each)
+4 × H100
+(80 GB each)
+LS-MBPO
+71.2
+12 h
+1.5 h
+4 × RTX 5090
+(32 GB each)
+1 × RTX 5090
+(32 GB each)
+Comparison to VLA-MBPO.
+Our method enables lightweight MBRL for VLA policies by combining latent
+world models with residual policy learning. We compare LS-MBPO against VLA-MBPO, which employs a
+large-scale generative world model and fine-tunes the full VLA parameters, on LIBERO Long. The results
+are reported in Tab. 3. Notably, LS-MBPO achieves even better performance than VLA-MBPO with much
+less computational resource. We think this improvement is because of the task-relevant representations
+learned by our latent world model, which transform policy optimization from the high-dimensional image
+space into a more compact latent space, potentially simplifying the learning problem and facilitating more
+effective policy optimization.
+5
+Conclusion
+This study explores how to apply a latent world model to improve VLA through RL optimization. We propose
+a novel approach, LS-MBPO, which optimizes a residual policy attached to pretrained VLA using imagined
+Subchunk Rollouts from a latent world model learned by Hierarchical Forcing. Extensive experiments
+demonstrate that LS-MBPO is capable of being applied to a variety of robotic platforms, enabling a robust
+and practical pathway towards lightweight model-based RL for robotics. Despite the promising results,
+LS-MBPO still leaves room for further exploration. First, future work can extend latent world models to
+support full-horizon rollouts for longer imagined interactions. Another potential direction is developing
+more generalizable dense reward models in latent space to provide richer feedback for policy optimization
+beyond binary success signals. Last but not least, future research can focus on learning generalizable latent
+world models from diverse tasks and robotic platforms to enable knowledge transfer and facilitate more
+scalable model-based policy learning across embodiments. We believe these directions hold great potential
+for advancing latent world models and enabling more effective VLA training in the future.
+References
+[Chen et al., 2025a] Chen, K., Liu, Z., Zhang, T., Guo, Z., Xu, S., Lin, H., Zang, H., Li, X., Zhang, Q.,
+Yu, Z., Fan, G., Huang, T., Wang, Y., and Yu, C. (2025a). πRL: Online RL fine-tuning for flow-based
+vision-language-action models. arXiv, abs/2510.25889.
+[Chen et al., 2025b] Chen, T., Chen, Z., Chen, B., Cai, Z., Liu, Y., Liang, Q., Li, Z., Lin, X., Ge, Y., Gu, Z., Deng,
+W., Guo, Y., Nian, T., Xie, X., Chen, Q., Su, K., Xu, T., Liu, G., Hu, M., Gao, H., Wang, K., Liang, Z., Qin, Y.,
+Yang, X., Luo, P., and Mu, Y. (2025b). Robotwin 2.0: A scalable data generator and benchmark with strong
+domain randomization for robust bimanual robotic manipulation. arXiv, abs/2506.18088.
+[Finn and Levine, 2017] Finn, C. and Levine, S. (2017). Deep visual foresight for planning robot motion. In
+ICRA.
+[Fujimoto and Gu, 2021] Fujimoto, S. and Gu, S. S. (2021). A minimalist approach to offline reinforcement
+learning. In NeurIPS.
+[Guo et al., 2026] Guo, Y., Shi, L. X., Chen, J., and Finn, C. (2026). Ctrl-World: A controllable generative
+world model for robot manipulation. In ICLR.
+[Hafner et al., 2020] Hafner, D., Lillicrap, T., Ba, J., and Norouzi, M. (2020). Dream to control: Learning
+behaviors by latent imagination. In ICLR.
+[Hafner et al., 2019] Hafner, D., Lillicrap, T., Fischer, I., Villegas, R., Ha, D., Lee, H., and Davidson, J. (2019).
+Learning latent dynamics for planning from pixels. In ICML.
+10
+
+
+Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models
+[Hafner et al., 2023] Hafner, D., Pasukonis, J., Ba, J., and Lillicrap, T. P. (2023). Mastering diverse domains
+through world models. arXiv, abs/2301.04104.
+[Hansen et al., 2022] Hansen, N. A., Su, H., and Wang, X. (2022). Temporal difference learning for model
+predictive control. In ICML.
+[Janner et al., 2019] Janner, M., Fu, J., Zhang, M., and Levine, S. (2019). When to trust your model: Model-
+based policy optimization. In NeurIPS.
+[Li et al., 2026] Li, H., Zuo, Y., Yu, J., Zhang, Y., Yang, Z., Zhang, K., Zhu, X., Zhang, Y., Chen, T., Cui, G.,
+Wang, D., Luo, D., Fan, Y., Sun, Y., Zeng, J., Pang, J., Zhang, S., Wang, Y., Mu, Y., Zhou, B., and Ding, N.
+(2026). SimpleVLA-RL: Scaling VLA training via reinforcement learning. In ICLR.
+[Liu et al., 2026] Liu, A. Z., Sun, H., Baker, L., Balestriero, R., and Sous, J. (2026). Semigroup-jepa: Latent
+dynamics consistency for zero-shot physics generalization. arXiv, abs/2609.10464.
+[Liu et al., 2023] Liu, B., Zhu, Y., Gao, C., Feng, Y., Liu, Q., Zhu, Y., and Stone, P. (2023). LIBERO: benchmark-
+ing knowledge transfer for lifelong robot learning. In NeurIPS.
+[Maes et al., 2026] Maes, L., Lidec, Q. L., Scieur, D., LeCun, Y., and Balestriero, R. (2026). Leworldmodel:
+Stable end-to-end joint-embedding predictive architecture from pixels. arXiv, abs/2603.19312.
+[NVIDIA et al., 2025] NVIDIA, Agarwal, N., Ali, A., Bala, M., Balaji, Y., Barker, E., Cai, T., Chattopadhyay,
+P., Chen, Y., Cui, Y., Ding, Y., Dworakowski, D., Fan, J., Fenzi, M., Ferroni, F., Fidler, S., Fox, D., Ge, S., Ge,
+Y., Gu, J., Gururani, S., He, E., Huang, J., Huffman, J., Jannaty, P., Jin, J., Kim, S. W., Klár, G., Lam, G., Lan,
+S., Leal-Taixe, L., Li, A., Li, Z., Lin, C.-H., Lin, T.-Y., Ling, H., Liu, M.-Y., Liu, X., Luo, A., Ma, Q., Mao, H.,
+Mo, K., Mousavian, A., Nah, S., Niverty, S., Page, D., Paschalidou, D., Patel, Z., Pavao, L., Ramezanali, M.,
+Reda, F., Ren, X., Sabavat, V. R. N., Schmerling, E., Shi, S., Stefaniak, B., Tang, S., Tchapmi, L., Tredak, P.,
+Tseng, W.-C., Varghese, J., Wang, H., Wang, H., Wang, H., Wang, T.-C., Wei, F., Wei, X., Wu, J. Z., Xu, J.,
+Yang, W., Yen-Chen, L., Zeng, X., Zeng, Y., Zhang, J., Zhang, Q., Zhang, Y., Zhao, Q., and Zolkowski, A.
+(2025). Cosmos world foundation model platform for physical AI. arXiv, abs/2501.03575.
+[Pang et al., 2025] Pang, J., Tang, N., Li, K., Tang, Y., Cai, X., Zhang, Z., Niu, G., Sugiyama, M., and Yu, Y.
+(2025). Learning view-invariant world models for visual robotic manipulation. In ICLR.
+[Physical Intelligence et al., 2025] Physical Intelligence, Amin, A., Aniceto, R., Balakrishna, A., Black, K.,
+Conley, K., Connors, G., Darpinian, J., Dhabalia, K., DiCarlo, J., Driess, D., Equi, M., Esmail, A., Fang,
+Y., Finn, C., Glossop, C., Godden, T., Goryachev, I., Groom, L., Hancock, H., Hausman, K., Hussein, G.,
+Ichter, B., Jakubczak, S., Jen, R., Jones, T., Katz, B., Ke, L., Kuchi, C., Lamb, M., LeBlanc, D., Levine, S.,
+Li-Bell, A., Lu, Y., Mano, V., Mothukuri, M., Nair, S., Pertsch, K., Ren, A. Z., Sharma, C., Shi, L. X., Smith,
+L., Springenberg, J. T., Stachowicz, K., Stoeckle, W., Swerdlow, A., Tanner, J., Torne, M., Vuong, Q., Walling,
+A., Wang, H., Williams, B., Yoo, S., Yu, L., Zhilinsky, U., and Zhou, Z. (2025). π∗
+0.6: a VLA that learns from
+experience. arXiv, abs/2511.14759.
+[Sheng et al., 2026] Sheng, Y., Ren, H., Zhang, Z., Wang, H., Xu, R., Sun, Y., Tang, N., Wu, Z., Yuan, L., Lin,
+H., and Yu, Y. (2026). Prioritized rollouts for efficient world model-based vision-language-action policy
+optimization. arXiv, abs/2609.22879.
+[Sun, 2026] Sun,
+Y.
+(2026).
+Vlarlkit:
+An
+elegant
+pytorch
+vla-rl
+library.
+https://github.com/VLARLKit/VLARLKit.
+[Talvitie, 2014] Talvitie, E. (2014). Model regularization for stable sample rollouts. In UAI.
+[Xu et al., 2026] Xu, C., Springenberg, J. T., Equi, M., Amin, A., Esmail, A., Levine, S., and Ke, L. (2026). RL
+Token: Bootstrapping online RL with vision-language-action models. In CoRL.
+[Xu et al., 2020] Xu, T., Li, Z., and Yu, Y. (2020). Error bounds of imitating policies and environments. In
+NeurIPS.
+[Yang et al., 2024] Yang, S., Du, Y., Ghasemipour, S., Tompson, J., Kaelbling, L., Schuurmans, D., and Abbeel,
+P. (2024). Learning interactive real-world simulators. In ICLR.
+[Yu et al., 2026] Yu, Y., Zhang, S., Sheng, Y., Ren, H., and Lin, H. (2026). How should world models be
+evaluated for embodied decision-making? A decision-making-centric position. arXiv, abs/2606.15032.
+[Zhang et al., 2026a] Zhang, W., Terver, B., Rabbat, M., LeCun, Y., and Balestriero, R. (2026a). H-JEPA:
+end-to-end learning of hierarchical world models for visual planning. arXiv, abs/2610.06805.
+[Zhang et al., 2026b] Zhang, Z., Ren, H., Sun, Y., Sheng, Y., Wang, H., Lin, H., Wu, Z., Bacon, P., and Yu, Y.
+(2026b). Towards practical world model-based reinforcement learning for vision-language-action models.
+In ICML.
+11
+
+
+Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models
+[Zhou et al., 2025] Zhou, G., Pan, H., LeCun, Y., and Pinto, L. (2025). DINO-WM: World models on pre-
+trained visual features enable zero-shot planning. In ICML.
+[Zhu et al., 2026] Zhu, F., Yan, Z., Hong, Z., Shou, Q., Ma, X., and Guo, S. (2026). WMPO: world model-based
+policy optimization for vision-language-action models. In ICLR.
+12
+
+
+Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models
+Appendix
+A
+More Implementation Details
+A.1
+More Details for World Model Training
+The structure of decoder.
+For Image reconstruction in the latent world model, we reconstruct multi-
+view observations by splitting the predicted latent vector into view-specific components and decoding
+each component with an independently parameterized convolutional decoder. An MLP followed by a
+linear projection maps each component to a 192 × 16 × 16 feature map. Four residual upsampling blocks
+progressively increase the spatial resolution to 256 × 256, with output channel widths of 96, 48, 32, and
+32. Each block performs 2× nearest-neighbor upsampling followed by two 3 × 3 convolutions with Group
+Normalization and SiLU activations, while a final 1 × 1 convolution produces the three-channel image.
+Proprioceptive prediction.
+In addition to image reconstruction, we train an auxiliary proprioceptive
+decoder to predict the robot’s proprioceptive state from the full predicted latent representation. At each
+recursive training step, this decoder is applied to all output positions and supervised using the corresponding
+ground-truth proprioceptive states. During imagined rollouts, the next proprioceptive state is decoded from
+the predicted next latent and used to update the proprioceptive history provided to the residual actor and
+critics. For simplicity and clarity, proprioceptive inputs and their prediction are not included in the notation
+and figures in the main text of the paper.
+A.2
+More Details for Policy Training
+Policy optimization details.
+Let xj denote the concatenation of the current latent state, proprioception, and
+language embedding at subchunk step j. The two critics take (xj, eAj) as input and estimate the expected task
+return of executing the corrected action subchunk. We store imagined transitions (xj, B(j)
+t , eAj, ˆrj, xj+1, dj) in
+the replay buffer, retaining the reference subchunks for actor conditioning.
+The critics are trained by regression to the TD target
+yj = ˆrj + γ(1 −dj) min
+i=1,2 Q ¯θi
+
+xj+1, eAtarg
+j+1
+
+(5)
+where γ is the discount factor per subchunk transition and barred parameters denote target networks. For
+nonterminal transitions, eAtarg
+j+1 is constructed by the target actor using xj+1 and the next reference subchunk
+B(j+1)
+t
+. The indicator dj is set to one upon task success or at the imagination horizon and otherwise zero.
+Imagination boundary and value propagation.
+For intermediate subchunks (j < N −1), the next reference
+subchunk B(j+1)
+t
+is available within the VLA-generated chunk. Together with xj+1, it conditions the target
+actor to produce the corrected action used for bootstrapping. At the final subchunk, the reference chunk is
+exhausted, so constructing the next target action would require a reference continuation beyond the current
+imagination horizon. We therefore set dN−1 = 1, multiplying the continuation term by zero and yielding
+yN−1 = ˆrN−1
+(6)
+This transition is trained against its immediate reward. As branch-start states vary along real trajectories,
+states near one imagined window’s boundary can appear inside another and receive nonterminal TD
+supervision. These updates share the same critic, allowing success-related value information to propagate to
+earlier task stages through successive TD updates under PBC.
+Behavioral regularization.
+The BC term anchors the actor to the corresponding frozen-VLA reference
+subchunk:
+LBC = E
+
+
+MSE
+
+eAψ(xj, B(j)
+t ), B(j)
+t
+
+β2
+
+
+(7)
+13
+
+
+Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models
+where eAψ denotes the corrected action subchunk produced by the current actor using Eq. 2. This term
+constrains deviations from the reference actions to preserve the pretrained VLA’s behavioral prior, while the
+critic guides task-improving corrections.
+RLT-BC and Latent-BC.
+We train the residual policies by minimizing the mean squared error between
+corrected action subchunks defined in Eq. 2 and the corresponding expert action subchunks sampled from
+the expert demonstration dataset, keeping the VLA and feature extractors frozen.
+RLT-RL and Latent-RL.
+We perform TD3-style actor–critic updates on replayed transitions collected
+through online environment interaction. The actor objective incorporates the BC regularizer defined in Eq. 7.
+For Latent-RL, W remains frozen and serves as the observation encoder.
+Dreamer.
+We pretrain a DreamerV3 RSSM with reconstruction, KL, reward, and continuation losses and
+freeze it during policy optimization. Each 50-step VLA-generated base action chunk is divided into ten 5-step
+subchunks, with each corrected action subchunk driving one RSSM transition. The actor and state-value
+critic are trained using DreamerV3’s λ-return actor–critic objective with entropy regularization. The critic
+estimates state values from the RSSM state and language embedding, allowing the final imagined state to be
+bootstrapped without a subsequent corrected action subchunk. We therefore retain continuation-weighted
+value bootstrapping at the imagination horizon like Eq. 6 does.
+A.3
+More Details about PBC
+Starting imagined branches from later task stages can reduce the exploration required to encounter successful
+outcomes. This allows the residual policy to first learn the local corrective behaviors required for task
+completion. Meanwhile, successful trajectories provide positive reward samples, i.e., the binary reward, for
+the critic, helping it distinguish state-action pairs with different expected task returns. This is particularly
+useful during early training, when insufficient successful experience may limit the critic’s ability to establish
+meaningful value differences.
+As training proceeds, PBC gradually shifts the preferred branch-start states toward earlier task stages. The
+policy must then learn to reach and complete the later-stage behaviors practiced previously. The critic can
+use its existing value estimates for these later states to propagate success-related information to earlier states
+through temporal-difference updates. This curriculum is therefore intended to establish task-completion
+behaviors and useful value estimates before extending learning to earlier portions of the task.
+A.4
+More Details about the Progress Predictor
+The progress reward evaluated in our ablation in Sec. 4.5 is the difference between consecutive progress
+predictions from the learned progress predictor.
+rprog
+t
+= ˆpt+1 −ˆpt
+This form of reward draws on the idea of reward shaping by treating the progress as a potential function
+and is used either alone or in combination with the binary success reward.
+A.5
+More Details for Real-world Experiments
+Fig. 4 illustrates our real-world experimental platform and task suite. All experiments are conducted on an
+ARX-X5 bimanual system consisting of two leader arms and two follower arms: during data collection, a
+human operator holds the leader arms and teleoperates the follower arms to provide expert demonstrations,
+whereas during evaluation the follower arms execute the policy fully autonomously. The evaluation involves
+two manipulation tasks built on daily objects—pens, a pen holder, a plug, and a power strip.
+Specifically, Pen into Holder is a bimanual coordination task: the left arm first grasps and lifts the pen holder,
+the right arm then inserts the pens into it one by one, and the robot finally places the filled holder back
+onto the table. Plug Charger, in contrast, demands sub-centimeter precision to align and insert the plug
+into a socket of the power strip, probing the policy’s fine-grained visual-motor control under high-precision
+alignment.
+14
+
+
+Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models
+Right follower arm
+Right leader arm
+Left follower arm
+Left leader arm
+ARX-X5
+Objectives
+Pen into Holder
+Plug Charger
+Figure 4: The robot, objectives and the tasks used in real-world experiments.
+B
+More Experimental Results
+B.1
+Effect of VLA Prior
+In LS-MBPO, the VLA provides base actions as behavioral priors, upon which the residual policy is optimized.
+To investigate the contribution of the VLA prior, we additionally train a latent policy without access to
+VLA-generated actions. Specifically, we keep the latent world model fixed and first pretrain the latent policy
+using behavior cloning (BC) on expert demonstrations. We then optimize this policy through branch-rollout
+MBRL within the latent world model. We consider two variants: one optimizes the policy using only the RL
+objective during MBRL, while the other additionally incorporates the BC loss as a regularization term.
+The results are reported in Fig. 5. We observe that, without BC regularization, the policy achieves very low
+success rates, likely because the challenging tasks make policy learning highly sensitive to deviations from
+the expert behavior. Once the policy deviates from successful behaviors, it may fail to discover successful
+trajectories through exploration, leading to further performance degradation. Adding BC regularization
+does yield improvements, but the performance is still below ours. In contrast, LS-MBPO achieves much
+better performance by leveraging the VLA to provide a stable behavioral prior, which guides residual policy
+learning and makes policy optimization more effective.
+B.2
+Effect of Decoder
+To evaluate the impact of the decoder in latent world model training, we compare our world model with
+a variant trained without the decoder, where the image reconstruction loss in Eq. 1 is removed. We then
+use both world models for subsequent MBRL with latent subchunk rollouts. The results in Fig. 5 show that
+our world model achieves greater policy improvement, suggesting that the reconstruction objective helps
+preserve additional information in latent representations that is beneficial for downstream policy learning. It
+is observed in LeWorldModel [Maes et al., 2026] that removing the decoder leads to better performance in
+planning. We think that this finding does not contradict our results, as planning and policy learning may have
+different representation requirements. Planning often benefits from compact and abstract representations
+that capture task-relevant dynamics while filtering out unnecessary visual details. In contrast, RL-based
+policy learning involves learning state-dependent action selection and value estimation, which may benefit
+from retaining richer information about the environment and object states.
+15
+
+
+Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models
+LIBERO Long
+0
+10
+20
+30
+40
+50
+60
+70
+80
+Success Rate (%)
+71.2
+22.4
+41.6
+64.0
+69.2
+66.8
+LS-MBPO
+MBPO w.o. VLA
+MBPO w.o. VLA + BC Reg.
+LS-MBPO w.o. decoder
+LS-MBPO with L = 25
+LS-MBPO with L = 10
+Figure 5: Ablation results of LS-MBPO on LIBERO Long task.
+B.3
+Ablation on Imagined Rollout Length
+We further conduct an ablation study on the imagined rollout length L, measured in environment steps.
+We fix the base action chunk length at H = 50 and the subchunk size at h = 5, and compare three settings:
+L = 10, 25, 50, with L = 50 used by default in LS-MBPO. The results in Fig. 5 show that longer imagined
+rollouts yield better policy performance within the evaluated range, suggesting that the learned world model
+provides useful training experience over these horizons. A possible explanation is that longer rollouts under
+acceptable compounding errors are more likely to reach successful states from earlier branch starting points,
+providing informative binary success rewards for policy and value learning.
+B.4
+Example Rollouts of Latent World Model
+In Fig. 6, we visualize and compare the recursive rollouts of our latent world model trained with Hierarchical
+Forcing against a LeWM-style world model and a recursive-only world model described in Tab.2. We select
+three tasks from LIBERO Long and three tasks from RoboTwin, and sample one validation trajectory for
+each task. For each trajectory, we extract a 100-step segment and replay the corresponding action sequence
+through both world models.
+We observe that the three models exhibit relatively similar reconstruction quality during the early stages
+of rollout. However, starting from t = 50, the LeWM-style model begins to produce substantial deviations
+in several trajectories, particularly those from LIBERO Long. By t = 100, its predictions become severely
+corrupted in all three LIBERO Long trajectories. The recursive-only world model does show better rollout
+quality compared to LeWM, but still falls short of our world model in some details of the image. These
+qualitative results provide further evidence that Hierarchical Forcing effectively mitigates compounding
+errors during long-horizon recursive rollouts.
+We also provide the example rollouts of two real-world tasks of the learned latent world model in Fig. 7.
+C
+Algorithm Description
+The practical implementation of LS-MBPO is presented in the form of pseudo-code in Algorithm 1.
+16
+
+
+Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models
+LIBERO Long
+(a) Book into caddy
+t = 0
+t = 25
+t = 50
+t = 75
+t = 100
+GT
+LeWM
+Ours
+(b) Moka pot on stove
+t = 0
+t = 25
+t = 50
+t = 75
+t = 100
+GT
+LeWM
+Ours
+(c) Bowl into drawer
+t = 0
+t = 25
+t = 50
+t = 75
+t = 100
+GT
+LeWM
+Ours
+RoboTwin
+(d) Adjust bottle
+t = 0
+t = 25
+t = 50
+t = 75
+t = 100
+GT
+LeWM
+Ours
+(e) Beat block hammer
+t = 0
+t = 25
+t = 50
+t = 75
+t = 100
+GT
+LeWM
+Ours
+(f) Click alarmclock
+t = 0
+t = 25
+t = 50
+t = 75
+t = 100
+GT
+LeWM
+Ours
+Recursive-only
+Recursive-only
+Recursive-only
+Recursive-only
+Recursive-only
+Recursive-only
+Figure 6: Example rollouts of the latent world models in simulation tasks.
+17
+
+
+Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models
+(a) Plug insertion
+t = 0
+t = 25
+t = 50
+t = 75
+t = 100
+GT
+Ours
+(b) Pen into holder
+t = 0
+t = 25
+t = 50
+t = 75
+t = 100
+GT
+Ours
+Recursive-only
+Recursive-only
+Figure 7: Example rollouts of the latent world model in real-world tasks.
+Algorithm 1 Latent Subchunk Rollout for Model-Based Policy Optimization (LS-MBPO)
+Required: an offline dataset D, an expert dataset G, a pretrained VLA πVLA
+Output: the optimized residual policy πψ.
+1: Initialize the latent encoder Eθ, dynamics predictor Fϕ, and CNN decoder.
+2: Initialize the residual policy πψ and critic networks.
+3: // Training latent world model with Hierarchical Forcing
+4: while world model training not converged do
+5:
+Sample trajectories from D and encode observations into latent representations.
+6:
+Train Fϕ with Hierarchical Forcing using Lpred.
+7:
+Update Eθ, Fϕ, and the decoder using Eq. (1).
+8: end while
+9: // Training reward and progress predictors
+10: Construct positive and negative samples from G and D.
+11: Train the success detector ξ using binary success labels.
+12: Train the progress predictor gp using task progress supervision from G.
+13: Freeze the latent world model W, success detector ξ, progress predictor gp, and pretrained VLA πVLA.
+14: // Training residual policy
+15: while residual policy training not converged do
+16:
+Periodically collect real-world trajectories Kstart as branch starting points by rolling out with the
+current residual policy and VLA πVLA.
+17:
+Estimate task progress for states in Kstart using gp.
+18:
+Construct the branch-start sampling distribution using PBC (Eq. (4)).
+19:
+Sample branch starting observations according to the progress-conditioned distribution.
+20:
+for each sampled branch starting observation ot do
+21:
+Generate a base action chunk Bt using the frozen VLA πVLA(ot, ℓ).
+22:
+Divide Bt into N subchunks, each of length h.
+23:
+Initialize the latent history window b
+H0 with the encoded observation.
+24:
+for j = 0, . . . , N −1 do
+25:
+Generate an action correction ∆Aj using πψ(ˆzt+jh, B(j)
+t , ℓ).
+26:
+Obtain the corrected action subchunk eAj using Eq. (2).
+27:
+Predict the next latent state using Fϕ and the corrected action subchunk.
+28:
+Compute the binary reward using the success detector ξ (Eq. (3)).
+29:
+Store the imagined transition in the rollout buffer.
+30:
+end for
+31:
+end for
+32:
+Update πψ and the critic networks using imagined transitions with TD3+BC.
+33: end while
+34: return the optimized residual policy πψ.
+18
