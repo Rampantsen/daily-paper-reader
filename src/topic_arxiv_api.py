@@ -5,6 +5,11 @@ from datetime import date, timedelta
 from query_boolean import parse_boolean_expr
 from long_range_review import fingerprint, write_json
 from paper_dates import resolve_publication_date, publication_window_status
+from contextlib import ExitStack
+import tempfile
+import re
+import requests
+from topic_mirrors import TopicMirrors
 import time
 import json
 from pathlib import Path
@@ -32,7 +37,7 @@ def _query_results(client, search):
         except arxiv.HTTPError as exc:
             if exc.status != 429 or attempt == 2:
                 raise
-            delay = 60 * (2 ** attempt)
+            delay = 60 * (2**attempt)
             print(f"[arXiv API] 请求受限，等待 {delay} 秒后重试", flush=True)
             time.sleep(delay)
 
@@ -54,67 +59,125 @@ def add_arxiv_results(result, plan, root):
     cache = Path(root) / ".local-runs/starter-pack-cache/retrieval/arxiv-api"
     cache.mkdir(parents=True, exist_ok=True)
     client = arxiv.Client(page_size=100, delay_seconds=3, num_retries=3)
-    papers = {}
-    for query in queries:
-        expression = _expression(parse_boolean_expr(query), window)
-        search = arxiv.Search(
-            query=f"({expression}) AND {window}",
-            max_results=100,
-            sort_by=arxiv.SortCriterion.Relevance,
+    primary_unavailable = False
+    with ExitStack() as resources:
+        directory = resources.enter_context(
+            tempfile.TemporaryDirectory(prefix="topic-mirrors-")
         )
-        key = fingerprint(["arxiv-api-v1", search.query, search.max_results])
-        path = cache / f"{key}.json"
-        restored = path.exists()
-        if restored:
-            rows = json.loads(path.read_text())
-        else:
-            rows = []
-            for hit in _query_results(client, search):
-                row = dict(
-                    id=hit.get_short_id(),
-                    title=hit.title,
-                    abstract=hit.summary,
-                    published=hit.published.isoformat(),
-                    link=hit.entry_id,
-                    pdf_url=hit.pdf_url,
-                    authors=[a.name for a in hit.authors],
-                    categories=hit.categories,
-                    primary_category=hit.primary_category,
-                    doi=hit.doi,
+        mirrors = TopicMirrors(directory, start, end)
+        resources.callback(mirrors.close)
+        papers = {}
+        for query in queries:
+            expression = _expression(parse_boolean_expr(query), window)
+            search = arxiv.Search(
+                query=f"({expression}) AND {window}",
+                max_results=100,
+                sort_by=arxiv.SortCriterion.Relevance,
+            )
+            key = fingerprint(["arxiv-api-v1", search.query, search.max_results])
+            path = cache / f"{key}.json"
+            restored = path.exists()
+            provider = "arxiv_api"
+            snapshot_latest = None
+            backup_path = cache / f"{key}-mirrors-{date.today().isoformat()}.json"
+            if not restored and backup_path.exists():
+                cached = json.loads(backup_path.read_text())
+                provider, rows = cached["provider"], cached["rows"]
+                snapshot_latest = cached.get("snapshot_latest")
+                restored = True
+            elif restored:
+                rows = json.loads(path.read_text())
+            else:
+                rows = []
+                hits = []
+                if not primary_unavailable:
+                    try:
+                        hits = _query_results(client, search)
+                    except (
+                        arxiv.UnexpectedEmptyPageError,
+                        requests.ConnectionError,
+                        requests.Timeout,
+                        arxiv.HTTPError,
+                    ) as error:
+                        if (
+                            isinstance(error, arxiv.HTTPError)
+                            and error.status != 429
+                            and error.status < 500
+                        ):
+                            raise
+                        primary_unavailable = True
+                        print(
+                            f"[arXiv API] {type(error).__name__}，本轮改用备用数据源",
+                            flush=True,
+                        )
+                for hit in hits:
+                    row = dict(
+                        id=hit.get_short_id(),
+                        title=hit.title,
+                        abstract=hit.summary,
+                        published=hit.published.isoformat(),
+                        link=hit.entry_id,
+                        pdf_url=hit.pdf_url,
+                        authors=[a.name for a in hit.authors],
+                        categories=hit.categories,
+                        primary_category=hit.primary_category,
+                        doi=hit.doi,
+                        source="arxiv",
+                        retrieval_source="arxiv",
+                    )
+                    row.update(resolve_publication_date(row))
+                    row["publication_window_status"] = publication_window_status(
+                        row, start, end
+                    )
+                    if row["publication_window_status"] == "included":
+                        rows.append(row)
+                if primary_unavailable:
+                    provider, rows = mirrors.retrieve(query)
+                    if provider == "cornell_snapshot":
+                        snapshot_latest = mirrors.snapshot_latest
+                    write_json(
+                        backup_path,
+                        dict(
+                            provider=provider,
+                            rows=rows,
+                            snapshot_latest=snapshot_latest,
+                        ),
+                    )
+                else:
+                    write_json(path, rows)
+            for rank, row in enumerate(rows, 1):
+                record = papers.setdefault(
+                    re.sub(r"v\d+$", "", row["id"]), dict(row, retrieval_evidence=[])
+                )
+                record["retrieval_evidence"].append(
+                    dict(
+                        lane="arxiv_relevance",
+                        query_text=query,
+                        task_key=key,
+                        rank=rank,
+                    )
+                )
+            result["tasks"].append(
+                dict(
+                    key=key,
                     source="arxiv",
-                    retrieval_source="arxiv",
+                    provider=provider,
+                    **({"snapshot_latest": snapshot_latest} if snapshot_latest else {}),
+                    lane="arxiv_relevance",
+                    query_text=query,
+                    start=start,
+                    end_exclusive=end,
+                    status="done",
+                    restored=restored,
+                    bounded=True,
+                    raw_count=len(rows),
                 )
-                row.update(resolve_publication_date(row))
-                row["publication_window_status"] = publication_window_status(
-                    row, start, end
-                )
-                if row["publication_window_status"] == "included":
-                    rows.append(row)
-            write_json(path, rows)
-        for rank, row in enumerate(rows, 1):
-            record = papers.setdefault(row["id"], dict(row, retrieval_evidence=[]))
-            record["retrieval_evidence"].append(
-                dict(lane="arxiv_relevance", query_text=query, task_key=key, rank=rank)
             )
-        result["tasks"].append(
-            dict(
-                key=key,
-                source="arxiv",
-                lane="arxiv_relevance",
-                query_text=query,
-                start=start,
-                end_exclusive=end,
-                status="done",
-                restored=restored,
-                bounded=True,
-                raw_count=len(rows),
-            )
-        )
-        print(f"[arXiv API] {query}: {len(rows)} 篇", flush=True)
+            print(f"[{provider}] {query}: {len(rows)} 篇", flush=True)
     result["papers"].extend(papers.values())
     result["coverage"].update(
-        arxiv_keyword="arXiv API relevance top100/query",
+        arxiv_keyword="arXiv / Semantic Scholar + DataCite / Cornell snapshot; up to 100 per query",
         arxiv_vector="disabled",
-        note="arXiv API 按检索词返回相关度前100篇，合并去重后进入专题重排。",
+        note="每条检索最多保留100篇，按首次提交日期验证；备用数据源可能存在收录延迟。任务记录列出实际使用的数据源。",
     )
     return result
