@@ -1,10 +1,15 @@
 {
-  "generated_at": "2026-10-09T00:31:52.804631+00:00",
-  "updated_date": "20261009",
+  "generated_at": "2026-11-23T09:38:26.465947+00:00",
+  "updated_date": "20261114-20261123",
   "carryover_days": 9,
   "tag_states": {
     "D-gen-recon": {
       "updated_date": "20261009",
+      "carryover_days": 9,
+      "items": []
+    },
+    "humanoid": {
+      "updated_date": "20261114-20261123",
       "carryover_days": 9,
       "items": []
     }
