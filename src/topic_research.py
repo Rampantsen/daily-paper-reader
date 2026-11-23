@@ -141,6 +141,8 @@ def research_plan(
         arxiv_days=90 if mode == "90" else 365,
         bounded=True,
     )
+    direct = (config.get("arxiv_paper_setting") or {}).get("prefer_supabase_read") is False
+    plan["direct_arxiv"] = direct
     plan.update(mode=mode, snapshot=snapshot, research_version=VERSION)
     if mode != "starter":
         # 90/365只查询arXiv，不把未执行的会议窗口写进结果或任务身份。
@@ -155,6 +157,7 @@ def research_plan(
                 "mode": mode,
                 "windows": plan["windows"],
                 "conferences": plan["conferences"],
+                **({"arxiv_backend": "api-v1"} if direct else {}),
                 "review_limit": 300,
                 "result_limit": 100,
             }
@@ -261,7 +264,15 @@ def run_research(
                 if retrieval_path.exists():
                     retrieval = json.loads(retrieval_path.read_text(encoding="utf-8"))
                 else:
-                    retrieval = run_retrieval(plan, scoped, root)
+                    if plan["direct_arxiv"]:
+                        from topic_arxiv_api import add_arxiv_results
+
+                        conferences_only = dict(plan, tasks=[task for task in plan["tasks"]
+                                                             if task["source"] != "arxiv"])
+                        retrieval = run_retrieval(conferences_only, scoped, root)
+                        add_arxiv_results(retrieval, plan, root)
+                    else:
+                        retrieval = run_retrieval(plan, scoped, root)
                     write_json(retrieval_path, retrieval)
                 checked = verify_publications(
                     retrieval["papers"], root, resolve_pdfs=False

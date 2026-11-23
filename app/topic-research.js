@@ -77,7 +77,7 @@ window.DPRTopicResearch = (function () {
         <p class="dpr-task-hint">限定词将作为组间AND检索条件；文字中的排除要求用于模型评审，不是数据库NOT硬过滤。</p>
         <button id="dpr-topic-refine-apply" class="arxiv-tool-btn" type="button">生成限定查询并继续</button>
         <button id="dpr-topic-refine-skip" class="arxiv-tool-btn" type="button">继续整个方向</button>
-        <button id="dpr-topic-refine-cancel" class="arxiv-tool-btn" type="button">取消本次任务</button>
+        <button id="dpr-topic-refine-cancel" class="arxiv-tool-btn" type="button">放弃本次草稿</button>
       </div>
     </div>`;
   const mount = (root, context) => {
@@ -94,6 +94,7 @@ window.DPRTopicResearch = (function () {
       ['dpr-topic-start', 'dpr-topic-refine-apply', 'dpr-topic-refine-skip', 'dpr-topic-refine-cancel'].forEach(id => { el(id).disabled = value; });
     };
     const preview = async () => {
+      if (context.getConfig()?.arxiv_paper_setting?.prefer_supabase_read === false) return { status: 'unknown' };
       if (!window.TopicResearchPreview || typeof window.TopicResearchPreview.preview !== 'function') return { status: 'unknown' };
       try { return await window.TopicResearchPreview.preview({ ...draft, config: context.getConfig() }); }
       catch (_) { return { status: 'unknown' }; }
@@ -176,7 +177,7 @@ window.DPRTopicResearch = (function () {
     };
     el('dpr-topic-refine-apply').addEventListener('click', () => finishRefinement(true));
     el('dpr-topic-refine-skip').addEventListener('click', () => finishRefinement(false));
-    el('dpr-topic-refine-cancel').addEventListener('click', () => { if (busy) return; draft = null; el('dpr-topic-refine').hidden = true; status('已取消本次任务。'); });
+    el('dpr-topic-refine-cancel').addEventListener('click', () => { if (busy) return; draft = null; el('dpr-topic-refine').hidden = true; status('已放弃草稿，未提交工作流。'); });
     el('dpr-topic-results-link').addEventListener('click', () => {
       const close = document.getElementById('arxiv-search-close-btn');
       if (close) close.click();

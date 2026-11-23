@@ -18,7 +18,7 @@ def test_invalid_cache_is_replaced_by_real_fulltext(tmp_path, monkeypatch):
     target = tmp_path / "paper.txt"
     target.write_text("")
     fetch = Mock(return_value=FULLTEXT)
-    monkeypatch.setattr(generator, "fetch_paper_markdown_via_jina", fetch)
+    monkeypatch.setattr(generator, "fetch_paper_markdown_via_mineru", fetch)
     assert (
         generator.ensure_text_content("https://arxiv.org/pdf/2510.17595v1", str(target))
         == FULLTEXT
@@ -33,7 +33,7 @@ def test_error_response_is_not_published_as_fulltext(tmp_path, monkeypatch):
     target = tmp_path / "paper.txt"
     monkeypatch.setattr(
         generator,
-        "fetch_paper_markdown_via_jina",
+        "fetch_paper_markdown_via_mineru",
         lambda _: "<html>Access denied</html>" * 100,
     )
     response = Mock(content=b"<html>not a pdf</html>")
@@ -49,9 +49,9 @@ def test_withdrawn_pdf_notice_is_not_a_paper(tmp_path, monkeypatch):
         + "navigation " * 200
     )
     assert not generator.is_usable_paper_text(notice)
-    monkeypatch.setattr(generator, "fetch_paper_markdown_via_jina", lambda _: notice)
+    monkeypatch.setattr(generator, "fetch_paper_markdown_via_mineru", lambda _: notice)
     monkeypatch.setattr(
-        generator.requests, "get", lambda *a, **k: Mock(status_code=404)
+        generator.requests, "get", lambda *a, **k: Mock(status_code=404, text=notice)
     )
     with pytest.raises(generator.PaperFulltextUnavailable):
         generator.ensure_text_content(

@@ -774,17 +774,22 @@ window.DPRWorkflowRunner = (function () {
         const runs = Array.isArray(checkData.workflow_runs) ? checkData.workflow_runs : [];
         const activeRuns = runs.filter((r) => activeStatuses.has(r.status));
         if (activeRuns.length > 0) {
-          const r = activeRuns[0];
+          const r = activeRuns.find(item => item.status !== "queued") || activeRuns[0];
           const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${r.id}`;
           const statusText = statusZhMap[r.status] || r.status;
-          setStatus(
-            `已有正在运行的工作流（#${r.run_number || r.id}，状态：${statusText}），请等待完成后再触发。`,
-            '#c00',
+          const submitAgain = r.status === 'queued' && window.confirm(
+            `GitHub 显示 #${r.run_number || r.id} 仍在排队。重新提交可能替换排队任务或产生另一轮运行。继续提交？`,
           );
-          runsEl.innerHTML =
-            `<div style="color:#c00;">同一时间只允许运行一个该工作流实例，请等待当前运行结束。</div>` +
-            `<div style="margin-top:8px;"><a class="arxiv-tool-btn" style="padding:6px 10px; text-decoration:none;" target="_blank" href="${runUrl}">查看当前运行</a></div>`;
-          return false;
+          if (!submitAgain) {
+            setStatus(
+              `已有正在运行的工作流（#${r.run_number || r.id}，状态：${statusText}），请等待完成后再触发。`,
+              '#c00',
+            );
+            runsEl.innerHTML =
+              `<div style="color:#c00;">同一时间只允许运行一个该工作流实例，请等待当前运行结束。</div>` +
+              `<div style="margin-top:8px;"><a class="arxiv-tool-btn" style="padding:6px 10px; text-decoration:none;" target="_blank" href="${runUrl}">查看当前运行</a></div>`;
+            return false;
+          }
         }
       }
 
@@ -962,11 +967,33 @@ window.DPRWorkflowRunner = (function () {
           </div>
         </div>
         <div style="flex-shrink:0; display:flex; gap:8px;">
+          ${['queued', 'in_progress', 'waiting', 'pending', 'requested'].includes(status)
+            ? '<button type="button" class="arxiv-tool-btn" data-cancel-run>取消运行</button>' : ''}
           <a class="arxiv-tool-btn" style="padding:6px 10px; text-decoration:none;" target="_blank" href="${runUrl}">打开 Actions</a>
         </div>
       </div>
       ${jobHtml || '<div style="color:#999;">暂无 Job 信息</div>'}
     `;
+    const cancelButton = runsEl.querySelector('[data-cancel-run]');
+    cancelButton?.addEventListener('click', async () => {
+      if (!window.confirm(`取消 GitHub Actions 运行 #${run.run_number || run.id}？`)) return;
+      cancelButton.disabled = true;
+      try {
+        const response = await ghFetch(loadGithubToken(),
+          `https://api.github.com/repos/${owner}/${repo}/actions/runs/${run.id}/cancel`, { method: 'POST' });
+        if (response.status === 409) {
+          setStatus('GitHub 已不接受取消请求，请刷新运行状态或重新启动。', '#666');
+        } else if (response.ok) {
+          setStatus('GitHub 已收到取消请求。', '#666');
+        } else {
+          throw new Error(`HTTP ${response.status}`);
+        }
+      } catch (error) {
+        setStatus(`取消失败：${error.message}。请在 Actions 页面确认权限和运行状态。`, '#c00');
+      } finally {
+        cancelButton.disabled = false;
+      }
+    });
   };
 
   const refreshRun = async (owner, repo, runId) => {

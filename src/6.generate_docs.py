@@ -185,27 +185,20 @@ def extract_pdf_text(pdf_path: str) -> str:
     return "\n\n".join(texts)
 
 
-def fetch_paper_markdown_via_jina(pdf_url: str, max_retries: int = 3) -> str | None:
-    if not pdf_url:
+def fetch_paper_markdown_via_mineru(pdf_url: str) -> str | None:
+    from mineru_reader import extract_markdown
+
+    token = os.environ.get("MINERU_API_TOKEN", "").strip()
+    if not token or not pdf_url:
         return None
-    base = "https://r.jina.ai/"
-    full_url = base + pdf_url
-    for attempt in range(1, max_retries + 1):
-        try:
-            log(f"[JINA] 第 {attempt} 次请求：{full_url}")
-            resp = requests.get(full_url, timeout=60)
-            if resp.status_code != 200:
-                log(f"[JINA][WARN] 状态码 {resp.status_code}，响应前 100 字符：{(resp.text or '')[:100]}")
-            else:
-                text = (resp.text or "").strip()
-                if text:
-                    log("[JINA] 获取到结构化 Markdown 文本，将直接用作 .txt 内容。")
-                    return text
-        except Exception as e:
-            log(f"[JINA][WARN] 请求失败（第 {attempt} 次）：{e}")
-        time.sleep(2 * attempt)
-    log("[JINA][ERROR] 多次请求失败，将回退到 PyMuPDF 抽取。")
-    return None
+    try:
+        return extract_markdown(pdf_url, token)
+    except Exception as exc:
+        # 下载链接可能带临时签名，仅记录错误类型与 HTTP 状态。
+        response = getattr(exc, "response", None)
+        status = getattr(response, "status_code", "")
+        log(f"[MinerU] {type(exc).__name__} {status}，改用 PyMuPDF 提取全文。")
+        return None
 
 
 def normalize_arxiv_id(value: str) -> str:
@@ -1470,10 +1463,10 @@ def ensure_text_content(pdf_url: str, txt_path: str) -> str:
             cached = f.read()
         if is_usable_paper_text(cached):
             return cached
-    text_content = fetch_paper_markdown_via_jina(pdf_url)
+    text_content = fetch_paper_markdown_via_mineru(pdf_url)
     if not is_usable_paper_text(text_content) and pdf_url:
         resp = requests.get(pdf_url, timeout=60)
-        if resp.status_code == 404 and 'has been withdrawn and is unavailable' in str(text_content or '').lower():
+        if resp.status_code == 404 and 'has been withdrawn and is unavailable' in resp.text[:2000].lower():
             raise PaperFulltextUnavailable("该arXiv版本已撤回，官方PDF不可下载")
         resp.raise_for_status()
         if not resp.content.lstrip().startswith(b"%PDF-"):
@@ -1997,7 +1990,7 @@ def process_paper(
 
     # 新文件：如果只需要速览，则不拉取 PDF/Jina 文本，直接用元数据生成页面
     if glance_only:
-        # 速览模式也需要生成/补齐全文 txt（优先 jina，失败则 pymupdf 兜底）
+        # 速览模式也需要生成/补齐全文 txt（优先 MinerU，失败则 pymupdf 兜底）
         if pdf_url:
             try:
                 ensure_text_content(pdf_url, txt_path)
