@@ -48,17 +48,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-11-23</span>
+      <span class="dpr-home-dashboard-kicker">2026-10-26 ~ 2026-11-24</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 5 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 0 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>3</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>2</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>0</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-11-23 11:44:58 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-11-24 01:50:39 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>人形控制与运动跟踪双9分领跑：今日5篇中精读3篇、速读2篇，重点锁定稀疏时空目标下的行为基础模型与带容量世界模型策略梯度。最值得看的是人形运动跟踪的“可信重复”策略梯度，以及从稀疏目标学习控制的基础模型路线。普通读者可先读两篇9分精读，再用两篇速读补充风险感知规划与VLA高效强化学习视角。</p>
+<p>今日无新推荐，系统未产出可展示论文。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -78,12 +78,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">3 篇</strong>
+    <strong class="dpr-home-dashboard-count">0 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="S-BFM: A Behavioral Foundation Model for Humanoid Control from Sparse Spatiotemporal Goals">S-BFM: A Behavioral Foundation Model for Humanoid Control from Sparse Spatiotemporal Goals</span></li><li><span class="dpr-home-dashboard-paper-title" title="Trust What Repeats: Capped World-Model Policy Gradients for Humanoid Motion Tracking">Trust What Repeats: Capped World-Model Policy Gradients for Humanoid Motion Tracking</span></li><li><span class="dpr-home-dashboard-paper-title" title="Humanoid robots for safety-critical electrical switching: A perception-informed runtime constraint filter">Humanoid robots for safety-critical electrical switching: A perception-informed runtime constraint filter</span></li></ul>
+<p class="dpr-home-dashboard-empty">今日暂无推荐。</p>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">humanoid <strong>3</strong></span></div>
+
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -91,12 +91,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">2 篇</strong>
+    <strong class="dpr-home-dashboard-count">0 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="What Must a Model Tell a Planner? Outcome Interfaces for Risk-Aware Planning After Robot Damage">What Must a Model Tell a Planner? Outcome Interfaces for Risk-Aware Planning After Robot Damage</span></li><li><span class="dpr-home-dashboard-paper-title" title="Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models">Efficient VLA Reinforcement Learning via Subchunk Rollouts in Latent World Models</span></li></ul>
+<p class="dpr-home-dashboard-empty">今日暂无推荐。</p>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">humanoid <strong>2</strong></span></div>
+
 </section>
 </div>
 

@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-23T11:41:41.994507+00:00",
-  "updated_date": "20261123",
+  "generated_at": "2026-11-24T01:50:38.300765+00:00",
+  "updated_date": "20261026-20261124",
   "carryover_days": 9,
   "tag_states": {
     "D-gen-recon": {
@@ -9,7 +9,7 @@
       "items": []
     },
     "humanoid": {
-      "updated_date": "20261123",
+      "updated_date": "20261026-20261124",
       "carryover_days": 9,
       "items": []
     }
