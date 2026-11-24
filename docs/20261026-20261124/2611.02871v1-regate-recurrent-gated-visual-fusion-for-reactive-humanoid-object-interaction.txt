@@ -1,0 +1,288 @@
+# ReGATE: Recurrent Gated Visual Fusion for Reactive Humanoid–Object Interaction
+
+Hao Zhu and Jorge Pena-Queralta ˜
+
+Centre for Artificial Intelligence, Zurich University of Applied Sciences,¨
+
+Winterthur, Switzerland
+
+{zhuh,penq}@zhaw.ch
+
+![](images/7b2193233d1acfe0307c1a605574c17da87a3731010903def166224206ff0f1c.jpg)  
+Fig. 1: ReGATE enables command-conditioned whole-body object interaction on a Unitree G1 using onboard proprioception and egocentric depth. Frames progress from left to right. (a) Contact-command response: activating the contact command initiates grasping and lifting, while deactivating it prompts the robot to place and release the box. (b) Commanded locomanipulation: after commanded grasping, the robot follows planar velocity commands to transport the box while maintaining balance and physical contact.
+
+Abstract—Humanoid loco-manipulation requires coordinating object acquisition, transport, and release from onboard sensing while responding to user commands and incomplete visual observations. We present ReGATE, a whole-body controller that combines egocentric depth, proprioception, and online locomotion and contact commands. Built on a teacher–student framework, ReGATE integrates interaction-state estimation through a recurrent adapter that predicts object geometry and physical contact without an external object-pose estimator. Head-wise and global gates regulate visual updates to a proprioceptive pathway. A visual-grounding and corruption curriculum trains the adapter, while phase-aware initialization increases coverage of brief contact transitions. In simulation, ReGATE achieves 85.2% success across 330 static-object acquisition trials, compared with 48.5% for VisualMimic under the same protocol, and 85.9% across 440 moving-object acquisition trials. Deployment on a Unitree G1 demonstrates commanded grasp–transport–release sequences and acquisition of laterally displaced boxes. A qualitative hardware experiment further demonstrates successful box acquisition when the camera is occluded after an initial observation and before the contact command. To the best of our knowledge, this is the first work to extend recurrent gated fusion of onboard depth and proprioception from perceptive locomotion to humanoid loco-manipulation under interrupted visual sensing. Index Terms—Humanoid robots, locomanipulation, visuomotor control, whole-body control
+
+## I. INTRODUCTION
+
+Humanoid robots offer the potential to perform object interaction in human-centered environments [1], [2]. Their embodiment enables coordinated whole-body behaviors that integrate locomotion, grasping, and object transport [3], [4]. A deployable controller must coordinate these stages from onboard sensing and support user-specified locomotion and contact commands. Learning-based methods have enabled increasingly robust humanoid–object interaction through reinforcement learning and motion imitation [2], [5]–[8]. However, many existing systems either track predefined interaction motions [6], [7] or rely on object states obtained from external motion-capture systems [8], limiting their deployment outside instrumented environments. Recent methods address this limitation using perceptive closed-loop control. Some estimate object states through explicit perception pipelines [1], [4], [9], while others distill privileged interaction policies into visuomotor students operating from onboard observations [3], [10]. Despite this progress, executing a complete interaction remains challenging when the controller must perceive the object for closed-loop interaction and adapt the interaction online to user commands.
+
+Three challenges are particularly important for robust HOI. First, obtaining object states through external perception packages introduces additional engineering dependencies and may propagate estimation errors to the controller. An end-to-end policy should instead infer the task-relevant object state directly from onboard depth and proprioceptive history. Second, the reliability of depth observations changes throughout an interaction. Occlusion by the object or the robot body, missing measurements, latency, and frozen frames can make visual evidence unreliable, requiring the controller to preserve a stable proprioceptive interaction belief while selectively incorporating useful visual information. Third, the controller must respond to user-defined locomotion and contact commands rather than rigidly replaying a reference trajectory. This requires coordinated adaptation of whole-body motion and contact behavior across different stages of object manipulation.
+
+To tackle these challenges, we present ReGATE, a wholebody controller for humanoid–object interaction. ReGATE operates from onboard proprioception and egocentric depth, together with a user command specifying planar velocity, yaw rate, and desired contact state, allowing the user to adjust robot movement and contact timing during deployment. To improve coverage of complete interaction sequences, we introduce phase-aware random state initialization, which partitions demonstrations into approach, pre-contact, interaction, pre-release, and release phases. Combined with lightweight perception–action rewards, this strategy emphasizes brief transition states and encourages object acquisition and recovery after unexpected contact loss.
+
+At the core of ReGATE is a recurrent gated fusion adapter that estimates task-relevant object state directly from depth observations and proprioceptive history. The adapter augments each depth frame with image coordinates and encodes it into spatial tokens using a convolutional encoder and recurrent visual memory. Cross-attention retrieves visual evidence conditioned on the current proprioceptive state and user command. Head-wise and global gates regulate the contribution of this fused evidence, while an always-active proprioceptive pathway maintains the interaction representation when depth becomes unreliable. The fused representation is decoded under auxiliary supervision into object pose and physical contact. These predictions are then temporally aggregated to reconstruct the interaction latent learned by the privileged teacher. A visual curriculum first grounds the depth pathway under clean observations and subsequently introduces occlusion and sensing corruption. We evaluate ReGATE on a box pickup and carrying HOI task under online command variations, contact transitions, and visual degradation. Across the tested box-picking scenarios, ReGATE localizes the object from onboard depth and completes commanded grasp–transport– release sequences under both nominal and degraded visual observations.
+
+In summary, the contributions of this work are:
+
+• Reactive whole-body control: A deployable controller for humanoid loco-manipulation that operates from onboard depth and proprioception and responds to online locomotion and contact commands.
+
+• Integrated interaction-state estimation: A recurrent adapter that predicts object geometry and physical contact from onboard observations, providing the control policy with an interaction representation without an external object-pose estimator or an object template supplied at deployment.
+
+• Gated visual fusion: A hierarchical gating mechanism that regulates depth updates to a proprioceptive pathway, trained with a visual-grounding and corruption curriculum and demonstrated on physical object acquisition after the camera is occluded.
+
+Together, these contributions extend recurrent gated perceptive control to humanoid loco-manipulation, including object acquisition when visual access is completely interrupted before the contact command.
+
+## II. RELATED WORK
+
+## A. Learning Humanoid–Object Interaction
+
+Recent advances in general motion tracking (GMT) have established a foundation for acquiring dynamic humanoid behaviors from motion data [11], [12]. BeyondMimic and SONIC extend this paradigm toward versatile and scalable whole-body motion tracking [2], [13]. Recent work adapts these motion priors to contact-rich humanoid–object interaction (HOI). Box Loco-Manipulation learns unified locomotion and box transport [5]; HAIC models coupled robot–object interaction as dynamic world model for interactions with underactuated objects [7]. ResMimic refines a general motion tracker for loco-manipulation through residual learning [14], while SceneBot conditions whole-body tracking on contact prompts for terrain and object interaction [15].
+
+Complementary studies expand interaction data through human videos, retargeting, and motion generation [6], [8], [16], [17]. GRAIL generates interaction data and trains visuomotor policies from 3D assets and video priors [18]. Other systems address force adaptation, sequential contacts, and extended task execution [19]–[23]. In contrast to these approaches, ReGATE targets reactive HOI from onboard observations, with user commands that can modify locomotion and contact timing during execution.
+
+## B. Perceptive Humanoid Control
+
+Deployable HOI controllers must infer task-relevant object information from onboard sensors rather than simulator states. Modular approaches separate state estimation from control. PhysHSI employs a coarse-to-fine LiDAR–camera localization pipeline [1], whereas Pro-HOI [4] combines online object detection with a digital twin for persistent estimation and uses FoundationPose [24] for object estimation. Such systems provide explicit geometric estimates, but their controllers depend on the accuracy and availability of an external perception pipeline.
+
+![](images/f9f183abe9d70db8051f360b908082aa8782240df301b4844593a3493f9f28d2.jpg)  
+Fig. 2: Overview of ReGATE. (a) Observations available to the teacher and student. (b) The privileged teacher produces the target latent $z _ { t } ^ { \mathrm { p r i v } }$ and teacher actions. (c) The student combines proprioception, commands, and recurrent depth tokens to estimate $\hat { z } _ { t }$ and produce joint targets. Dashed arrows denote training-only latent and action supervision.
+
+Visuomotor approaches learn perceptual representations jointly with whole-body control. VisualMimic maps egocentric observations to commands for a task-agnostic motion tracker [3], while GRAIL learns egocentric interaction policies from generated visual data [18]. VAIC distills privileged interaction information into a depth-conditioned student driven by proprioceptive history and a decoupled velocityand-contact command [10], but still rely on object points template and reference motion command at implementation and deployment. ULTRA considers heterogeneous observation and goal modalities [9], and RHINO uses human observations and commands to produce reactive humanoid–human–object interaction [25].
+
+In ReGATE, we adopt the teacher–student backbone and command interface of VAIC, but construct its interaction representation within a recurrent adapter. The adapter predicts object state, posed geometry, and physical contact without requiring an external pose estimator or object template as a deployment input, providing a truly end-to-end solution.
+
+## C. Exteroceptive–Proprioceptive Fusion
+
+Exteroception provides spatial information about the environment, whereas proprioception remains available when external observations are degraded or missing. Miki et al. integrate proprioceptive and exteroceptive inputs through a recurrent belief state for perceptive locomotion [26]. AME and AME-2 apply proprioception-conditioned attention to robotcentric elevation maps to identify terrain regions relevant to locomotion [27], [28]. AMCO adapts multimodal coupling using semantic segmented RGB images [29], while CReF combines cross-attention, gated residual fusion, and recurrence for depth-conditioned humanoid locomotion [30]. These methods demonstrate the value of adaptive perception fusion, but primarily address terrain-conditioned locomotion rather than contact-rich humanoid–object interaction.
+
+Multimodal policies may also favor compact proprioceptive inputs over perceptual features required for target-dependent behavior [31]. ReGATE first grounds its depth representation through auxiliary geometry and contact supervision and then introduces visual degradation through curriculum training. Head-wise and global gates regulate how recurrent depth evidence updates an always-active proprioceptive representation throughout the interaction.
+
+## III. METHOD
+
+## A. Problem Formulation
+
+We consider whole-body humanoid–object interaction under onboard sensing. At time t, the deployable policy receives a proprioceptive observation $o _ { t } ^ { p } ,$ , an egocentric depth image $\bar { D _ { t } } \in \mathbf { \bar { R } } ^ { 1 \times \bar { H ^ { \times } } W }$ , and a causal command $u _ { t } = [ v _ { t } ^ { x } , v _ { t } ^ { y } , \omega _ { t } ^ { z } , c _ { t } ]$ Here, $( v _ { t } ^ { x } , v _ { t } ^ { y } )$ and $\omega _ { t } ^ { z }$ specify the desired planar velocity and yaw rate, while $c _ { t } ~ \in ~ \{ 0 , 1 \}$ indicates whether object contact is desired. The policy outputs joint-position targets $a _ { t } ~ \in ~ \mathbb { R } ^ { 2 3 }$ , which are tracked by a low-level proportional– derivative controller.
+
+The object state is not directly observable by the deployed policy, and no external object-pose estimator is used. ReGATE instead maintains a recurrent interaction representation $\hat { z } _ { t }$ from the history of proprioception, depth, and commands:
+
+$$
+\begin{array}{r l} & {\hat {z} _ {t} = \mathcal {R} _ {\theta} \big (o _ {t - H + 1: t} ^ {p}, u _ {t - H + 1: t}, D _ {t - H + 1: t} \big),} \\ & {a _ {t} \sim \pi_ {S} (\cdot | o _ {t} ^ {p}, u _ {t}, \hat {z} _ {t}),} \end{array}\tag{1}
+$$
+
+where $\scriptstyle { \mathcal { R } } _ { \theta }$ denotes the recurrent gated fusion adapter and $\pi _ { S }$ is the deployable student actor.
+
+As shown in Fig. 2, ReGATE employs the two-stage teacher–student framework. During training, a privileged teacher provides the latent target $z _ { t } ^ { \mathrm { p r i v } }$ and action supervision. The student estimates this representation from deployable observations by combining recurrent depth features with an always-active proprioceptive pathway. The recurrent gated fusion adapter is detailed in Sec. III-B, followed by the twostage optimization procedure in Sec. III-C.
+
+## B. Recurrent Gated Depth Attention Adaptation Module
+
+Depth is informative when the robot approaches an object and locates it, but its reliability varies after contact. Proprioception provides a complementary signal once the robot and object become dynamically coupled. ReGATE treats depth as a state-dependent correction to an always-available proprioceptive representation rather than as an unconditional policy input.
+
+1) Recurrent Spatial Depth Tokens: We augment the depth image $D _ { t }$ with normalized image-coordinate maps $U , V \in$ $[ - 1 , \bar { 1 } ] ^ { H \times W }$ and encode the resulting three-channel tensor with a CNN. A spatial ConvGRU [32] integrates consecutive feature maps, preserving both image location and temporal context. The recurrent feature map is projected into spatial depth tokens $\{ z _ { t , i } ^ { \mathrm { d e p t h } } \} _ { i = } ^ { N }$ for subsequent attention.
+
+2) Proprioception-Conditioned Cross-Modal Attention: An MLP encodes the proprioceptive observation $o _ { t } ^ { p }$ and causal command $u _ { t }$ into a control-context feature $z _ { t } ^ { p } . \mathrm { A }$ 8-head crossattention module uses $z _ { t } ^ { p }$ as its query and the recurrent depth tokens as keys and values, producing the attention map $\boldsymbol { A } _ { t }$ and head-wise visual evidence. The command-conditioned query makes visual retrieval dependent on the current robot state and interaction phase, while $z _ { t } ^ { p }$ forms the residual path for the subsequent gated fusion.
+
+![](images/f1aebb8415262a4efac62df6968756f66f29946870f7f3346705bdeee5dd668f.jpg)  
+Fig. 3: Architecture of the recurrent gated depth attention adapter. The proprioceptive feature $\mathbf { z } _ { t } ^ { \mathrm { p } }$ forms the attention query, while the depth tokens $\mathbf { z } _ { t } ^ { \mathrm { { d e p t h } } }$ provide the keys and values.
+
+3) Hierarchical Gated Fusion: Depth observations may be occluded, missing, delayed, or repeated. Injecting every attended feature into the interaction belief can degrade a controller that already has a useful proprioceptive estimate. To limit harmful visual updates, ReGATE applies hierarchical gating to the attended depth evidence, following prior gatedfusion approaches [26], [33]. Let $\pmb { \mathcal { A } } _ { t } ^ { M } = [ \mathcal { A } _ { t } ^ { 1 } ; \ldots ; \mathcal { A } _ { t } ^ { M } ]$ denote the evidence produced by attention head. A vector of head gates $g _ { t } ^ { \mathrm { h e a d } } ~ \in ~ ( 0 , 1 ) ^ { M }$ selects components of the attended evidence, while a scalar gate $g _ { t } ^ { \mathrm { g l o b \bar { a } l } } ~ \in ~ ( 0 , 1 )$ controls the overall depth correction. The fused representation is
+
+$$
+z _ {t} ^ {\mathrm{fuse}} = \mathrm{LN} (z _ {t} ^ {\mathrm{p}} + g _ {t} ^ {\mathrm{global}} (g _ {t} ^ {\mathrm{head}} \cdot \boldsymbol {\mathcal {A}} _ {t} ^ {M})).\tag{2}
+$$
+
+where the head-wise gates modulate individual visual subspaces and the global gate scales the complete visual correction. When $\bar { g } _ { t } ^ { \mathrm { g l o b a l } } \ = \ 0$ , the representation reduces to the proprioceptive residual path. These gates are learned task-dependent coefficients rather than calibrated estimates of sensor reliability. This module is illustrated in Fig. 3
+
+4) Interaction-State Prediction: ReGATE estimates interaction-relevant object information without an external object-pose estimator. From $z _ { t } ^ { \mathrm { f u s e } }$ , auxiliary heads predict the object state $\hat { s } _ { t } ^ { \mathrm { o b j } }$ , posed object point cloud $\hat { \mathcal { P } } _ { t }$ , and physical end-effector contact $\hat { c } _ { t } ^ { \mathrm { c o n } }$ . The predicted geometry and contact, rather than $z _ { t } ^ { \mathrm { f u s e } }$ itself, condition the adaptation GRU:
+
+$$
+\left(\hat {z} _ {t}, h _ {t} ^ {a}\right) = \mathrm{GRU} _ {a} \left(\left[ o _ {t} ^ {p}; u _ {t}; \hat {\mathcal {P}} _ {t}; \hat {c} _ {t} ^ {\text { con }} \right], h _ {t - 1} ^ {a}\right),\tag{3}
+$$
+
+where $\hat { z } _ { t }$ is the interaction latent supplied to the student actor. This design routes visual information through explicit geometry and contact estimates while recurrently aggregating the coupled robot–object state.
+
+A depth-only head additionally predicts the image-space object location, $\hat { x } _ { t } ^ { \mathrm { 2 D } } = H _ { \mathrm { 2 D } } ( z _ { t } ^ { \mathrm { d e p t h } } )$ , from the depth tokens $z _ { t } ^ { \mathrm { d e p t h } }$ . Because this head does not receive proprioception, its supervision directly grounds the visual representation during training.
+
+5) Depth Curriculum: Jointly training the gates and a randomly initialized depth encoder can cause premature gate closure as the controller can reduce its prediction error by suppressing visual features before they become informative. We address this problem with a visual-grounding phase. We begin with clean depth and force both gate levels open, allowing the adaptation losses to establish task-relevant visual features.
+
+After this warm-up, the gates transition gradually to their learned values while structured occlusion and full-frame blackout are introduced. Training under both clean and corrupted observations encourages the adapter to exploit available depth without depending on it when visual evidence is missing.
+
+## C. Two-Stage Teacher–Student Training
+
+ReGATE follows the asymmetric teacher–student paradigm used in prior humanoid interaction controllers [7], [10]. The two stages separate acquisition of the interaction skill from learning its onboard perceptive realization.
+
+1) Stage I: Privileged Teacher and Student Warm-up: Similar to [7], [10], we first train a privileged teacher $\pi _ { T }$ with PPO using reference motions $s _ { t } ^ { r e f }$ , ground-truth object states $s _ { t } ^ { o b j }$ , contact information $c _ { t } ^ { c o n }$ . In teacher training, we initialize a privileged encoder using the same Recurrent Gated Depth Attention Adaptor as in Sec. III-B, producing the latent target $z _ { t } ^ { \mathrm { p r i v } }$ . During teacher rollouts, the student adaptation module is warmed up with zero-valued depth features to reconstruct the privileged latent $\hat { z } _ { t } ,$ object state $\hat { s } _ { t } ^ { o b j }$ , posed object point cloud $\hat { \mathcal { P } } _ { t }$ , and physical contact state $\hat { c } _ { t } ^ { \mathrm { c o n } }$ from proprioceptive information. This warm-up establishes a proprioceptive interaction prior before the depth encoder and learned gates are activated.
+
+2) Stage II: Visuomotor Student Training: In Stage II, we distill the student policy $\pi _ { S }$ by receiving only onboardcompatible inputs of proprioception $o _ { t } ^ { p } ,$ depth $D _ { t } ,$ , and the causal command $u _ { t }$ . Privileged quantities remain available in simulation only as supervision for the perception and adaptation modules. Their joint objective is
+
+$$
+\begin{array}{l} \mathcal {L} _ {\text { adapt }} = \| \hat {z} _ {t} - z _ {t} ^ {\text { priv }} \| _ {2} ^ {2} + \lambda_ {o} \| \hat {s} _ {t} ^ {\text { obj }} - s _ {t} ^ {\text { obj }} \| _ {2} ^ {2} \\ \quad + \lambda_ {\mathcal {P}} \| \hat {\mathcal {P}} _ {t} - T (s _ {t} ^ {\text { obj }}, \mathcal {P}) \| _ {2} ^ {2} + \lambda_ {2 \mathrm{D}} \| \hat {x} _ {t} ^ {\text { 2D }} - x _ {t} ^ {\text { 2D,GT }} \| _ {2} ^ {2} \\ \quad + \lambda_ {c} \operatorname{BCE} \left(\hat {c} _ {t} ^ {\text { con }}, c _ {t} ^ {\text { con,GT }}\right). \end{array} \tag {4}
+$$
+
+The latent-alignment term distills the output of the frozen privileged encoder. The ground truth object-state target $s _ { t } ^ { \mathrm { o b j } }$ and the posed-cloud target are from the motion dataset. The image-space target $ { x _ { t } } ^ { \mathrm { 2 D } }$ directly supervises the depth tokens, while $c _ { t } ^ { \mathrm { c o n } }$ records physical end-effector–object contact obtained from simulator and is distinct from the desired-contact command $c _ { t } ^ { c m d }$ or the demonstration object-contact label $c _ { t } ^ { \mathrm { o b j } }$
+
+The student actor is additionally optimized to match the teacher action mean using $\mathcal { L } _ { \mathrm { a c t } } = \| \mu _ { S } - \mu _ { T } \| _ { 2 } ^ { 2 }$ . Consequently, action distillation updates only the student actor, whereas the depth encoder, gated-fusion module, and adaptation network are optimized through $\mathcal { L } _ { \mathrm { a d a p t } }$ . The student actor is further refined by PPO during Stage II.
+
+3) Phase-Aware Random State Initialization: Uniform random state initialization (RSI) samples each interaction phase in proportion to its duration, underrepresenting short contact transitions. Phase-aware RSI instead assigns phase-specific sampling probabilities independent of phase length.
+
+![](images/3e5a39928a9ca7957029c52286b738ab6a35aac5f34201843aa9035b4f8136d1.jpg)  
+Fig. 4: Phase-aware random state initialization. Demonstration frames are partitioned into five phases using the commanded contact state $c _ { t } ^ { \mathrm { c m d } }$ and object-contact label $\bar { c } _ { t } ^ { \mathrm { { o b j } } } \bar { . }$ : (a) approach, (b) pre-contact, (c) interact, (d) pre-release, and (e) release. Approach and release are distinguished by their temporal positions before the first and after the final object contact.
+
+As shown in Fig. 4, demonstrations are partitioned using the commanded contact state $c _ { t } ^ { \mathrm { c m d } }$ and object-contact label $\bar { c } _ { t } ^ { \mathrm { { o b j } } }$ approach (0, 0) before the first contact, pre-contact $( 1 , 0 )$ interact (1, 1), pre-release (0, 1), and release (0, 0) after the final contact. Each reset first samples a phase from a taskspecific distribution and then selects a frame uniformly within that phase, increasing coverage of transitions undersampled by uniform RSI.
+
+## D. Perception–Action Reward
+
+We retain the motion-tracking and locomotionregularization rewards from prior work [8], [10], [13] and add lightweight, command-conditioned interaction rewards in Stage II [18], [34]: (i) end-effector proximity penalizes distance to the designated grasp points; (ii) object proximity keeps the object within a reachable pelvis-centered region; (iii) facing alignment encourages the robot to face the object; (iv) contact correctness rewards commanded end effectors that establish physical contact; and (v) contact recovery guides end effectors with missing contact back toward their grasp points. Together, these terms connect object-relative observations to the actions required for object interaction.
+
+## IV. EXPERIMENTS
+
+## A. Experiment Setup
+
+1) Implementation Details: We train ReGATE in Isaac Sim using the two-stage framework in Sec. III-C. Both stages use PPO [35], and the student adapter is optimized with Eq. (4). The teacher uses 4096 parallel environments, whereas raycast depth limits student training to 512. All experiments are trained on one NVIDIA GeForce RTX 5090 GPU.
+
+The policy runs at 50 Hz and receives 64×36 depth images at 15 Hz, with each frame held until the next visual update. Training randomizes depth noise, bias, latency, occlusion, blackout, and camera parameters to reduce the simulation-toreal sensing gap.
+
+We augment the VAIC interaction motions [10] with an object-contact label $c _ { t } ^ { \mathrm { o b j } }$ and a desired-contact command $c _ { t } ^ { \mathrm { c m d } }$ The command is activated approximately 60–70 frames before demonstrated contact, giving the policy time to approach and align its end effectors.
+
+2) Real-World Deployment Setup: We deploy the student policy on a Unitree G1 humanoid with 29 actuated degrees of freedom. The policy predicts position targets for 23 joints while the six wrist joints are excluded from the policy action and held at fixed zero-position.
+
+Egocentric depth is captured by a head-mounted ZED 2i stereo camera at 30 Hz. The deployment pipeline uses a field of view of approximately $1 0 1 . 4 ^ { \circ } \times 6 9 ^ { \circ }$ and preprocesses each depth frame to the 64 × 36 input expected by the student. To match the training cadence, new depth observations are admitted at 15 Hz and held between updates, while proprioception and policy inference continue at 50 Hz. The deployed policy receives no external motion-capture measurements, objectpose estimates, or simulator states during deployment.
+
+3) Task Description: We evaluate ReGATE on box interaction in MuJoCo [36] and on a physical Unitree G1. The complete task includes approach, grasp, lift, transport, stationary holding, release, and return to standing. Object positions are varied laterally over [−0.5, 0.5] m to evaluate behavior beyond reference-motion replay.
+
+Online commands specify contact transitions and locomotion during transport. We additionally test sensing robustness using phase-specific depth blackout.
+
+The experiments address three questions: Q1: Can Re-GATE execute stable transitions in response to locomotion and contact commands? Q2: Can ReGATE localize and acquire the object from onboard depth without an external objectpose estimator? Q3: Can ReGATE complete interactions when depth observations are degraded or temporarily unavailable?
+
+4) Evaluation Metrics: We evaluate our network in terms of task success rate where a trial is successful if the robot grasps the box after the contact command, transports it without falling or unintended release, releases it on command, and returns to a stable stance. For quantitative evaluation in simulator, we define success as completion of the 13-s episode with a pelvis height above 0.7 m and an end-effector–box contact force of at least 1 N.
+
+We explicitly exclude from this work the evaluation of the approach to the object and the trigger decision for contact. Our end-to-end HOI policy focuses on the actual object interaction, while a vision-language model (VLM) or another higher-level controller would take care of the coarse approach and triggering without requiring precise motion control or a separate object pose estimator.
+
+## B. Experimental Results
+
+1) Q1: Can ReGATE execute stable transitions in response to locomotion and contact commands: We evaluate whether ReGATE can execute a complete interaction sequence under online command changes. Each trial starts with the box placed in front of the robot. As shown in Fig. 1 and Fig. 5, we activate sequential user commands and our policy can react accordingly.
+
+![](images/7b4d94c18c7cda7015afcbc833df28ca4d28ab640072bb0a9820a3a6c4d703a2.jpg)  
+Fig. 5: Side-offset box pickup with the real robot. The box is placed to the side of the robot when the robot receives the command to trigger contact with the box.
+
+ReGATE successfully completes all ten trials. During each trial, the robot transitions actively across each of the interaction stages while maintaining balance and object contact. It also returns to a stable standing posture after releasing the box.
+
+2) Q2:Can ReGATE localize and acquire the object from onboard depth without an external object-pose estimator: We evaluate whether ReGATE can locate and acquire objects using only proprioception and egocentric depth by placing boxes in different starting positions. Qualitative examples on the physical robot are shown in Fig. 5, where the policy grasps boxes placed at different lateral positions. These examples illustrate the complete onboard perception-to-action behavior without an external object-pose estimator.
+
+For quantitative evaluation, we conduct two controlled studies in MuJoCo using the same policy as in deployment. The commanded velocity remains zero throughout both studies. In the static suite, the box is placed at 11 lateral offsets spanning [−0.5, 0.5] m, with 30 trials per position. We perturb the box’s initial position and orientation by random offsets of up to 0.02 m and 0.05 rad, respectively. In the moving suite, the box traverses the same lateral range at a sampled nominal speed between 0.1 m/s and 0.5 m/s. Its lateral motion stops at the first physical end-effector contact, after which the robot must stabilize the freely moving robot–object system.
+
+ReGATE succeeds in 281 of 330 static trials, corresponding to an overall success rate of 85.2%. As shown in Table I, the policy completes all 120 trials within the contiguous central region y ∈ [−0.2, 0.1] m. Performance decreases near the lateral workspace limits, with the lowest success rates observed between +0.2 and +0.4 m. Fig. 6 illustrates a representative simulated pickup with a laterally offset box.
+
+We compare ReGATE with VisualMimic [3] under the same static-object protocol. VisualMimic uses its official MuJoCo deployment configuration, with only the initial box position varied to match our evaluation. As reported in Table II,
+
+![](images/8cffb7fc510dce82920e265d6df888e279fcc0ee3d6fe3e501e0ed894f8d3715.jpg)  
+Fig. 6: Side-offset box pickup in simulation using ReGATE. The box is placed 0.2m left of the robot. (1) The robot starts from an upright stance. (2) Upon receiving the interaction command, it reaches toward the laterally offset box. (3) It establishes a two-handed grasp. (4) It lifts the box and returns to an upright stance for a standing hold. Insets show the corresponding egocentric depth observations.
+
+TABLE I: Static-object acquisition for varying lateral offsets.
+
+<table><tr><td>Box y [m]</td><td>-0.5</td><td>-0.4</td><td>-0.3</td><td>-0.2</td><td>-0.1</td><td>0.0</td></tr><tr><td>Success</td><td>21/30</td><td>26/30</td><td>27/30</td><td>30/30</td><td>30/30</td><td>30/30</td></tr><tr><td>Rate [%]</td><td>70.0</td><td>86.7</td><td>90.0</td><td>100.0</td><td>100.0</td><td>100.0</td></tr><tr><td>Box y [m]</td><td>+0.1</td><td>+0.2</td><td>+0.3</td><td>+0.4</td><td>+0.5</td><td>Overall</td></tr><tr><td>Success</td><td>30/30</td><td>23/30</td><td>19/30</td><td>20/30</td><td>25/30</td><td>281/330</td></tr><tr><td>Rate [%]</td><td>100.0</td><td>76.7</td><td>63.3</td><td>66.7</td><td>83.3</td><td>85.2</td></tr></table>
+
+ReGATE succeeds in 281 of 330 trials (85.2%), compared with 160 of 330 (48.5%) for VisualMimic, and achieves a higher success rate at every tested position. ReGATE adjusts its reaching motion to the various box locations and remains stable after lifting. In the observed VisualMimic failures, the end effectors either missed the box, preventing valid contact, or the robot lost stability while holding it after lifting.
+
+We further evaluate moving-object acquisition on a laterally moving box. The box traverses the lateral workspace under four speed intervals, and the contact command is activated when the box crosses one of 11 prescribed positions spanning $y ~ \in ~ [ - 0 . 5 , 0 . 5 ]$ m. We conduct 10 trials for every speed– position combination. The result is reported in Table III. ReGATE completes 378 of the 440 trials, corresponding to an overall success rate of 85.9%.
+
+Because object position was not randomized during training, the static-offset and moving-object evaluations constitute zeroshot tests at unseen locations. The results provide task-level evidence that ReGATE can use onboard depth to localize and acquire objects beyond the training configuration.
+
+3) Q3: Can ReGATE complete interactions under degraded or unavailable depth: We introduce partial occlusion and fullframe blackout before contact, during transport, and before release, restoring clean depth without resetting the policy or its recurrent states. This protocol evaluates both the ability to maintain interaction during visual degradation and to resume visual updates after sensing recovers.
+
+![](images/12395642ced6f3b19e8e9b7ea2415b9a2839ae1873aa986e6a90a39adb397a22.jpg)  
+Fig. 7: Sample successful demonstration where the real G1 robot picks up the box even when the vision input is completely blocked.
+
+As demonstrated in Fig. 7, ReGATE maintains commanded behavior during temporary depth loss and resumes visually guided interaction after clean observations return. These results support the effectiveness of the recurrent gated fusion adapter, which maintains the interaction representation through its persistent proprioceptive pathway during visual degradation and reintroduces depth evidence through the learned gates when reliable observations return.
+
+## V. CONCLUSION
+
+We presented ReGATE, a deployable whole-body controller for robust humanoid–object interaction from onboard proprioception and egocentric depth. ReGATE introduces a recurrent gated-fusion adapter that regulates how depth updates a persistent proprioceptive representation. Phase-aware random state initialization improves training coverage around pre-contact and release transitions.
+
+Experiments evaluate our framework under commanddriven interaction, onboard object localization and acquisition, and task execution under degraded depth. The results demonstrate that the framework can infer object position from onboard sensing and reliably acquire objects without an external pose estimator. Under a matched static-object acquisition protocol, ReGATE achieves higher success than VisualMimic at every tested lateral offset. Moreover, recurrent gated fusion provides an effective mechanism for sustaining interaction behavior as the visual observations vary.
+
+## ACKNOWLEDGMENT
+
+This work was conducted in collaboration with Belimed AG as part of “Humanoid Robots for Cleaning and Sterilization of Medical Equipment” (project no. 134.504 IP-ICT), an innovation project supported by Innosuisse.
+
+## REFERENCES
+
+[1] H. Wang, W. Zhang, R. Yu, T. Huang, J. Ren, F. Jia, Z. Wang, X. Niu, X. Chen, J. Chen, Q. Chen, J. Wang, and J. Pang, “Physhsi: Towards a real-world generalizable and natural humanoid-scene interaction system,” arXiv preprint arXiv:2510.11072, 2025.
+
+TABLE II: Comparison of static-object acquisition between ReGATE and VisualMimic in MuJoCo. Each lateral offset result is the average of 30 trials, for a total of 330 executions.
+
+<table><tr><td rowspan="2">Method</td><td colspan="11">Success rate [%] by box position y [m]</td><td rowspan="2">Success rate [%] Overall</td></tr><tr><td>-0.5</td><td>-0.4</td><td>-0.3</td><td>-0.2</td><td>-0.1</td><td>0.0</td><td>+0.1</td><td>+0.2</td><td>+0.3</td><td>+0.4</td><td>+0.5</td></tr><tr><td>VisualMimic</td><td>23.3</td><td>33.3</td><td>43.3</td><td>46.7</td><td>43.3</td><td>63.3</td><td>56.7</td><td>70.0</td><td>53.3</td><td>50.0</td><td>50.0</td><td>48.5</td></tr><tr><td>ReGATE (ours)</td><td>70.0</td><td>86.7</td><td>90.0</td><td>100.0</td><td>100.0</td><td>100.0</td><td>100.0</td><td>76.7</td><td>63.3</td><td>66.7</td><td>83.3</td><td>85.2</td></tr></table>
+
+TABLE III: Moving object acquisition in MuJoCo. The contact command is activated when the box crosses the prescribed lateral position. Each speed–position cell reports the success rate over 10 trials.
+
+<table><tr><td rowspan="2">Speed [m/s]</td><td colspan="11">Success rate [%] by commanded contact position y [m]</td><td rowspan="2">Success rate [%] Overall</td></tr><tr><td>-0.5</td><td>-0.4</td><td>-0.3</td><td>-0.2</td><td>-0.1</td><td>0.0</td><td>+0.1</td><td>+0.2</td><td>+0.3</td><td>+0.4</td><td>+0.5</td></tr><tr><td>[0.1, 0.2)</td><td>60.0</td><td>70.0</td><td>60.0</td><td>50.0</td><td>100.0</td><td>100.0</td><td>90.0</td><td>100.0</td><td>100.0</td><td>50.0</td><td>30.0</td><td>73.6</td></tr><tr><td>[0.2, 0.3)</td><td>90.0</td><td>100.0</td><td>70.0</td><td>50.0</td><td>90.0</td><td>90.0</td><td>90.0</td><td>100.0</td><td>100.0</td><td>100.0</td><td>80.0</td><td>87.3</td></tr><tr><td>[0.3, 0.4)</td><td>90.0</td><td>70.0</td><td>100.0</td><td>60.0</td><td>100.0</td><td>90.0</td><td>100.0</td><td>100.0</td><td>100.0</td><td>100.0</td><td>100.0</td><td>91.8</td></tr><tr><td>[0.4, 0.5)</td><td>90.0</td><td>80.0</td><td>100.0</td><td>60.0</td><td>90.0</td><td>90.0</td><td>100.0</td><td>100.0</td><td>90.0</td><td>100.0</td><td>100.0</td><td>90.9</td></tr><tr><td>Overall</td><td>82.5</td><td>80.0</td><td>82.5</td><td>55.0</td><td>95.0</td><td>92.5</td><td>95.0</td><td>100.0</td><td>97.5</td><td>87.5</td><td>77.5</td><td>85.9</td></tr></table>
+
+[2] Z. Luo, Y. Yuan, T. Wang, C. Li, F. Castaneda, S. Chen, Z.-A. Cao,˜ J. Li, D. Minor, Q. Ben, J. Park, D. Sami, Z. Wang, X. Da, R. Ding, C. Hogg, L. Song, E. Lim, E. Jeong, T. He, H. Xue, W. Xiao, S. Yuen, J. Kautz, Y. Chang, U. Iqbal, and Y. Zhu, “Sonic: Supersizing motion tracking for natural humanoid whole-body control,” Tech. Rep., 2026.
+
+[3] S. Yin, Y. Ze, H.-X. Yu, C. K. Liu, and J. Wu, “Visualmimic: Visual humanoid loco-manipulation via motion tracking and generation,” 11 2025. [Online]. Available: http://arxiv.org/abs/2509.20322
+
+[4] Y. Lin, J. Shi, D. Wang, J. Kong, Y. Liu, C. Bai, and X. Li, “Pro-hoi: Perceptive root-guided humanoid-object interaction,” 3 2026. [Online]. Available: http://arxiv.org/abs/2603.01126
+
+[5] J. Dao, H. Duan, and A. Fern, “Sim-to-real learning for humanoid box loco-manipulation,” 10 2023. [Online]. Available: http://arxiv.org/abs/2310.03191
+
+[6] T. Wu, X. Kong, Y. Chen, Q. Yu, H. Ye, J. Li, Y. Wang, and H. Dong, “Sugar: A scalable human-video-driven generalizable humanoid loco-manipulation learning framework,” 5 2026. [Online]. Available: http://arxiv.org/abs/2605.20373
+
+[7] D. Li, X. Chen, Q. Wu, B. Chen, S. Wu, H. Wu, G. Zhang, L. Li, M. Zhou, D. Xiang, J. Ma, Q. Zhang, and R. Xu, “Haic: Humanoid agile object interaction control via dynamics-aware world model,” 5 2026. [Online]. Available: http://arxiv.org/abs/2602.11758
+
+[8] H. Weng, Y. Li, N. Sobanbabu, Z. Wang, Z. Luo, T. He, D. Ramanan, and G. Shi, “Hdmi: Learning interactive humanoid whole-body control from human videos,” 9 2025. [Online]. Available: http://arxiv.org/abs/2509.16757
+
+[9] X. He, S. Xu, X. Li, R. Dong, L. Bian, Y.-X. Wang, and L.-Y. Gui, “Ultra: Unified multimodal control for autonomous humanoid whole-body loco-manipulation,” 3 2026. [Online]. Available: http://arxiv.org/abs/2603.03279
+
+[10] D. Li, Q. Wu, X. Chen, L. Li, Y. Lin, S. Wu, G. Zhang, M. Zhou, D. Xiang, Q. Zhang, R. Xu, and J. Ma, “Vaic: Vision-guided humanoid agile object interaction control via decoupled commands,” 6 2026. [Online]. Available: http://arxiv.org/abs/2606.09286
+
+[11] X. B. Peng, P. Abbeel, S. Levine, and M. van de Panne, “DeepMimic: Example-guided deep reinforcement learning of physics-based character skills,” 2018. [Online]. Available: https://arxiv.org/abs/1804.02717
+
+[12] X. B. Peng, Z. Ma, P. Abbeel, S. Levine, and A. Kanazawa, “Amp: adversarial motion priors for stylized physics-based character control,” ACM Transactions on Graphics, vol. 40, no. 4, p. 1–20, 2021. [Online]. Available: http://dx.doi.org/10.1145/3450626.3459670
+
+[13] Q. Liao, T. E. Truong, X. Huang, Y. Gao, G. Tevet, K. Sreenath, and C. K. Liu, “Beyondmimic: From motion tracking to versatile humanoid control via guided diffusion,” 2025. [Online]. Available: https://arxiv.org/abs/2508.08241
+
+[14] S. Zhao, Y. Ze, Y. Wang, C. K. Liu, P. Abbeel, G. Shi, and R. Duan, “Resmimic: From general motion tracking to humanoid whole-body loco-manipulation via residual learning,” 2025. [Online]. Available: https://arxiv.org/abs/2510.05070
+
+[15] S. Chen, S. Zhao, Z. Wu, J. Li, G. Shi, and C. K. Liu, “Scenebot: Contact-prompted general humanoid whole body tracking with sceneinteraction,” 6 2026. [Online]. Available: http://arxiv.org/abs/2606.27581
+
+[16] Y. Wang, Q. Zhao, Y. F. Lau, R. Yu, H. W. Tsui, Q. Chen, J. Wang, J. Pang, and P. Tan, “HumanX: Toward agile and generalizable humanoid interaction skills from human videos,” 2026. [Online]. Available: https://arxiv.org/abs/2602.02473
+
+[17] L. Yang, X. Huang, Z. Wu, A. Kanazawa, P. Abbeel, C. Sferrazza, C. K. Liu, R. Duan, and G. Shi, “Omniretarget: Interaction-preserving data generation for humanoid whole-body loco-manipulation and scene interaction,” 2026. [Online]. Available: https://arxiv.org/abs/2509.26633
+
+[18] T. Xie, H. Zhang, J. Park, Z. Wang, B. Wen, J. Li, X. Li, Q. Ben, H. Weng, Y. Ye, D. Minor, T. Wang, C. Jiang, S. Fidler, J. Kautz, L. Fan, Y. Zhu, Z. Luo, U. Iqbal, and Y. Yuan, “Grail: Generating humanoid loco-manipulation from 3d assets and video priors,” 6 2026. [Online]. Available: http://arxiv.org/abs/2606.05160
+
+[19] Y. Zhang, Y. Yuan, P. Gurunath, I. Gupta, S. Omidshafiei, A. akbar Agha-mohammadi, M. Vazquez-Chanlatte, L. Pedersen, T. He, and G. Shi, “Falcon: Learning force-adaptive humanoid loco-manipulation,” 2025. [Online]. Available: https://arxiv.org/abs/2505.06776
+
+[20] C. Zhang, W. Xiao, T. He, and G. Shi, “Wococo: Learning whole-body humanoid control with sequential contacts,” 2024. [Online]. Available: https://arxiv.org/abs/2406.06005
+
+[21] Z. Cao, L. Yan, Y. Zhang, S. Chen, J. Ma, T. Zhan, S. Fu, Y. Jia, C. Lu, and Y. Gao, “Hiwet: Hierarchical world-frame end-effector tracking for long-horizon humanoid loco-manipulation,” 2026. [Online]. Available: https://arxiv.org/abs/2602.06341
+
+[22] Y. Lin, J. Cui, Y. Li, B. Jia, Y. Zhu, and S. Huang, “Lessmimic: Long-horizon humanoid interaction with unified distance field representations,” 2026. [Online]. Available: https://arxiv.org/abs/2602.21723
+
+[23] R. Yu, X. Lin, J. Ma, Y. Wang, K. Luo, J. Ji, H. Wang, W. Wang, R. Zhang, P. Tan, T. Wu, R. Dai, Q. Chen, and L. Han, “Omnicontact: Chaining meta-skills via contact flow for generalizable humanoid loco-manipulation,” 2026. [Online]. Available: https://arxiv.org/abs/2606.26201
+
+[24] B. Wen, W. Yang, J. Kautz, and S. Birchfield, “Foundationpose: Unified 6d pose estimation and tracking of novel objects,” 2024. [Online]. Available: https://arxiv.org/abs/2312.08344
+
+[25] J. Chen, X. Li, J. Cao, Z. Zhu, W. Dong, M. Liu, Y. Wen, Y. Yu, L. Zhang, and W. Zhang, “Rhino: Learning real-time humanoidhuman-object interaction from human demonstrations,” 2025. [Online]. Available: https://arxiv.org/abs/2502.13134
+
+[26] T. Miki, J. Lee, J. Hwangbo, L. Wellhausen, V. Koltun, and M. Hutter, “Learning robust perceptive locomotion for quadrupedal robots in the wild,” Science Robotics, vol. 7, no. 62, Jan. 2022. [Online]. Available: http://dx.doi.org/10.1126/scirobotics.abk2822
+
+[27] J. He, C. Zhang, F. Jenelten, R. Grandia, M. Bacher, and M. Hutter,¨ “Attention-based map encoding for learning generalized legged locomotion,” Science Robotics, vol. 10, no. 105, p. eadv3604, 2025. [Online]. Available: https://www.science.org/doi/abs/10.1126/scirobotics.adv3604
+
+[28] C. Zhang, V. Klemm, F. Yang, and M. Hutter, “Agile and generalized legged locomotion via attention-based neural map encoding,” 2026. [Online]. Available: https://arxiv.org/abs/2601.08485
+
+[29] M. Elnoor, K. Weerakoon, A. J. Sathyamoorthy, T. Guan, V. Rajagopal, and D. Manocha, “Amco: Adaptive multimodal coupling of vision and proprioception for quadruped robot navigation in outdoor environments,” 2024. [Online]. Available: https://arxiv.org/abs/2403.13235
+
+[30] Y. Hao, R. Yu, S. Luo, G. Zhang, J. Wu, and Q. Zhu, “Cref: Cross-modal and recurrent fusion for depth-conditioned humanoid locomotion,” 2026. [Online]. Available: https://arxiv.org/abs/2603.29452
+
+[31] J. Lu, W. Xia, Y. Wu, Z. Lu, and D. Hu, “When would vision-proprioception policies fail in robotic manipulation?” [Online]. Available: https://gewu-lab.github.io/GAP/
+
+[32] N. Ballas, L. Yao, C. Pal, and A. Courville, “Delving deeper into convolutional networks for learning video representations,” 2016. [Online]. Available: https://arxiv.org/abs/1511.06432
+
+[33] Z. Qiu, Z. Wang, B. Zheng, Z. Huang, K. Wen, S. Yang, R. Men, L. Yu, F. Huang, S. Huang, D. Liu, J. Zhou, and J. Lin, “Gated attention for large language models: Non-linearity, sparsity, and attention-sink-free,” in The Thirty-ninth Annual Conference on Neural Information Processing Systems, 2025. [Online]. Available: https://openreview.net/forum?id=1b7whO4SfY
+
+[34] J. Kong, X. Liu, Y. Lin, J. Han, S. Schwertfeger, C. Bai, and X. Li, “Learning soccer skills for humanoid robots: A progressive perception-action framework,” 2026. [Online]. Available: https://arxiv.org/abs/2602.05310
+
+[35] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov, “Proximal policy optimization algorithms,” 2017. [Online]. Available: https://arxiv.org/abs/1707.06347
+
+[36] E. Todorov, T. Erez, and Y. Tassa, “Mujoco: A physics engine for model-based control,” in 2012 IEEE/RSJ International Conference on Intelligent Robots and Systems. IEEE, 2012, pp. 5026–5033.

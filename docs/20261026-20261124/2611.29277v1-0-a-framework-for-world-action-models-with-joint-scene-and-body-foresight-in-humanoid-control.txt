@@ -1,0 +1,540 @@
+# ζ<sub>0</sub>: A Framework for World Action Models with Joint Scene and Body Foresight in Humanoid Control
+
+Yizhi Chen<sup>1,2,∗</sup>, Zhanxiang Cao<sup>3,2,∗</sup>, Yitong Wang<sup>3</sup>, Junyu Liu<sup>4</sup>, Hongchu Zeng<sup>3</sup>, Xinyi Peng<sup>5,2</sup>, Chuxuan Huang<sup>6,2</sup>, Yicheng Su<sup>6</sup>, Zihao Zhou<sup>3,2</sup>, Shengcheng Fu<sup>1,2</sup>, Haoyang Li<sup>3,2</sup>, Liyun Yan<sup>3,2</sup>, Tianyue Zhan<sup>3,2</sup>, Jianming Ma<sup>3,2</sup>, Yang Zhang<sup>3</sup>, Keqi Zhu<sup>5,2</sup>, Xiaxi Si<sup>3</sup>, Jinming Yao<sup>7</sup>, Qiao Sun<sup>8</sup>, Shizeng Zhang<sup>8</sup>, Jiangwei Zhong<sup>8</sup>, Yue Gao<sup>3,2,†</sup>
+
+<sup>1</sup>Tongji University <sup>2</sup>Shanghai Innovation Institute <sup>3</sup>Shanghai Jiao Tong University <sup>4</sup>Shanghai University <sup>5</sup>Zhejiang University <sup>6</sup>Fudan University <sup>7</sup>University of Science and Technology of China <sup>8</sup>Lenovo Group Limited <sup>∗</sup>Equal contribution. <sup>†</sup>Corresponding author.
+
+![](images/6997b7bd367ddcc41308690e00210cae83a0e6ad5624307726527ff2911b845b.jpg)  
+Figure 1. $\zeta _ { 0 } ,$ a framework for World Action Models with joint scene and body foresight. (a) An autonomous $\zeta _ { 0 }$ (GR00T) episode without human intervention: walking to the table, carrying trash to the bin, and wiping the table. Five successive moments are shown; the enlarged 0:40 frame includes the synchronized head-camera view. Third-person backgrounds are desaturated and blurred. (b) Causally predicted scene-and-body futures condition action generation; a teacher conditioned on recorded futures supervises prediction through action responses during training only. (c) Additional real-world tasks, including interaction with a person.
+
+## Abstract
+
+World Action Models anticipate visual outcomes to guide robot actions, yet humanoid interaction also depends on how the robot’s body responds. Visualforesight alone can miss body motion, while latent-distance losses do not directly supervise action responses. We present ζ , aframework that turns vision-language-action policies into World Action Models byforeseeingfuture visualfeatures and measuredjoint trajectories in a shared latent representation. During training, a teacher conditioned on recorded futures provides a reference action response, and dual-response transfer trains the causal predictor to match it through the teacher and the executing policy. All components are trained jointly, and deployment uses only causally predicted futures. On seven HumanoidArena tasks, $\zeta _ { 0 }$ built on $\Psi _ { 0 }$ and GR00TN1.7 reaches 63.6% and 79.5% mean success, 18.8 and 9.0 points above these bases. On six real-world tasks, it reaches 78.3% and 85.0%, gains of 16.7 and 10.0 points. On GR00T, its 79.5% tops all compared seven-task joint policies. Project page: https://chenyizhi123.github.io/zeta0-project/.
+
+## 1. Introduction
+
+Humanoid interaction couples whole-body motion with changes in the surrounding scene. Pushing a box, for example, moves the object while the arms keep contact and the legs and torso support the motion. World Action Models couple action generation with anticipated future observations [28, 33, 46, 50, 51, 56]. For a humanoid, the consequences of an action also include its own body motion, which egocentric images may capture only partially and measured joint trajectories record directly. We therefore ask a policy to foresee scene and body changes jointly.
+
+Demonstrations provide this foresight as supervision: each action is followed by recorded images and measured body states. At execution time, those futures have not yet occurred and must be predicted from causal inputs. A common approach fits future predictions to recorded observations or their latent representations [21, 23, 56]. Latent-distance supervision, however, does not directly reflect how a policy uses the prediction: nearby futures need not induce the same action, and equally sized errors can have different effects on behavior. We therefore also supervise prediction in action space, asking whether a predicted future induces the action that the recorded future would.
+
+We introduce $\zeta _ { 0 } ,$ , a framework that turns a visionlanguage-action policy into a World Action Model with joint scene-and-body foresight for humanoid control, illustrated in Fig. 1. During training, a future encoder summarizes subsequent visual features and measured body trajectories into a shared temporal latent representation, and a causal predictor learns to estimate it from inputs available at execution time. The representation, predictor, and action models are trained jointly; at deployment, the policy acts on the predicted future and current observations.
+
+To supervise prediction in action space, we introduce dual-response transfer. A teacher learns to generate actions conditioned on recorded futures, providing a reference action response, and we train the predictor so that predicted futures induce this response through two readers. The teacher term asks the prediction to carry the action-relevant information the teacher extracts from recorded futures; the executingpolicy term asks for the same response from the reader used at deployment.
+
+We make three contributions:
+
+• Joint scene-and-body foresight framework: $\zeta _ { 0 }$ turns vision-language-action policies into World Action Models.
+
+• Dual-response transfer: a training objective that supervises causal prediction through the responses of a recordedfuture teacher and the executing policy.
+
+• Consistent gains in simulation and the real world: $\zeta _ { 0 }$ built on $\Psi _ { 0 }$ and GR00T N1.7 raises mean success over each base by 18.8 and 9.0 points on seven HumanoidArena tasks and by 16.7 and 10.0 points on six real-world tasks.
+
+## 2. Related Work
+
+Whole-body humanoid learning. Whole-body humanoid learning studies coordinated locomotion, posture, and manipulation, with hierarchical control separating high-level decisions from low-level execution [9, 13]. Tracking controllers such as ExBody, ExBody2, HOVER, and SONIC learn to execute reference motions or end-effector targets across the body [14, 26, 30, 39], and ASAP aligns simulated and realworld physics to learn agile whole-body skills [25]. Teleoperation systems collect coordinated demonstrations [24, 53], while HumanPlus and 3D diffusion policies connect visual observations to autonomous humanoid skills [17, 54]. HumanoidBench evaluates locomotion and manipulation across simulated tasks [45], and HumanoidArena emphasizes egocentric hierarchical whole-body learning [47]. These directions provide motion-control interfaces and demonstrationbased learning settings for humanoid interaction; $\zeta _ { 0 }$ builds on such an interface and asks how a high-level policy can anticipate the consequences of its own commands.
+
+Vision-language-action policies. Recent VLA work adapts pretrained vision-language representations to robot control using demonstration data [6, 11, 31]. Building on large-scale robot transformers [7], generalist policies such as Octo and the π series learn across tasks and embodiments [4, 42, 44]. Action generation has developed alongside representation learning, with action chunking [55] and diffusion- or flow-based generators [4, 15] providing interfaces for continuous robot commands. Receding-horizon execution refreshes the observation context between action chunks, combining multi-step generation with feedback during control [15]. For humanoids, GR00T N1, $\Psi _ { 0 } .$ , and HuGe combine pretrained vision-language backbones with action generators [38, 41, 49], and Kimodo-Policy learns kinematic action models for loco-manipulation [48]. These policies provide foundations for studying how additional predictive information can condition action generation.
+
+World Action Models. World models learn how an environment responds to actions, either to learn behaviors by imagining latent trajectories [21–23] or as generative and predictive models trained on large video corpora [2, 8, 40]. Text-guided video generation can serve directly as a policy [16], and frozen self-supervised visual features can serve as world-model states for planning [57]. In feature-space planning, candidate action sequences are optimized so that predicted future features approach those of a goal observation [57]. Predictive policies couple action learning with future visual prediction [28, 46, 50] or jointly model future observations and actions [34, 58]. FLARE aligns policy features with future visual latents [56], DIAL separates latent intent prediction from execution [12], and ARPS learns predictive states from future features and their changes [20]. Being-M0.7 jointly models visual and motion futures, then trains an action expert on a frozen, robot-adapted prior [52]. Most of these methods represent the future by images or visual features and supervise prediction by reconstruction or latent distance. $\zeta _ { 0 }$ foresees the scene and measured body trajectories in one shared latent representation and supervises its causal prediction in action space, keeping the predictor coupled to action learning throughout training.
+
+Privileged information and action supervision. Learning with privileged information transfers guidance from training-only observations to deployable policies [10, 32]. Knowledge distillation matches a student’s outputs to a teacher’s and thereby updates the student’s parameters [27]. Action-space constraints provide another form of supervision: cross-view action consistency matches flow velocities across action-equivalent observations [29]. Dual-response transfer in Sec. 3.5 also compares action responses, but it holds the readers’ parameters fixed and updates the predictor only through the readers’ input, the predicted future.
+
+## 3. Method
+
+$\zeta _ { 0 }$ is a framework that turns a base vision-language-action policy into a World Action Model by adding joint scene-andbody foresight, a causal prediction of how the scene and the robot’s body will change over a short future horizon. The base supplies the vision-language backbone, the state and action interfaces, and, where available, pretrained weights. It adds a shared latent representation of future scene and body changes, predicts it from causal inputs, and conditions action generation on the prediction. We instantiate $\zeta _ { 0 }$ on $\Psi _ { 0 }$ and GR00T N1.7, denoting the resulting models by $\zeta _ { 0 } ( \Psi _ { 0 } )$ and $\zeta _ { 0 } ~ ( \mathrm { G R 0 0 T } )$ , as set up in Sec. 4.1. Sections $3 . 2 \mathrm { - } 3 . 6$ describe the representation, its causal and world prediction, action learning, dual-response transfer, and joint optimization and deployment; Fig. 2 separates training from deployment.
+
+## 3.1. Problem formulation
+
+At time t, let $\boldsymbol { x } _ { t } = \left( o _ { t } , s _ { t } , \ell _ { t } \right)$ contain the current image observation, measured state, and instruction. Let $p _ { t }$ be the prefix of an action chunk already committed by the controller [5]. A training demonstration additionally provides an action chunk $a _ { t }$ and a continuation $y _ { t }$ of future visual features and body measurements, with timestamps and validity masks. We divide this continuation into K temporal groups ending at increasing horizons. Each group contains a visual target and body measurements at timestamped query points; the body target is a trajectory rather than a single joint vector at the group endpoint.
+
+The base policy’s vision-language backbone extracts current visual-language context and visual features for future supervision. Although both may use joint coordinates, the measured body target differs from the commanded action: the action is a target for the low-level controller, whereas the measured trajectory records how the body actually moves under contact, balance, and tracking dynamics, which is the consequence the policy must anticipate.
+
+## 3.2. Learning scene-and-body futures
+
+An online encoder $E _ { \phi }$ maps the current visual and body context $x _ { t } ^ { \mathrm { v b } }$ and the recorded continuation to $\boldsymbol { z } _ { t } \in \mathbb { R } ^ { K \times N \times \breve { d } }$ with N tokens of width d per group:
+
+$$
+z _ {t} = E _ {\phi} (x _ {t} ^ {\mathrm{vb}}, y _ {t}), \qquad z _ {t} ^ {\star} = \mathrm{sg} \left(E _ {\bar {\phi}} (x _ {t} ^ {\mathrm{vb}}, y _ {t})\right).\tag{1}
+$$
+
+The target parameters $\bar { \phi }$ track ϕ by exponential moving average (EMA), as in self-supervised predictive learning [1, 19]. Neither encoder reads the instruction or demonstrated actions; both summarize only the recorded consequences. The teacher defined below therefore receives privileged information that is available only in training [10, 32]; its action loss updates the online encoder to make these consequences useful for action generation.
+
+A readout D takes the latent and current visual features and reconstructs future scene features and measured body trajectories. Write $\ell _ { s } ( z ; D )$ and $\ell _ { b } ( z ; D )$ for their masked mean squared errors. The temporal term $\ell _ { \Delta } ( z ; D )$ sums scene and body errors on differences between adjacent groups, using only valid corresponding endpoints. We define
+
+$$
+\mathcal {L} _ {\mathrm{rec}} (z; D) = \ell_ {s} (z; D) + \ell_ {b} (z; D) + \lambda_ {\Delta} \ell_ {\Delta} (z; D),\tag{2}
+$$
+
+where $\lambda _ { \Delta }$ weights the temporal term. This supervision preserves both the state of the interaction and its temporal change.
+
+## 3.3. Shared causal and world prediction
+
+A conditioner H encodes the causal context as $h _ { t } = H ( x _ { t } )$ A shared deterministic predictor $F _ { \theta }$ predicts both modes:
+
+$$
+\begin{array}{l} \widehat {z} _ {t} ^ {\text {prior}} = F _ {\theta} (h _ {t}, p _ {t}; \text {prior}), \\ \widehat {z} _ {t} ^ {\text {world}} = F _ {\theta} (h _ {t}, a _ {t}; \text {world}). \end{array}\tag{3}
+$$
+
+The prior mode uses the committed prefix; the world mode additionally uses demonstrated future actions. Both modes share parameters and predict all temporal groups in parallel. The prior mode predicts what will happen from information available at decision time and is the mode used at deployment; the world mode predicts what happens under given future actions, an action-conditioned dynamics problem with less ambiguity. Sharing parameters lets the prior predictor reuse the dynamics learned in world mode, and Sec. 4.3 shows that removing the world latent MSE lowers success on both bases.
+
+For mode $m ,$ , we minimize
+
+$$
+\mathcal {L} _ {\mathrm{pred}} ^ {m} = \lambda_ {m} \| \widehat {z} _ {t} ^ {m} - z _ {t} ^ {\star} \| _ {M _ {m}} ^ {2} + \lambda_ {D} \mathcal {L} _ {\mathrm{rec}} (\widehat {z} _ {t} ^ {m}; D _ {\mathrm{fix}}),\tag{4}
+$$
+
+where $\lambda _ { m }$ and $\lambda _ { D }$ are loss weights and $\| \cdot \| _ { M _ { m } } ^ { 2 }$ is a masked mean squared error. The readout parameters are detached for this prediction loss, while derivatives with respect to its latent input remain active. Thus $D$ provides a common measurement of recorded and predicted futures. It is trained separately by Eq. (2) on online-encoder latents.
+
+## 3.4. Action learning from recorded and predicted futures
+
+We use distinct flow-matching [36, 37] action models: teacher $T _ { \psi }$ and executing policy $G _ { \omega }$ . For a normalized demonstration ${ \widetilde { a } } ,$ Gaussian noise $\epsilon ,$ and a sampled flow time $\tau \in [ 0 , 1 ]$ , the uncommitted action suffix is
+
+$$
+a _ {\tau} = (1 - \tau) \widetilde {a} + \tau \epsilon , \qquad v ^ {\star} = \epsilon - \widetilde {a}.\tag{5}
+$$
+
+Committed prefix entries remain clean, have flow time zero, and are excluded from the loss. Let $X = \left( a _ { \tau } , \tau , x _ { t } , p _ { t } \right)$ and let $M _ { a }$ select valid, uncommitted action entries. The flow-matching action objectives are
+
+$$
+\begin{array}{r l} & {\mathcal {L} _ {T} = \mathbb {E} \| T _ {\psi} (X, z _ {t}) - v ^ {\star} \| _ {M _ {a}} ^ {2},} \\ & {\mathcal {L} _ {G} = \mathbb {E} \| G _ {\omega} (X, \widehat {z} _ {t} ^ {\mathrm{prior}}) - v ^ {\star} \| _ {M _ {a}} ^ {2}.} \end{array}\tag{6}
+$$
+
+![](images/3468cb4b788501eaf9c3f6a0ef015f75bf9d976922c9cbe15986ec78a30c86c5.jpg)  
+Figure 2. Overview of $\zeta _ { \mathbf { 0 } } .$ Bottom, deployed: the base VLM encodes the instruction and current view; with the measured state, the conditioner $H$ produces $h _ { t } ,$ from which the shared predictor F and the committed prefix $p _ { t }$ predict a latent future $\widehat { z } _ { t }$ over the temporal groups. The flow-matching policy $G$ generates the action chunk from $\widehat { z } _ { t } ,$ , the current context $x _ { t } ,$ and noisy actions. Top, training only: the encoder E and its EMA target summarize the recorded future into $z _ { t }$ and $z _ { t } ^ { \star }$ ; the readout $D$ reconstructs scene features and body trajectories, the teacher $T$ learns actions from $z _ { t } .$ and $z _ { t } ^ { \star }$ supervises both the prior and, in dashed gray, the action-conditioned world mode of $F .$ In dual-response transfer, drawn in red, $T$ and G read $\widehat { z } _ { t }$ on the same flow sample with their parameters locked and match the recorded-future reference $v _ { \mathrm { r e f } } ;$ this gradient reaches only ${ \widehat { z } } _ { t } , F ,$ , and $H .$ . Gray dashed $\mathcal { L } _ { T }$ and $\mathcal { L } _ { G }$ are the flow-matching action losses that train $T$ and G against the demonstration flow target $v ^ { \star }$ , drawn as dashed tokens, in Eq. (6).
+
+The teacher loss trains $T$ and the online future encoder. The executing-policy loss trains $G$ and backpropagates through the causal prediction path. Both action models, which we call readers of the future latent, have direct access to current visual-language context and measured state.
+
+## 3.5. Dual-response transfer
+
+The teacher learns to generate actions from recorded futures. Dual-response transfer uses this learned action mapping to supervise causal prediction, asking predicted futures to induce the teacher’s recorded-future response. For one shared flow sample $X$ , the teacher conditioned on the EMA future defines
+
+$$
+v _ {\text { ref }} = \text { sg } \left(T _ {\psi} (X, z _ {t} ^ {\star})\right).\tag{7}
+$$
+
+Writing $\widehat { z } = \widehat { z } _ { t } ^ { \mathrm { p r i o r } }$ , we apply
+
+$$
+\begin{array}{r} \mathcal {L} _ {\mathrm{resp}} = \frac {1}{2} \| T _ {\mathrm{fix}} (X, \widehat {z}) - v _ {\mathrm{ref}} \| _ {M _ {r}} ^ {2} \\ + \frac {1}{2} \| G _ {\mathrm{fix}} (X, \widehat {z}) - v _ {\mathrm{ref}} \| _ {M _ {r}} ^ {2}, \end{array}\tag{8}
+$$
+
+where $M _ { r }$ combines valid action-suffix entries with availability of future supervision. The subscript “fix” detaches reader parameters and buffers within this objective; it does not detach z. All other response inputs and the reference are detached, so this loss updates the prediction path through zb.
+
+The teacher term asks the same reader to interpret the prediction as it interprets the recorded future. The executingpolicy term asks for that response in the reader used at deployment. These are different constraints: even if $\widehat { z } = z _ { t } ^ { \star }$ the second residual need not vanish because $G$ and $T$ are different models. The objective thus supervises prediction in action space, complementing the latent MSE of Eq. (4) rather than measuring latent prediction error alone. The flowmatching action objectives in Eq. (6) continue to update both readers; “fix” applies only within response transfer.
+
+## 3.6. Joint optimization and deployment
+
+During joint learning, forecasting alternates between prior and world updates. The executing policy always trains on a causal prior prediction, including on world-forecast updates. Each update uses
+
+$$
+\begin{array}{c} \mathcal {L} = \mathcal {L} _ {\mathrm{rec}} (z _ {t}; D) + \mathcal {L} _ {T} + \lambda_ {\mathrm{reg}} \mathcal {R} (z _ {t}) + \mathcal {L} _ {G} \\ + \mathcal {L} _ {\mathrm{pred}} ^ {m} + \mathbf {1} [ m = \mathrm{prior} ] \lambda_ {r} \mathcal {L} _ {\mathrm{resp}}, \end{array}\tag{9}
+$$
+
+where $\lambda _ { r }$ and $\lambda _ { \mathrm { r e g } }$ are loss weights. The regularizer bounds latent scale and penalizes collapse of tokens within a group. The vision-language backbone is frozen. Appendix A specifies initialization, masking rules, and parameter updates.
+
+At deployment, we compute $F ( H ( x _ { t } ) , p _ { t } ; \mathrm { p r i o r } )$ once per action chunk, then integrate G from noise at $\tau = 1$ to actions at $\tau = 0$ , keeping the committed prefix fixed. The predictor is deterministic; stochasticity enters action sampling. The future encoder, EMA encoder, readout, teacher, and world-mode action labels are absent from deployment.
+
+Table 1. Seven-task joint-policy success rates (%) on HumanoidArena. All policies are trained jointly on the seven tasks. Published rows retain source-specific settings; ‡ marks averages over base and three OOD modes from [35], and ∗ denotes additional policy pretraining. Our runs (final six rows) use 700 demonstrations, 40,000 updates, and 60 evaluation episodes per task (Sec. 4.1). Bold marks $\zeta _ { 0 }$ models.
+
+<table><tr><td>Policy</td><td>Double desk</td><td>Football</td><td>Box</td><td>Boxing</td><td>Open door</td><td>Sit sofa</td><td>Navigation</td><td>Mean</td></tr><tr><td>HuGe-OFT [38]</td><td>0.00</td><td>48.33</td><td>53.33</td><td>73.33</td><td>75.00</td><td>55.00</td><td>73.33</td><td>54.05</td></tr><tr><td>HuGe-GR00T [38]</td><td>15.00</td><td>71.67</td><td>81.67</td><td>68.33</td><td>95.00</td><td>78.33</td><td>56.67</td><td>66.67</td></tr><tr><td>HuGe-Pi [38]</td><td>11.67</td><td>63.33</td><td>76.67</td><td>68.33</td><td>88.33</td><td>83.33</td><td>63.33</td><td>65.00</td></tr><tr><td>Kimodo-Policy [48]</td><td>40.0</td><td>35.0</td><td>80.0</td><td>66.7</td><td>93.3</td><td>96.7</td><td>61.7</td><td>67.63</td></tr><tr><td>Kimodo-Policy* [48]</td><td>38.3</td><td>40.0</td><td>90.0</td><td>68.3</td><td>95.0</td><td>96.7</td><td>76.7</td><td>72.14</td></tr><tr><td>Fast-WAM‡ [51]</td><td>45.00</td><td>46.25</td><td>73.75</td><td>67.92</td><td>85.42</td><td>74.58</td><td>35.00</td><td>61.13</td></tr><tr><td>LingBot-VA‡ [33]</td><td>41.25</td><td>51.67</td><td>77.92</td><td>72.92</td><td>84.58</td><td>77.08</td><td>52.08</td><td>65.36</td></tr><tr><td>GigaWorld-Policy 0.5‡ [18]</td><td>52.50</td><td>62.08</td><td>65.83</td><td>73.33</td><td>90.83</td><td>74.17</td><td>60.00</td><td>68.39</td></tr><tr><td>ACT [55]</td><td>11.67</td><td>8.33</td><td>76.67</td><td>73.33</td><td>73.33</td><td>73.33</td><td>48.33</td><td>52.14</td></tr><tr><td> $\pi_{0.5}$  [44]</td><td>11.67</td><td>5.00</td><td>80.00</td><td>68.33</td><td>75.00</td><td>66.67</td><td>50.00</td><td>50.95</td></tr><tr><td> $\Psi_0$  [49]</td><td>6.67</td><td>26.67</td><td>61.67</td><td>50.00</td><td>65.00</td><td>63.33</td><td>40.00</td><td>44.76</td></tr><tr><td> $\zeta_0$  ( $\Psi_0$ )</td><td>21.67</td><td>23.33</td><td>85.00</td><td>61.67</td><td>95.00</td><td>96.67</td><td>61.67</td><td>63.57</td></tr><tr><td>GR00T N1.7 [41]</td><td>43.33</td><td>38.33</td><td>86.67</td><td>75.00</td><td>98.33</td><td>93.33</td><td>58.33</td><td>70.48</td></tr><tr><td> $\zeta_0$  (GR00T)</td><td>45.00</td><td>56.67</td><td>96.67</td><td>88.33</td><td>96.67</td><td>95.00</td><td>78.33</td><td>79.52</td></tr></table>
+
+## 4. Experiments
+
+We evaluate $\zeta _ { 0 }$ built on $\Psi _ { 0 }$ [49] and on GR00T N1.7, a later release of GR00T N1 [41]. On seven HumanoidArena [47] tasks, we compare $\zeta _ { 0 }$ on each base with that base policy and include ACT [55] and $\pi _ { 0 . 5 }$ [44] as additional baselines, supplemented by published seven-task joint-policy results. Component ablations on both bases examine the shared future representation and its coupling to action generation. We then measure body forecasts with $\zeta _ { 0 } ( \Psi _ { 0 } )$ and evaluate both $\zeta _ { 0 }$ models on six real-world tasks.
+
+## 4.1. Experimental setup
+
+Benchmark and data. We use the Unitree G1 setup in HumanoidArena and seven tasks: double desk, football, pick and place box, boxing, open door, sit sofa, and visual naviga tion. Each task contributes 100 demonstrations, giving 700 demonstrations in total. Each policy trained in our experiments is one shared model trained on all seven tasks with uniform task sampling and global batch size 512. In these runs, policies consume current egocentric visual context, a 64-dimensional state, an instruction, and the committed action prefix, and output 40-dimensional semantic actions. Future-body supervision in our models comprises 29 mea sured joints: 14 arm, 12 leg, and three waist coordinates.
+
+Instantiations. $\zeta _ { 0 } ~ ( \Psi _ { 0 } )$ uses the frozen Qwen3-VL-2B vision-language backbone [3] released with $\Psi _ { 0 }$ and randomly initializes the $\zeta _ { 0 }$ task modules, whereas the $\Psi _ { 0 }$ baseline starts from its full pretrained checkpoint. $\zeta _ { 0 }$ (GR00T) and the GR00T N1.7 baseline both start from the pretrained GR00T N1.7 checkpoint; in $\zeta _ { 0 }$ (GR00T), the teacher and executing policy are copies of its native diffusiontransformer [43] action head, and the predicted future enters its cross-attention as additional context tokens. All seventask policies we train, including ablations and baselines, use 40,000 updates and are evaluated at the final checkpoint; $\pi _ { 0 . 5 }$ and $\Psi _ { 0 }$ start from their pretrained checkpoints. In all experiments, execution uses a 30-step planning window at 50 Hz: the controller executes 24 steps and retains the last six as the committed prefix of the next chunk, corresponding to 0.6, 0.48, and 0.12 s. The forecast covers this window in $K = 3$ groups ending at 0.2, 0.4, and 0.6 s, with $z _ { t } \in \mathbb { R } ^ { 3 \times 8 \times 2 5 6 }$ . Loss weights are $\lambda _ { \Delta } = \lambda _ { D } = 0 . 2 5$ $\lambda _ { \mathrm { p r i o r } } = \lambda _ { \mathrm { w o r l d } } = \lambda _ { r } = 1$ , and $\lambda _ { \mathrm { r e g } } = 1 0 ^ { - 3 }$ . Optimizer and latent settings are listed in Appendix A.
+
+Closed-loop evaluation. We use scenario seeds 0, 1, and 2 with 20 episodes per seed, giving 60 episodes per task and 420 per setting. All policies in our runs share the benchmark environments, success predicates, episode limits, and SONIC low-level controller [39], and chunked execution with a committed action prefix, detailed in Appendix A.5. We report per-task success and the equal-weight mean. Scenario seeds vary evaluation conditions, and each of our settings uses one training seed.
+
+## 4.2. Enhancing different base policies
+
+Table 1 shows that $\zeta _ { 0 }$ improves both bases. $\zeta _ { 0 } ( \Psi _ { 0 } )$ reaches 63.6% mean success versus 44.8% for $\Psi _ { 0 }$ , an 18.8-point gain; it improves six of seven tasks, most on sit sofa, open door, and pick and place box, by 33.3, 30.0, and 23.3 points. $\zeta _ { 0 }$ (GR00T) reaches 79.5% versus 70.5% for GR00T N1.7, a 9.0-point gain; it improves six of seven tasks, most on navigation, football, and boxing, by 20.0, 18.3, and 13.3 points, while open door stays near ceiling at 96.7%. This is the highest reported seven-task mean in Table 1. $\zeta _ { 0 }$ (GR00T) also has the highest success of any policy in Table 1 on pick and place box, boxing, and navigation, at 96.7, 88.3, and 78.3%. $\zeta _ { 0 } ~ ( \Psi _ { 0 } )$ exceeds ACT and $\pi _ { 0 . 5 }$ by 11.4 and 12.6 points and outperforms both on six of seven tasks.
+
+![](images/eaf42d5f3d00c1aa2c659188801c5edb5d32104b98785c99ee795472df56d42a.jpg)
+
+![](images/e4c1f37fe708ffd96eb22cb56b6ff849a312eaaaeb3f0d92e0a8f7a880fa6dfc.jpg)  
+Figure 3. Forecasting the body in the scene with $\zeta _ { 0 } ( \Psi _ { 0 } ) .$ . Each scene panel is a frame at time t from a closed-loop evaluation rollout of the shared seven-task model. From the head-camera view at t, shown as an inset, and the current state, its causal predictor and readout forecast the 29 joint angles over the next 0.6 s; we draw the forecast body at +0.2, +0.4, and +0.6 s in green, darker for later times, through the recorded camera and outline in white the body the robot actually reached at +0.6 s. The model does not forecast root motion, so forecast and measured bodies are placed at the measured root pose of their time, and the 14 unpredicted finger joints are held at t. Examples are chosen for clear task context; the last panel reports joint RMSE against horizon over all 526 windows of Sec. 4.4, compared with holding the pose at t.
+
+Table 2. Component ablations of $\zeta _ { 0 }$ on both bases. Seven-task mean success (%) over 420 episodes; Full denotes the complete $\zeta _ { 0 }$ model on each base, and $\Delta$ is the change from it in percentage points. Each ablation removes BF, future body measurements as encoder input and supervision, leaving visual futures only; DR, dual-response transfer; ER or TR, the executing-policy or teacher response term; AG, the action-loss gradient from G into $H / F ;$ FC, future conditioning of G; or WL, the world latent MSE.
+
+<table><tr><td rowspan="2">Setting</td><td colspan="2"> $\zeta_0 (\Psi_0)$ </td><td colspan="2"> $\zeta_0 (GR00T)$ </td></tr><tr><td>Mean</td><td> $\Delta$ </td><td>Mean</td><td> $\Delta$ </td></tr><tr><td>Full</td><td>63.57</td><td>—</td><td>79.52</td><td>—</td></tr><tr><td>w/o BF</td><td>61.43</td><td>-2.14</td><td>73.10</td><td>-6.43</td></tr><tr><td>w/o DR</td><td>58.10</td><td>-5.48</td><td>75.00</td><td>-4.52</td></tr><tr><td>w/o ER</td><td>61.67</td><td>-1.90</td><td>77.14</td><td>-2.38</td></tr><tr><td>w/o TR</td><td>60.95</td><td>-2.62</td><td>75.24</td><td>-4.29</td></tr><tr><td>w/o AG</td><td>59.52</td><td>-4.05</td><td>76.90</td><td>-2.62</td></tr><tr><td>w/o FC</td><td>47.14</td><td>-16.43</td><td>73.33</td><td>-6.19</td></tr><tr><td>w/o WL</td><td>61.90</td><td>-1.67</td><td>74.76</td><td>-4.76</td></tr><tr><td>Base policy</td><td>44.76</td><td>-18.81</td><td>70.48</td><td>-9.05</td></tr></table>
+
+## 4.3. Component analysis
+
+Table 2 removes one component at a time on both bases: future body measurements (BF), dual-response transfer (DR) and its executing-policy and teacher terms (ER, TR), the action gradient into prediction (AG), future conditioning of G (FC), and the world latent MSE (WL). Every ablation lowers the seven-task mean on both bases; per-task results are in Appendix C.
+
+Acting on predicted futures. Zeroing G’s future condition in training and deployment lowers the mean by 16.4 points on $\Psi _ { 0 }$ and 6.2 on GR00T N1.7, confirming on both bases that the executing policy acts on its foresight. On $\Psi _ { 0 }$ it lowers success on six of seven tasks, most on pick and place box, by 23.3 points.
+
+Body futures. Keeping only visual futures, without future body inputs or supervision, lowers the mean by 6.4 points on GR00T N1.7, the largest ablation drop on this base, and by 2.1 on $\Psi _ { 0 }$ . On GR00T N1.7, the drop concentrates on tasks with object contact and whole-body coordination: football, pick and place box, boxing, and double desk each lose 10.0– 13.3 points, whereas open door and sit sofa do not decrease. In these tasks the body’s response to contact can be difficult to read from egocentric images.
+
+The effects of body supervision and future conditioning also differ by task. On GR00T N1.7, removing body futures lowers box success by 11.7 points, compared with 1.7 points when future conditioning is removed; on navigation, the corresponding drops are 5.0 and 20.0 points. Body supervision is more influential on box, while access to the predicted latent is more influential on navigation.
+
+![](images/73ad4bb8b0bf6244b247caade166bc76c4f61f5ed77f26cdecfa9e196ee45af7.jpg)  
+Figure 4. Real-world tasks on a Unitree G1. Keyframes from $\zeta _ { 0 }$ (GR00T) episodes on the six tasks, each titled with its language instruction; times are relative to the first frame shown.
+
+Dual-response transfer. Removing dual-response transfer lowers the mean by 5.5 points on $\Psi _ { 0 }$ and 4.5 on GR00T N1.7; keeping only one reader at the same total coefficient leaves the mean 1.9–4.3 points below the full model. Removing the teacher term lowers the mean by 2.6 and 4.3 points on Ψ<sub>0</sub> and GR00T N1.7, more than the 1.9 and 2.4 points for the executing-policy term, and removing both costs more than removing either, suggesting that the two readers supply partly complementary supervision.
+
+The single-reader controls have different task profiles despite the same total response weight. For $\zeta _ { 0 } ( \Psi _ { 0 } )$ , teacheronly supervision obtains 88.3% on box and 55.0% on boxing, compared with 71.7% and 58.3% for executing-policy-only supervision. On GR00T N1.7, the corresponding boxing rates are 80.0% and 85.0%. Teacher-only supervision has the higher mean on both bases, while executing-policy-only supervision performs better on boxing.
+
+Other components. Blocking the executing-policy action gradient into prediction lowers the mean by 4.0 and 2.6 points on $\Psi _ { 0 }$ and GR00T N1.7, and removing the world latent MSE by 1.7 and 4.8 points.
+
+The per-task results in Appendix C show where these losses differ. On $\zeta _ { 0 } ( \Psi _ { 0 } )$ , blocking the action-loss gradient reduces box and boxing success by 21.7 and 16.7 points; removing the world latent MSE lowers sit-sofa success by 16.7 points. On GR00T N1.7, removing the world latent MSE reduces football, box, and navigation by 13.3, 10.0, and 11.7 points, whereas blocking the action-loss gradient mainly affects navigation, by 11.7 points, and leaves boxing, open door, and sit sofa unchanged.
+
+## 4.4. Forecasting the body
+
+We next measure how well $\zeta _ { 0 } ( \Psi _ { 0 } )$ anticipates its own body. For each task we record one new closed-loop rollout and place an anchor every 0.1 s over its first 8 s, giving 526 windows; the boxing rollout ends before 8 s. At each anchor, the causal predictor and readout forecast the 29 joint angles over the next 0.6 s from the current observation alone and we compare them with the joint angles the robot reached in that rollout. Over all windows, the joint RMSE is $3 . 7 ^ { \circ } , 4 . 3 ^ { \circ }$ , and $4 . 5 ^ { \circ } ~ \mathrm { a t } + 0 . 2 , + 0 . 4$ , and +0.6 s, roughly half the $6 . 9 ^ { \circ } , 8 . 8 ^ { \circ }$ and $9 . 4 ^ { \circ }$ of holding the current pose, as plotted in Fig. 3. From +0.2 to +0.6 s the forecast error grows by only $0 . 8 ^ { \circ }$ whereas holding the pose grows by $2 . 5 ^ { \circ }$ , so the advantage widens with the horizon. At +0.6 s the forecast is closer than this baseline in 83% of windows, and its error averaged over the 0.6 s horizon is lower on every task. Holding the current pose is hard to beat only within the first 0.05 s; beyond that the forecast is more accurate at every horizon. Figure 3 renders forecasts in their scenes, placing each forecast body at the measured root pose.
+
+![](images/b69fbe20c9c0ea91e4fcfc5663bceded3f1dc103bd1c070cb626bf66f160cdd0.jpg)  
+Figure 5. Real-world success rates on a Unitree G1. Arrows point from each light base policy to its dark $\zeta _ { 0 }$ counterpart, in blue for $\Psi _ { 0 }$ and teal for GR00T; a single dot marks equal success. Each policy is evaluated for 10 trials per task, 300 in total; Mean weights the six tasks equally. Task criteria are in Appendix B.
+
+Pooling all forecast times within each task, navigation has a trajectory RMSE of $5 . 2 ^ { \circ }$ for prediction versus 11.2<sup>◦</sup> for holding the current pose. The corresponding errors are $3 . 3 ^ { \circ }$ versus $8 . 0 ^ { \circ }$ on sit sofa and 4.1<sup>◦</sup> versus $5 . 4 ^ { \circ }$ on box. Navigation has both the largest forecast error and the largest absolute reduction over pose persistence among the seven rollouts.
+
+## 4.5. Real-world experiments
+
+Setup. We compare $\zeta _ { 0 } ~ ( \Psi _ { 0 } )$ and $\zeta _ { 0 }$ (GR00T) with their respective bases and $\pi _ { 0 . 5 }$ on six Unitree G1 tasks: hair drying, pushing a chair, clearing a table, carrying tape around an obstacle, placing a doll, and tidying a scene, shown in Fig. 4. The tasks place different demands on the policy: hair drying requires sustained arm motion near a person; pushing a chair and placing a doll combine walking with grasping; carrying tape around an obstacle couples carrying with obstacle-aware locomotion; and table clearing and scene tidying chain several object interactions in one episode. All five policies share three RGB views, measured body-andhand state, the action interface, the SONIC controller, and the execution protocol, and each is trained separately on each task with the same demonstrations and 20,000 updates. Each policy is evaluated for 10 trials per task with randomized robot and object positions; failures and timeouts count as unsuccessful, and Appendix B lists demonstrations, success criteria, and per-task counts.
+
+Results. $\zeta _ { 0 } ~ ( \Psi _ { 0 } )$ reaches 78.3% mean success versus 61.7% for $\Psi _ { 0 }$ and 50.0% for $\pi _ { 0 . 5 } .$ , and $\zeta _ { 0 }$ (GR00T) reaches 85.0% versus 75.0% for GR00T N1.7, gains of 16.7 and 10.0 points over the bases, as Fig. 5 shows. The gains concentrate on table clearing, obstacle avoidance, and scene tidying, three long-horizon tasks in which several stages must succeed in sequence: $\zeta _ { 0 } ( \Psi _ { 0 } )$ succeeds in 19 of their 30 trials versus 11 for $\Psi _ { 0 } ,$ and $\zeta _ { 0 }$ (GR00T) in 23 versus 19 for GR00T N1.7. For $\zeta _ { 0 } ( \Psi _ { 0 } )$ , scene tidying rises from 20 to 60% and table clearing from 50 to 80%; for $\zeta _ { 0 } ~ ( \mathrm { G R 0 0 T } )$ table clearing rises from $^ { 7 0 }$ to 90%; on the other three tasks, every policy succeeds in 8 to 10 of 10 trials. We observed that small deviations in the relative placement of the body and objects tended to accumulate from stage to stage in baseline trials until a later stage failed, whereas $\zeta _ { 0 }$ executed more stably across stages. $\zeta _ { 0 }$ (GR00T) matches or exceeds the other four policies on every task; Fig. 1(a) shows one of its scene-tidying episodes.
+
+Model size and latency. The deployed $\zeta _ { 0 } ( \Psi _ { 0 } )$ has 2.59B parameters, of which 2.13B form the frozen backbone and 461M the task modules. On one RTX 4090, a policy call takes 212 ms on average and 221 ms at the 95th percentile, using 6.3 GiB, excluding sensing, networking, and control; measurement conditions are in Appendix A.5.
+
+## 5. Conclusion
+
+$\zeta _ { 0 }$ is a framework that turns vision-language-action policies into World Action Models by learning joint scene-and-body foresight together with them. A shared latent representation captures future visual features and measured body trajectories, and dual-response transfer supervises its causal prediction in action space through a recorded-future teacher and the executing policy. Built on $\Psi _ { 0 }$ and GR00T N1.7, $\zeta _ { 0 }$ raises mean success over both bases by 18.8 and 9.0 points on seven HumanoidArena tasks and by 16.7 and 10.0 points on six real-world tasks with 10 trials each. Removing future conditioning causes the largest drop on $\Psi _ { 0 } ,$ , whereas removing body futures causes the largest drop on GR00T N1.7; dual-response transfer improves both bases. Foreseeing the body as well as the scene, and judging that foresight by the actions it induces, lets a policy anticipate the consequences of its own whole-body commands.
+
+Future work. Pretraining the shared scene-and-body representation on large, diverse humanoid and human-motion data offers a direct path to broaden foresight across tasks and embodiments; combining it with explicit planning or language-level reasoning over longer task structure is a natural next step. Dual-response transfer could also supervise other predictive signals, such as future touch or force.
+
+## References
+
+[1] Mahmoud Assran, Quentin Duval, Ishan Misra, Piotr Bojanowski, Pascal Vincent, Michael Rabbat, et al. Selfsupervised learning from images with a joint-embedding predictive architecture. In IEEE/CVF Conference on Computer Vision and Pattern Recognition, 2023.
+
+[2] Mido Assran, Adrien Bardes, David Fan, Quentin Garrido, Russell Howes, Mojtaba Komeili, et al. V-JEPA 2: Selfsupervised video models enable understanding, prediction and planning. arXiv preprint arXiv:2506.09985, 2025.
+
+[3] Shuai Bai, Yuxuan Cai, Ruizhe Chen, Keqin Chen, Xionghui Chen, Zesen Cheng, et al. Qwen3-VL technical report. arXiv preprint arXiv:2511.21631, 2025.
+
+[4] Kevin Black, Noah Brown, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, et al. π<sub>0</sub>: A vision-languageaction flow model for general robot control. In Robotics: Science and Systems, 2025.
+
+[5] Kevin Black, Manuel Y. Galliker, and Sergey Levine. Realtime execution of action chunking flow policies. In Advances in Neural Information Processing Systems, 2025.
+
+[6] Anthony Brohan, Noah Brown, Justice Carbajal, Yevgen Chebotar, Xi Chen, Krzysztof Choromanski, et al. RT-2: Vision-language-action models transfer web knowledge to robotic control. In Conference on Robot Learning, 2023.
+
+[7] Anthony Brohan, Noah Brown, Justice Carbajal, Yevgen Chebotar, Joseph Dabis, Chelsea Finn, et al. RT-1: Robotics transformer for real-world control at scale. In Robotics: Science and Systems, 2023.
+
+[8] Jake Bruce, Michael Dennis, Ashley Edwards, Jack Parker-Holder, Yuge Shi, Edward Hughes, et al. Genie: Generative interactive environments. In International Conference on Machine Learning, 2024.
+
+[9] Zhanxiang Cao, Liyun Yan, Yang Zhang, Sirui Chen, Jianming Ma, Tianyue Zhan, et al. HiWET: Hierarchical worldframe end-effector tracking for long-horizon humanoid locomanipulation. arXiv preprint arXiv:2602.06341, 2026.
+
+[10] Dian Chen, Brady Zhou, Vladlen Koltun, and Philipp Krahenb¨ uhl. Learning by cheating. In¨ Conference on Robot Learning, 2019.
+
+[11] Yizhi Chen, Zhanxiang Cao, Xinyi Peng, Yixiao Zheng, Xiaxi Si, Yiheng Li, et al. GeoAlign: Beyond semantics with stateguided spatial alignment in VLA models. arXiv preprint arXiv:2606.03240, 2026.
+
+[12] Yi Chen, Yuying Ge, Hui Zhou, Mingyu Ding, Yixiao Ge, and Xihui Liu. DIAL: Decoupling intent and action via latent world modeling for end-to-end VLA. arXiv preprint arXiv:2603.29844, 2026.
+
+[13] Yizhi Chen, Zheng Zhang, Zhanxiang Cao, Yihe Chen, Shengcheng Fu, Liyun Yan, et al. HierKick: Hierarchical reinforcement learning for vision-guided soccer robot control. arXiv preprint arXiv:2603.00948, 2026.
+
+[14] Xuxin Cheng, Yandong Ji, Junming Chen, Ruihan Yang, Ge Yang, and Xiaolong Wang. Expressive whole-body control for humanoid robots. In Robotics: Science and Systems, 2024.
+
+[15] Cheng Chi, Siyuan Feng, Yilun Du, Zhenjia Xu, Eric Cousineau, Benjamin CM Burchfiel, et al. Diffusion policy:
+
+Visuomotor policy learning via action diffusion. In Robotics: Science and Systems, 2023.
+
+[16] Yilun Du, Mengjiao Yang, Bo Dai, Hanjun Dai, Ofir Nachum, Joshua B. Tenenbaum, et al. Learning universal policies via text-guided video generation. In Advances in Neural Information Processing Systems, 2023.
+
+[17] Zipeng Fu, Qingqing Zhao, Qi Wu, Gordon Wetzstein, and Chelsea Finn. HumanPlus: Humanoid shadowing and imitation from humans. In Conference on Robot Learning, 2024.
+
+[18] GigaWorld Team. GigaWorld-Policy-0.5: A faster and stronger WAM empowered by AutoResearch. arXiv preprint arXiv:2607.13960, 2026.
+
+[19] Jean-Bastien Grill, Florian Strub, Florent Altche, Corentin´ Tallec, Pierre H. Richemond, Elena Buchatskaya, et al. Bootstrap your own latent: A new approach to self-supervised learning. In Advances in Neural Information Processing Systems, 2020.
+
+[20] Qiwen Gu, Jifan Li, Bingjie Gao, Rui Chen, Jing Tang, Xiangxiang Chu, et al. The right future for action: Learning action-relevant predictive states in world action models. arXiv preprint arXiv:2609.23369, 2026.
+
+[21] David Ha and Jurgen Schmidhuber. World models.¨ arXiv preprint arXiv:1803.10122, 2018.
+
+[22] Danijar Hafner, Timothy Lillicrap, Jimmy Ba, and Mohammad Norouzi. Dream to control: Learning behaviors by latent imagination. In International Conference on Learning Representations, 2020.
+
+[23] Danijar Hafner, Jurgis Pasukonis, Jimmy Ba, and Timothy Lillicrap. Mastering diverse control tasks through world models. Nature, 2025.
+
+[24] Tairan He, Zhengyi Luo, Xialin He, Wenli Xiao, Chong Zhang, Weinan Zhang, et al. OmniH2O: Universal and dexterous human-to-humanoid whole-body teleoperation and learning. In Conference on Robot Learning, 2024.
+
+[25] Tairan He, Jiawei Gao, Wenli Xiao, Yuanhang Zhang, Zi Wang, Jiashun Wang, et al. ASAP: Aligning simulation and real-world physics for learning agile humanoid whole-body skills. In Robotics: Science and Systems, 2025.
+
+[26] Tairan He, Wenli Xiao, Toru Lin, Zhengyi Luo, Zhenjia Xu, Zhenyu Jiang, et al. HOVER: Versatile neural whole-body controller for humanoid robots. In IEEE International Conference on Robotics and Automation, 2025.
+
+[27] Geoffrey Hinton, Oriol Vinyals, and Jeff Dean. Distilling the knowledge in a neural network. arXiv preprint arXiv:1503.02531, 2015.
+
+[28] Yucheng Hu, Yanjiang Guo, Pengchao Wang, Xiaoyu Chen, Yen-Jen Wang, Jianke Zhang, et al. Video prediction policy: A generalist robot policy with predictive visual representations. In International Conference on Machine Learning, 2025.
+
+[29] Bingqi Huang, Bingchuan Wei, Xuan Wang, Yingkai Cai, and Zhaokui Wang. Cross-view action consistency for camera-robust vision-language-action policies. arXiv preprint arXiv:2608.06965, 2026.
+
+[30] Mazeyu Ji, Xuanbin Peng, Fangchen Liu, Jialong Li, Ge Yang, Xuxin Cheng, et al. ExBody2: Advanced expressive humanoid whole-body control. arXiv preprint arXiv:2412.13196, 2024.
+
+[31] Moo Jin Kim, Karl Pertsch, Siddharth Karamcheti, Ted Xiao, Ashwin Balakrishna, Suraj Nair, et al. OpenVLA: An opensource vision-language-action model. In Conference on Robot Learning, 2024.
+
+[32] Ashish Kumar, Zipeng Fu, Deepak Pathak, and Jitendra Malik. RMA: Rapid motor adaptation for legged robots. In Robotics: Science and Systems, 2021.
+
+[33] Lin Li, Qihang Zhang, Yiming Luo, Shuai Yang, Ruilin Wang, Fei Han, et al. Causal world modeling for robot control. arXiv preprint arXiv:2601.21998, 2026.
+
+[34] Shuang Li, Yihuai Gao, Dorsa Sadigh, and Shuran Song. Unified video action model. In Robotics: Science and Systems, 2025.
+
+[35] Yanjun Li, Jiarui Ye, Weiyu Guo, Zixiao He, Kangjie Ye, Dihan Wang, et al. Language-Forcing: Advancing humanoid loco-manipulation via semantic alignment of whole-body world action models. arXiv preprint arXiv:2610.23894, 2026.
+
+[36] Yaron Lipman, Ricky T. Q. Chen, Heli Ben-Hamu, Maximilian Nickel, and Matt Le. Flow matching for generative modeling. In International Conference on Learning Representations, 2023.
+
+[37] Xingchao Liu, Chengyue Gong, and Qiang Liu. Flow straight and fast: Learning to generate and transfer data with rectified flow. In International Conference on Learning Representations, 2023.
+
+[38] Yang Liu, Jiacheng Liu, Hengtao Li, Yuheng Huang, Zijian Yang, Ji Dai, et al. HuGe: Scaling humanoid generalist visionlanguage-action models with egocentric experience. arXiv preprint arXiv:2610.34186, 2026.
+
+[39] Zhengyi Luo, Ye Yuan, Tingwu Wang, Chenran Li, Fernando Castaneda, Sirui Chen, et al. SONIC: Supersizing motion˜ tracking for natural humanoid whole-body control. Science Robotics, 2026.
+
+[40] NVIDIA, Niket Agarwal, Arslan Ali, Maciej Bala, Yogesh Balaji, Erik Barker, et al. Cosmos world foundation model platform for physical AI. arXiv preprint arXiv:2501.03575, 2025.
+
+[41] NVIDIA, Johan Bjorck, Fernando Castaneda, Nikita Cher-˜ niadev, Xingye Da, Runyu Ding, et al. GR00T N1: An open foundation model for generalist humanoid robots. arXiv preprint arXiv:2503.14734, 2025.
+
+[42] Octo Model Team, Dibya Ghosh, Homer Walke, Karl Pertsch, Kevin Black, Oier Mees, et al. Octo: An open-source generalist robot policy. In Robotics: Science and Systems, 2024.
+
+[43] William Peebles and Saining Xie. Scalable diffusion models with transformers. In IEEE/CVF International Conference on Computer Vision, 2023.
+
+[44] Physical Intelligence, Kevin Black, Noah Brown, James Darpinian, Karan Dhabalia, Danny Driess, et al. π<sub>0.5</sub>: A vision-language-action model with open-world generalization. In Conference on Robot Learning, 2025.
+
+[45] Carmelo Sferrazza, Dun-Ming Huang, Xingyu Lin, Youngwoon Lee, and Pieter Abbeel. HumanoidBench: Simulated humanoid benchmark for whole-body locomotion and manipulation. In Robotics: Science and Systems, 2024.
+
+[46] Yang Tian, Sizhe Yang, Jia Zeng, Ping Wang, Dahua Lin, Hao Dong, et al. Predictive inverse dynamics models are
+
+scalable learners for robotic manipulation. In International Conference on Learning Representations, 2025.
+
+[47] Taowen Wang, Zikang Xie, Bin Yang, Yunheng Wang, Zizhao Yuan, Yuetong Fang, et al. HumanoidArena: Benchmarking egocentric hierarchical whole-body learning. arXiv preprint arXiv:2606.17833, 2026.
+
+[48] Yunheng Wang, Jiaxi Zhang, Wei Lu, Yuetong Fang, Taowen Wang, Yixiao Feng, et al. Kimodo-Policy: Learning kinematic action models for humanoid loco-manipulation. arXiv preprint arXiv:2611.11554, 2026.
+
+[49] Songlin Wei, Hongyi Jing, Boqian Li, Zhenyu Zhao, Jiageng Mao, Zhenhao Ni, et al. Ψ<sub>0</sub>: An open foundation model towards universal humanoid loco-manipulation. arXiv preprint arXiv:2603.12263, 2026.
+
+[50] Hongtao Wu, Ya Jing, Chilam Cheang, Guangzeng Chen, Jiafeng Xu, Xinghang Li, et al. Unleashing large-scale video generative pre-training for visual robot manipulation. In International Conference on Learning Representations, 2024.
+
+[51] Tianyuan Yuan, Zibin Dong, Yicheng Liu, and Hang Zhao. Fast-WAM: Do world action models need test-time future imagination? arXiv preprint arXiv:2603.16666, 2026.
+
+[52] Junpeng Yue, Boyuan Li, Yuxuan Wang, Zepeng Wang, Yuhui Fu, Feiyang Xie, et al. Being-M0.7: A latent world-action model for humanoid robots. arXiv preprint arXiv:2610.11283, 2026.
+
+[53] Yanjie Ze, Zixuan Chen, Joao Pedro Ara ˜ ujo, Zi-ang Cao,´ Xue Bin Peng, Jiajun Wu, et al. TWIST: Teleoperated wholebody imitation system. In Conference on Robot Learning, 2025.
+
+[54] Yanjie Ze, Zixuan Chen, Wenhao Wang, Tianyi Chen, Xialin He, Ying Yuan, et al. Generalizable humanoid manipulation with 3D diffusion policies. In IEEE/RSJ International Conference on Intelligent Robots and Systems, 2025.
+
+[55] Tony Z. Zhao, Vikash Kumar, Sergey Levine, and Chelsea Finn. Learning fine-grained bimanual manipulation with lowcost hardware. In Robotics: Science and Systems, 2023.
+
+[56] Ruijie Zheng, Jing Wang, Scott Reed, Johan Bjorck, Yu Fang, Fengyuan Hu, et al. FLARE: Robot learning with implicit world modeling. In Conference on Robot Learning, 2025.
+
+[57] Gaoyue Zhou, Hengkai Pan, Yann LeCun, and Lerrel Pinto. DINO-WM: World models on pre-trained visual features enable zero-shot planning. In International Conference on Machine Learning, 2025.
+
+[58] Chuning Zhu, Raymond Yu, Siyuan Feng, Benjamin Burchfiel, Paarth Shah, and Abhishek Gupta. Unified world models: Coupling video and action diffusion for pretraining on large robotic datasets. In Robotics: Science and Systems, 2025.
+
+# $\zeta _ { 0 } \colon$ A Framework for World Action Models with Joint Scene and Body Foresight in Humanoid Control
+
+Appendix
+
+## A. Implementation Details
+
+This appendix gives the initialization, losses and parameter updates, architecture and compute, action execution, and simulation-baseline settings of $\zeta _ { 0 }$ on both bases, followed by real-robot details, per-task ablation results, and bodyforecast evaluation details.
+
+## A.1. Initialization and vision-language backbone
+
+In $\zeta _ { 0 } ( \Psi _ { 0 } )$ , all task modules, in simulation and on the real robot, are randomly initialized. Its simulation and real-robot versions use the Qwen3-VL-2B-Instruct vision-language model released with $\Psi _ { 0 } ,$ , frozen throughout. Each camera image keeps its aspect ratio, is resized with bilinear antialiasing to a short side of at most 240 pixels without upscaling, and is padded symmetrically with RGB value 127 to a multiple of 32; pixels are rescaled by $1 / 2 5 5$ and normalized with mean and standard deviation 0.5, and the backbone’s own resizing is disabled. Each image yields at most 160 merged visual tokens, which the backbone’s context sequence keeps unchanged. The current-visual branch and the future visual targets use post-merger features averaged over $\mathbf { a } \ 4 \times 4$ grid with area weights over the valid image region, giving 16 tokens of 2048 dimensions per image; pure padding receives zero weight (Fig. S1a).
+
+Table S1. Shared seven-task training settings of $\zeta _ { 0 } \ ( \Psi _ { 0 } )$ . All eight $\zeta _ { 0 } ( \Psi _ { 0 } )$ settings use the training recipe of the full model, with the intervention specified in Table 2.
+
+<table><tr><td>Setting</td><td>Value</td></tr><tr><td>Tasks / demonstrations per task</td><td>7 / 100</td></tr><tr><td>Shared model / total demonstrations</td><td>1 / 700</td></tr><tr><td>Task sampling</td><td>Uniform (1/7)</td></tr><tr><td>Task-module initialization</td><td>Random</td></tr><tr><td>Vision-language backbone</td><td>Frozen</td></tr><tr><td>Training updates</td><td>40,000</td></tr><tr><td>Training seed</td><td>292285</td></tr><tr><td>GPUs / global batch</td><td>2 / 512</td></tr><tr><td>Optimizer / Adam betas</td><td>AdamW / (0.95, 0.999)</td></tr><tr><td>World / action learning rates</td><td> $3 \times 10^{-5} / 10^{-4}$ </td></tr><tr><td>Weight decay / gradient norm clip</td><td> $10^{-6} / 1$ </td></tr><tr><td>Learning-rate warmup updates</td><td>1,000</td></tr><tr><td>Learning-rate schedule</td><td>Cosine, horizon extended from 20k to 40k at update 20k</td></tr><tr><td>Target-encoder EMA decay</td><td>0.99</td></tr><tr><td>Max committed prefix (training)</td><td>15 steps</td></tr></table>
+
+In simulation, $\zeta _ { 0 }$ (GR00T) is built inside the native GR00T N1.7 architecture. It keeps the frozen Qwen-based vision-language backbone of the GR00T N1.7 checkpoint (16 text layers, 2048-dimensional context) and its flowmatching DiT action head (32 layers, preceded by four vision-language self-attention layers). The DiT, visionlanguage normalization and self-attention, and position embeddings load from the checkpoint; a new embodimentspecific state encoder, action encoder, and action decoder handle the 64-dimensional state and 40-dimensional semantic actions. The teacher $T$ is initialized from this head, and the executing policy $G$ starts as an independent copy with separate parameters; the future encoders, readout, conditioner, predictor, and future projections are newly initialized. The three latent groups of eight tokens are projected to the native context width and appended to the vision-language context of the DiT cross-attention, with one masked copy for the image-attention blocks and one for the text-attention blocks; the upstream attention code is unchanged. The head generates 40-step chunks with four Euler steps. The noise fraction τ in Sec. 3.4 maps to the native flow time $1 - \tau _ { \ast }$ ordinary action learning uses the native Beta time distribution, and the committed prefix stays clean at every step. Image preprocessing, visual and body targets, loss weights, learning rates, warmup, EMA decay, training seed, and the dual-response objective match $\zeta _ { 0 } ( \Psi _ { 0 } )$ (Tables S1 and S2), with global batch 512 on two GPUs. The seven ablations apply the same interventions as for $\zeta _ { 0 } ( \Psi _ { 0 } )$ , with matched data, initialization, and 40,000-update budget.
+
+Table S2. Representation, loss, and execution settings of $\zeta _ { 0 } ( \Psi _ { 0 } )$ in simulation. Response coefficients refer to the full model; each single-reader control has unit weight. Scenario seeds vary evalua tion conditions, not training replicas. Differences for $\zeta _ { 0 }$ (GR00T) are specified in Sec. A.1.
+
+<table><tr><td>Setting</td><td>Value</td></tr><tr><td>Future-group endpoints (s)</td><td>0.2, 0.4, 0.6</td></tr><tr><td>Tokens / group; channels / token</td><td>8; 256</td></tr><tr><td>Measured body targets</td><td>29 joints</td></tr><tr><td>Native state / action dimensions</td><td>64 / 40</td></tr><tr><td>Teacher / executing response weight</td><td>0.5 / 0.5</td></tr><tr><td>Outer response / body weight</td><td>1 / 1</td></tr><tr><td>Scene / temporal loss weight</td><td>1 / 0.25</td></tr><tr><td>Forecast-readout / regularizer weight</td><td> $0.25 / 10^{-3}$ </td></tr><tr><td>Prior / world latent MSE weight</td><td>1 / 1</td></tr><tr><td>Model action grid</td><td>50 Hz</td></tr><tr><td>Generated / planned action steps</td><td>50 / 30</td></tr><tr><td>Executed / committed action steps</td><td>24 / 6</td></tr><tr><td>Action flow integration steps</td><td>10</td></tr><tr><td>Scenario seeds</td><td>0, 1, 2</td></tr><tr><td>Episodes per seed / per task</td><td>20 / 60</td></tr><tr><td>Episodes per setting</td><td>420</td></tr><tr><td>Task aggregation</td><td>Equal-weight mean</td></tr><tr><td>Low-level controller</td><td>SONIC</td></tr><tr><td>Episode limit: double desk / football</td><td>2000 / 2000</td></tr><tr><td>Episode limit: box / boxing</td><td>1450 / 900</td></tr><tr><td>Episode limit: open door / sit sofa</td><td>1800 / 2000</td></tr><tr><td>Episode limit: navigation</td><td>1800</td></tr></table>
+
+Table S3. Gradient paths during joint learning. A checkmark indicates a parameter update from that loss. $H / F$ includes causal conditioning adapters. Fixed readers preserve latent-input derivatives. EMA targets and the frozen backbone receive no gradient.
+
+<table><tr><td>Loss</td><td>Online E</td><td>Readout D</td><td>Teacher T</td><td>Conditioner / predictor H/F</td><td>Policy G</td></tr><tr><td>Recorded-future reconstruction</td><td>√</td><td>√</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Latent regularization</td><td>√</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Teacher action loss</td><td>√</td><td>—</td><td>√</td><td>—</td><td>—</td></tr><tr><td>Latent forecasting</td><td>—</td><td>—</td><td>—</td><td>√</td><td>—</td></tr><tr><td>Forecast readout</td><td>—</td><td>fixed</td><td>—</td><td>√</td><td>—</td></tr><tr><td>Dual-response transfer</td><td>—</td><td>—</td><td>fixed</td><td>√</td><td>fixed</td></tr><tr><td>Executing-policy action loss</td><td>—</td><td>—</td><td>—</td><td>√</td><td>√</td></tr></table>
+
+## A.2. Losses, masks, and parameter updates
+
+Reconstruction errors are averaged over valid elements per sample and combined with their loss weights; body errors are additionally weighted per joint. Temporal scene differences require valid visual targets in consecutive groups. Body differences additionally require valid corresponding query slots in the two groups. World prediction uses a cumulative action-coverage mask: a missing action segment invalidates the affected group and subsequent world groups. This eligibility rule applies to world losses; the example remains available for ordinary policy learning when its own targets are valid.
+
+The latent regularizer is
+
+$$
+\mathcal {R} (z) = \frac {1}{| \mathcal {V} |} \sum_ {g \in \mathcal {V}} \left([ r _ {g} - 4 ] _ {+} ^ {2} + [ 0. 1 - d _ {g} ] _ {+} ^ {2}\right),\tag{S1}
+$$
+
+where V is the set of valid groups, $r _ { g }$ is the root mean square across that group’s latent entries, and $d _ { g }$ is the mean channelwise standard deviation across its eight tokens. This penalizes excessive scale and identical tokens.
+
+Table S3 summarizes parameter updates during joint learning. The online encoder receives reconstruction and teacher-action gradients. EMA targets are stop-gradient labels. Forecast readout and response losses hold their readers fixed while retaining input derivatives. The executing-policy flow-matching loss updates both G and its causal prediction path.
+
+## A.3. Joint training algorithm
+
+Algorithm S1 summarizes joint training, with parameter gradients following Table S3. Prior and world forecasting alternate by optimizer update; the executing policy uses the causal prior prediction in both modes. The EMA encoder advances once at the start of each update, before target encoding, including when gradients are accumulated over multiple microbatches.
+
+## A.4. Architecture and compute
+
+Table S4 lists the transformer modules and parameter counts of $\zeta _ { 0 } ( \Psi _ { 0 } )$ . Within $\zeta _ { 0 } ( \Psi _ { 0 } )$ , widths and depths are identical in simulation and on the real robot; counts differ only through the state and action adapters. During training its task modules hold 582M parameters, of which 563M are trainable and 19M form the EMA target encoder. Each $\zeta _ { 0 } ( \Psi _ { 0 } )$ simulation setting trains on two 80 GB GPUs; 40,000 updates take about 37 h for the full model and 36–43 h across all eight settings. The full $\zeta _ { 0 } ~ ( \mathrm { G R 0 0 T } )$ model trains on two 141 GB NVIDIA H200 GPUs and takes about 50 h for 40,000 updates. Both times exclude feature caching.
+
+Table S4. Architecture and parameter counts of $\zeta _ { 0 } ( \Psi _ { 0 } )$ . Transformer widths and depths are shared by the simulation and realrobot models. Parameter counts exclude normalization buffers.
+
+<table><tr><td>Module</td><td>Width</td><td>Heads</td><td>FFN</td><td>Layers</td></tr><tr><td>Conditioner H</td><td>1024</td><td>16</td><td>4096</td><td>16</td></tr><tr><td>Predictor F</td><td>768</td><td>12</td><td>3072</td><td>8</td></tr><tr><td>Future encoder E</td><td>512</td><td>8</td><td>2048</td><td>4</td></tr><tr><td>Teacher T, policy G (each)</td><td>768</td><td>12</td><td>3072</td><td>8</td></tr><tr><td>Parameters</td><td colspan="2">Simulation</td><td colspan="2">Real robot</td></tr><tr><td>Frozen backbone</td><td colspan="2">2,131,333,120</td><td colspan="2">2,131,333,120</td></tr><tr><td rowspan="2">Task modules, training trainable</td><td colspan="2">581,809,687</td><td colspan="2">582,013,279</td></tr><tr><td colspan="2">562,679,063</td><td colspan="2">562,882,655</td></tr><tr><td>Task modules, deployed</td><td colspan="2">461,064,637</td><td colspan="2">461,191,137</td></tr><tr><td>Deployed total</td><td colspan="2">2,592,397,757</td><td colspan="2">2,592,524,257</td></tr></table>
+
+<div class="mineru-algorithm" style="white-space: pre-wrap; font-family:monospace;">
+Algorithm S1 Joint training of $\zeta_0$
+
+Require: Demonstrations $(x_t, p_t, a_t, y_t)$ with validity masks; modules $E_\phi, D, H, F_\theta, T_\psi, G_\omega$; EMA decay $\rho = 0.99$.
+
+1: Initialize modules as in Sec. A.1; set $\bar{\phi} \leftarrow \phi$ and freeze the vision-language backbone.
+
+2: for optimizer update $k = 0, 1, \ldots$ do
+
+3: Set $m \leftarrow$ prior if $k$ is even, and $m \leftarrow$ world otherwise.
+
+4: Advance the EMA once: $\bar{\phi} \leftarrow \rho \bar{\phi} + (1 - \rho) \phi$.
+
+5: Sample a batch and construct the valid future, action-suffix, and mode-specific masks (Sec. A.2).
+
+6: Encode $z_t \leftarrow E_\phi(x_{t}^{\text{vb}}, y_t)$ and $z_t^\star \leftarrow \text{sg}(E_{\bar{\phi}}(x_{t}^{\text{vb}}, y_t))$.
+
+7: Compute $h_t \leftarrow H(x_t)$ and the causal prediction $\widehat{z}_t^{\text{prior}} \leftarrow F_\theta(h_t, p_t$; prior).
+
+8: if $m =$ world then
+
+9: Compute $\widehat{z}_t^{\text{world}} \leftarrow F_\theta(h_t, a_t$; world).
+
+10: end if
+
+11: Compute recorded-future reconstruction $\mathcal{L}_{\text{rec}}(z_t; D)$ and regularization $\mathcal{R}(z_t)$.
+
+12: Compute ordinary flow-matching losses: $\mathcal{L}_T$ conditions on $z_t$, and $\mathcal{L}_G$ on $\widehat{z}_t^{\text{prior}}$.
+
+13: Compute $\mathcal{L}_{\text{pred}}^m = \lambda_m \| \widehat{z}_t^m - z_t^\star \|_{M_m}^2 + \lambda_D \mathcal{L}_{\text{rec}}(\widehat{z}_t^m; D_{\text{fix}})$.
+
+14: Set $\mathcal{L}_{\text{resp}} \leftarrow 0$.
+
+15: if $m =$ prior then
+
+16: Draw one shared flow sample $X_r$ for all three responses and detach its inputs.
+
+17: Form the reference $v_{\text{ref}} \leftarrow \text{sg}(T_\psi(X_r, z_t^\star))$.
+
+18: Compute $\mathcal{L}_{\text{resp}} \leftarrow \frac{1}{2} \| T_{\text{fix}}(X_r, \widehat{z}_t^{\text{prior}}) - v_{\text{ref}} \|_{M_r}^2 + \frac{1}{2} \| G_{\text{fix}}(X_r, \widehat{z}_t^{\text{prior}}) - v_{\text{ref}} \|_{M_r}^2$.
+
+19: end if
+
+20: Sum $\mathcal{L} \leftarrow \mathcal{L}_{\text{rec}} + \lambda_{\text{reg}} \mathcal{R} + \mathcal{L}_T + \mathcal{L}_G + \mathcal{L}_{\text{pred}}^m + \lambda_r \mathcal{L}_{\text{resp}}$.
+
+21: Backpropagate with the gradient paths in Table S3, clip gradients, and take an AdamW step.
+
+22: end for
+
+23: return the frozen backbone and $H, F_\theta, G_\omega$ for causal deployment (Sec. A.5).
+</div>
+
+## A.5. Action sampling and execution
+
+In the action-flow convention of Sec. 3.4, clean data is at time zero and Gaussian noise at time one, with velocity target equal to noise minus the normalized action. $\zeta _ { 0 } ~ ( \Psi _ { 0 } )$ integrates backward from one to zero in ten steps; $\zeta _ { 0 }$ (GR00T) in simulation uses four Euler steps in its native time convention, as described above. A committed prefix remains clean throughout sampling and is excluded from the action loss. The predictor estimates the future latent once per chunk; it has no flow-time input (Fig. S1b).
+
+In HumanoidArena, the policy plans 30 action steps, executes 24, and keeps the last six steps of the preceding chunk as the committed prefix.
+
+The real-robot latency of $\zeta _ { 0 } ~ ( \Psi _ { 0 } )$ in Sec. 4.5 was measured after the trials on one RTX 4090 with batch 1, three 640 × 480 views, a BF16 backbone, and ten flow steps. One call generates a 50-step chunk, from which execution takes a 30-step window; it takes 212 ms on average (p95 221 ms) with no prefix and 216 ms with a 15-step committed prefix (deployment uses six), using 6.3 GiB, which fits well within the 480 ms (24-step) execution window under receding-horizon execution.
+
+## A.6. Simulation baselines
+
+ACT, $\pi _ { 0 . 5 } ,$ and $\Psi _ { 0 }$ are trained jointly on the same 700 demonstrations for 40,000 updates with global batch 512 and are evaluated at their final checkpoints under the common protocol. $\pi _ { 0 . 5 }$ and $\Psi _ { 0 }$ start from their pretrained checkpoints, and $\pi _ { 0 . 5 }$ is fine-tuned with all parameters. Table S5 lists their optimizer settings; the GR00T N1.7 baseline uses the same training settings as $\zeta _ { 0 }$ (GR00T) (Sec. A.1).
+
+## B. Real-Robot Details
+
+All five policies use a Unitree G1 with two dexterous hands, current snapshots from three RGB cameras, and a 41-dimensional measured state containing 29 body joints and 12 hand joints. They output a 76-dimensional action of 64 whole-body motion commands for SONIC and 12 hand commands. Execution follows the simulation protocol: plan 30 steps, execute 24, and keep the last six as the committed prefix of the next chunk. Policies read only observations available at decision time; recorded committed actions serve only as training labels. Each policy is trained independently for each task on the same demonstrations, using a global batch of 512 and 20,000 updates, and is evaluated at its final checkpoint. Architecture and base-policy initialization follow the respective methods. Both $\zeta _ { 0 }$ models use the full dual-response objective (teacher and executingpolicy response weights 0.5 each), body auxiliary weight 1, and temporal weight 0.25; future-body supervision uses 29 measured body joints. Timing gaps in the recordings split episodes into continuous segments, and future supervision does not cross segment boundaries. In experiments involving people, informed consent was obtained for participation and for the use of their images in the paper. Identifiable faces in the experimental images are obscured. Tables S6 and S8 list the demonstrations, instructions, and common success criteria.
+
+Table S5. Optimizer settings of the simulation baselines. The learning rate is the initial value, or the peak value after warmup.
+
+<table><tr><td>Setting</td><td>ACT</td><td> $\pi_{0.5}$ </td><td> $\Psi_0$ </td></tr><tr><td>Global batch</td><td>512</td><td>512</td><td>512</td></tr><tr><td>Learning rate</td><td> $10^{-5}$ </td><td> $2.5 \times 10^{-5}$ </td><td> $10^{-4}$ </td></tr><tr><td>Optimizer</td><td>AdamW</td><td>AdamW</td><td>AdamW</td></tr><tr><td>Adam betas</td><td>(0.9, 0.999)</td><td>(0.9, 0.95)</td><td>(0.95, 0.999)</td></tr><tr><td>Weight decay</td><td> $10^{-4}$ </td><td>0.01</td><td> $10^{-6}$ </td></tr><tr><td>Warmup updates</td><td>—</td><td>1,000</td><td>1,000</td></tr></table>
+
+![](images/5a0aa3ab00a4b6a6c0da6cf7bbb2858008b84c7d2016c1dcf1162dd0303aacdc.jpg)  
+Figure S1. Representation pooling, base-policy interfaces, and receding-horizon execution of $\zeta _ { \mathbf { 0 } } .$ . (a) Aspect-preserved images with zero-weighted padding are pooled on a 4 × 4 valid-region grid and paired with 50 Hz 29-joint trajectories across K = 3 groups to form $\widehat { z } _ { t } ^ { \mathrm { p r i o r } } \in \overline { { \mathbb { R } } } ^ { 3 \times 8 \times 2 5 6 }$ , which conditions either the 8-layer flow policy G in $\zeta _ { 0 } ( \Psi _ { 0 } )$ or the 32-layer DiT cross-attention in $\zeta _ { 0 }$ (GR00T). (b) At 50 Hz, each 30-step (0.60 s) planning window matches the $+ 0 . 2 / 0 . 4 / 0 . 6 \mathrm { s }$ forecast groups: the controller executes 24 steps (0.48 s) and retains the final six (0.12 s) as the clean τ = 0 committed prefix of the next chunk, while $F _ { \theta }$ runs once per chunk.
+
+Instructions are reproduced verbatim from the recorded data; the doll task keeps 100 of 101 demonstrations. Each policy is evaluated for 10 trials per task with randomized initial robot and object positions, and a failure or timeout is unsuccessful, giving 60 trials per policy and 300 in total. Table S7 lists the per-task success counts behind the success rates in Fig. 5. Figure S2 shows synchronized third-person and head-camera views across an autonomous scene-tidying rollout, the physical span of one 0.6 s forecast horizon during grasping, and success grouped by stage complexity: while all five policies reach 80.0%–93.3% across the three singlestage tasks (30 trials each), $\zeta _ { 0 }$ raises success on the three multi-stage tasks (Clear table, Avoid obstacle, Tidy scene; 30 trials each) from 36.7% to 63.3% on $\Psi _ { 0 }$ (+26.7 pp) and from 63.3% to 76.7% on GR00T N1.7 (+13.3 pp).
+
+Table S6. Real-world task data. All five policies train on the same demonstrations of each task.
+
+<table><tr><td>Task</td><td>Demos</td><td>Language instruction</td></tr><tr><td>Hair drying</td><td>81</td><td>Blow-dry the person&#x27;s hair using a hair dryer.</td></tr><tr><td>Push chair</td><td>101</td><td>Place the chair in front of the table</td></tr><tr><td>Clear table</td><td>86</td><td>Tidy up the table and put the trash into the bin.</td></tr><tr><td>Avoid obstacle</td><td>100</td><td>Place the tape on the table.</td></tr><tr><td>Place doll</td><td>100</td><td>place doll to plate</td></tr><tr><td>Tidy scene</td><td>200</td><td>Tidy up the scene.</td></tr></table>
+
+## C. Per-Task Ablation Results
+
+Figure S3 shows how each ablation changes success on every task relative to the full model on the same base, using the abbreviations of Table 2. Table S9 lists the corresponding per-task success rates; differences ∆ in Table 2 are computed from unrounded episode counts. Note that w/o FC retains the full parameter capacity of $\zeta _ { 0 }$ while zeroing G’s future input, yet drops close to each base policy (47.1% vs. 44.8% on $\Psi _ { 0 } ,$ , and 73.3% vs. 70.5% on GR00T N1.7), confirming that the gains come from predicted foresight rather than added parameters. On $\zeta _ { 0 } ( \Psi _ { 0 } )$ , removing future conditioning in G (w/o FC) lowers success on six of seven tasks, by up to 23.3 points on pick and place box. On $\zeta _ { 0 }$ (GR00T), removing dual-response transfer, the teacher response term, or future conditioning (w/o DR, TR, FC) each lowers success on six of seven tasks; the largest single drop is 20.0 points on navigation without future conditioning. Other per-task changes are smaller and mixed in sign.
+
+Table S7. Real-world success counts. Each entry is the number of successful trials out of 10; Mean is the equal-weight six-task success rate (%).
+
+<table><tr><td>Policy</td><td>Hair drying</td><td>Push chair</td><td>Clear table</td><td>Avoid obst.</td><td>Place doll</td><td>Tidy scene</td><td>Mean</td></tr><tr><td> $\pi_{0.5}$ </td><td>8</td><td>8</td><td>4</td><td>1</td><td>8</td><td>1</td><td>50.00</td></tr><tr><td> $\Psi_0$ </td><td>9</td><td>8</td><td>5</td><td>4</td><td>9</td><td>2</td><td>61.67</td></tr><tr><td> $\zeta_0 (\Psi_0)$ </td><td>10</td><td>9</td><td>8</td><td>5</td><td>9</td><td>6</td><td>78.33</td></tr><tr><td>GR00T N1.7</td><td>9</td><td>9</td><td>7</td><td>6</td><td>8</td><td>6</td><td>75.00</td></tr><tr><td> $\zeta_0 (GR00T)$ </td><td>10</td><td>9</td><td>9</td><td>7</td><td>9</td><td>7</td><td>85.00</td></tr></table>
+
+(a) Synchronized third-person and head-camera views across autonomous scene tidying (c) Single-stage vs. multi-stage success  
+![](images/2a8adeae5e1e9206588ec5419eaaa0739fd765565c40ece12cb64c000b817e17.jpg)
+
+![](images/9daccb4fba141db58ef38657022b994149662ec20e57d2494be95f2d639a0fab.jpg)  
+Figure S2. Synchronized real-robot views, 0.6 s horizon span, and multi-stage task breakdown on the Unitree G1. (a) Third-person frames (top) paired with synchronized model-input head-camera views (bottom) across an autonomous $\zeta _ { 0 }$ (GR00T) scene-tidying episode; legs and feet remain outside the head camera’s field of view throughout locomotion and manipulation. (b) Four consecutive real-robot head-camera frames spaced by 0.2 s, illustrating the interaction span of one $K = 3 \ ( + 0 . 2 / 0 . 4 / 0 . 6 \mathrm { s } )$ forecast window. (c) Success rates grouped into single-stage tasks (Hair drying, Push chair, Place doll; 30 trials per policy) and multi-stage tasks (Clear table, Avoid obstacle, Tidy scene; 30 trials per policy), where $\zeta _ { 0 }$ raises $\Psi _ { 0 }$ by +26.7 pp and GR00T N1.7 by +13.3 pp.
+
+Figure S4 summarizes three patterns across benchmarks and ablations. First, across all 13 simulation and real-world tasks on both bases (26 base-to- $\cdot \zeta _ { 0 }$ pairs), $\zeta _ { 0 }$ improves or matches its base policy in 24 pairs (Fig. S4a). Second, on $\zeta _ { 0 }$ (GR00T), tasks requiring contact and whole-body coordination—football, box, double desk, and boxing—lose 10.0–13.3 pp when measured body futures are removed (w/o
+
+Table S8. Real-world task success criteria. Each of the five policies is evaluated for 10 trials per task.
+
+<table><tr><td>Task</td><td>A trial succeeds if the robot...</td></tr><tr><td>Hair drying</td><td>grasps the dryer once a person hands it over, dries the person&#x27;s hair for more than 5 s, and puts the dryer down.</td></tr><tr><td>Push chair</td><td>walks to the chair, grasps it, and pushes it under the table in an aligned position.</td></tr><tr><td>Clear table</td><td>drops the two objects on the table into the bin one after the other.</td></tr><tr><td>Avoid obstacle</td><td>picks up the tape, walks around the obstacle, and places the tape on the target table.</td></tr><tr><td>Place doll</td><td>walks to the table, grasps the doll, and places it on the plate.</td></tr><tr><td>Tidy scene</td><td>moves the chair, discards two pieces of trash, wipes the table, and places the cloth on the plate.</td></tr></table>
+
+BF), whereas long-horizon navigation loses 20.0 pp when future conditioning is removed from G (w/o FC; Fig. S4b). Third, teacher-only supervision favors precision box placement while executing-policy-only supervision favors reactive boxing on both bases, and combining both readers in dual-response transfer yields the highest seven-task mean on $\zeta _ { 0 } ( \Psi _ { 0 } ) ( 6 3 . 6 \% )$ and $\zeta _ { 0 }$ (GR00T) (79.5%; Fig. S4c), while the synchronized benchmark views in Fig. S4d illustrate how egocentric inputs omit lower-body support across all seven tasks.
+
+<table><tr><td colspan="9">ζ0(Ψ0), 40k updates</td></tr><tr><td></td><td>Double desk</td><td>Football</td><td>Box</td><td>Boxing</td><td>Open door</td><td>Sit sofa</td><td>Navigation</td><td>Mean</td></tr><tr><td>w/o BF (visual future only)</td><td>-3.3</td><td>+15.0</td><td>-5.0</td><td>-8.3</td><td>+3.3</td><td>-10.0</td><td>-6.7</td><td>-2.1</td></tr><tr><td>w/o DR (no response transfer)</td><td>-10.0</td><td>-10.0</td><td>-8.3</td><td>-8.3</td><td>+5.0</td><td>-10.0</td><td>+3.3</td><td>-5.5</td></tr><tr><td>w/o ER (teacher response only)</td><td>0.0</td><td>-3.3</td><td>+3.3</td><td>-6.7</td><td>-6.7</td><td>-6.7</td><td>+6.7</td><td>-1.9</td></tr><tr><td>w/o TR (executing-policy response only)</td><td>+1.7</td><td>0.0</td><td>-13.3</td><td>-3.3</td><td>-6.7</td><td>-1.7</td><td>+5.0</td><td>-2.6</td></tr><tr><td>w/o AG (no gradient G→H/F)</td><td>-1.7</td><td>+5.0</td><td>-21.7</td><td>-16.7</td><td>0.0</td><td>-10.0</td><td>+16.7</td><td>-4.0</td></tr><tr><td>w/o FC (no future input to G)</td><td>-20.0</td><td>+5.0</td><td>-23.3</td><td>-20.0</td><td>-21.7</td><td>-20.0</td><td>-15.0</td><td>-16.4</td></tr><tr><td>w/o WL (no world latent MSE)</td><td>+5.0</td><td>-1.7</td><td>+3.3</td><td>0.0</td><td>-3.3</td><td>-16.7</td><td>+1.7</td><td>-1.7</td></tr></table>
+
+<table><tr><td colspan="9">ζ0 (GR00T N1.7), 40k updates</td></tr><tr><td></td><td>Double desk</td><td>Football</td><td>Box</td><td>Boxing</td><td>Open door</td><td>Sit sofa</td><td>Navigation</td><td>Mean</td></tr><tr><td>w/o BF (visual future only)</td><td>-10.0</td><td>-13.3</td><td>-11.7</td><td>-10.0</td><td>+3.3</td><td>+1.7</td><td>-5.0</td><td>-6.4</td></tr><tr><td>w/o DR (no response transfer)</td><td>-3.3</td><td>-3.3</td><td>-5.0</td><td>-10.0</td><td>+3.3</td><td>-3.3</td><td>-10.0</td><td>-4.5</td></tr><tr><td>w/o ER (teacher response only)</td><td>+5.0</td><td>-1.7</td><td>-5.0</td><td>-8.3</td><td>0.0</td><td>-1.7</td><td>-5.0</td><td>-2.4</td></tr><tr><td>w/o TR (executing-policy response only)</td><td>-6.7</td><td>-3.3</td><td>-6.7</td><td>-3.3</td><td>-1.7</td><td>0.0</td><td>-8.3</td><td>-4.3</td></tr><tr><td>w/o AG (no gradient G→H/F)</td><td>-1.7</td><td>-3.3</td><td>-1.7</td><td>0.0</td><td>0.0</td><td>0.0</td><td>-11.7</td><td>-2.6</td></tr><tr><td>w/o FC (no future input to G)</td><td>-5.0</td><td>+1.7</td><td>-1.7</td><td>-11.7</td><td>-1.7</td><td>-5.0</td><td>-20.0</td><td>-6.2</td></tr><tr><td>w/o WL (no world latent MSE)</td><td>-1.7</td><td>-13.3</td><td>-10.0</td><td>-1.7</td><td>+1.7</td><td>+3.3</td><td>-11.7</td><td>-4.8</td></tr></table>
+
+Figure S3. Per-task change of each ablation relative to the full model on the same base. Top: $\zeta _ { 0 } ( \Psi _ { 0 } ) ;$ bottom: $\zeta _ { 0 }$ (GR00T). Entries are success-rate differences in percentage points over 60 episodes per task; the last column is the change in the seven-task mean, as in Table 2. Per-task success of each full model is listed in Table 1. Colors are binned.
+
+Table S9. Per-task ablation success of $\zeta _ { 0 }$ on both bases. Success rate (%) of each shared seven-task model over 60 episodes per task; all settings use 40,000 updates. Abbreviations follow Table 2, and Base denotes the corresponding base policy.
+
+<table><tr><td>Base</td><td>Setting</td><td>Double desk</td><td>Football</td><td>Box</td><td>Boxing</td><td>Open door</td><td>Sit sofa</td><td>Navigation</td><td>Mean</td></tr><tr><td rowspan="9"> $\Psi_0$ </td><td>Full</td><td>21.67</td><td>23.33</td><td>85.00</td><td>61.67</td><td>95.00</td><td>96.67</td><td>61.67</td><td>63.57</td></tr><tr><td>w/o BF</td><td>18.33</td><td>38.33</td><td>80.00</td><td>53.33</td><td>98.33</td><td>86.67</td><td>55.00</td><td>61.43</td></tr><tr><td>w/o DR</td><td>11.67</td><td>13.33</td><td>76.67</td><td>53.33</td><td>100.00</td><td>86.67</td><td>65.00</td><td>58.10</td></tr><tr><td>w/o ER</td><td>21.67</td><td>20.00</td><td>88.33</td><td>55.00</td><td>88.33</td><td>90.00</td><td>68.33</td><td>61.67</td></tr><tr><td>w/o TR</td><td>23.33</td><td>23.33</td><td>71.67</td><td>58.33</td><td>88.33</td><td>95.00</td><td>66.67</td><td>60.95</td></tr><tr><td>w/o AG</td><td>20.00</td><td>28.33</td><td>63.33</td><td>45.00</td><td>95.00</td><td>86.67</td><td>78.33</td><td>59.52</td></tr><tr><td>w/o FC</td><td>1.67</td><td>28.33</td><td>61.67</td><td>41.67</td><td>73.33</td><td>76.67</td><td>46.67</td><td>47.14</td></tr><tr><td>w/o WL</td><td>26.67</td><td>21.67</td><td>88.33</td><td>61.67</td><td>91.67</td><td>80.00</td><td>63.33</td><td>61.90</td></tr><tr><td>Base</td><td>6.67</td><td>26.67</td><td>61.67</td><td>50.00</td><td>65.00</td><td>63.33</td><td>40.00</td><td>44.76</td></tr><tr><td rowspan="9">GR00T</td><td>Full</td><td>45.00</td><td>56.67</td><td>96.67</td><td>88.33</td><td>96.67</td><td>95.00</td><td>78.33</td><td>79.52</td></tr><tr><td>w/o BF</td><td>35.00</td><td>43.33</td><td>85.00</td><td>78.33</td><td>100.00</td><td>96.67</td><td>73.33</td><td>73.10</td></tr><tr><td>w/o DR</td><td>41.67</td><td>53.33</td><td>91.67</td><td>78.33</td><td>100.00</td><td>91.67</td><td>68.33</td><td>75.00</td></tr><tr><td>w/o ER</td><td>50.00</td><td>55.00</td><td>91.67</td><td>80.00</td><td>96.67</td><td>93.33</td><td>73.33</td><td>77.14</td></tr><tr><td>w/o TR</td><td>38.33</td><td>53.33</td><td>90.00</td><td>85.00</td><td>95.00</td><td>95.00</td><td>70.00</td><td>75.24</td></tr><tr><td>w/o AG</td><td>43.33</td><td>53.33</td><td>95.00</td><td>88.33</td><td>96.67</td><td>95.00</td><td>66.67</td><td>76.90</td></tr><tr><td>w/o FC</td><td>40.00</td><td>58.33</td><td>95.00</td><td>76.67</td><td>95.00</td><td>90.00</td><td>58.33</td><td>73.33</td></tr><tr><td>w/o WL</td><td>43.33</td><td>43.33</td><td>86.67</td><td>86.67</td><td>98.33</td><td>98.33</td><td>66.67</td><td>74.76</td></tr><tr><td>Base</td><td>43.33</td><td>38.33</td><td>86.67</td><td>75.00</td><td>98.33</td><td>93.33</td><td>58.33</td><td>70.48</td></tr></table>
+
+![](images/b44809c3eac7815b5e735ab4e989817a31fdaf1e75bd6d389a42770f7a3d48fa.jpg)
+
+![](images/b7664ac0d19f7c6caa7aa92c3da2e15bc0cb5240f509a1a2f7df2c76a859091d.jpg)
+
+![](images/a5d21ea413f249a63e1604b515eb77e41f93cf95b26aa166ec28824e784888aa.jpg)
+
+(d) Synchronized third-person scene and egocentric model-input view across all seven HumanoidArena tasks  
+![](images/7c3f44e6c82fdce039f1004d208775260d7a628a82bae5249e45f78722fe1f03.jpg)  
+Figure S4. Cross-benchmark gains, task selectivity, dual-response reader profiles, and HumanoidArena camera views. (a) Paired base-to-ζ<sub>0</sub> success rates across all seven simulation tasks (60 episodes/task) and six real-world tasks (10 trials/task); $\zeta _ { 0 }$ improves or matches its base in 24 of 26 task pairs. (b) On $\zeta _ { 0 }$ (GR00T), contact-and-coordination tasks drop most without body futures (w/o BF), whereas navigation drops most without future conditioning in G (w/o FC). (c) Across both bases, teacher-only supervision favors precision box manipulation while executor-only supervision favors reactive boxing, and full dual-response transfer achieves the highest seven-task mean. (d) Synchronized third-person scene (top) and model-input head camera (bottom) across all seven HumanoidArena tasks; egocentric views show forearms and task objects while the torso, hips, knees, and supporting feet lie outside the field of view.
+
+## D. Body-Forecast Evaluation
+
+The body-forecast statistics in Sec. 4.4 use one closed-loop rollout per task of the shared $\zeta _ { 0 } ( \Psi _ { 0 } )$ checkpoint, fixed before inference, with an anchor every 0.1 s over its first 8 ${ \bf S } ,$ giving 526 windows (the boxing rollout ends earlier). Each window forecasts 30 steps at 50 Hz (0.02–0.60 s, or 10 query steps per 0.2 s group) across the 29 measured body joints (14 arm, 12 leg, and 3 waist joints). The scene panels of Fig. 3 are separate windows selected post hoc for display and are not used in these statistics.
+
+Figure S5 and Table S10 report the closed-loop joint trajectories and error breakdowns across all seven tasks and three limb groups. Along continuous rollouts, the causal forecasts anticipate gait peaks in navigation left-knee flexion (10.4<sup>◦</sup> RMSE versus 30.4<sup>◦</sup> for holding the anchor pose), hip swing during football kicking (5.1<sup>◦</sup> versus 17.8<sup>◦</sup>), and rightelbow extension in double-desk manipulation (7.2<sup>◦</sup> versus
+
+12.3<sup>◦</sup>; Fig. S5a–c).
+
+Although the lower limbs are frequently outside the head camera’s field of view or occluded by manipulated objects (Fig. S5d), the 12 leg joints incur the largest pose-persistence error across the 526 windows (10.34<sup>◦</sup> pooled and 12.54<sup>◦</sup> at +0.6 s) and gain the largest absolute error reduction from $\zeta _ { 0 }$ (4.35<sup>◦</sup> pooled and 5.23<sup>◦</sup> at +0.6 s; Fig. S5e). Across all seven tasks, $\zeta _ { 0 }$ lowers pooled RMSE and wins 83.46% (439/526) of +0.6 s windows (Fig. S5f, Table S10); pick and place box has the smallest drift (5.45<sup>◦</sup>, endpoint win 50.62%), yet still drops to 4.11<sup>◦</sup>.
+
+Limitations. Each simulation setting uses one training seed (420 episodes), so 1–2 pp ablation gaps should be read alongside consistent cross-base trends. Real-world models train per task (10 trials each), body forecasts omit root motion, and the 212 ms latency excludes perception, networking, and SONIC.
+
+![](images/a1f48db4797e2c0014c002d6aaa0ced0acc49fb0f4d78a40c7cafc52949c7dd8.jpg)
+
+![](images/18207c1f7f22fa43457a3932dc3b51d3a47139db26694feedd5e1d0c3d03d6d8.jpg)
+
+(c) Double desk: right elbow reach  
+![](images/2fddb5709e750dbef636d12688fa8438103400e6b1c2612f7c4661ef400ec12d.jpg)
+
+(d) Egocentric blind spot vs. body forecast  
+![](images/5fd6e6cedf50b766237740022862b38ba52feec0d4e71f6bac91c2dbfe3c2aac.jpg)
+
+(e) Error by body group (526 win.)  
+(f) Per-task RMSE & win rate  
+![](images/32c555f828c49e8ea91e4164aea16d902a57cb535161971243528fdade43b305.jpg)
+
+![](images/f462ae91ded75571aafe89420027fccf90d7003e794c0c7736d5e51c7ca04173.jpg)
+
+![](images/1fbe928e14f5fec87e21eb0a9c83b9dc78729beec2ed357a1a296d05668ff4ae.jpg)  
+Figure S5. Closed-loop joint-trajectory forecasts, egocentric blind spots, and per-limb / per-task statistics with $\zeta _ { 0 } ~ ( \Psi _ { 0 } )$ . (a–c) Measured joint trajectories (black) over the first 8 s of closed-loop rollouts with 0–0.6 s causal forecasts (green, shown every 0.5 s for clarity) versus holding the anchor pose (dashed gray); badges report RMSE over all rollout anchors of that joint. (d) Showcase head-camera inputs (left, selected post hoc as in Fig. 3) omit or occlude the lower body during kicking and box manipulation, whereas $\zeta _ { 0 }$ still anticipates the whole-body motion over $+ 0 . 2 / 0 . 4 / 0 . 6 \mathrm { s ( r i g h t ; }$ ; white outline shows the measured +0.6 s body). (e) Across all 526 windows, the 12 leg joints incur the largest pose-persistence drift $( 1 2 . 5 ^ { \circ } { \mathrm { ~ a t ~ } } + 0 . 6 { \mathrm { ~ s } } )$ and gain the largest absolute error reduction from $\zeta _ { 0 } ~ ( 5 . 2 ^ { \circ } )$ $\mathbf { ( f ) } \zeta _ { 0 }$ lowers pooled 0–0.6 s RMSE on all seven tasks and beats pose persistence in 83.46% (439/526) of windows at +0.6 s.
+
+Table S10. Per-task and per-limb closed-loop body-forecast RMSE (<sup>◦</sup>) of $\zeta _ { 0 }$ (Ψ ) across 526 evaluation windows. Hold keeps the measured 29-joint pose at anchor t. Pooled columns average squared error over all 30 steps (0.02–0.60 s at 50 Hz), and Win @ +0.6 s is the percentage of windows in which the +0.6 s forecast has lower 29-joint RMSE than holding the pose at t.
+
+<table><tr><td rowspan="2">Task</td><td rowspan="2">Windows</td><td colspan="2">Pooled (0–0.6 s)</td><td colspan="2">Endpoint (+0.6 s)</td><td colspan="3">Pooled by limb ( $\zeta_0$ /Hold)</td><td rowspan="2">Win @ +0.6 s (%)</td></tr><tr><td> $\zeta_0$ </td><td>Hold</td><td> $\zeta_0$ </td><td>Hold</td><td>Arms (14)</td><td>Legs (12)</td><td>Waist (3)</td></tr><tr><td>Double desk</td><td>81</td><td>4.11</td><td>7.12</td><td>4.66</td><td>9.16</td><td>4.62 / 6.17</td><td>3.90 / 8.76</td><td>1.66 / 2.37</td><td>95.06</td></tr><tr><td>Football</td><td>81</td><td>3.33</td><td>7.39</td><td>3.83</td><td>9.46</td><td>3.02 / 5.38</td><td>3.96 / 9.70</td><td>1.46 / 4.08</td><td>95.06</td></tr><tr><td>Pick &amp; place box</td><td>81</td><td>4.11</td><td>5.45</td><td>4.84</td><td>6.89</td><td>4.56 / 4.72</td><td>4.02 / 6.69</td><td>1.29 / 2.03</td><td>50.62</td></tr><tr><td>Boxing</td><td>40</td><td>3.29</td><td>6.46</td><td>3.89</td><td>7.41</td><td>2.92 / 4.40</td><td>3.99 / 8.77</td><td>1.26 / 2.22</td><td>92.50</td></tr><tr><td>Open door</td><td>81</td><td>3.49</td><td>5.52</td><td>4.23</td><td>6.73</td><td>3.64 / 4.14</td><td>3.66 / 7.23</td><td>1.51 / 2.29</td><td>75.31</td></tr><tr><td>Sit sofa</td><td>81</td><td>3.28</td><td>8.00</td><td>3.80</td><td>9.08</td><td>2.62 / 4.01</td><td>4.19 / 11.56</td><td>1.25 / 3.17</td><td>97.53</td></tr><tr><td>Navigation</td><td>81</td><td>5.18</td><td>11.18</td><td>5.81</td><td>13.90</td><td>4.78 / 6.12</td><td>6.11 / 15.98</td><td>1.81 / 3.56</td><td>82.72</td></tr><tr><td>All windows</td><td>526</td><td>3.92</td><td>7.60</td><td>4.53</td><td>9.36</td><td>3.89 / 5.11</td><td>4.35 / 10.34</td><td>1.49 / 2.96</td><td>83.46</td></tr></table>

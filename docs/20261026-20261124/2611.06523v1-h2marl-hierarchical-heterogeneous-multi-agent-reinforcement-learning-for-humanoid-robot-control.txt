@@ -1,0 +1,292 @@
+# H<sup>2</sup>MARL: Hierarchical Heterogeneous Multi-agent Reinforcement Learning for Humanoid Robot Control
+
+Xuemin Hu<sup>1</sup>, Kaixin Li<sup>1</sup>, Qingqing Xia<sup>1</sup>, Yuxin Wang<sup>1</sup>, Wei Xie<sup>1</sup>, Bo Tang<sup>2</sup>, and Long Chen<sup>3</sup>
+
+Abstract— Coordinated whole-body control of humanoid robots remains challenging due to high-dimensional coupled dynamics and substantial physical heterogeneity across joint degrees of freedom (JDoFs). Existing multi-agent reinforcement learning methods either employ coarse agent partitions or directly apply generic heterogeneous-agent algorithms, while hierarchical controllers commonly optimize high-level planning and low-level execution independently, leading to uncoordinated motion. In this paper, we propose H<sup>2</sup>MARL, a hierarchical heterogeneous multiagent reinforcement learning framework with two key mechanisms. We first formulate humanoid whole-body control using a JDoFlevel physical-heterogeneity-aware policy factorization, where each torque-actuated JDoF is conditioned on an explicit descriptor of its actuation, kinematic, and dynamic properties. Moreover, we develop a closed-loop policy–executor co-optimization mechanism that jointly adapts the high-level pose planner and the low-level joint executor using shared interaction trajectories, thereby reducing the distribution mismatch between planning and execution. Extensive experiments in MuJoCo and Isaac Gym demonstrate that H<sup>2</sup>MARL consistently improves locomotion stability, gait coordination, and motion quality over homogeneous, coarse-grained, and independently optimized alternatives.
+
+## I. INTRODUCTION
+
+Coordinated whole-body control (WBC) is a major challenge in achieving highly human-like movement for humanoid robot (HR) research [1]. The current mainstream methods are based on imitation learning and have achieved remarkable results [2], [3]. However, these methods require a large amount of labeled data through motion capture systems or teleoperation, resulting in high training costs. Moreover, some marginal data, such as actions in complex and dangerous industrial and outer space operations, are difficult to collect, limiting the application of these methods [4]. Reinforcement learning (RL)-based methods [5] mainly involve single-agent RL methods, which can complete motions such as walking and running in simulators without a large amount of data and exhibit good coordination capabilities for HRs with low degrees of freedom (DoF) [6], [7], but these methods struggle to achieve precise coordination across joints with numerous joints and high DoF.
+
+![](images/7178e7cda1e918bdc13316f1358b582100073c0efd5e1c2e71141a679e8ce495.jpg)  
+Fig. 1. Limb- and JDoF-level multi-agent formulations for the humanoid robot. (a) Traditional limb-level formulation, where each limb is formulated as an independent homogeneous agent. (b) JDoF-level formulation, where each torque-actuated JDoF is formulated as an independent heterogeneous agent with physical attributes and functional roles.
+
+To address these issues, some researchers introduce multiagent reinforcement (MARL), where joints or limbs are treated as multiple homogeneous agents [8], [9], as shown in Fig. 1(a). However, in fact, various joints in the human body exhibit obvious differences in muscle composition, movement directions, dimensions, and coupling [10]. For HRs, their hip joints (high torque and heavy load) and elbow joints (high sensitivity and light load) also exhibit fundamental physical heterogeneity in dynamic characteristics, DoF, and roles in whole-body balance [10]. Existing homogeneous MARL-based methods overlook heterogeneous attributes in joint and limbs and fail to learn effective actions for different agents with the same objectives but different decisions, generating incongruous motions.
+
+Regarding the structure of the control model, some researchers adopt the end-to-end framework that directly maps observations and proprioceptions to control actions [10], [2], [11]. These methods are simple and effective for humanoid robots with low DoF, but struggle to train an effective model in state-action spaces for HRs with high DoF. Other researchers employ a hierarchical model [12] that separates high-level task planning from low-level joint control, where the high-level model often uses a large model combined imitation learning and the low-level model typically employs terminal controllers to perform planning. Nevertheless, these methods often decouple the learning of the high-level planning model and the low-level control models, often leading to insufficient coordination between high- and low-level models and stiff motions. In addition, the large model used in the high-level model often leads to a long inference time and poor real-time performance.
+
+To address these issues, we propose a hierarchical heterogeneous multi-agent reinforcement learning $( \mathrm { H } ^ { 2 } \mathrm { M A R L } )$ for coordinating humanoid whole-body control, which offers the following three contributions: 1) We propose a JDoFlevel physical-heterogeneity-aware policy factorization. The humanoid whole-body control is formulated as a cooperative heterogeneous multi-agent problem at the joint-degree-offreedom (JDoF) level, where each torque-actuated JDoF is conditioned on an explicit physical descriptor containing its actuation, kinematic, and dynamic properties, as shown in Fig. 1(b), providing a fine-grained inductive bias that enables different JDoFs to learn specialized control behaviors while maintaining coordination through centralized training. 2) We develop a hierarchical policy–executor coupling mechanism in which the JDoF-level pose planner and joint executor interact with the environment through the same closed-loop trajectory and are iteratively optimized rather than trained independently, preventing the distribution mismatch caused by freezing the executor. 3) Extensive experiments conducted in the MuJoCo and Isaac Gym simulator demonstrate that H<sup>2</sup>MARL outperforms state-of-the-art methods in metrics for measuring coordination and human-like qualities. Through controlled comparisons of agent granularity, heterogeneous conditioning, and closed-loop collaborative optimization, we also isolate the contribution of each design and demonstrate that performance improvement comes from the proposed JDoF-level policy factorization and policy–executor coupling rather than from directly combining existing HAPPO, HST, and conventional PD components.
+
+## II. RELATED WORK
+
+## A. Whole-body Control for Humanoid Robots
+
+Current mainstream methods of humanoid robot WBC are based on large model and imitation learning [13], which can allow robots to achieve human-like locomotion and application in the fields of commercial services [1], [14], home care [1], entertainment performances [11], [2], etc., but they heavily rely on a large number of expert demonstrations, limiting the applications in some hazardous industrial scenarios [1]. RL-based methods are increasingly being adopted by researchers due to the advantage of not requiring labeled data in recent years, and have demonstrated robust wholebody locomotion and loco-manipulation on humanoid and legged robots [15], [16], [17]. In particular, hierarchical RL is applied in robot control, where the controller is often divided into two layers, including a high-level planning model that generates abstract locomotion commands or selected skills and a low-level control model that executes specific actions, to enhance learning efficiency and the ability to solve longrange tasks [18]. However, these methods often decouple the high-level planning model and the low-level control model, and the low-level model typically employs homogeneous coarse-grained skill executors, making it difficult to express the fine-grained heterogeneity and coupled coordination among joints in high-DoF HRs, resulting in insufficient coordination between high- and low-level models. Instead, we formulate the high-level controller as a set of heterogeneous agents and design a hierarchical policy–executor coupling mechanism to address the issues of homogeneity between joints and inconsistency between the two-level controllers, respectively.
+
+## B. Heterogeneous Multi-Agent Systems
+
+Heterogeneous multi-agent systems (HMAS) have been applied in the fields of smart logistics, smart grids, and post-disaster search and rescue due to the ability to handle complex collaborative tasks [19]. Researchers proposed some classic HMASs such as ROMA [20], RODE [21], and MPN [22] to improve the collaboration performance of agents. However, these methods still follow the paradigm of sharing homogeneous parameters, which is similar to that in MAPPO [23] and IPPO, and only work well in tasks with isomorphic agents. Heterogeneous agent reinforcement learning (HARL) methods such as Heterogeneous-Agent PPO (HAPPO) [24] and HATD3 [9] are proposed for effective collaboration among heterogeneous multi-agents. Some researchers use HARL to control various types of singlerobot agents, such as quadrupedal robots and humanoid robots [19], performing high-dimensional actions, alleviating the difficulty of single-agent RL methods in precisely coordinating the motions. However, humanoid robots are not simple combinations of stacked limbs, and different parts of the body have different properties. These methods of unified formulation joints or limbs struggle to represent such finegrained heterogeneous coupling characteristics at the joint level, leading to insufficient coordination.
+
+The most similar method to ours is HAPPO which solves heterogeneous-agent policy optimization, but does not specify how a humanoid’s physically heterogeneous JDoFs should be factorized into agents nor how such policies should be coupled with a temporal executor. Instead, each torqueactuated DoF of joints is formulated as an independent heterogeneous agent according to the physically heterogeneous characteristics in our method, and the JDoF-level pose planner and joint executor interact with the environment through the same closed-loop trajectory, enhancing the coordination and human-like qualities.
+
+## III. JDOF-LEVEL PHYSICAL-HETEROGENEITY-AWARE POLICY FACTORIZATION
+
+Humanoid whole-body control is challenged by high-DoF coupling and joint-level physical heterogeneity, where joints differ in torque limits, inertia, degrees of freedom, and kinematic locations. The WBC methods based on homogeneous parameter sharing impose strong inductive bias on these heterogeneous control units, making it difficult to jointly achieve stability and agility and resulting in incongruous motions. Existing methods typically model the robot as a monolithic controller or adopt coarse limb-level agents. However, heterogeneity also exists within the degrees of freedom of a single joint. Although sharing the same physical body parts, these degrees of freedom differ in rotation axis, torque generation, roles in balance and locomotion, and coupling with adjacent joints. For example, sagittal hip motion mainly contributes to forward propulsion, while lateral hip motion focuses on balance and posture compensation. Formulating them as a single agent compresses multiple control roles into one policy, which is contrary to the structure composition of human bodies and increases optimization difficulty.
+
+Motivated by the intrinsic heterogeneity of humanoid actuation dimensions, we propose a JDoF- level physicalheterogeneity-aware policy factorization, where each torqueactuated JDoF is formulated as an independent heterogeneous agent with physical attributes and functional roles, as shown in Fig. 1.
+
+Let N denote the number of JDoF agents. The agent set could be expressed by $\mathcal { I } = \{ 1 , \ldots , N \}$ . We formalize WBC as a cooperative Partially Observable Markov Game $\mathcal { G } =$ $\langle \mathcal { S } , \{ \mathcal { O } _ { i } \} _ { i = 1 } ^ { \mathrm { ~ \bar { N } } } , \{ \mathcal { A } _ { i } \} _ { i = 1 } ^ { N } , P , r , \gamma \rangle$ , where $s _ { t } \in S$ is the global state at the time step t. $o _ { i , t } \in \mathcal { O } _ { i }$ is the local observation, and $a _ { i , t } \ \in \ A _ { i }$ is the action of Agent i at the time step t. The joint action of all agents at the time step t is $a _ { t } =$ $( a _ { 1 , t } , \ldots , a _ { N , t } ) . \ P ( s _ { t + 1 } | s _ { t } , a _ { t } )$ is the transition function. r and γ are the shared reward and discount factor, respectively. According to HAPPO [24], the finite-horizon objective J(π) is defined as Eq. 1.
+
+$$
+J (\pi) = \mathrm{E} _ {\pi , P} \left[ \sum_ {t = 0} ^ {T - 1} \gamma^ {t} r (s _ {t}, a _ {t}) \right].\tag{1}
+$$
+
+To formulate the heterogeneity, Agent i is characterized by the descriptor $\xi _ { i }$ , as shown by Eq. 2.
+
+$$
+\xi_ {i} = [ c _ {i}, u _ {i}, \tau_ {i} ^ {m a x}, q _ {i} ^ {m i n}, q _ {i} ^ {m a x}, d _ {i}, m _ {i} ],\tag{2}
+$$
+
+where $c _ { i } , u _ { i } , \tau _ { i } ^ { m a x } , ( q _ { i } ^ { m i n } , q _ { i } ^ { m a x } ) , d _ { i }$ , and $m _ { i }$ denote the joint type, actuation axis, torque limit, motion range, kinematic location, and inertia-related properties, respectively. These descriptor values are directly read from the used simulators and do not need to be set manually. These physical priors enable each agent to represent its own dynamics and functional role.
+
+By leveraging the JDoF physical descriptor, we explicitly inject heterogeneous physical priors into the decentralized policy and transform the entire policy optimization problem through JDoF-level factorization, where JDoF-level factorization produces differentiated policies while preserving coordinated behavior. Therefore, the WBC policy π<sub>Θ</sub> is formulated as a cooperative HMAS, where each JDoF-level agent learns an individual policy $\pi _ { \boldsymbol { \theta } _ { i } }$ , as shown in Eq. 3.
+
+$$
+\pi_ {\Theta} (a _ {t} | o _ {t}) = \prod_ {i = 1} ^ {N} \pi_ {\theta_ {i}} (a _ {i, t} | o _ {i, t}, \xi_ {i}).\tag{3}
+$$
+
+Following HAPPO, each agent maintains an independent actor without parameter sharing, while a centralized critic enables cooperative optimization under the Centralized Training with Decentralized Execution framework.
+
+## IV. HIERARCHICAL POLICY–EXECUTOR COUPLING MECHANISM
+
+The proposed hierarchical policy–executor coupling mechanism consists of a high-level pose planner, a low-level joint executor, and a Closed-loop Policy–Executor Co-Optimization (CPECO) mechanism, as shown in Fig. 2. At the high-level pose planner, each heterogeneous JDoFlevel agent takes observation $o _ { i , t } ^ { H }$ as input and outputs a pose increment $\Delta q _ { t } ^ { H }$ . The target pose is obtained by adding $\bar { \Delta } q _ { t } ^ { H }$ to the target pose at the previous time step $q _ { t - 1 } ^ { t a r }$ The low-level joint executor receives $q _ { t } ^ { t a r }$ and historical proprioception $H _ { t }$ and outputs joint positions $q _ { t } ^ { p o s i }$ , which are converted to joint torques τ by a Proportional-Derivative (PD) controller. Both the high-level policy and the lowlevel executor are optimized by the coupling trajectories in a closed-loop.
+
+## A. High-Level Pose Planner
+
+The high-level controller in existing hierarchical WBC methods typically generates absolute target poses of joints, which may be infeasible to track due to dynamic physical constraints and limited control bandwidth of the robot since the performance of the low-level joint executor is not considered in these methods, resulting in unstable joint position tracking and discontinuous target actions. To address this issue, we introduce a pose increment representation method to calculate joint target poses. Instead of predicting absolute poses, the high-level controller is formulated as a heterogeneous pose increment planner and generates adaptive joint target corrections with respect to the current target pose, improving joint action continuity while preserving taskdriven adaptability.
+
+For each heterogeneous JDoF-level agent, the high-level observation is defined as:
+
+$$
+o _ {i, t} ^ {H} = [ z _ {i, t} ^ {l o c a l}, z _ {t} ^ {b o d y}, \xi_ {i}, e _ {i} ],\tag{4}
+$$
+
+where $z _ { i , t } ^ { l o c a l }$ contains the agent proprioception (position, velocity, and previous action). $z _ { t } ^ { b o d y }$ represents global body states. $\xi _ { i }$ is the agent descriptor, and $e _ { i }$ denotes the agent identity. The actor of each agent adopts a heterogeneous Gaussian policy optimized by HAPPO, as shown by Eq. 5.
+
+$$
+\pi_ {\theta_ {i}} ^ {H} (\Delta q _ {i, t} ^ {H} | o _ {i, t} ^ {H}) = \mathcal {N} (\mu_ {i, t} ^ {H}, (\eta_ {i, t} ^ {H}) ^ {2}).\tag{5}
+$$
+
+where $\mu _ { i , t } ^ { H }$ and $\eta _ { i , t } ^ { H }$ denote the Gaussian mean and standard deviation, respectively, and the increment correction is sampled by Eq. 6.
+
+$$
+\Delta q _ {i, t} ^ {H} = \alpha_ {i} \tanh (\mu_ {i, t} ^ {H} + \eta_ {i, t} ^ {H} \odot \epsilon_ {i, t}), \quad \epsilon_ {i, t} \sim \mathcal {N} (0, I).\tag{6}
+$$
+
+The scaling factor $\alpha _ { i }$ adapts the increment range according to the physical properties of the agents, as shown in Eq. 7.
+
+$$
+\alpha_ {i} = \alpha \cdot \tau_ {i} ^ {\mathrm{max}} \cdot (q _ {i} ^ {\mathrm{max}} - q _ {i} ^ {\mathrm{min}}) \cdot d _ {i} / m _ {i}\tag{7}
+$$
+
+where α is a global scaling parameter that controls the overall scaling of the pose increments. α is fixedly set to 0.001 in our method.
+
+This mechanism enables physically consistent increment generation, where JDoF-level agents can produce larger corrections, while stabilization-related JDoF-level agents focus on precise adjustments. During training, the actors in HAPPO are optimized by the cooperative objective, as shown in $\operatorname { E q } .$ 1. With a centralized critic, the actors of heterogeneous agent are allowed to learn specialized behaviors while maintaining whole-body coordination.
+
+![](images/51f5d4f110c69a13a63e33aae87dea05bc2dd5825c5ce75f23cbc9656b4f981c.jpg)  
+Fig. 2. H<sup>2</sup>MARL overview. The high-level planner generates JDoF-level pose increments and converts them into absolute target poses. The low-level joint executor receives the absolute target poses combined with historical proprioception and outputs executable joint positions which are converted to torques by a PD controller. Both the high-level policy and the low-level executor are optimized by the coupling trajectories in a closed-loop.
+
+After obtaining increment corrections, the target pose of the high-level pose planner is calculated by Eq. 8.
+
+$$
+q _ {i, t} ^ {t a r} = c l i p (q _ {i, t - 1} ^ {t a r} + \Delta q _ {i, t} ^ {H}, q _ {i} ^ {m i n}, q _ {i} ^ {m a x}),\tag{8}
+$$
+
+where the clipping operation guarantees joint physical limits.
+
+## B. Low-Level Joint Executor
+
+The high-level controller generates task-oriented target poses, but directly executing these commands is difficult due to the strong temporal dependency and dynamic constraints of humanoid motion. Therefore, a low-level controller is required to transform high-level motion intentions into physically feasible joint commands.
+
+Unlike conventional position tracking methods that only consider the current target pose, humanoid motion execution requires historical states to capture motion evolution and contact dynamics to maintain the continuity of the motion. In this paper, we design a low-level joint executor based on the Human State Transformer (HST) [3] as the temporal joint executor due to its ability to represent long-range temporal dependencies and generate context-aware joint trajectories.
+
+To adapt the execution of target poses according to the current motion context and improve tracking smoothness, the proposed low-level joint executor takes the target pose $q _ { t } ^ { t a r }$ generated by the high-level planner, as well as the historical proprioception $H _ { t } ~ = ~ \{ p _ { t - L + 1 } , . . . , p _ { t } \}$ as input, where $p _ { t }$ contains torso orientations, base velocities, joint positions, velocities, and previous actions. L is the step length of the historical proprioception. The executable joint position $q _ { t } ^ { p o s i }$ is generated by Eq. 9.
+
+$$
+q _ {t} ^ {p o s i} = f _ {\psi} (q _ {t} ^ {t a r}, H _ {t}),\tag{9}
+$$
+
+where $f _ { \psi }$ denotes the temporal execution network in HST, which is optimized by a joint objective $\mathcal { L } _ { h s t }$ including the tracking accuracy term that is derived from the difference of the current joint position and the current target pose, the temporal smoothness term that is derived from the difference of the current and previous joint positions, and the torque regularization term $\tau _ { t }$ that is from the PD controller.
+
+$$
+\mathcal {L} _ {h s t} = \mathrm{E} [ w _ {q} \| q _ {t} ^ {p o s i} - q _ {t} ^ {t a r} \| _ {2} ^ {2} + w _ {s} \| q _ {t} ^ {p o s i} - q _ {t - 1} ^ {p o s i} \| _ {2} ^ {2} + w _ {\tau} \| \tau_ {t} \| _ {2} ^ {2} ],\tag{10}
+$$
+
+where $w _ { q } , w _ { s } ,$ , and $w _ { \tau }$ are the weights of the three terms. In this paper, they are set to 1.0, 0.1, and 0.001, respectively, following the settings in HST.
+
+Finally, $q _ { t } ^ { p o s i }$ is fed into the PD controller to generate torque commands for WBC of the robot, where the proportional and derivative gains are fixedly set to $K _ { p } { = } 1 0 0$ and $K _ { d } { = } 5$ , respectively, in our method.
+
+## C. Closed-loop Policy–Executor Co-Optimization
+
+The high- and low-level models in existing hierarchical models for whole-body control of HRs often use the method of independent optimization, that is, the low-level model is first trained, and the parameters of the low-level model are frozen when the high-level model is then trained. However, during the RL training process in our method, the target action distribution generated by the high-level policy continuously changes as the policy is updated. If the low-level controller is frozen, its policy distribution will gradually deviate from the action distribution generated by the high-level policy, leading to insufficient inter-layer coordination and policy performance decline. Therefore, we design a closed-loop policy–executor co-optimization for the proposed H<sup>2</sup>MARL, where the high-level policy and the low-level executor are jointly optimized by the coupling trajectories in a closed-loop.
+
+<div class="mineru-algorithm" style="white-space: pre-wrap; font-family:monospace;">
+Algorithm 1 Closed-loop Policy–Executor Co-Optimization
+Require: Environment E, high-level policy  $\pi_{\theta}^{H}$  parametered by  $\theta$ , low-level joint executor  $f_{\psi}$  parametered by  $\psi$ , centralized critic  $Q_{\phi}$  parametered by  $\phi$ , trajectories  $D_{\Theta,\psi}$ 
+Ensure: Optimized  $\pi_{\theta}^{H}$  and  $f_{\psi}$ 
+
+1: Initialize parameters  $\theta$ ,  $\psi$ , and  $\phi$ 
+
+2: for each training iteration k do
+
+3: Collect trajectories  $D_{\Theta,\psi}^{k}$  by the hierarchical model
+
+4: for each time step t do
+
+5: Generate JDoF-level pose increments by Eq. 6
+
+6: Construct target poses by Eq. 8
+
+7: Generate executable joint positions by Eq. 9
+
+8: Obtain  $\tau_{t}$  and interact with E by a PD controller
+
+9: end for
+
+10: Estimate advantages using  $Q_{\phi}$ 
+
+11: Update  $\pi_{\theta}^{H}$  by Eq. 1
+
+12: Fix  $\pi_{\theta}^{H}$  and update  $f_{\psi}$  by minimizing Eq. 10
+
+13: Fix  $\pi_{\theta}^{H}$  and  $f_{\psi}$ , and update  $Q_{\phi}$  using  $D_{\Theta,\psi}^{k}$ 
+
+14: end for
+</div>
+
+At each time step t, the policy of the high-level planner generates JDoF-level pose increments according to Eq. $^ { 6 , }$ which are converted into target poses by Eq. 8. The low-level HST then outputs joint positions based on the targets and historical proprioceptions, as shown in Eq. 9. The resulting interaction trajectories $D _ { \Theta , \psi }$ are shared by both levels.
+
+$$
+D _ {\Theta , \psi} = \{s _ {t}, o _ {t} ^ {H}, q _ {t} ^ {t a r}, H _ {t}, q _ {t} ^ {p o s i}, \tau_ {t}, r _ {t}, s _ {t + 1} \} _ {t = 0} ^ {T - 1},\tag{11}
+$$
+
+where Θ and $\psi$ denote the parameters in the high- and low-level models, respectively. The trajectory is not merely shared for data reuse. It establishes an optimization coupling between the planner and executor. The optimization process is summarized in Algorithm 1.
+
+## V. EXPERIMENTS
+
+## A. Experimental Setup
+
+We conducted experiments on the Humanoid-v2 walking task in the MuJoCo [25] and Isaac Gym [26] benchmarks. Following the standard configurations in MuJoCo and Gymnasium, the robot contains 10 joints with a total of 17 actuated joint torques, and each of them is modeled as a heterogeneous agent.Each agent provides a proprioception $s _ { t } \in \mathbf { R } ^ { 3 7 6 }$ at time step t, including joint-related features, rigid-body dynamics, and external contact forces, etc.
+
+To improve locomotion quality, we introduce two taskspecific auxiliary reward terms in our method, including a slip penalty for suppressing undesired foot sliding during ground contact and an alternation reward for encouraging coordinated left–right stepping. The overall reward at time step t is formulated by Eq. 12.
+
+$$
+\begin{array}{r c l} R _ {t} & = & r _ {t} ^ {\text {task}} + \lambda_ {\text {tr}} r _ {t} ^ {\text {tra}} + \lambda_ {\text {st}} r _ {t} ^ {\text {sta}} + \lambda_ {\text {alt}} r _ {t} ^ {\text {alt}} \\ & & - \lambda_ {\text {slip}} r _ {t} ^ {\text {slip}} - \lambda_ {\tau} \| \tau_ {t} \| _ {2} ^ {2} - \lambda_ {\text {sm}} \| q _ {t} ^ {\text {posi}} - q _ {t - 1} ^ {\text {posi}} \| _ {2} ^ {2}, \end{array}\tag{12}
+$$
+
+where $r _ { t } ^ { \mathrm { t a s k } }$ is the task reward in HAPPO. The tracking and stability rewards $r _ { t } ^ { \mathrm { t r a } }$ and $\boldsymbol { r } _ { t } ^ { \mathrm { s t a } }$ , which encourage accurate pose tracking and stable torso posture, respectively, also follow the settings in HAPPO. The designed alternation reward $r _ { t } ^ { \mathrm { a l t } }$ promotes coordinated left–right stepping, while the designed slip reward $\boldsymbol { r } _ { t } ^ { \mathrm { { s l i p } } }$ suppresses tangential foot motion during ground contact. The last two terms penalize excessive joint torques and abrupt changes in joint positions, respectively. The coefficients $\lambda _ { \mathrm { t r } } , \lambda _ { \mathrm { s t } } , \lambda _ { \mathrm { a l t } } .$ , and $\lambda _ { \mathrm { s l i p } }$ balance the rewards of pose tracking, torso stability, gait alternation, and slip suppression, respectively, and are set to $\lambda _ { \mathrm { s l i p } } { = } 0 . 0 1$ and $\lambda _ { \mathrm { a l t } } { = } 0 . 0 5$ for the two auxiliary terms. $\lambda _ { \tau }$ and $\lambda _ { \mathrm { s m } }$ are the torque and motion-smoothness regularization, respectively. All coefficients are set uniformly in our experiments and do not require fine-tuning.
+
+We compare H<sup>2</sup>MARL with some SOTA methods, including HAPPO [24], MAPPO [23], and HATD3 [9]. For fairness, all methods use the same configurations and experimental settings as HAPPO. We use four metrics to measure the coordination and human-like qualities of humanoid control, including: 1) Foot Slip (FS) [7] that quantifies the undesired relative motion between a supporting foot and the ground, 2) Torso Stability (TS) that measures deviations in upper-body posture during locomotion, 3) Gait Symmetry (GS) [1], [7] that evaluates the consistency between the left and right legs and bilateral coordination, and 4) Motion Smoothness (MS) [7] that is used to assess motion continuity and naturalness.
+
+Following the baseline HAPPO, the policy is trained for 10 million environment steps. All experiments are conducted on an NVIDIA GeForce RTX 4090 GPU with 24 GB memory and an Intel Xeon Gold 6530 CPU with 30 cores.
+
+## B. Comparative Experiments with SOTA Methods
+
+As shown in Table I, H<sup>2</sup>MARL achieves the best results in metrics including FS, TS, and GS, demonstrating superior foot–ground contact stability, upper-body balance, and bilateral coordination. In particular, it outperforms HAPPO and HATD3 in all four metrics, indicating a clear overall advantage and more coordinating whole-body motions over existing homogeneous and heterogeneous MARL baselines. Compared to MAPPO, the most competitive method, H<sup>2</sup>MARL still improves FS, TS, and GS by 7.3%, 35.0%, and 14.8%, respectively, indicating more reliable ground contact, better posture regulation, and more coordinated left– right leg movements. This is attributed to JDoF-level heterogeneous formulation that enables individual agent to learn specialized policies according to their physical properties and functional roles, as well as closed-loop policy–executor cooptimization that reduces the mismatch between high- and low-level models. It is noted that H<sup>2</sup>MARL exhibits a little higher MS than MAPPO, indicating that the motion smoothness is slightly inferior to MAPPO. This is because JDoFlevel heterogeneous formulation introduces more frequent joint-level adjustments to enhance stability and coordination, which reduces motion smoothness to a certain extent.
+
+TABLE I  
+COMPARATIVE RESULTS WITH SOTA METHODS.
+
+<table><tr><td>Method</td><td>FS ↓</td><td>TS ↓</td><td>GS ↑</td><td>MS ↓</td></tr><tr><td>HAPPO</td><td>0.9827</td><td>0.5091</td><td>0.000150</td><td>7.3819</td></tr><tr><td>MAPPO</td><td>0.5790</td><td>0.3873</td><td>0.000905</td><td>0.2329</td></tr><tr><td>HATD3</td><td>0.8220</td><td>0.4739</td><td>0.000050</td><td>2.3818</td></tr><tr><td> $H^{2}MARL(ours)$ </td><td>0.5367</td><td>0.2516</td><td>0.001039</td><td>0.3514</td></tr></table>
+
+## C. Ablation Studies
+
+1) Ablation study for different mechanisms: We compare the complete H<sup>2</sup>MARL with the following four variants: i) H<sup>2</sup>MARL with the heterogeneous agent formulation being replaced by the homogeneous agent formulation in MAPPO (w/o HA), ii) H<sup>2</sup>MARL with the closed-loop policy–executor co-optimization being replaced by independent optimization of the high- and low-level models (w/o CPECO), iii) H<sup>2</sup>MARL where the designed slip reward and alternation reward in our method are removed from Eq. 12 (w/o Rew), and iv) H<sup>2</sup>MARL with neither the HA nor CPECO as well as removing the designed two reward terms (w/o All). In order to verify coordination and human-like performance in different environments, we conducted ablation studies on another benchmark, Isaac Gym [26]. Following the standard in this benchmark, Velocity Error (VE), Cost of Transport (CoT), Motion Jerk (MJ), Centroidal Angular Momentum (CAM), and Torso Stability (TS) are adopted as metrics. The results are reported in Table II. The complete H<sup>2</sup>MARL achieves the best performance in four metrics. w/o CPECO shows substantial increases in CoT, MJ, and CAM compared with the complete model, demonstrating that closed-loop policy–executor co-optimization is essential for energy-efficient and stable locomotion. w/o CPECO achieves the lowest TS, since the reduced torso motion comes at the expense of overall locomotion quality, as evidenced by the significant degradation in other four metrics. w/o HA causes a low but consistent performance degradation across all metrics, indicating that explicitly formulating joint heterogeneity improves control accuracy and execution quality. w/o Rew consistently degrades overall performance, demonstrating the designed reward is essential to guide the training process.
+
+2) Evaluation for JDoF-level agent formulation: To investigate the effect of the granularity of agent formulation, we compare the JDoF-level formulation with following formulation methods: i) single-agent formulation where a single agent controls the whole body, ii) body part (BP)- level formulation where the lower half body including the hip and legs is treated as an agent and the upper half body is treated as another agent; iii) limb-level formulation where each agent is modeled using each limb in the robot. As shown in Table III, JDoF-level formulation reduces VE, CoT, MJ, CAM, and TS by 71.4%, 79.3%, 88.3%, 26.7%, and 71.7%, respectively, compared with the limb-level formulation method, demonstrating that JDoF-level formulation improves task performance and control efficiency while enabling more stable posture regulation and more effective distribution of control responsibilities. BP-level formulation achieves intermediate performance. Although it achieves the lowest CAM, the coarser agent partition limits fine-grained joint coordination, resulting in inferior overall locomotion performance compared with JDoF-level formulation. Singleagent formulation also performs substantially worse than JDoF-level formulation, further demonstrating the importance of explicitly modeling JDoF-level heterogeneity.
+
+TABLE II  
+ABLATION STUDY OF DIFFERENT MECHANISMS ON ISAAC GYM.
+
+<table><tr><td>Method</td><td>VE↓</td><td>CoT↓</td><td>MJ↓</td><td>CAM↓</td><td>TS↓</td></tr><tr><td> $H^{2}$ MARL</td><td>0.4807</td><td>1.5213</td><td>0.7448</td><td>1.0324</td><td>0.0140</td></tr><tr><td>w/o HA</td><td>1.0360</td><td>5.8804</td><td>2.9680</td><td>3.8187</td><td>0.0417</td></tr><tr><td>w/o CPECO</td><td>0.9908</td><td>11.9586</td><td>6.4986</td><td>6.0132</td><td>0.0106</td></tr><tr><td>w/o Rew</td><td>1.0580</td><td>14.2529</td><td>2.6578</td><td>12.9126</td><td>0.1691</td></tr><tr><td>w/o All (HAPPO)</td><td>1.3667</td><td>14.7716</td><td>19.5962</td><td>9.0912</td><td>0.0333</td></tr></table>
+
+TABLE III
+
+COMPARISON OF DIFFERENT AGENT FORMULATION STRATEGIES.
+
+<table><tr><td>Method</td><td>VE↓</td><td>CoT↓</td><td>MJ↓</td><td>CAM↓</td><td>TS↓</td></tr><tr><td>Single-agent</td><td>1.4003</td><td>10.0510</td><td>2.8654</td><td>0.6105</td><td>0.0307</td></tr><tr><td>BP-level</td><td>0.9695</td><td>3.5571</td><td>2.1089</td><td>0.5330</td><td>0.0539</td></tr><tr><td>Limb-level</td><td>1.6811</td><td>7.3547</td><td>6.3729</td><td>1.4076</td><td>0.0495</td></tr><tr><td>JDoF-level</td><td>0.4807</td><td>1.5213</td><td>0.7448</td><td>1.0324</td><td>0.0140</td></tr></table>
+
+3) Evaluation of different rewards: The slip reward and the alternation reward in Eq. 12 are also the differences between our method and the baselines. To analyze the effect of the two reward terms, we compare the complete reward function with the three variants by separately removing each term and removing both. The results are shown in Table IV. The complete reward function (Complete) achieves the best performance. Compared to the complete reward, removing the slip reward (w/o Slip) increases VE, CoT, MJ, CAM, and TS by 100.4%, 595.9%, 972.5%, 550.8%, and 87.9%, respectively, indicating a larger velocity error, higher energy consumption, greater body oscillations, and worse motion stability.Removing the alternation reward (w/o Alt) also increases VE, CoT, MJ, CAM, and TS by 66.0%, 503.4%, 974.1%, 422.0%, and 25.7%, respectively, indicating that encouraging coordinated left–right stepping substantially improves locomotion accuracy, control efficiency, motion smoothness, and body stability. The method removing both reward terms performs the worst of all.
+
+## D. Real-time Performance Analysis
+
+We calculate the 50th percentile value (P50), the 99th percentile value (P99), and the average value of the singlestep running time for 2000 steps as the metrics to evaluate the real-time performance. As shown in Table. V, H<sup>2</sup>MARL introduces only a slight computational overhead compared to HAPPO. The high-level planner requires an average inference time of 8.332 ms, which is only 0.655 ms higher than HAPPO. This increase is mainly due to the additional JDoF-level heterogeneous formulation and closedloop policy–executor co-optimization. The total inference time of H<sup>2</sup>MARL is 9.259 ms, with a frequency of more than 100 Hz, which satisfies the real-time requirement of most HR control systems.
+
+TABLE IV  
+ABLATION STUDY OF DIFFERENT REWARD TERMS.
+
+<table><tr><td>Method</td><td>VE↓</td><td>CoT↓</td><td>MJ↓</td><td>CAM↓</td><td>TS↓</td></tr><tr><td>Complete</td><td>0.4807</td><td>1.5213</td><td>0.7448</td><td>1.0324</td><td>0.0140</td></tr><tr><td>w/o Slip</td><td>0.9632</td><td>10.5866</td><td>7.9879</td><td>6.7192</td><td>0.0263</td></tr><tr><td>w/o Alt</td><td>0.7981</td><td>9.1799</td><td>7.9996</td><td>5.3886</td><td>0.0176</td></tr><tr><td>w/o Both</td><td>1.0580</td><td>14.2529</td><td>2.6578</td><td>12.9126</td><td>0.1691</td></tr></table>
+
+TABLE V
+
+SINGLE-STEP INFERENCE TIME (MS) FOR COMPARATIVE METHODS.
+
+<table><tr><td>Method</td><td>P50</td><td>P99</td><td>Mean</td><td>Std</td></tr><tr><td>HAPPO</td><td>7.589</td><td>8.896</td><td>7.677</td><td>0.315</td></tr><tr><td>MAPPO</td><td>4.958</td><td>6.209</td><td>5.005</td><td>0.426</td></tr><tr><td>HATD3</td><td>7.533</td><td>8.353</td><td>7.592</td><td>0.381</td></tr><tr><td> $H^2MARL$  (High-level)</td><td>8.241</td><td>9.609</td><td>8.332</td><td>0.330</td></tr><tr><td> $H^2MARL$  (Low-level)</td><td>0.910</td><td>1.100</td><td>0.927</td><td>0.225</td></tr></table>
+
+## VI. CONCLUSIONS
+
+We proposed H<sup>2</sup>MARL, a hierarchical heterogeneous multi-agent reinforcement learning method for humanoid whole-body control in this paper. Each torque-actuated JDoF in the robot is formulated as an independent heterogeneous agent to allow the policy to understand the differences in physical properties and functional roles among joints. A hierarchical policy–executor coupling mechanism is also developed to improve coordination between high- and lowlevel models, enhancing coordination of robot motion. Experimental results show that H<sup>2</sup>MARL achieves better locomotion stability, gait coordination, and motion naturalness than SOTA methods.
+
+## REFERENCES
+
+[1] W. Li, J. Wu, G. Yang, B. Wang, Q. Zhang, Y. Wu, and J. Tan, “Humanoid robots: progress, challenges, and future research directions,” Science China Information Sciences, vol. 68, no. 11, p. 216201, 2025.
+
+[2] G. Tevet, S. Raab, S. Cohan, D. Reda, Z. Luo, X. B. Peng, A. Bermano, and M. Van de Panne, “Closd: Closing the loop between simulation and diffusion for multi-task character control,” in International Conference on Learning Representations, vol. 2025, 2025, pp. 46 506–46 520.
+
+[3] Z. Fu, Q. Zhao, Q. Wu, G. Wetzstein, and C. Finn, “Humanplus: Humanoid shadowing and imitation from humans,” arXiv preprint arXiv:2406.10454, 2024.
+
+[4] X. Hu, S. Li, Y. Xu, B. Tang, and L. Chen, “Enhancing diffusion policies with distribution-matching generator in offline reinforcement learning,” in Proceedings of the AAAI Conference on Artificial Intelligence, 2026, pp. 1–9.
+
+[5] X. Hu, P. Chen, Y. Wen, B. Tang, and L. Chen, “Long-and short-term constraint-driven safe reinforcement learning for autonomous driving,” IEEE Transactions on Systems, Man, and Cybernetics: Systems, vol. 56, no. 3, pp. 2076–2088, 2026.
+
+[6] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov, “Proximal policy optimization algorithms,” in Advances in Neural Information Processing Systems (NeurIPS), vol. 30, 2017, pp. 6344– 6353.
+
+[7] I. Radosavovic, T. Xiao, B. Zhang, T. Darrell, J. Malik, and K. Sreenath, “Real-world humanoid locomotion with reinforcement learning,” Science Robotics, vol. 9, no. 89, p. eadi9579, 2024.
+
+[8] H. J. Lee, S. H. Jeon, and S. Kim, “Learning humanoid arm motion via centroidal momentum regularized multi-agent reinforcement learning,” IEEE Robotics and Automation Letters, vol. 10, no. 11, pp. 11 968– 11 975, 2025.
+
+[9] Y. Zhong, J. G. Kuba, X. Feng, S. Hu, J. Ji, and Y. Yang, “Heterogeneous-agent reinforcement learning,” Journal of Machine Learning Research, vol. 25, no. 32, pp. 1–67, 2024.
+
+[10] C. Sferrazza, D.-M. Huang, F. Liu, J. Lee, and P. Abbeel, “Body transformer: Leveraging robot embodiment for policy learning,” arXiv preprint arXiv:2408.06316, 2024.
+
+[11] Q. Zhang, C. Weng, G. Li, F. He, and Y. Cai, “Hilo: Learning wholebody human-like locomotion with motion tracking controller,” arXiv preprint arXiv:2502.03122, 2025.
+
+[12] N. F. Figueroa, J. C. Tafur, and A. Kheddar, “Fast autolearning for multimodal walking in humanoid robots with variability of experience,” IEEE Robotics and Automation Letters, vol. 10, no. 4, pp. 3747–3754, 2025.
+
+[13] X. Hu, Y. Liu, B. Tang, J. Yan, and L. Chen, “Learning dynamic graph for overtaking strategy in autonomous driving,” IEEE Transactions on Intelligent Transportation Systems, pp. 11 921–11 933, 2023.
+
+[14] Z. Gu, J. Li, W. Shen, W. Yu, Z. Xie, S. McCrory, X. Cheng, A. Shamsah, R. Griffin, C. K. Liu, et al., “Humanoid locomotion and manipulation: Current progress and challenges in control, planning, and learning,” IEEE/ASME Transactions on Mechatronics, vol. 31, no. 2, pp. 2300–2330, 2026.
+
+[15] Q. Zhou, H. Ding, T. Chen, L. Man, H. Jiang, and G. Zhang, “Alarm: Safe reinforcement learning with reliable mimicry for robust legged locomotion,” IEEE Robotics and Automation Letters, vol. 10, no. 7, pp. 6768–6775, 2025.
+
+[16] F. Liu, Z. Gu, Y. Cai, Z. Zhou, H. Jung, J. Jang, S. Zhao, S. Ha, Y. Chen, D. Xu, and Y. Zhao, “Opt2skill: Imitating dynamically-feasible whole-body trajectories for versatile humanoid loco-manipulation,” IEEE Robotics and Automation Letters, vol. 10, no. 10, pp. 12 261–12 268, 2025.
+
+[17] I. Kumagai, M. Murooka, M. Morisawa, and F. Kanehiro, “Reinforcement learning of contact preferability in multi-contact locomotion planning for humanoids,” IEEE Robotics and Automation Letters, vol. 10, no. 2, pp. 1768–1775, 2025.
+
+[18] X. B. Peng, G. Berseth, K. Yin, and M. Van De Panne, “Deeploco: Dynamic locomotion skills using hierarchical deep reinforcement learning,” Acm transactions on graphics (tog), vol. 36, no. 4, pp. 1–13, 2017.
+
+[19] B. Yan, P. Shi, and J. Chambers, “Cooperative control for heterogeneous multi-agent systems: Progress, applications, and challenges,” Science China Information Sciences, vol. 67, no. 5, p. 156201, 2024.
+
+[20] T. Wang, H. Dong, V. Lesser, and C. Zhang, “Roma: Multi-agent reinforcement learning with emergent roles,” in Proceedings of the AAAI Conference on Artificial Intelligence (AAAI), vol. 34, no. 05, 2020, pp. 7263–7270.
+
+[21] T. Wang, T. Gupta, A. Mahajan, B. Peng, S. Whiteson, and C. Zhang, “Rode: Learning roles to decompose multi-agent tasks,” in Proceedings of the 20th International Conference on Autonomous Agents and MultiAgent Systems (AAMAS), 2021, pp. 1308–1316.
+
+[22] F. Zhang, Y. Chen, and Z. Liu, “Markovian policy network for efficient robot learning,” Neurocomputing, vol. 512, pp. 130–141, 2022.
+
+[23] C. Yu, A. Velu, E. Vinitsky, J. Gao, Y. Wang, A. Bayen, and Y. Wu, “The surprising effectiveness of ppo in cooperative multi-agent games,” Advances in neural information processing systems, vol. 35, pp. 24 611–24 624, 2022.
+
+[24] J. G. Kuba, R. Chen, M. Wen, Y. Wen, F. Sun, J. Wang, and Y. Yang, “Trust region policy optimisation in multi-agent reinforcement learning,” in Advances in Neural Information Processing Systems (NeurIPS), vol. 35, 2022.
+
+[25] E. Todorov, T. Erez, and Y. Tassa, “Mujoco: A physics engine for model-based control,” in 2012 IEEE/RSJ International Conference on Intelligent Robots and Systems, 2012, pp. 5026–5033.
+
+[26] V. Makoviychuk, L. Wawrzyniak, Y. Guo, M. Lu, K. Storey, M. Macklin, D. Hoeller, N. Rudin, A. Allshire, A. Handa, and G. State,

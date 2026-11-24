@@ -1,0 +1,794 @@
+# ∇Mimic: Ultra-Eficient Humanoid Control with Diferentiable Simulation
+
+Weyl Lu Yubei Chen
+
+UC Davis<sup>∗</sup>
+
+## Abstract
+
+Robot policy learning is dominated by zeroth-order methods such as PPO, which treat the simulator as a black box and pay for it with enormous sample counts. First-order policy learning diferentiates through the dynamics, but on contact-rich whole-body control it has rarely worked: its gradients explode. A recent world-model method showed that derivative information can make humanoid motion tracking far more eficient, using surrogate gradients of a learned model. We show that exact gradients of the simulator itself do better, once two obstacles are removed. Exact gradients contain rare unbounded samples, because contact dynamics is not diferentiable everywhere and its derivative diverges near some events; and they are expensive, because the simulator’s adjoint has to replay the contact solve.
+
+∇Mimic bounds these samples with median-relative per-sample gradient clipping at every step of the backward pass, and reuses each costly simulated window by multistep regression onto gradient-derived action targets, which bounds every action target independently of the gradient scale. NablaEngine, a diferentiable GPU simulation engine for the Unitree G1, removes the cost: it computes MuJoCo’s full contact dynamics with fused per-world kernels and the adjoint of a whole control step as a single megakernel, with analytic gradients that match float64 finite diferences, 11.5× faster than the available MuJoCo Warp adjoint.
+
+On whole-body tracking of all 40 LAFAN1 clips with one policy on one GPU, ∇Mimic reaches the score reported by the state-of-the-art world-model method, 0.82, in 20 minutes instead of 1.2 h, and 0.874 in 1.8 h. SHAC, the standard first-order baseline, stops on exploding gradients within minutes. We release NablaEngine and ∇Mimic as open-source infrastructure for first-order humanoid policy learning.
+
+## 1 Introduction
+
+Motion tracking has become a central task in humanoid learning. A tracking policy imitates reference motions in physics, so any human motion that can be retargeted to a robot becomes a behavior it can execute. The idea goes back to DeepMimic and its successors in character animation [41, 58, 71], and has moved to real humanoids [24, 26, 30, 78, 87] Two developments made it a foundation rather than a single skill. Large motion datasets of better quality, from AMASS and LAFAN1 to BONES-SEED, together with robot retargets of them, now cover hours of diverse motion [7, 23, 43, 46]. And a single general tracker trained on such data can serve as the low-level policy of larger systems: its encoder–decoder structure provides a motion interface for teleoperation, generation and downstream tasks [9, 40, 42].
+
+Almost all of these trackers are trained with zeroth-order policy gradient methods, chiefly PPO [63], which need only rewards from a black-box simulator and pay for it with enormous sample counts. Massively parallel GPU simulation [20, 21, 47] made the samples cheap, yet a whole-body tracking policy still takes hours to days of GPU time, and this cost bounds how far the approach can scale.
+
+First-order policy learning diferentiates the return through the dynamics, so every simulated step contributes an update direction instead of a scalar reward [11, 14, 70, 81]. On contact-rich whole-body control this promise has rarely held: gradients through stif contact dynamics explode [49, 70]. SHAC [81], the standard first-order method, is no exception. On whole-body tracking with the Unitree G1, every SHAC run hits exploding gradients and stops within minutes (Section 4.1).
+
+Policy learning through the derivatives of a learned dynamics model has a long history, from stochastic value gradients and model-augmented actor-critic to Dreamer and to tracking controllers for physics-based characters [10, 15, 22, 27, 37, 82]. SuperMimic [39] recently brought this approach to humanoid whole-body tracking at scale: it diferentiates through a learned world model instead of a simulator and trains a tracking policy far faster than PPO. We read SuperMimic’s result diferently: not as evidence for world models, but as evidence for derivatives. The gain comes from using the dynamics’ derivatives at all; the world model is the price SuperMimic pays to make those derivatives bounded and cheap. This raises the question of what that price buys, and whether it has to be paid. A world model supplies surrogate gradients: smooth, bounded and cheap, but derivatives of a diferent system. A simulator supplies exact gradients: derivatives of the simulated system itself, but with rare unbounded samples, because contact dynamics is not diferentiable everywhere and its derivative diverges near some events, and expensive, because the simulator’s adjoint has to replay the contact solve (Section 4).
+
+a  
+![](images/5454a414a8b75cbcca8fb027eaa78417a6309ad303f3a61cbf8d5f4330358595.jpg)  
+b
+
+![](images/e99ce0cd4b8068ae55ea1d8b82f1a32372d4beede9fea76d370b1e4ca7de423f.jpg)  
+Figure 1. ∇Mimic trains a high-quality tracking policy in minutes. (a) LAFAN1 (all 40 clips): normalized return against training wall clock (linear) on one RTX PRO 6000, mean ± sd over 3 seeds. ∇Mimic reaches 0.82, the score of SuperMimic, in 20 min; SuperMimic reports reaching it within 1.2 h on one H100 [39, §4.1]. PPO trained on the same engine stays below it after 6 h. (b) Simulation time per 20 ms control step for 4096 worlds on the same GPU (log scale): forward step, with Isaac Lab on PhysX (its own G1 asset and task defaults) and MJX (the same model), and gradient of one step; multiples relative to NablaEngine.
+
+This paper removes both obstacles. ∇Mimic handles the samples: it bounds the rare extreme gradients per sample and turns the rest into action targets whose step size is fixed in physical units, so that no single sample can take over an update (Section 5). NablaEngine handles the cost: a diferentiable GPU engine specialized to the G1, with the adjoint of a whole control step as a single megakernel, whose exact gradient costs less than an extra forward step (Section 6).
+
+On all 40 LAFAN1 clips, with one policy and one GPU, ∇Mimic reaches SuperMimic’s score of 0.82 in 20 minutes, where SuperMimic reports 1.2 h, and 0.874 in 1.8 h, with no seed falling on any clip from 1.5 h on (Fig. 1). PPO on the same engine stays below 0.82 for 6 h. The engine behind this simulates 18.8 h of robot motion per second of wall clock (Fig. 1b). Motion tracking suits exact gradients, since its reward is dense and points toward the reference almost everywhere; for sparse rewards, a longer gradient window trades reliance on the critic against accumulated extreme gradients (Section 4.2).
+
+## Contributions.
+
+1. An analysis of exact and surrogate gradients for policy learning. Unbounded exact derivatives near nondiferentiable contact events, accumulating along long windows, are consistent with the failure of prior first-order methods on whole-body control; the low cost of a world model, with the success of surrogate gradients.
+
+2. ∇Mimic, a first-order policy learning method that is stable on exact contact gradients at the scale of thousands of parallel environments, with each component ablated.
+
+3. NablaEngine, an open-source diferentiable simulation engine for the Unitree G1 whose analytic gradients match float64 finite diferences.
+
+4. Humanoid motion tracking at the level of the world-model state of the art without a world model, on one GPU: the LAFAN1 score of 0.82 in 20 minutes instead of 1.2 h.
+
+∇Mimic and NablaEngine are open source; the links are on the first page.
+
+## 2 Related work
+
+Zeroth-order motion tracking. Physics-based motion imitation with RL was established by DeepMimic [58], and universal trackers such as PHC [41] imitate thousands of clips from datasets such as AMASS [46] with one policy. On real humanoids, H2O and OmniH2O [24, 25], ASAP [26], GMT [9] and others [78, 83] track retargeted human motion on the Unitree G1. BeyondMimic [40] tracks agile LAFAN1 motions [23, 43] with one compact PPO formulation and shared hyperparameters, and SONIC [42] scales PPO tracking to 700 h of motion capture and 21k GPU-hours (128 GPUs for 7 days). These trackers use zeroth-order methods, chiefly PPO [63]. We use BeyondMimic’s PPO configuration as our zeroth-order baseline.
+
+First-order policy learning in diferentiable simulators. Full-horizon BPTT through diferentiable simulators [11, 14, 29] sufers from chaotic, exploding gradients [49], and gradients through stif contact can be biased or high-variance [55, 69, 70]. PODS [50] regresses the policy onto gradient-improved actions. SHAC [81] introduced short windows [77] with a TD(�) critic; successors adapt the horizon (AHAC; 17), add maximum entropy (SAPO; 79), combine analytic gradients with PPO (GI-PPO, RPO; 67, 91) or decouple rendering from the gradient (D.Va; 84). On legged robots, policies transferred to hardware were trained with smoothed foot contact [6, 64], a simplified surrogate for the backward pass [68], or an exact forward pass with a smoothed contact sensitivity in the backward pass [31]. DifMimic [61] tracks single clips in Brax without a critic. BCG [3] combines SHAC and an ADD imitation reward [90] on the smoothed-contact simulator of Schwarke et al. with contact-local randomized bundling, and trains G1 trackers for four LAFAN1 clips with 64 environments. These works use 32–1024 environments; we use 4096 BPTT windows per update on full contact dynamics.
+
+Gradients through learned models. SVG, MAAC and Dreamer optimize policies through learned dynamics [10, 22, 27]. PWM [18] and Ma et al. [44] report that learned models can give smoother optimization landscapes than the true dynamics, and Amigo et al. [4] roll out in the simulator and backpropagate through a learned model. For physics-based characters, SuperTrack [15], ControlVAE [82] and Lei et al. [37] train tracking controllers through learned dynamics. SuperMimic [39] trains one world model online with the policy and reports the state of the art on LAFAN1 and BONES-SEED [7]. Their gradients are those of a learned surrogate; ours are of the simulator itself.
+
+Diferentiable and GPU simulators. GPU simulation [47, 54, 62, 85, 86] made samples cheap for zeroth-order methods. Among diferentiable engines, DifTaichi and Warp generate adjoint kernels [29, 45], and dflex [80] and Rewarped [79] use penalty contacts. Brax and MJX [14, 20] use JAX autodif; MJX is forward mode only on our model [52]. Nimble [76] diferentiates LCP contact analytically, and Dojo, Simple and Ostrich [28, 34, 36] apply the implicit function theorem at the contact solution. DifMJX [57] studies gradients of MuJoCo’s soft contacts [73, 74]. Analytic rigid-body derivatives [8] and articulated-body adjoints [60] avoid generic autodif. MuJoCo Warp [21] is not diferentiable in any release; an adjoint exists in an open pull request [13]. Newton [72] and Genesis [16] have diferentiable modes, which hold the contact normal fixed [53] or leave some collision operations without gradients, respectively. Kernel fusion for RL simulation [19, 65] and the run-to-run non-determinism of GPU simulators [88] have been studied before. NablaEngine gives exact, deterministic adjoints of MuJoCo’s dynamics for one robot at high throughput.
+
+Clipping and regression onto action targets. Norm clipping of BPTT gradients goes back to Pascanu et al. [56]. Per-sample clipping is standard in private SGD [1], with median-relative [5] and quantile thresholds [48]; clipping helps under heavy-tailed noise and gradient-dependent smoothness [66, 89] but is biased in general [33]. We apply it to the action cotangents inside BPTT, as a heuristic outside these guarantees. Regressing a policy onto improved actions follows trajectory-optimization teachers [38, 51], MPO [2], AWR [59] and target-based surrogates [35, 75]. We keep PODS’s target regression and difer in two points: per-sample median-relative clipping inside BPTT, and a step size fixed in radians by the batch RMS of the clipped gradients (Section 5.2).
+
+## 3 Background
+
+Task. Whole-body motion tracking on the Unitree G1 (29 actuated joints), mjlab model [86]. Control runs at 50 Hz with 4 physics substeps of 5 ms. The policy observes a 10-frame history of noisy proprioception (joint positions and velocities, base angular velocity, gravity direction, previous action), the next 10 reference frames, and the orientation of the reference anchor body (torso) relative to the robot’s, which needs the IMU but no global position. The reward is BeyondMimic’s tracking reward in SuperMimic’s setting [39, 40]: exponential kernels on the position, orientation and velocities of 14 bodies and on the anchor pose, with action-rate and joint-limit penalties. An episode terminates when the root height error exceeds 0.25 m or the tilt error exceeds 0.8. Section A gives the full definitions.
+
+Table 1. Exact and surrogate gradients: bias, unbounded derivatives and cost.
+
+<table><tr><td></td><td>Exact gradient (simulator)</td><td>Surrogate gradient (world model)</td></tr><tr><td>Bias</td><td>no model error: derivative of the simulated system</td><td>derivative of a different, learned system</td></tr><tr><td>Unbounded derivatives</td><td>near non-differentiable events</td><td>none (a smooth network)</td></tr><tr><td>Cost per update</td><td>high (simulator adjoint)</td><td>low (one network pass)</td></tr></table>
+
+First-order policy learning. The return of a window of � steps starting from state $s _ { 0 }$ is
+
+$$
+J (\theta) = \sum_ {t <   H} \gamma^ {t} r (s _ {t}, a _ {t}) + \gamma^ {H} V _ {\phi} (s _ {H}), \qquad a _ {t} = \pi_ {\theta} (o _ {t}), \quad s _ {t + 1} = f (s _ {t}, a _ {t}).\tag{1}
+$$
+
+When � is diferentiable, $\nabla _ { \theta } J$ follows by backpropagation through time, a pathwise gradient. Unlike the likelihood-ratio gradient of PPO, it uses the derivatives of $f ,$ so its quality depends on them (Section 4).
+
+## 4 Exact and surrogate gradients
+
+A first-order method uses the derivatives of the dynamics, which a zeroth-order method ignores. It is therefore commonly expected to extract more information from each sample, and to be the better choice whenever these derivatives are available. The record says otherwise: methods that use the simulator’s own derivatives have failed on whole-body control, while a method that uses the derivatives of a learned imitation of the simulator succeeded. This section explains the paradox. The derivatives of contact-rich dynamics are unusable as they are, the systems that make them well behaved describe something other than the target dynamics, and computing them costs time. We discuss these trade-ofs and the challenges they pose; the rest of the paper addresses them.
+
+Two sources of gradient. To discuss these trade-ofs we introduce two terms. We call a policy gradient exact when it contains the analytic derivatives of the system the policy is trained and evaluated in: here, when the dynamics $f$ in Eq. (1) is the simulator itself. We call it surrogate when $f$ is replaced by another, more tractable system, so that the gradient contains that system’s derivatives. The surrogate can be a learned dynamics model ${ \hat { f } } ,$ as in model-based policy optimization [10, 15, 22, 27, 39], or a simplified diferentiable simulator that softens contact, for example by penalty springs of limited stifness in place of rigid contact [14, 80, 81]. The two are the ends of an axis rather than a dichotomy: a simulator with softened contact lies between them, and even NablaEngine’s training gradient departs from the exact derivative where it freezes unbounded terms (Section 6). Below we compare the two ends: the exact gradients of NablaEngine and the surrogate gradients of a learned world model, the surrogate SuperMimic showed to work for humanoid tracking.
+
+Neither exactness nor boundedness is what learning needs. What it needs is learning signal: the part of a gradient that improves the return at the scale of one policy update. Two trade-ofs decide how much of it each source delivers per unit of compute (Table 1).
+
+Unbounded exact, bounded surrogate. An exact gradient has no bias, but contact-rich dynamics is not diferentiable everywhere. Where contacts appear or vanish, actuators saturate or the solver’s active set changes, the derivative jumps or is undefined. Near some of these events it is unbounded. Computed faithfully, it can be infinite. We measured this on the G1 (Section B):
+
+• when the feet nearly touch, the derivative of the self-contact normal grows as the inverse of their distance; on training windows the gradient grew by up $_ { 0 } 4 . 9 \times 1 0 ^ { 2 1 }$ through a window, and 32 rows were not finite;
+
+• for nearly parallel capsules (crossed feet), one control step amplified the gradient by up to $3 . 6 \times 1 0 ^ { 8 }$ , and repeated steps overflowed to non-finite values in 40 of 172 such states.
+
+A surrogate gradient, in contrast, is bounded everywhere. For a world model that is a multilayer perceptron with weight matrices $W _ { 1 } , \dots , W _ { n }$ and an activation with Lipschitz constant � (SiLU, as in SuperMimic, has $c \approx 1 . 1 )$ , the Jacobian of one predicted step satisfies
+
+$$
+\left\| \frac {\partial \hat {f}}{\partial (s , a)} \right\| _ {2} \leq L = c ^ {n - 1} \prod_ {l = 1} ^ {n} \| W _ {l} \| _ {2}\tag{2}
+$$
+
+at every state, and the action gradient of an �-step window is bounded by a constant that depends only on �, � and the reward. The bound can be loose and grows with �, but it is uniform: no state makes it infinite. A simulator’s step Jacobian has no such bound. The surrogate gradient, however, describes a diferent system than the one being simulated, so it is biased.
+
+Same bulk, diferent tail. The two gradients agree on the bulk of the batch and part ways only at the extremes. Each on its own rollouts, they have similar tails. With the policy of a SuperMimic reproduction, the same objective and 32-step windows, the 99.9th percentile of the per-sample action-gradient norm is 25–37 times the median on both routes, and the maximum a few hundred to about 1,350 times, with no consistent ordering between them. A paired comparison along the same trajectory shows where the two difer. We ran the same policy in NablaEngine and, at every recorded state and action, computed the action gradient once with the engine’s Jacobian and once with the world model’s Jacobian at that state, everything else identical. The two agree closely on most samples (Spearman correlation of the norms 0.94–0.95, median cosine 0.90–0.91, at two checkpoints) and almost perfectly on small gradients (cosine 0.96–0.98 for the smallest 10%). Agreement falls as the exact gradient grows: for the largest 0.1% of exact gradients, the world model’s gradient has only 0.35–0.43 of the norm (median), a median cosine of 0.39–0.67, and in some samples points the opposite way. The world model does not create large gradients of its own: where its gradient is largest, the exact one is large as well.
+
+The diference is therefore one of tails, not of bias. Along the same trajectory the world model damps the exact tail (99.9th percentile 16–21 against 24–31 times the median). And with exact derivatives the unbounded events reappear: without NablaEngine’s rules for them, single samples reach $6 . 5 \times 1 0 ^ { 2 4 }$ times the median and some are not finite. Such samples are rare, but one of them dominates a batch-mean gradient. A few samples carry huge or infinite values and no learning signal; the rest of the batch is as good as the surrogate’s, and unbiased.
+
+More exactness is not more signal. Making the derivative of force-saturated actuators exact changed about 20% of per-state gradients but did not improve learning: −0.023 after 1 h (3 seeds, within two seed standard deviations), and no diference together with the self-contact rule below or after 3 h.
+
+Bias versus cost. A world model is cheap to evaluate and to diferentiate: one network pass, independent of contact complexity. SuperMimic reports that its world model runs more than 10× faster than MuJoCo Warp at the batch sizes used in practice and 62× faster at 64k parallel environments, and that its training needs over 1000× fewer GPU-hours than SONIC’s cluster-scale PPO pipeline [39]. The simulators that robot learning commonly uses are slower still on this robot. One control step of 4096 G1 worlds takes 5.8 ms in MuJoCo Warp, 12.9 ms in Isaac Lab with Newton and 27.5–54.1 ms with PhysX, 34.7 ms in MuJoCo C on a 16-thread CPU and 255 ms in MJX, all forward only (one RTX PRO 6000; Table 5). Few of them provide a gradient of the full contact dynamics at all: PhysX does not, MuJoCo C ofers finite diferences, MJX only forward-mode derivatives on this model, and MuJoCo Warp only through an open pull request.
+
+Per policy update, one SuperMimic iteration takes about 0.1 s on an H100 (estimated from its paper, Section E). The same first-order recipe as ours on the MuJoCo Warp adjoint takes 1.63 s per update, 16× more. Even on NablaEngine an update takes 0.37 s, still more than the world model. Exact gradients make up for it in the number of updates: ∇Mimic reaches 0.82 after 3.2k updates, about 1/13 of the roughly 41k iterations SuperMimic needs (estimated from its paper; Section E gives the estimate and an alternative reading). This is how we read SuperMimic’s result. Per update, training on exact gradients needs far fewer: 3.2k updates against about 41k. Per second, at the cost of the simulators available at the time, the surrogate made faster progress. The world model won on price.
+
+What exact gradients need. Both trade-ofs point at the same two requirements, and at how to meet them diferently from a world model. A surrogate pays one bias, on every sample, to buy two things at once: bounded derivatives and a cheap update. We buy them separately. Boundedness costs a bias confined to the few samples that are cut, with the informative bulk of the batch left exact; this is the job of ∇Mimic (Section 5). Cheapness costs engineering, not bias: the adjoint has to come down to where the higher learning signal per update pays of in wall clock; this is the job of NablaEngine (Section 6). Applied to the world-model gradients of a public SuperMimic reproduction, ∇Mimic’s components did not give a lasting gain: with per-sample clipping the return after 2.7 h was 0.80 against 0.79 without it, and with clipping and action targets together training collapsed after 1.5 h (one seed each).
+
+## 4.1 Prior first-order methods explode
+
+SHAC [81] uses exact gradients the way surrogate-gradient methods use theirs: one global gradient-norm clip and a guard that stops training when the norm exceeds $1 0 ^ { 6 }$ . On whole-body G1 tracking at our scale, every SHAC run hits exploding gradients and trips this guard: all 3 seeds on NablaEngine within 0.06 h (746–1568 updates), at a return of
+
+a  
+b  
+![](images/5f09ab3870449f6f4cbf065e28a2418d826d50eae9f4c9fdd766b6a109f2ec13.jpg)
+
+![](images/fb0a5663fa997b03d3a578dfe393dc9e2ca25b5ec553f6e63bb7ecdcfb574a41.jpg)  
+Figure 2. Exploding gradients sit in single samples. Per-sample action-gradient norms of SHAC on exact gradients (one seed, raw, before any clipping). (a) Distribution within one update batch of 131,072 samples, relative to the batch median: an ordinary update and the update in which $\mathbf { S H A C } \mathbf { \vec { s } }$ guard stops training, where one sample lies at $2 . 2 \times 1 0 ^ { 9 }$ times the median. (b) Median, 99.9th percentile and maximum per update: the bulk stays flat, only the maximum explodes.
+
+$0 . 3 7 \pm 0 . 0 9$ , and on MuJoCo Warp within 0.36 h. The explosion comes from a single sample, not from the batch, and this is why a global norm clip cannot save it: one sample at $1 0 ^ { 9 }$ times the median either trips the guard or, if clipped globally, scales every other sample’s gradient to nothing. Up to the halt, the median, 99th and 99.9th percentiles of the per-sample action gradient norms stay flat; in the halting update the largest per-sample gradient is $2 . 2 \times 1 0 ^ { 9 }$ to $1 . 8 \times 1 0 ^ { 1 0 }$ times the median in each of three instrumented runs, and this one sample trips the guard. When it appears is random: the instrumented runs halted after 326 to 8361 updates. Figure 2 shows this for one seed.
+
+## 4.2 When first-order methods fit
+
+Dense rewards. Exact gradients are most useful when the reward is dense and smooth in the state. Motion tracking is such a task: the reward at every step is a sum of exponential kernels of tracking errors, so its gradient points toward the reference everywhere except at contact events, and those are what per-sample clipping handles
+
+Horizon trade-of. With sparse rewards and long-range dependencies the picture changes, and the window length � sets a second trade-of. A long window lets the gradient reach a distant reward and relies less on the critic $V _ { \phi }$ , whose estimate is biased. But the tail of the gradient grows with every step it is backpropagated through (Fig. 3): over 32 steps the 99.9th percentile grows several-fold and, for SHAC’s raw gradients, the maximum by eight to nine orders of magnitude. With the same policy, exact and world-model gradients grow alike, so the accumulation is a property of long chains of Jacobians, not of contact alone. A world model does not escape this trade-of; it only starts from a lighter tail.
+
+A short window keeps the gradient clean but leaves more to the critic. Section 5.4 measures this trade-of for tracking. For tasks whose reward lies seconds away, whether diferentiability can be exploited depends on this trade-of, and first-order methods may not pay of.
+
+## 5 ∇Mimic
+
+We design ∇Mimic to learn from exact gradients as they are, with their rare extreme samples and a scale that varies by orders of magnitude (Section 4). It is a windowed first-order actor-critic built around two components: per-sample clipping and multistep regression onto gradient-derived action targets. The two are a pair. The action targets fix the size of every update in radians, and clipping keeps any single sample from spending that budget alone: without clipping, one extreme sample moves its target by about 15 rad and every other sample’s by almost nothing; with it, no sample moves more than 0.13 rad (Section 5.3). Each update simulates a batch of BPTT training windows of � steps on NablaEngine, backpropagates the window return (Eq. (1)) through the analytic adjoint, and updates the actor from the resulting action gradients. Algorithm 1 summarizes one update. Each component has its own subsection and ablation (Fig. 4, Table 2).
+
+Inherited components. We keep the data path of SHAC and SuperMimic [39, 81] unchanged, so that our comparison isolates the source and handling of the gradient: window start states come from a replay of states visited by a separate data collector that runs the current policy, the collector’s resets are sampled by return-based bins after BeyondMimic [40], and a critic $V _ { \phi }$ fit with TD(�) bootstraps the window return. Exact gradients make the replay unnecessary: simply continuing each window from where the previous one ended raises the return by about 0.02 in both recipes (Table 2) We keep the replay in this paper so that the comparison with SHAC and SuperMimic isolates the gradient; the simpler data path is also the better one.
+
+a  
+![](images/48d5f4bfe2d4118c212381eb0877573e3731b3798d18b4faa2e5a0396d0759c1.jpg)
+
+b  
+![](images/5a6e35d268196ea6e220af2796447a01fcfeea1aa5321a4de265416b9c56d343.jpg)
+
+Figure 3. The tail of the per-sample action gradient grows with the number of steps it is backpropagated through, while its median stays flat: (a) 99.9th percentile and (b) maximum, each relative to the median. SHAC: raw exact gradients, 3 seeds, all recorded updates. Same policy: a SuperMimic reproduction’s policy, the same objective and 32-step windows, exact (NablaEngine) and world-model gradients, no clipping.  
+![](images/f052671e63391bf6a04b98b705f92efba33c51d35094989670909d0180714607.jpg)  
+Figure 4. One panel per component of ∇Mimic: the control (blue) against the recipe with that component changed (gray), LAFAN1, mean ± sd over 3 seeds. (a) Per-sample clipping: without it one seed diverges and the others stay far below. (b) Multistep regression: one Adam step per window learns more slowly. (c) Window length: � = 32 plateaus lower. (d) Residual actions learn faster and plateau higher than absolute actions.
+
+Fall handling. An episode that ends inside a window stops contributing to it, a hard-termination version of SuperMimic’s survival weight [39]; the critic is fit on the state each transition starts from; and a smooth termination penalty starts before the termination thresholds (ℎ on the height error, $\theta _ { \mathrm { m a x } }$ on the tilt), so the gradient sees an approaching fall:
+
+$$
+r _ {\text { pen }} = - W \Delta t \left[ \left(\frac {\operatorname{relu} (d _ {z} - d _ {z , 0})}{h - d _ {z , 0}}\right) ^ {2} + \left(\frac {\operatorname{relu} (d _ {\theta} - d _ {\theta , 0})}{\theta_ {\max} - d _ {\theta , 0}}\right) ^ {2} \right]\tag{3}
+$$
+
+with � = 2, �<sub>�,0</sub> = 0.08, � <sub>�,0</sub> = 0.10.
+
+## 5.1 Per-sample median-relative clipping
+
+The extreme exact gradients of Section 4 live in individual samples: a few environments near contact events carry action cotangents orders of magnitude above the rest and dominate a batch-mean gradient. A global norm clip, as in SHAC, rescales the whole batch and destroys the learning signal of every other sample. ∇Mimic instead clips the action cotangent of each sample, the gradient of the window return with respect to the action $a _ { t }$ of one environment at one step, to � times the batch median norm. This happens at every step of the backward pass, before the cotangent flows into the policy and from there into earlier states, and again on the window’s action gradients; the cotangent that flows directly through the dynamics from one state to the previous one is left to the engine’s rules for unbounded derivatives (Section 6):
+
+<div class="mineru-algorithm" style="white-space: pre-wrap; font-family:monospace;">
+Algorithm 1: One  $\nabla$ Mimic update.
+
+Input: actor  $\pi_{\theta}$ , critic  $V_{\phi}$ , FIFO replay D, collector environments, window length H, clip factor  $\kappa$ , step size  $\delta$ , regression steps M (values in Table 10)
+
+// Data collection (forward only)
+
+1 Step the collector with  $\pi_{\theta}$  and action noise; sample collector resets by return-based bins; push visited states to D
+
+// BPTT training windows on NablaEngine
+
+2 Sample a batch of window start states  $s_{0}$  from D
+
+3 for  $t = 0, \ldots, H - 1$  do
+
+4  $a_{t} \leftarrow \pi_{\theta}(o_{t})$  with action noise
+
+5  $s_{t+1} \leftarrow f(s_{t}, a_{t})$  (forward pass with tape)
+
+6  $r_{t} \leftarrow r(s_{t}, a_{t}) + r_{\text{pen}}$  (Eq. (3)); end an environment's contribution after an episode end (survival mask)
+
+7  $J \leftarrow \sum_{t &lt; H} \gamma^{t} r_{t} + \gamma^{H} V_{\phi}(s_{H})$  (Eq. (1))
+
+// Backward pass with in-backward clipping
+
+8 for  $t = H - 1, \ldots, 0$  do
+
+9 Propagate the cotangent through step t with the analytic adjoint
+
+10 Clip each sample's action cotangent to  $\kappa$  times the batch median norm (Eq. (4)) before it propagates further
+
+11 Clip the window's action gradients  $g_{t} = \partial J / \partial a_{t}$  again with Eq. (4)
+
+// Gradient-derived action targets
+
+12  $y_{t} \leftarrow a_{t} + \delta g_{t} / RMS(g)$  (Eq. (5))
+
+13 for  $m = 1, \ldots, M$  do
+
+14 Sample a minibatch of pairs  $(o_{t}, y_{t})$ ; take one step of the separate Adam on  $\| \pi_{\theta}(o_{t}) - y_{t} \|^{2}$ 
+
+// Critic
+
+15 Fit  $V_{\phi}$  with TD( $\lambda$ ) on pre-transition states
+</div>
+
+$$
+g _ {i} \leftarrow g _ {i} \cdot \min \left(1, \frac {\kappa \cdot \operatorname{median} _ {j} \| g _ {j} \|}{\| g _ {i} \|}\right), \quad \kappa = 3.\tag{4}
+$$
+
+The median is the reference because it is the one statistic the explosion never moves: in Fig. 2b the median and the 99.9th percentile stay flat through the update that halts SHAC, and only the maximum leaves. A median-relative threshold therefore follows the gradient scale over training, needs no absolute value to tune, and never cuts the backward chain. Clipping touches 9–21% of the samples, i.e. of the (step, environment) pairs, per update, removes the tail of Fig. 2a and leaves the rest of the batch unchanged. The tail does not go away as training proceeds: in an instrumented ∇Mimic run, the largest per-sample action gradient is typically $1 0 ^ { 4 }$ to $\bar { 1 } 0 ^ { 5 }$ times the batch median at every stage, and up to $1 . 9 \times 1 0 ^ { 6 }$ times; over about 92,000 updates (3 seeds) no gradient was non-finite. Clipping is not free: the gradients of the clipped samples are biased. It trades this bias for stability.
+
+Without clipping, one of three seeds diverges after 0.54 h and the other two reach 0.562, against 0.855 for the control (Fig. 4a). Clipping is what makes exact gradients usable at all.
+
+## 5.2 Multistep regression with gradient-derived action targets
+
+Every exact gradient is expensive: it costs a simulated window and its adjoint. A world-model method can aford to use each imagined window for one gradient step and discard it; we want to extract as much as possible from each simulated window. Taking several gradient steps on the same window, however, would move the policy beyond the region in which that gradient describes the return, and the gradient’s scale, which varies by orders of magnitude over training and across the batch, would set the step size. We therefore adopt policy optimization by diferentiable simulation (PODS) [50]: the gradient defines targets in action space, and the policy is fit to them by several steps of regression. ∇Mimic turns the clipped action gradient $g _ { t }$ of each window step into a target action
+
+Table 2. Component ablations on LAFAN1: one change to the recipe at a time, 3 seeds each, against a 3-seed control at matched wall clock (about 1.6 h on one RTX PRO 6000). Change in normalized return for the absolute-action recipe (control 0.855), on which the ablations were first run (Fig. 4), and for the residual-action recipe of ∇Mimic (control 0.867). Full tables in Section H.
+
+<table><tr><td>Change</td><td>Absolute actions</td><td>Residual actions (  $\nabla$ Mimic)</td></tr><tr><td>No per-sample clipping</td><td>-0.293 (1 of 3 seeds diverged)</td><td>all 3 seeds diverged</td></tr><tr><td>No multistep regression (one Adam step per window)</td><td>-0.049</td><td>-0.044</td></tr><tr><td>H = 32 instead of 64</td><td>-0.036</td><td> $-0.042^a$ </td></tr><tr><td>Residual instead of absolute actions</td><td>+0.009</td><td>—</td></tr><tr><td>No replay starts (continued windows)</td><td>+0.019</td><td>+0.018</td></tr></table>
+
+<sup>a</sup> Mean of 3 seeds; a fourth seed collapsed and is listed separately in Table 14.
+
+$$
+y _ {t} = a _ {t} + \delta \cdot \frac {g _ {t}}{\operatorname{RMS} (g)},\tag{5}
+$$
+
+so that the RMS setpoint change over the batch is $\delta ,$ in radians and decaying with the learning-rate schedule, and regresses the policy onto the targets with � minibatch steps under a separate Adam optimizer [32] (settings in Table 10). The multistep regression reuses each simulated window several times, while the regression stops pulling once the policy reaches : the bounded targets regularize each update in physical units, without line search or KL term (Section 5.3). With one regression step and a matched learning rate the update reduces to a direct gradient step [50, Eq. 10; 84, Thm. 1]; the diference lies in the multistep regression, the physical step size and the separate optimizer state.
+
+Replacing the multistep regression by one Adam step per window on the raw gradient lowers the return to 0.806 (−0.049) and slows learning throughout (Fig. 4b).
+
+## 5.3 Clipping and multistep regression together: bounded targets
+
+The two components bound the update in complementary ways. Let �<sub>�</sub> be the clipped action gradient of sample � (one step of one window, $d = 2 9 { \mathrm { j o i n t s } } ) ,$ � the batch median of $\| g _ { i } \|$ and � the number of samples. The target of sample � moves its setpoints by $\delta { g _ { i } } / \mathrm { R M S } ( g )$ (Eq. (5)), where the RMS runs over all samples and joints, so the per-joint RMS change of sample � is
+
+$$
+\frac {\delta \left\| g _ {i} \right\|}{\sqrt {d} \operatorname{RMS} (g)}.\tag{6}
+$$
+
+With clipping, $\| g _ { i } \| \le \kappa m$ , and at least half of the samples have $\left\| g _ { i } \right\| \ge m ,$ , so $\operatorname { R M S } ( g ) \geq m / { \sqrt { 2 d } } .$ . Every sample’s per-joint RMS change is then at most $\sqrt { 2 } \kappa \delta \left( 0 . 1 3 \right.$ rad with our settings), whatever the scale of the gradients: each sample’s target stays within a bounded distance of its current action. The bound holds for the targets the policy is regressed onto, and the regression inherits it as a regularizer. In practice the policy moves far less: after the regression steps of an update, the typical environment’s setpoints change by 0.002 to 0.01 rad (per-joint RMS), and the largest change in any environment over a whole training run is 0.11 rad. Without clipping, a single sample with norm � far above the others gives $\begin{array} { r } { \mathbf { R M S } ( g ) \approx G / \sqrt { N d } ; } \end{array}$ that sample’s target moves by about $\delta \sqrt { N }$ (about 15 rad for our batch size), and the targets of all other samples barely move. The step-size budget of the whole batch goes to one sample, and the learning signal of the rest is lost. The multistep regression fixes the size of the step; clipping keeps any single sample from taking it over.
+
+## 5.4 Window length
+
+The window length sets the horizon trade-of of Section 4.2: longer windows rely less on the critic, shorter ones accumulate fewer extreme gradients (Fig. 3). Halving the window to � = 32 lowers the return to 0.818 (−0.036) at matched wall clock and by 0.043 at matched updates (3 seeds; Fig. 4c). For tracking the longer window is better. We attribute this to the critic: with clipping bounding the extreme gradients of longer chains, relying less on the critic’s biased estimate outweighs the extra tail, although we have not measured the critic’s error directly.
+
+## 5.5 Residual actions
+
+The policy outputs an ofset to the reference joint pose; the PD setpoint is reference plus ofset. An untrained policy then already follows the reference pose, so learning refines a correction instead of reproducing the motion from scratch. The action-rate penalty is applied to the commanded setpoints, so the reward, and hence the task, is identical to predicting absolute setpoints; only the parameterization changes. Residual actions learn faster (Fig. 4d) and plateau higher: ∇Mimic reaches 0.82 in 0.34 h instead of 0.50 h with absolute actions, and 0.874 in 1.8 h, after which the return stays on this plateau (Table 4).
+
+Table 3. Time per 20 ms control step for 4096 G1 worlds, ms (median over three processes).
+
+<table><tr><td></td><td>RTX PRO 6000</td><td>H100</td><td>RTX 3090</td><td>V100</td></tr><tr><td colspan="5">Forward step</td></tr><tr><td>NablaEngine</td><td>1.21</td><td>1.70</td><td>3.28</td><td>5.79</td></tr><tr><td>MuJoCo Warp</td><td>5.84</td><td>8.65</td><td>12.5</td><td>18.4</td></tr><tr><td colspan="5">Step and its gradient</td></tr><tr><td>NablaEngine</td><td>1.78</td><td>2.73</td><td>5.26</td><td>10.6</td></tr><tr><td>MuJoCo Warp with adjoint pull request</td><td>20.5</td><td>25.0</td><td>43.0</td><td>63.2</td></tr></table>
+
+## 6 NablaEngine
+
+NablaEngine is a diferentiable simulation engine for the Unitree G1 that makes exact gradients cheap. It computes the dynamics of MuJoCo [74] for this robot, including the full contact model with all 502 contact pairs and the Newton constraint solver, and their analytic derivatives. Its design rests on three ideas.
+
+One world per warp, a megakernel for the adjoint. NablaEngine specializes the step to one robot and maps each world to one warp. Within a kernel, the world’s state stays in shared memory and registers. The forward step runs as two fused kernels per substep, 8 physics kernels per 20 ms control step. The adjoint of a whole control step is a single megakernel: one warp per world reads the tape and runs the derivatives of all four substeps in reverse without leaving the kernel. (The forward step is split into two kernels per substep for occupancy; Section B.)
+
+A hand-derived adjoint. The backward pass is derived by hand for every stage: kinematics, collision, the constraint solve and integration. The constraint solve is diferentiated through its optimality conditions, not through the solver’s iterations, with the discrete decisions (contact set, active constraints, actuator clamps) held fixed. The forward pass writes a compact tape, and the adjoint replays it in reverse. The result is the derivative of the discrete step: it matches float64 finite diferences of MuJoCo to 10<sup>−5</sup> in median relative error, and the forward step matches float64 MuJoCo to $8 . 5 \times 1 0 ^ { - 7 }$ (Section C); the forward pass is bitwise deterministic.
+
+Bounded where the derivative is not. Near two non-diferentiable events of the G1’s geometry the exact derivative is unbounded (Section 4): self-contact at vanishing distance and nearly parallel capsules. For training, NablaEngine freezes the corresponding geometric derivatives below a small threshold (1 mm, about 2<sup>◦</sup>), and on force-saturated actuators it keeps the actuator damping term, which the exact derivative drops; making the latter exact does not improve learning (Section 4). Away from these events the training gradient equals the exact gradient bit for bit. Section B gives the details.
+
+Speed. Table 3 compares NablaEngine with MuJoCo Warp [21], the GPU implementation of the same dynamics. A forward step is 4.8× faster on an RTX PRO 6000; a step with its gradient is 11.5× faster than the open pull request that adds an adjoint to MuJoCo Warp [13]. On NablaEngine the gradient costs less than another forward step: a step with its gradient takes 1.78 ms against 1.21 ms for the step alone, so the entire adjoint, contact solve included, adds 0.57 ms. One RTX PRO 6000 simulates 3.39 M control steps per second, about 18.8 h of robot motion per second of wall clock. Other engines and GPUs are in Section B.
+
+## 7 Experiments
+
+Component ablations sit next to each component in Section 5; this section reports the main comparison against the other gradient sources and separates the engine’s contribution from the algorithm’s.
+
+## 7.1 Setup
+
+We train one policy on all 40 LAFAN1 clips [23] retargeted to the G1 [43] (264,705 frames, 2.45 h of motion). Each clip is evaluated once from its first frame on MuJoCo Warp with a deterministic actor and no randomization or noise.
+
+Table 4. LAFAN1, all 40 clips: normalized return at equal training wall clock, time to SuperMimic’s score of 0.82 (first crossing of the mean curve), and clips with a fall at the end of training. Ours: one RTX PRO 6000 per run, mean ± sd over 3 seeds unless noted. All runs except SuperMimic train on NablaEngine.
+
+<table><tr><td>Method</td><td>0.5 h</td><td>1 h</td><td>2 h</td><td>3 h</td><td>To 0.82</td><td>Falls (/40)</td></tr><tr><td> $\nabla$ Mimic</td><td> $\mathbf{0.824} \pm 0.008$ </td><td> $\mathbf{0.854} \pm 0.005$ </td><td> $\mathbf{0.872} \pm 0.001$ </td><td> $\mathbf{0.875} \pm 0.001$ </td><td> $\mathbf{0.34} \text{ h}$ </td><td>0.0</td></tr><tr><td> $\nabla$ Mimic, absolute actions</td><td> $0.821 \pm 0.007$ </td><td> $0.844 \pm 0.004$ </td><td> $0.861 \pm 0.001$ </td><td> $0.864 \pm 0.001$ </td><td>0.50 h</td><td>0.0</td></tr><tr><td>PPO, BeyondMimic  $configuration^a$ </td><td>0.465</td><td>0.529</td><td>0.641</td><td>0.638</td><td>not reached</td><td>8</td></tr><tr><td>PPO, SuperMimic actor and  $resets^a$ </td><td>0.428</td><td>0.489</td><td>0.586</td><td>0.658</td><td>not reached</td><td>3</td></tr><tr><td>SHAC (changed guards)</td><td> $0.724 \pm 0.019$ </td><td> $0.790 \pm 0.019$ </td><td> $0.807 \pm 0.008$ </td><td> $0.816 \pm 0.005$ </td><td>not reached</td><td>2.0</td></tr><tr><td>SHAC (published guard)</td><td colspan="4">stopped at 0.06 h by its gradient guard (return  $0.373 \pm 0.093$ )</td><td>not reached</td><td>23.0</td></tr><tr><td>SuperMimic ( $stated)^b$ </td><td>n/s</td><td>n/s</td><td>n/s</td><td>n/s</td><td>within 1.2 h</td><td>n/s</td></tr></table>
+
+<sup>a</sup> One seed, 6 h budget; falls at 6 h. <sup>b</sup> One H100, as stated in Liao et al. [39, §4.1]; n/s: not stated.
+
+The score is the full-clip normalized return as defined by Liao et al. [39, §4]: the tracking reward minus the action-rate and joint-limit penalties, summed over the whole clip and divided by its maximum, so that a fall forfeits the rest of the clip; it is averaged over the 40 clips (Section G). Wall clock counts training only, without start-up compilation or evaluation. Each run uses one RTX PRO 6000 unless stated, and each configuration three seeds (mean ± sd). Seeds that diverge or collapse are reported separately and not averaged.
+
+The baselines cover the alternatives to our gradient source. SuperMimic [39], the surrogate-gradient state of the art, enters with the numbers its paper states (one H100), since its implementation is not public; the reproduction we use for the gradient analysis of Section 4 is described in Section E and is not a baseline. PPO [63] on NablaEngine is the zeroth-order reference, once in BeyondMimic’s configuration [40] and once with SuperMimic’s actor and reset sampling. SHAC [81] is the first-order reference (Section 4.1).
+
+## 7.2 Main result: minutes instead of hours
+
+∇Mimic reaches SuperMimic’s LAFAN1 score of 0.82 in 20 min on one GPU (Fig. 1a). SuperMimic reports reaching it within 1.2 h on one H100, and PPO-Sim does not reach it within 18 h on 1, 4 or 8 GPUs [39, §4.1]; on an H100 the absolute-action version reaches 0.82 in 0.41 h (one seed, Section H). SuperMimic states no final score, so the time to 0.82 is the only comparison its paper allows.
+
+Training does not stop there: 0.874 in 1.8 h, no seed falling on any clip from 1.5 h on, and three seeds that agree to a standard deviation below $1 0 ^ { - 3 }$ at 2 and 3 h.
+
+The other gradient sources on the same engine are far behind. PPO with BeyondMimic’s configuration reaches 0.64 after 3 h and 0.70 after 6 h, even though NablaEngine makes each PPO iteration 2.9× faster than stock MuJoCo Warp (0.123 vs 0.355 s): cheaper samples do not close the gap, the gradient does. SHAC stops on its gradient guard at 0.06 h; with the guard relaxed so that exploding updates are clipped instead of halting training, it keeps learning but stays just below 0.82 for 3 h (0.816; single seeds cross it after 2.4 to 3.1 h). Table 4 gives the numbers; all curves and the cost to reach 0.82 are in Section H.
+
+## 7.3 Same algorithm, two simulators
+
+Is the speed-up the engine’s or the algorithm’s? Training the absolute-action version of ∇Mimic on the MuJoCo Warp adjoint, with NablaEngine’s rules for unbounded derivatives ported to it, answers this: per update the two curves overlap (Fig. 5a); per hour NablaEngine is 4.7× ahead (2.03 h vs 0.43 h to 4k updates; 4.4× per update, 1.63 vs 0.37 s). The engine changes speed, not learning.
+
+## 8 Limitations and future work
+
+NablaEngine currently supports one robot, the Unitree G1, on flat ground; other robots need their own specialized kernels, and uneven terrain needs height fields and further collision types. Our results are on LAFAN1 in simulation: we have not yet trained on larger motion libraries or deployed the policies on hardware. The gradient holds the discrete decisions of the contact solve fixed, so it is the exact derivative of the step almost everywhere rather than a smoothed gradient across contact changes. Per-sample clipping biases the clipped gradients, and we have not quantified this bias. The PPO baselines and the MuJoCo Warp run of ∇Mimic are single seeds. SuperMimic’s implementation is not public, so we compare with the numbers its paper states, on a diferent GPU; speed comparisons between simulators are made within one GPU type. Extending NablaEngine to more robots and terrains, scaling ∇Mimic to large motion libraries and transferring the policies to real robots are the natural next steps.
+
+a  
+b  
+![](images/96b4bfe507801802e955d4f5cac64e4eb9d78e59896598766d5f0ef3ef0513f2.jpg)
+
+![](images/e14ffd51228b7e7e469f63b7c2fe69fb9ba5c06361ea0cb512e8734a626cc44c.jpg)  
+Figure 5. The engine changes speed, not learning. ∇Mimic (absolute actions) on NablaEngine (3 seeds, mean ± sd) and on the MuJoCo Warp adjoint with the engine’s gradient semantics (1 seed), on LAFAN1. (a) Per policy update the curves overlap. (b) Per hour of training, NablaEngine is faster.
+
+## 9 Conclusion
+
+First-order policy learning has long promised far more informative updates than zeroth-order methods, but on contact-rich whole-body control two things held it back: rare unbounded samples in the gradient, and the cost of computing it. NablaEngine removes the second for the Unitree G1: it computes the full MuJoCo dynamics of the robot, all 502 contact pairs included, with analytic gradients that match float64 finite diferences, and its adjoint costs less than another forward step. ∇Mimic removes the first: per-sample median-relative clipping bounds the rare extreme samples, and multistep regression onto gradient-derived action targets reuses each costly sample with action targets whose size does not depend on their scale. Together they train a single policy that tracks all 40 LAFAN1 clips and reaches the score of the world-model state of the art in 20 minutes on one GPU.
+
+Cutting the cost of a tracking policy from hours to minutes makes training on far larger and more diverse motion corpora practical, and can thereby accelerate the scaling of humanoid foundation models.
+
+## References
+
+[1] Martín Abadi, Andy Chu, Ian Goodfellow, H. Brendan McMahan, Ilya Mironov, Kunal Talwar, and Li Zhang Deep Learning with Diferential Privacy. In ACM SIGSAC Conference on Computer and Communications Security (CCS), pages 308–318, 2016. doi: 10.1145/2976749.2978318. URL https://arxiv.org/abs/1607.00133.
+
+[2] Abbas Abdolmaleki, Jost Tobias Springenberg, Yuval Tassa, Remi Munos, Nicolas Heess, and Martin Riedmiller. Maximum a Posteriori Policy Optimisation. In International Conference on Learning Representations (ICLR), 2018. URL https://arxiv.org/abs/1806.06920.
+
+[3] Dyuman Aditya, Jin Cheng, Clemens Schwarke, Quan Nguyen, Gaurav Sukhatme, Stelian Coros, and Gabriele Fadini. Bundled contact gradients: Stabilizing diferentiable simulation for deployable dynamic tasks, 2026.
+
+[4] Joseph Amigo, Rooholla Khorrambakht, Elliot Chane-Sane, Nicolas Mansard, and Ludovic Righetti. First order model-based RL through decoupled backpropagation. In Proceedings of the 9th Conference on Robot Learning (CoRL), volume 305 of PMLR, pages 5234–5255, 2025.
+
+[5] Galen Andrew, Om Thakkar, H. Brendan McMahan, and Swaroop Ramaswamy. Diferentially Private Learning with Adaptive Clipping. In Advances in Neural Information Processing Systems (NeurIPS), 2021. URL https://arxiv.org/abs/1905.03871.
+
+[6] Joshua Bagajo, Clemens Schwarke, Victor Klemm, Ignat Georgiev, Jean-Pierre Sleiman, Jesus Tordesillas, Animesh Garg, and Marco Hutter. DifSim2Real: Deploying quadrupedal locomotion policies purely trained in diferentiable simulation, 2024. CoRL 2024 Workshop on Diferentiable Optimization Everywhere.
+
+[7] Bones Studio. BONES-SEED: Skeletal Everyday Embodiment Dataset. https://huggingface.co/datasets/ bones-studio/seed, 2026. 142,220 annotated motion sequences (288 h) from 522 actors, SOMA and Unitree G1 formats.
+
+[8] Justin Carpentier and Nicolas Mansard. Analytical derivatives of rigid body dynamics algorithms. In Robotics: Science and Systems (RSS), 2018. doi: 10.15607/RSS.2018.XIV.038.
+
+[9] Zixuan Chen, Mazeyu Ji, Xuxin Cheng, Xuanbin Peng, Xue Bin Peng, and Xiaolong Wang. GMT: General Motion Tracking for Humanoid Whole-Body Control. arXiv preprint arXiv:2506.14770, 2025.
+
+[10] Ignasi Clavera, Violet Fu, and Pieter Abbeel. Model-Augmented Actor-Critic: Backpropagating through Paths. In International Conference on Learning Representations (ICLR), 2020. URL https://arxiv.org/abs/2005.08068.
+
+[11] Jonas Degrave, Michiel Hermans, Joni Dambre, and Francis wyfels. A diferentiable physics engine for deep learning in robotics. Frontiers in Neurorobotics, 13:6, 2019. doi: 10.3389/fnbot.2019.00006. arXiv:1611.01652.
+
+[12] etaoxing. Fix pyramidal-cone contact skip and joint actuatorfrcrange clamp in the adjoint. GitHub pull request #1 to etaoxing/mujoco\_warp, opened 2026-10-23, open as of 2026-10-29, 2026. URL https://github.com/etaoxing mujoco\_warp/pull/1.
+
+[13] etaoxing. hybrid analytic diferentiability. GitHub pull request #1535, google-deepmind/mujoco\_warp, opened 2026-07-19, open as of 2026-10-29, 2026. URL https://github.com/google-deepmind/mujoco\_warp/pull/1535.
+
+[14] C. Daniel Freeman, Erik Frey, Anton Raichuk, Sertan Girgin, Igor Mordatch, and Olivier Bachem. Brax – a diferentiable physics engine for large scale rigid body simulation. In NeurIPS Datasets and Benchmarks Track, 2021.
+
+[15] Levi Fussell, Kevin Bergamin, and Daniel Holden. SuperTrack: Motion Tracking for Physically Simulated Characters using Supervised Learning. ACM Transactions on Graphics (SIGGRAPH Asia), 40(6):197:1–197:13, 2021. doi: 10.1145/3478513.3480527.
+
+[16] Genesis Authors. Genesis: A Generative and Universal Physics Engine for Robotics and Beyond. https: //github.com/Genesis-Embodied-AI/Genesis, December 2024.
+
+[17] Ignat Georgiev, Krishnan Srinivasan, Jie Xu, Eric Heiden, and Animesh Garg. Adaptive horizon actor-critic for policy learning in contact-rich diferentiable simulation. In Proceedings ofthe 41st International Conference on Machine Learning (ICML), volume 235 of PMLR, pages 15418–15437, 2024.
+
+[18] Ignat Georgiev, Varun Giridhar, Nicklas Hansen, and Animesh Garg. PWM: Policy Learning with Multi-Task World Models. In International Conference on Learning Representations (ICLR), 2025. URL https: //arxiv.org/abs/2407.02466.
+
+[19] James Gleeson, Daniel Snider, Yvonne Yang, Moshe Gabel, Eyal de Lara, and Gennady Pekhimenko. Optimizing Data Collection in Deep Reinforcement Learning. In MLBench Workshop, 2022. URL https://arxiv.org/abs/2207. 07736.
+
+[20] Google DeepMind. MuJoCo XLA (MJX). https://mujoco.readthedocs.io/en/stable/mjx.html, 2024. Software, part of the MuJoCo repository; no standalone paper.
+
+[21] Google DeepMind and NVIDIA. MuJoCo Warp (MJWarp). https://github.com/google-deepmind/mujoco\_warp, 2025. Software; no standalone paper found.
+
+[22] Danijar Hafner, Timothy Lillicrap, Jimmy Ba, and Mohammad Norouzi. Dream to Control: Learning Behaviors by Latent Imagination. In International Conference on Learning Representations (ICLR), 2020. URL https: //arxiv.org/abs/1912.01603.
+
+[23] Félix G. Harvey, Mike Yurick, Derek Nowrouzezahrai, and Christopher Pal. Robust Motion In-betweening. ACM Transactions on Graphics, 39(4):60:1–60:12, 2020. doi: 10.1145/3386569.3392480. Proc. SIGGRAPH 2020; introduces the LAFAN1 dataset.
+
+[24] Tairan He, Zhengyi Luo, Xialin He, Wenli Xiao, Chong Zhang, Weinan Zhang, Kris Kitani, Changliu Liu, and Guanya Shi. OmniH2O: Universal and Dexterous Human-to-Humanoid Whole-Body Teleoperation and Learning. In Conference on Robot Learning (CoRL), 2024.
+
+[25] Tairan He, Zhengyi Luo, Wenli Xiao, Chong Zhang, Kris Kitani, Changliu Liu, and Guanya Shi. Learning Human-to-Humanoid Real-Time Whole-Body Teleoperation. In IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2024
+
+[26] Tairan He, Jiawei Gao, Wenli Xiao, Yuanhang Zhang, Zi Wang, Jiashun Wang, Zhengyi Luo, Guanqi He, Nikhil Sobanbab, Chaoyi Pan, Zeji Yi, Guannan Qu, Kris Kitani, Jessica Hodgins, Linxi "Jim" Fan, Yuke Zhu, Changliu Liu, and Guanya Shi. ASAP: Aligning Simulation and Real-World Physics for Learning Agile Humanoid Whole-Body Skills. In Robotics: Science and Systems (RSS), 2025.
+
+[27] Nicolas Heess, Greg Wayne, David Silver, Timothy Lillicrap, Yuval Tassa, and Tom Erez. Learning Continuous Control Policies by Stochastic Value Gradients. In Advances in Neural Information Processing Systems (NIPS), 2015. URL https://arxiv.org/abs/1510.09142.
+
+[28] Taylor A. Howell, Simon Le Cleac’h, Jan Brüdigam, Qianzhong Chen, Jiankai Sun, J. Zico Kolter, Mac Schwager, and Zachary Manchester. Dojo: A diferentiable physics engine for robotics, 2022.
+
+[29] Yuanming Hu, Luke Anderson, Tzu-Mao Li, Qi Sun, Nathan Carr, Jonathan Ragan-Kelley, and Frédo Durand. DifTaichi: Diferentiable programming for physical simulation. In International Conference on Learning Representations (ICLR), 2020.
+
+[30] Mazeyu Ji, Xuanbin Peng, Fangchen Liu, Jialong Li, Ge Yang, Xuxin Cheng, and Xiaolong Wang. ExBody2: Advanced Expressive Humanoid Whole-Body Control. In IEEE International Conference on Robotics and Automation (ICRA), 2026.
+
+[31] Gijeong Kim, Seungbin Oh, Dongyun Kang, and Hae-Won Park. Diferentiable contact dynamics for legged locomotion: Policy learning and contact-implicit trajectory optimization, 2026.
+
+[32] Diederik P. Kingma and Jimmy Ba. Adam: A Method for Stochastic Optimization. In International Conference on Learning Representations (ICLR), 2015. URL https://arxiv.org/abs/1412.6980.
+
+[33] Anastasia Koloskova, Hadrien Hendrikx, and Sebastian U. Stich. Revisiting Gradient Clipping: Stochastic bias and tight convergence guarantees. In International Conference on Machine Learning (ICML), 2023. URL https://arxiv.org/abs/2305.01588.
+
+[34] Aleš Kučera and Karel Zimmermann. Ostrich: Taking large strides through stif contact in diferentiable dynamics, 2026.
+
+[35] Jonathan Wilder Lavington, Sharan Vaswani, Reza Babanezhad, Mark Schmidt, and Nicolas Le Roux. Target-based Surrogates for Stochastic Optimization. In International Conference on Machine Learning (ICML), 2023. URL https://arxiv.org/abs/2302.02607
+
+[36] Quentin Le Lidec, Louis Montaut, Yann de Mont-Marin, Fabian Schramm, Emilien Biré, and Justin Carpentier. Highly-eficient diferentiable simulation for robotics, 2024. v1 title: End-to-End and Highly-Eficient Diferentiable Simulation for Robotics.
+
+[37] Yu Lei, Zhengyi Luo, Tairan He, Jinkun Cao, Guanya Shi, and Kris Kitani. Scalable Humanoid Whole-Body Control via Diferentiable Neural Network Dynamics. In ICLR 2025 Workshop on World Models: Understanding, Modelling and Scaling, 2025. URL https://openreview.net/forum?id=FPgKt7bA8w. Referred to as SuperDyno in SuperMimic (arXiv:2610.28480).
+
+[38] Sergey Levine and Vladlen Koltun. Guided Policy Search. In International Conference on Machine Learning (ICML), volume 28 of PMLR, 2013. URL https://proceedings.mlr.press/v28/levine13.html.
+
+[39] Qiayuan Liao, Yiyang Shao, Junfeng Long, Kevin Zakka, Roberto Horowitz, Pieter Abbeel, and Koushil Sreenath. SuperMimic: Scaling Humanoid Whole-Body Control with One Diferentiable World Model. In Conference on Robot Learning (CoRL), 2026.
+
+[40] Qiayuan Liao, Takara E. Truong, Xiaoyu Huang, Yuman Gao, Guy Tevet, Koushil Sreenath, and C. Karen Liu. BeyondMimic: From Motion Tracking to Versatile Humanoid Control via Guided Difusion. Science Robotics, 11 (117):eadx8924, 2026. doi: 10.1126/scirobotics.adx8924.
+
+[41] Zhengyi Luo, Jinkun Cao, Alexander Winkler, Kris Kitani, and Weipeng Xu. Perpetual Humanoid Control for Real-time Simulated Avatars. In Proceedings ofthe IEEE/CVF International Conference on Computer Vision (ICCV), 2023.
+
+[42] Zhengyi Luo, Ye Yuan, Tingwu Wang, Chenran Li, Fernando Castañeda, Sirui Chen, Zi-Ang Cao, Jiefeng Li, David Minor, Qingwei Ben, Jinhyung Park, David Sami, Zi Wang, Xingye Da, Runyu Ding, Cyrus Hogg, Lina Song, Edy Lim, Eugene Jeong, Tairan He, Haoru Xue, Wenli Xiao, Simon Yuen, Jan Kautz, Yan Chang, Umar Iqbal, Linxi "Jim" Fan, and Yuke Zhu. SONIC: Supersizing Motion Tracking for Natural Humanoid Whole-Body Control. Science Robotics, 11(117):eaed4592, 2026. doi: 10.1126/scirobotics.aed4592.
+
+[43] lvhaidong. LAFAN1 Retargeting Dataset. https://huggingface.co/datasets/lvhaidong/LAFAN1\_Retargeting\_ Dataset, 2025. LAFAN1 retargeted to Unitree H1, H1-2 and G1; referred to as Unitree-retargeted LAFAN1 in BeyondMimic.
+
+[44] Michel Ma, Tianwei Ni, Clement Gehring, Pierluca D’Oro, and Pierre-Luc Bacon. Do Transformer World Models Give Better Policy Gradients? In International Conference on Machine Learning (ICML), 2024. URL https://arxiv.org/abs/2402.05290.
+
+[45] Miles Macklin. Warp: A high-performance python framework for GPU simulation and graphics. NVIDIA GPU Technology Conference (GTC), March 2022. URL https://github.com/nvidia/warp.
+
+[46] Naureen Mahmood, Nima Ghorbani, Nikolaus F. Troje, Gerard Pons-Moll, and Michael J. Black. AMASS: Archive of Motion Capture as Surface Shapes. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV), 2019. doi: 10.1109/ICCV.2019.00554.
+
+[47] Viktor Makoviychuk, Lukasz Wawrzyniak, Yunrong Guo, Michelle Lu, Kier Storey, Miles Macklin, David Hoeller, Nikita Rudin, Arthur Allshire, Ankur Handa, and Gavriel State. Isaac Gym: High Performance GPU-Based Physics Simulation For Robot Learning. In Advances in Neural Information Processing Systems Datasets and Benchmarks Track, 2021.
+
+[48] Ibrahim Merad and Stéphane Gaïfas. Robust Stochastic Optimization via Gradient Quantile Clipping. Transactions on Machine Learning Research, 2024. URL https://arxiv.org/abs/2309.17316.
+
+[49] Luke Metz, C. Daniel Freeman, Samuel S. Schoenholz, and Tal Kachman. Gradients are not all you need, 2021.
+
+[50] Miguel Angel Zamora Mora, Momchil Peychev, Sehoon Ha, Martin Vechev, and Stelian Coros. PODS: Policy optimization via diferentiable simulation. In Proceedings of the 38th International Conference on Machine Learning (ICML), volume 139 of PMLR, pages 7805–7817, 2021.
+
+[51] Igor Mordatch and Emanuel Todorov. Combining the benefits of function approximation and trajectory optimization. In Robotics: Science and Systems (RSS), 2014. doi: 10.15607/RSS.2014.X.052. URL https://www.roboticsproceedings.org/rss10/p52.html.
+
+[52] MuJoCo. [MJX] jax.lax.while\_loop in solver.py prevents computation of backward gradients. GitHub issue #2259, google-deepmind/mujoco, opened 2024-11-29, 2024. URL https://github.com/google-deepmind/mujoco/issues 2259.
+
+[53] Newton. Improve the contact diferentiability. GitHub pull request #2164, newton-physics/newton, merged 2026-03-30, 2026. URL https://github.com/newton-physics/newton/pull/2164.
+
+[54] NVIDIA, Mayank Mittal, Pascal Roth, James Tigue, Antoine Richard, Octi Zhang, Peter Du, Antonio Serrano Muñoz, Xinjie Yao, René Zurbrügg, et al. Isaac Lab: A GPU-Accelerated Simulation Framework for Multi-Modal Robot Learning, 2025. URL https://arxiv.org/abs/2511.04831. arXiv preprint.
+
+[55] Ku Onoda, Paavo Parmas, Manato Yaguchi, and Yutaka Matsuo. Does “do diferentiable simulators give better policy gradients?” give better policy gradients? In International Conference on Learning Representations (ICLR), 2026.
+
+[56] Razvan Pascanu, Tomas Mikolov, and Yoshua Bengio. On the dificulty of training Recurrent Neural Networks. In International Conference on Machine Learning (ICML), 2013. URL https://arxiv.org/abs/1211.5063.
+
+[57] Anselm Paulus, A. René Geist, Pierre Schumacher, Vít Musil, Simon Rappenecker, and Georg Martius. Diferen tiable simulation of hard contacts with soft gradients for learning and control. In International Conference on Learning Representations (ICLR), 2026.
+
+[58] Xue Bin Peng, Pieter Abbeel, Sergey Levine, and Michiel van de Panne. DeepMimic: Example-Guided Deep Reinforcement Learning of Physics-Based Character Skills. ACM Transactions on Graphics, 37(4), 2018. doi: 10.1145/3197517.3201311. Proc. SIGGRAPH 2018.
+
+[59] Xue Bin Peng, Aviral Kumar, Grace Zhang, and Sergey Levine. Advantage-Weighted Regression: Simple and Scalable Of-Policy Reinforcement Learning, 2019. URL https://arxiv.org/abs/1910.00177. arXiv preprint.
+
+[60] Yi-Ling Qiao, Junbang Liang, Vladlen Koltun, and Ming C. Lin. Eficient diferentiable simulation of articulated bodies. In Proceedings of the 38th International Conference on Machine Learning (ICML), 2021.
+
+[61] Jiawei Ren, Cunjun Yu, Siwei Chen, Xiao Ma, Liang Pan, and Ziwei Liu. DifMimic: Eficient motion mimicking with diferentiable physics. In International Conference on Learning Representations (ICLR), 2023.
+
+[62] Nikita Rudin, David Hoeller, Philipp Reist, and Marco Hutter. Learning to Walk in Minutes Using Massively Parallel Deep Reinforcement Learning. In Conference on Robot Learning (CoRL), 2021. URL https://arxiv.org abs/2109.11978.
+
+[63] John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov. Proximal Policy Optimization Algorithms, 2017. URL https://arxiv.org/abs/1707.06347. arXiv preprint.
+
+[64] Clemens Schwarke, Victor Klemm, Joshua Bagajo, Jean-Pierre Sleiman, Ignat Georgiev, Jesus Tordesillas, Animesh Garg, and Marco Hutter. Learning deployable locomotion control via diferentiable simulation. In Conference on Robot Learning (CoRL), volume 305 of PMLR, 2025.
+
+[65] Brennan Shacklett, Luc Guy Rosenzweig, Zhiqiang Xie, Bidipta Sarkar, Andrew Szot, Erik Wijmans, Vladlen Koltun, Dhruv Batra, and Kayvon Fatahalian. An Extensible, Data-Oriented Architecture for High-Performance, Many-World Simulation. ACM Transactions on Graphics (SIGGRAPH), 42(4), 2023. doi: 10.1145/3592427.
+
+[66] Umut Simsekli, Levent Sagun, and Mert Gurbuzbalaban. A Tail-Index Analysis of Stochastic Gradient Noise in Deep Neural Networks. In International Conference on Machine Learning (ICML), 2019. URL https: //arxiv.org/abs/1901.06053.
+
+[67] Sanghyun Son, Laura Yu Zheng, Ryan Sullivan, Yi-Ling Qiao, and Ming C. Lin. Gradient informed proximal policy optimization. In Advances in Neural Information Processing Systems (NeurIPS), 2023.
+
+[68] Yunlong Song, Sangbae Kim, and Davide Scaramuzza. Learning quadruped locomotion using diferentiable simulation. In Conference on Robot Learning (CoRL), 2024.
+
+[69] H. J. Terry Suh, Tao Pang, and Russ Tedrake. Bundled gradients through contact via randomized smoothing. IEEE Robotics and Automation Letters, 2022.
+
+[70] H. J. Terry Suh, Max Simchowitz, Kaiqing Zhang, and Russ Tedrake. Do diferentiable simulators give better policy gradients? In Proceedings ofthe 39th International Conference on Machine Learning (ICML), 2022.
+
+[71] Chen Tessler, Yunrong Guo, Ofir Nabati, Gal Chechik, and Xue Bin Peng. MaskedMimic: Unified Physics-Based Character Control Through Masked Motion Inpainting. ACM Transactions on Graphics, 43(6), 2024. doi: 10.1145/3687951. Proc. SIGGRAPH Asia 2024.
+
+[72] The Newton Contributors. Newton: GPU-accelerated physics simulation for robotics and simulation research. https://github.com/newton-physics/newton, 2025. Software (Linux Foundation project; Disney Research, Google DeepMind, NVIDIA).
+
+[73] Emanuel Todorov. Convex and analytically-invertible dynamics with contacts and constraints: Theory and implementation in MuJoCo. In IEEE International Conference on Robotics and Automation (ICRA), pages 6054–6061, 2014.
+
+[74] Emanuel Todorov, Tom Erez, and Yuval Tassa. MuJoCo: A physics engine for model-based control. In IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), pages 5026–5033, 2012. doi: 10.1109/IROS.2012.6386109.
+
+[75] Sharan Vaswani, Olivier Bachem, Simone Totaro, Robert Mueller, Shivam Garg, Matthieu Geist, Marlos C. Machado, Pablo Samuel Castro, and Nicolas Le Roux. A general class of surrogate functions for stable and eficient reinforcement learning. In International Conference on Artificial Intelligence and Statistics (AISTATS), 2022. URL https://arxiv.org/abs/2108.05828.
+
+[76] Keenon Werling, Dalton Omens, Jeongseok Lee, Ioannis Exarchos, and C. Karen Liu. Fast and feature-complete diferentiable physics for articulated rigid bodies with contact. In Robotics: Science and Systems (RSS), 2021. doi: 10.15607/RSS.2021.XVII.034.
+
+[77] Ronald J. Williams and Jing Peng. An Eficient Gradient-Based Algorithm for On-Line Training of Recurrent Network Trajectories. Neural Computation, 2(4):490–501, 1990. doi: 10.1162/neco.1990.2.4.490.
+
+[78] Weiji Xie, Jinrui Han, Jiakun Zheng, Huanyu Li, Xinzhe Liu, Jiyuan Shi, Weinan Zhang, Chenjia Bai, and Xuelong Li. KungfuBot: Physics-Based Humanoid Whole-Body Control for Learning Highly-Dynamic Skills. In Advances in Neural Information Processing Systems (NeurIPS), 2025.
+
+[79] Eliot Xing, Vernon Luk, and Jean Oh. Stabilizing reinforcement learning in diferentiable multiphysics simulation. In International Conference on Learning Representations (ICLR), 2025.
+
+[80] Jie Xu, Tao Chen, Lara Zlokapa, Michael Foshey, Wojciech Matusik, Shinjiro Sueda, and Pulkit Agrawal. An end-to-end diferentiable framework for contact-aware robot design. In Robotics: Science and Systems (RSS), 2021.
+
+[81] Jie Xu, Viktor Makoviychuk, Yashraj Narang, Fabio Ramos, Wojciech Matusik, Animesh Garg, and Miles Macklin. Accelerated policy learning with parallel diferentiable simulation. In International Conference on Learning Representations (ICLR), 2022.
+
+[82] Heyuan Yao, Zhenhua Song, Baoquan Chen, and Libin Liu. ControlVAE: Model-Based Learning of Generative Controllers for Physics-Based Characters. ACM Transactions on Graphics, 41(6), 2022. doi: 10.1145/3550454. 3555434. Proc. SIGGRAPH Asia 2022.
+
+[83] Kangning Yin, Weishuai Zeng, Ke Fan, Minyue Dai, Zirui Wang, Qiang Zhang, Zheng Tian, Jingbo Wang, Jiangmiao Pang, and Weinan Zhang. UniTracker: Learning Universal Whole-Body Motion Tracker for Humanoid Robots. arXiv preprint arXiv:2507.07356, 2025.
+
+[84] Haoxiang You, Yilang Liu, and Ian Abraham. Accelerating visual-policy learning through parallel diferentiable simulation. In Advances in Neural Information Processing Systems (NeurIPS), 2025.
+
+[85] Kevin Zakka, Baruch Tabanpour, Qiayuan Liao, Mustafa Haiderbhai, Samuel Holt, Jing Yuan Luo, Arthur Allshire, Erik Frey, Koushil Sreenath, Lueder A. Kahrs, Carmelo Sferrazza, Yuval Tassa, and Pieter Abbeel. MuJoCo Playground. In Robotics: Science and Systems (RSS), 2025. URL https://arxiv.org/abs/2502.08844.
+
+[86] Kevin Zakka, Qiayuan Liao, Brent Yi, Louis Le Lay, Koushil Sreenath, and Pieter Abbeel. mjlab: A lightweight framework for GPU-accelerated robot learning, 2026.
+
+[87] Yanjie Ze, Zixuan Chen, João Pedro Araújo, Zi-ang Cao, Xue Bin Peng, Jiajun Wu, and C. Karen Liu. TWIST: Teleoperated Whole-Body Imitation System. arXiv preprint arXiv:2505.02833, 2025.
+
+[88] Huzhenyu Zhang, Shenghai Yuan, Wenrui Yan, Li Ma, Hengjie Li, Jingcheng Pang, and Dmitry Yudin. GPUSimBench: Towards Scalable and Reliable GPU-Accelerated Simulators in Embodied AI. In IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2026. URL https://arxiv.org/abs/2607.13059. Accepted; arXiv preprint.
+
+[89] Jingzhao Zhang, Tianxing He, Suvrit Sra, and Ali Jadbabaie. Why gradient clipping accelerates training: A theoretical justification for adaptivity. In International Conference on Learning Representations (ICLR), 2020 URL https://arxiv.org/abs/1905.11881.
+
+[90] Ziyu Zhang, Sergey Bashkirov, Dun Yang, Yi Shi, Michael Taylor, and Xue Bin Peng. Physics-Based Motion Imitation with Adversarial Diferential Discriminators. In SIGGRAPH Asia 2025 Conference Papers, 2025. doi: 10.1145/3757377.3763819.
+
+[91] Hai Zhong, Xun Wang, Zhuoran Li, and Longbo Huang. Reparameterization proximal policy optimization. In International Conference on Machine Learning (ICML), 2026. Venue from ICML 2026 virtual poster page.
+
+## A Task details
+
+Data. The 40 LAFAN1 clips [23] are the Unitree G1 retarget of the LAFAN1 Retargeting Dataset [43] (its g1/ folder), used without modification. At load time the 30 FPS clips are resampled to the 50 Hz control rate (linear interpolation for root position and joint angles, spherical linear interpolation for the root orientation), and body poses and velocities are computed by forward kinematics on the robot model.
+
+Reward. The reward follows BeyondMimic [40] with the weights and widths of SuperMimic [39, Table A.2]. Tracking terms have the form � $\exp ( - e / \sigma ^ { 2 } )$ ), with � the squared error (orientation: squared rotation angle), averaged over the bodies for the body terms. The body terms are evaluated over 14 bodies, with the reference re-anchored to the robot’s torso in horizontal position and yaw; the anchor terms use the torso itself.
+
+<table><tr><td>Term</td><td>σ</td><td>w</td></tr><tr><td>Body position</td><td>0.3</td><td>1.0</td></tr><tr><td>Body orientation</td><td>0.4</td><td>1.0</td></tr><tr><td>Body linear velocity</td><td>1.0</td><td>1.0</td></tr><tr><td>Body angular velocity</td><td>3.14</td><td>1.0</td></tr><tr><td>Anchor position</td><td>0.3</td><td>0.5</td></tr><tr><td>Anchor orientation</td><td>0.4</td><td>0.5</td></tr><tr><td>Action rate (penalty)</td><td>-</td><td>-0.1</td></tr><tr><td>Joint limits (penalty)</td><td>-</td><td>-2.0</td></tr></table>
+
+Every term is multiplied by the control period $\Delta t = 0 . 0 2 \mathrm { s } ,$ so the per-step tracking reward is at most 0.1. During training only, ∇Mimic adds the termination penalty of Table 10; evaluation uses the reward above.
+
+Observations. The actor sees a history of the last 10 proprioception vectors (93 dimensions each): 29 joint positions relative to the default pose, 29 joint velocities, base angular velocity, gravity direction in the base frame and the previous action. Uniform noise of SuperMimic’s Table A.1 is added during training. The goal consists of the next 10 reference frames, each with 68 features expressed in the reference’s own frame (joint positions and velocities, gravity direction, root angular velocity, root linear velocity in the heading frame, root height), plus the reference anchor’s orientation relative to the robot’s anchor (6 dimensions, two rotation-matrix columns), as in BeyondMimic’s variant without state estimation. The critic is privileged: it sees noise-free proprioception, the goal, root errors and the randomization parameters.
+
+Domain randomization. Per episode, following SuperMimic’s Table A.3: foot friction U [0.3, 1.2], joint encoder bias U[−0.01, 0.01] rad and a torso center-of-mass ofset. None is applied at evaluation.
+
+## B Engine details
+
+Model. NablaEngine simulates the mjlab Unitree G1 model [86]: a free base and 29 actuated hinge joints, 31 bodies, and 502 contact pairs among capsules, spheres and the floor, self-collision included. The dynamics follow MuJoCo [74]:
+
+• recursive Newton–Euler and composite rigid-body algorithms;
+
+• MuJoCo’s soft-constraint contact model (solref/solimp) with pyramidal friction cones;
+
+• joint limits, dof friction loss and actuator force limits;
+
+• Newton’s method with exact line search, 10 iterations, tolerance $1 0 ^ { - 8 }$ ;
+
+• the implicitfast integrator, 4 substeps of 5 ms per 20 ms control step, with the control held;
+
+• PD position actuators.
+
+Per-world foot friction and torso center-of-mass ofsets support domain randomization.
+
+Kernel structure. One world maps to one thread block of 32 threads (one warp). Within each kernel the world’s state stays in shared memory and registers (6.9 kB and 8.2 kB per world for the two forward kernels), and the model’s constants sit in GPU constant memory. Each substep runs two forward kernels:
+
+• the first computes kinematics, the bias and mass terms, actuator forces, collision and the constraint rows;
+
+• the second runs the Newton solve and the integration.
+
+A control step is therefore 8 physics kernels for all worlds; the handof between the two kernels (mass matrix, forces, constraint rows and contact Jacobians, about 33 kB per world) and the state between substeps pass through global memory. Up to 11–12 worlds are resident per SM on the RTX PRO 6000 and the H100. The whole control step can also run as one kernel, but it needs the full per-world state (31.9 kB) in shared memory, fits fewer worlds per SM, and is slower (forward with tape, 4096 worlds, kernel time: 2.76 vs 1.23 ms on the RTX PRO 6000, 4.37 vs 1.76 ms on the H100, 6.79 vs 3.13 ms on the RTX 3090, 10.88 vs 5.98 ms on the V100). The adjoint of a control step is one kernel: one warp per world reads the tape and runs the derivatives of all four substeps in reverse, with the per-world adjoint state in shared memory.
+
+Tape and adjoint. For the gradient, the forward pass also writes a tape of 1,472 float32 values per world and substep: 23.6 kB per world and control step, or 96.5 MB at 4096 worlds. The adjoint replays the contact set, constraint rows and solver state from it and runs every stage in reverse:
+
+• integration;
+
+• the constraint solve, diferentiated through its optimality conditions with the discrete decisions (contact set, active constraints, actuator clamps) held fixed;
+
+• collision;
+
+• kinematics and dynamics.
+
+Constraint-solve adjoint. Per substep, with state $( q , \nu )$ and control �, let $M ( q )$ be the mass matrix, $c ( q , \nu )$ the bias force, $\tau ( q , \nu , u )$ the actuator force and $a _ { 0 } = M ^ { - 1 } ( \tau - c )$ the unconstrained acceleration. The constraint solve returns
+
+$$
+a ^ {\star} = \arg \min _ {a} \frac {1}{2} (a - a _ {0}) ^ {\top} M (a - a _ {0}) + \sum_ {e} s _ {e} (J _ {e} a - r _ {e}),\tag{7}
+$$
+
+over constraint rows � (joint limits and the edges of the pyramidal contact cones), with Jacobians $J _ { e } ( q )$ , reference accelerations $r _ { e } ( q , \nu ) = - b _ { e } J _ { e } \nu - k _ { e } \iota _ { e } d _ { e }$ , and the penalty $\begin{array} { r } { s _ { e } ( x ) = \frac { 1 } { \gamma } D _ { e } x ^ { 2 } } \end{array}$ on the active side of row � and 0 otherwise $( D _ { e }$ from the impedance $\iota _ { e } ( d _ { e } ) )$ . With the active set A held fixed, the optimality condition
+
+$$
+F (a, \theta) = M (a - a _ {0}) + \sum_ {e \in \mathcal {A}} D _ {e} J _ {e} ^ {\top} (J _ {e} a - r _ {e}) = 0, \qquad \theta = (q, v, u),\tag{8}
+$$
+
+is smooth in both arguments, and $\begin{array} { r } { \partial F / \partial a = H = M + \sum _ { e \in \mathcal { A } } D _ { e } J _ { e } ^ { \top } J _ { e } } \end{array}$ is symmetric positive definite. By the implicit function theorem, $\mathrm { d } a ^ { \star } / \mathrm { d } \theta = - H ^ { - 1 } \partial F / \partial \theta$ , so for an output cotangent �¯
+
+$$
+\lambda = H ^ {- 1} \bar {a}, \quad \bar {\theta} = - \nabla_ {\theta} \left[ \lambda^ {\top} F (a ^ {\star}, \theta) \right] \quad (a ^ {\star}, \lambda \text {   held   constant }).\tag{9}
+$$
+
+Since $M a _ { 0 } = \tau - c .$
+
+$$
+\lambda^ {\top} F = \lambda^ {\top} \mathrm{ID} (q, v, a ^ {\star}) - \lambda^ {\top} \tau (q, v, u) + \sum_ {e \in \mathcal {A}} D _ {e} (J _ {e} \lambda) (J _ {e} a ^ {\star} - r _ {e}),\tag{10}
+$$
+
+where $\mathrm { I D } ( q , \nu , a ) = M ( q ) a + c ( q , \nu )$ is inverse dynamics. $\bar { \theta }$ is therefore the sum of three gradients of scalars:
+
+• inverse dynamics contracted with �, which is one reverse pass of recursive Newton–Euler;
+
+• the actuator law contracted with �, which is zero for force-clamped actuators in exact mode;
+
+• the constraint term, which depends on <sub>�</sub> through $J _ { e } , d _ { e }$ and the contact frame and is diferentiated through the collision geometry (contact point, normal, distance).
+
+The implicitfast integrator $( Q a _ { \mathrm { a d v } } = M a ^ { \star }$ with $Q = M + h K _ { \nu } , \nu ^ { \prime } = \nu + h a _ { \mathrm { a d v } } , q ^ { \prime } = q \oplus h \nu ^ { \prime } )$ is diferentiated directly: $y = Q ^ { - 1 } \bar { a } _ { \mathrm { a d v } }$ and $\bar { a } ^ { \star } = M \}$ , plus the �-dependence of � through $\nabla _ { q } [ y ^ { \top } M ( q ) ( a ^ { \star } - a _ { \mathrm { a d v } } ) ]$ . A control step chains the 4 substeps in reverse with � held, summing �¯. Held fixed are:
+
+• the contact set and the collision branch;
+
+• the active set A, with each pyramid edge separately;
+
+• the actuator clamps.
+
+The derivative is that of the optimality conditions at the returned iterate $a ^ { \star }$ , not of the solver iterations; the warm start receives no gradient.
+
+Gradient modes. Exact mode (clamp\_kv = 1, normal = 0) is the derivative of the discrete step. The training default (clamp\_kv = 0, normal = 3) keeps the actuator damping term on force-clamped actuators, freezes the derivative of a self-contact normal when the two geoms’ core distance (between sphere centers or capsule axes) is below 1 mm, and holds the segment parameters of near-parallel capsule pairs (below about 2<sup>◦</sup>) fixed. On held-out states the two modes have the same median gradient errors on groups G0, G5 and G6; on G4, the states with clamped actuators, the truth has no clamp $\mathbf { k } \mathbf { v } = 0$ counterpart.
+
+Unbounded derivatives. Two geometric events of the G1 make the exact derivative of the step unbounded.
+
+• Self-contact at vanishing distance. The derivative of the contact normal scales as the inverse of the distance between the two geoms’ cores. One state with nearly touching feet had a step Jacobian norm of about $3 \times 1 0 ^ { 8 }$ On 24 training windows of $H = 6 4$ (2048 environments each), the gradient grew by more than $1 0 ^ { 6 }$ through 5 windows, by up to $4 . 9 \times 1 0 ^ { 2 1 }$ , and 32 rows were not finite. With the normal’s derivative frozen below 1 mm, 1 of 24 windows grew by more than $1 0 ^ { 6 }$ (at most $2 . 2 \times 1 0 ^ { 6 } )$ and no row was non-finite.
+
+• Nearly parallel capsules. The closest points of two capsule segments are ill-conditioned, roughly as $1 / \sin ^ { 2 } \theta .$ On 172 constructed foot-crossing states, the exact rule amplified a vector–Jacobian product by up to $3 . 6 \times 1 0 ^ { 8 }$ per control step (median 29); repeated over 64 steps, 40 of the 172 states overflowed to non-finite values. With the segment parameters held fixed below about $2 ^ { \circ }$ , the amplification was at most 109 and no state overflowed; ordinary held-out states reach at most 273.
+
+Other events (contact on or of, a constraint row at the edge of its zone, actuator saturation, the solver at its iteration limit) make the derivative jump rather than diverge. The training default removes the two unbounded terms and, on force-saturated actuators, keeps the actuator damping term (Section B, gradient modes); on held-out states without these events it equals the exact gradient bit for bit.
+
+Determinism. Each world’s whole step runs in one warp with a fixed assignment of work to lanes, and worlds never interact. Reductions are warp shufles in a fixed order, with no floating-point atomics. The operations the adjoint replays from the tape use explicitly rounded arithmetic, so the replay equals the forward pass bit for bit. Outputs and gradients are bitwise identical from run to run: across three processes on 8192 held-out states (V100), and across repeated calls within a process in the verification suite (V100, H100).
+
+Timing protocol. Times are per 20 ms control step for 4096 worlds, on held-out states. Each value is the median over three processes. Every simulator runs in its own standard configuration, and speed-ups are always within one GPU. Isaac Lab rows use Isaac Lab’s own G1 asset and task defaults; Isaac Sim requires an RT-core GPU, so they are not available on the H100 and V100. The MuJoCo C reference runs on one AMD EPYC 9555 (16 threads) with MuJoCo’s own thread pool. The MuJoCo Warp gradient times are those of the open adjoint pull request [13] as published; its public follow-up fixes [12], which the accuracy tables also report, change the cost by less than 2%. The MuJoCo Warp training run of Section 7.3 uses the pull request with these fixes and with NablaEngine’s training gradient rules ported to it.
+
+All engines. Table 5 lists forward times of other GPU engines in their standard configurations, Table 6 the step-andgradient times and Fig. 6 their split.
+
+Table 5. Forward time per control step, 4096 worlds, ms (process medians, held-out states). n/s: not supported, because Isaac Sim requires an RT-core GPU. Speed-ups hold within one GPU.
+
+<table><tr><td>Engine</td><td>RTX PRO 6000</td><td>H100</td><td>RTX 3090</td><td>V100</td></tr><tr><td>NablaEngine</td><td>1.21</td><td>1.70</td><td>3.28</td><td>5.79</td></tr><tr><td>MuJoCo Warp 3.17.0</td><td>5.84</td><td>8.65</td><td>12.5</td><td>18.4</td></tr><tr><td>Genesis 1.4.5</td><td>13.45</td><td>16.36</td><td>36.73</td><td>139.11</td></tr><tr><td>MJX 3.17 (same model)</td><td>255</td><td>216</td><td>510</td><td>710</td></tr><tr><td>MJX 3.17 (Menagerie G1, fewer contacts)</td><td>50.7</td><td>58.4</td><td>129.2</td><td>150.7</td></tr><tr><td>Isaac Lab 3.0, Newton (3 box colliders)</td><td>12.9</td><td>n/s</td><td>35.15</td><td>n/s</td></tr><tr><td>Isaac Lab 3.0, PhysX (3 box colliders)</td><td>27.5</td><td>n/s</td><td>45.16</td><td>n/s</td></tr><tr><td>Isaac Lab 3.0, PhysX (38 shapes, self-collision)</td><td>54.1</td><td>n/s</td><td>87.45</td><td>n/s</td></tr><tr><td>MuJoCo C 3.17 (CPU, float64; AMD EPYC 9555, 16 threads)</td><td>34.7</td><td></td><td></td><td></td></tr></table>
+
+Table 6. One control step and its gradient from the input state, 4096 worlds, ms.
+
+<table><tr><td></td><td>RTX PRO 6000</td><td>H100</td><td>RTX 3090</td><td>V100</td></tr><tr><td>NablaEngine (forward with tape + adjoint)</td><td>1.78</td><td>2.73</td><td>5.26</td><td>10.6</td></tr><tr><td>MuJoCo Warp + PR #1535 (adjoint graph)</td><td>20.5</td><td>25.0</td><td>43.0</td><td>63.2</td></tr><tr><td>Speed-up</td><td>11.5×</td><td>9.2×</td><td>8.2×</td><td>6.0×</td></tr></table>
+
+![](images/f80843541f388717da408242bd011affc417d6131b59826b9486125e03c51c95.jpg)  
+Figure 6. Gradient time per control step for 4096 worlds, split into the forward pass with tape (dark) and the backward pass (light), for NablaEngine and MuJoCo Warp with the open pull request [13]. The two parts are timed separately, so their sum can difer from the single-call times in Table 6.
+
+## C Full accuracy tables
+
+Held-out benchmark: four corpora of 4096 states each (16,384 in total). The truth is MuJoCo 3.17 C in float64, with the same model and per-world randomization, the Newton solver at tolerance $1 0 ^ { - 1 3 }$ and up to 2000 iterations, and one control step from each state. Gradient errors are relative errors of vector–Jacobian products with three stored random output directions per state (i.i.d. standard-normal entries, fixed seed, unnormalized), against float64 central finite diferences at step $1 0 ^ { - 6 }$ , floored per state at the truth’s own precision (the diference between the finite diferences at steps $1 0 ^ { - 7 }$ and $1 0 ^ { - 6 } .$ , typically about $1 0 ^ { - 7 } )$ .
+
+Table 7. Accuracy on held-out states against MuJoCo C 3.17 in float64. Forward: median relative qvel error. Gradient: median relative VJP error against float64 central finite diferences, for position / velocity / action. The truth itself is known to about $1 0 ^ { - 7 }$
+
+<table><tr><td rowspan="2">Engine</td><td colspan="3">Gradient (median relative VJP error)</td></tr><tr><td>Position</td><td>Velocity</td><td>Action</td></tr><tr><td>NablaEngine</td><td> $3.6 \times 10^{-5}$ </td><td> $1.0 \times 10^{-5}$ </td><td> $1.9 \times 10^{-6}$ </td></tr><tr><td>MJX, forward-mode Jacobian</td><td> $9.6 \times 10^{-5}$ </td><td> $2.1 \times 10^{-5}$ </td><td> $2.9 \times 10^{-6}$ </td></tr><tr><td>MuJoCo C finite differences (step  $10^{-6}$ )</td><td> $6.7 \times 10^{-4}$ </td><td> $1.5 \times 10^{-4}$ </td><td> $7.8 \times 10^{-6}$ </td></tr><tr><td>Genesis (velocity only)</td><td>—</td><td> $2.3 \times 10^{-1}$ </td><td>—</td></tr><tr><td>MuJoCo Warp, open pull request</td><td>0.29</td><td>0.34</td><td>0.015</td></tr><tr><td>MuJoCo Warp, with the follow-up fix (etaoxing/mujoco_warp#1) $^{a}$ </td><td> $5.3 \times 10^{-5}$ </td><td> $1.0 \times 10^{-5}$ </td><td> $2.1 \times 10^{-6}$ </td></tr><tr><td></td><td colspan="3">Forward (median relative qvel error)</td></tr><tr><td>NablaEngine</td><td></td><td> $8.5 \times 10^{-7}$ </td><td></td></tr><tr><td>MuJoCo Warp</td><td></td><td> $1.3 \times 10^{-6}$ </td><td></td></tr><tr><td>MJX</td><td></td><td> $2.9 \times 10^{-6}$ </td><td></td></tr><tr><td>Genesis</td><td></td><td> $5.5 \times 10^{-2}$ </td><td></td></tr></table>
+
+<sup>a</sup> etaoxing [12].
+
+Groups. Group labels come from MuJoCo C alone, per control step (any substep). A state is smooth if none of the following occurs: a self-contact core distance below 5 mm; a contact flip (the contact set changes, or a distance below 10<sup>−6</sup> m); a kink (a constraint row at the edge of its zone, $| x _ { e } | / ( | J _ { e } a | + | r _ { e } | ) < 1 0 ^ { - 4 } ) ;$ a contact frame near its basis switch; the solver at its iteration limit.
+
+• G0: smooth, no clamped actuator.
+
+• G4: smooth, a clamped actuator (PD force at or beyond its range).
+
+• G5: smooth, an active joint-limit row, no clamped actuator.
+
+• G6: smooth, a contact between two robot geoms (self contact), no clamped actuator.
+
+G5 and G6 are subsets of G0. The forward errors use every state of a group on which the model is valid. Gradient errors use up to 64 states per group and corpus (seed 0), 256 per group pooled. Section 6 reports the forward error over all states and the gradient error on G0. With either gradient mode, NablaEngine produced no non-finite output or gradient on any of the $^ { 1 6 , 3 8 4 }$ states. Both modes share one forward pass, which is bitwise identical.
+
+Table 8. Forward error per group, 10 solver iterations: median / 99th percentile of the relative qvel error, and in parentheses the 99th percentile of the qpos error (rad). States per group: G0 13,480, G4 476, G5 5,645, G6 5,668. MuJoCo C in float64 with 10 iterations has median 0 and 99th percentile at most $1 . 9 \times 1 0 ^ { - 1 5 }$ in every group.
+
+<table><tr><td></td><td>G0</td><td>G4</td><td>G5</td><td>G6</td></tr><tr><td>NablaEngine</td><td>8.6e-7 / 4.7e-6 (5.4e-7)</td><td>4.6e-7 / 6.6e-6 (1.8e-6)</td><td>8.4e-7 / 5.5e-6 (6.5e-7)</td><td>9.4e-7 / 6.9e-6 (1.0e-6)</td></tr><tr><td>MuJoCo Warp</td><td>1.3e-6 / 8.8e-6 (1.1e-6)</td><td>6.3e-7 / 7.2e-6 (1.5e-6)</td><td>1.2e-6 / 6.8e-6 (9.2e-7)</td><td>1.3e-6 / 8.8e-6 (9.9e-7)</td></tr><tr><td>MuJoCo Warp, open PR</td><td>1.3e-6 / 9.3e-6 (1.2e-6)</td><td>6.4e-7 / 1.0e-5 (3.4e-6)</td><td>1.2e-6 / 8.6e-6 (1.2e-6)</td><td>1.4e-6 / 1.1e-5 (1.4e-6)</td></tr><tr><td>MJX (float32)</td><td>2.7e-6 / 6.3e-4 (7.2e-5)</td><td>1.3e-6 / 4.2e-4 (1.1e-4)</td><td>2.6e-6 / 5.1e-4 (6.1e-5)</td><td>5.5e-6 / 6.6e-4 (7.3e-5)</td></tr><tr><td>Genesis (float32)</td><td>4.9e-2 / 4.8e-1 (6.0e-2)</td><td>5.7e-2 / 5.4e-1 (1.4e-1)</td><td>4.9e-2 / 4.8e-1 (6.1e-2)</td><td>1.0e-1 / 5.1e-1 (7.1e-2)</td></tr><tr><td colspan="5">Reference: MuJoCo Warp against itself, run to run</td></tr><tr><td></td><td>3.1e-7 / 3.2e-6 (4.3e-7)</td><td>3.0e-7 / 2.2e-6 (8.0e-7)</td><td>3.4e-7 / 3.3e-6 (3.8e-7)</td><td>3.4e-7 / 3.5e-6 (3.9e-7)</td></tr></table>
+
+MuJoCo C finite diferences are forward diferences with step $1 0 ^ { - 6 } .$ , chained over the four substeps. Versions: MuJoCo Warp [21] and MJX [20] 3.17.0, Genesis [16] 1.4.5. The open pull request is etaoxing [13], the follow-up fix etaoxing [12].
+
+Table 9. Gradient error per group and input block, 10 solver iterations, 256 states per group: median floored relative VJP error for position / velocity / action. Exact and default denote NablaEngine’s gradient modes. “n/c”: not comparable (the truth is the exact derivative and has no counterpart of the default mode on clamped actuators); “—”: not supported.
+
+<table><tr><td></td><td>G0</td><td>G4</td><td>G5</td><td>G6</td></tr><tr><td>NablaEngine, exact</td><td>3.6e-5 / 1.0e-5 / 1.9e-6</td><td>4.3e-5 / 1.3e-5 / 2.0e-6</td><td>3.8e-5 / 1.1e-5 / 1.8e-6</td><td>3.1e-5 / 1.0e-5 / 2.3e-6</td></tr><tr><td>NablaEngine, default</td><td>same as exact</td><td>n/c</td><td>same as exact</td><td>same as exact</td></tr><tr><td>MJX, forward-mode Jacobian</td><td>9.6e-5 / 2.1e-5 / 2.9e-6</td><td>1.2e-4 / 2.3e-5 / 3.0e-6</td><td>9.4e-5 / 2.0e-5 / 3.1e-6</td><td>1.0e-4 / 2.5e-5 / 4.8e-6</td></tr><tr><td>MuJoCo C, finite differences</td><td>6.7e-4 / 1.5e-4 / 7.8e-6</td><td>7.1e-4 / 1.8e-4 / 7.2e-6</td><td>6.6e-4 / 1.5e-4 / 7.9e-6</td><td>5.5e-4 / 1.3e-4 / 7.8e-6</td></tr><tr><td>Genesis (velocity only)</td><td>— / 2.3e-1 / —</td><td>— / 3.4e-1 / —</td><td>— / 2.7e-1 / —</td><td>— / 3.4e-1 / —</td></tr><tr><td>MuJoCo Warp, open PR</td><td>2.9e-1 / 3.4e-1 / 1.5e-2</td><td>5.0e-1 / 4.8e-1 / 8.9e-2</td><td>3.1e-1 / 3.5e-1 / 1.8e-2</td><td>3.5e-1 / 4.0e-1 / 1.9e-2</td></tr><tr><td>MuJoCo Warp, follow-up fix</td><td>5.3e-5 / 1.0e-5 / 2.1e-6</td><td>n/c</td><td>5.1e-5 / 1.1e-5 / 1.9e-6</td><td>4.5e-5 / 1.0e-5 / 2.3e-6</td></tr></table>
+
+Table 10. ∇Mimic hyperparameters.
+
+<div class="mineru-algorithm" style="white-space: pre-wrap; font-family:monospace;">
+Item Setting
+Environments 4096 BPTT training windows per update
+Window length H = 64 simulated steps (1.28 s)
+Discount, TD γ = 0.99, λ = 0.95
+Actor encoder-decoder MLP 2048–1024–512–256; anchor orientation into the decoder
+Critic MLP 256–128, fit on the pre-transition state
+Actions residual: offset to the reference joint pose
+Learning rate 2 × 10$^{-4}$, 500-update warmup, cosine decay to 0.1× over 16,000 updates
+Action targets RMS setpoint change 0.03 rad (decays to 0.3× with the LR); 8 regression steps of 16,384 samples; separate Adam, lr 6 × 10$^{-4}$
+Per-sample clipping κ = 3× batch median of the action-cotangent norm
+Termination penalty W = 2, dz₀ = 0.08, dθ₀ = 0.10
+Window action noise 0.05
+Start states replay of 1000 × 4096 states from a data collector (action noise 0.1, update-to-data 0.4)
+Reset sampling return-based bins
+Physics NablaEngine, 10 solver iterations, FP32; network matmuls TF32
+Time per update 0.37 s on one RTX PRO 6000
+</div>
+
+## D Hyperparameters and baselines
+
+Network architecture. The actor follows SuperMimic’s encoder–decoder design [39]. A motion encoder maps the next 10 reference frames (68 features each) through an MLP with hidden widths 2048–1024–512–256 to a 32-dimensional latent code with a tanh output. A decoder with the same hidden widths maps the latent code, the 10-frame proprioception history (93 features per frame) and the 6-dimensional anchor orientation to the 29 joint ofsets. The critic is an MLP with hidden widths 256–128 on privileged inputs (Section A).
+
+The design encodes the reference motion into a compact latent space and lets the decoder act as a general motor policy conditioned on that code. This is the structure along which tracking policies are scaled toward foundation models for humanoid control: the latent code is the interface through which motion generators, teleoperation or downstream policies command the tracker, and the same decoder serves all motions [9, 40, 42]. We keep it, rather than a monolithic MLP, so that a policy trained with ∇Mimic can be used the same way.
+
+## Baselines.
+
+• PPO, BeyondMimic configuration [40, 63]: on NablaEngine (forward only), 4096 environments × 24 steps per iteration, 5 epochs × 4 minibatches, lr 10<sup>−3</sup> (adaptive, KL 0.01), clip 0.2, entropy 0.005, � = 0.99, � = 0.95, MLP 512–256–128, BeyondMimic’s adaptive sampling; 6 h budget.
+
+• PPO, SuperMimic actor and reset sampling: as above with 8192 environments, SuperMimic’s encoder–decoder actor (2048–1024–512–256) and critic (256–128), and return-based reset sampling; 6 h budget.
+
+• SHAC [81]: see Section F.
+
+All baselines use the same environment, observation and evaluation reward as ∇Mimic. The smooth termination penalty (Eq. (3)) is part of our recipe and does not account for the gaps: removing all of fall handling, the penalty included, changes the return of ∇Mimic by less than 0.01 at matched wall clock (3 seeds, both recipes).
+
+## E SuperMimic reproduction and cost estimate
+
+Reproduction. The gradient analysis of Section 4 uses a public reproduction of SuperMimic (https://github.com/ CuboiLeo/SuperMimic-Reproduced) with the hyperparameters stated in its paper: windows of 32 imagined steps for 4096 rollouts per update, an update-to-data ratio of 0.4, and a world model that is an MLP with three hidden layers of 2048 units and SiLU activations, predicting the change of the canonicalized state from the state, the action and the simulation context. Its policy observes the anchor orientation of the reference as ours does. We trained one run on an RTX PRO 6000 and evaluated its policy with our protocol (Section G); it reaches a full-clip return of 0.789 after 2.88 h. It is used only for the gradient measurements, not as a baseline, and its checkpoints at 0.44, 1.14, 1.83 and 2.88 h provide the policies and world models of Section 4.
+
+Cost estimate. SuperMimic states 320,000 training iterations and that the world model and the policy are updated in every iteration. Its BONES-SEED training curve, with a checkpoint every 4,000 iterations, ends at 9.37 h on one H100, which gives about 34,000 iterations per hour, or about 0.1 s per iteration; we assume that LAFAN1 iterations cost the same. Reaching 0.82 within 1.2 h then corresponds to about 41,000 iterations. If one instead counts policy updates at the stated update-to-data ratio of 0.4, as the public reproduction does, these become about 16,000 updates of about 0.26 s each, and ∇Mimic’s 3,235 updates to 0.82 are about one fifth of them rather than one thirteenth
+
+## F SHAC details
+
+Both SHAC variants use the same environment, actor, critic, 4096 environments, learning-rate schedule and window noise as ∇Mimic. SHAC’s algorithm:
+
+• � = 32 windows continued across updates, with no replay starts and no collector;
+
+• the actor’s own window gradient, one Adam step per window;
+
+• no per-sample clipping and no termination penalty;
+
+• a TD(� = 0.95) critic, empirical observation normalization and uniform reset sampling.
+
+SHAC (published guard) clips the actor gradient to global norm 1.0 and stops training at the first update whose norm before clipping is not finite or exceeds 10<sup>6</sup>, as in the published code. SHAC (changed guards) instead clips to global norm 1.0 and then element-wise to 0.1, as SuperMimic does, and skips non-finite updates instead of stopping. Both run on NablaEngine; the published-guard variant also runs on MuJoCo Warp with the engine’s gradient semantics. They difer from ∇Mimic in several components at once, so they are baselines, not single-component ablations.
+
+## G Evaluation protocol
+
+Each of the 40 LAFAN1 clips is played once from its first reference frame. Playback uses MuJoCo Warp with 10 solver iterations, a deterministic actor (the mean action), no domain randomization and no observation or action noise. The clip’s return is the sum of the per-step reward over its steps until the clip ends or the first termination (height error above 0.25 m or tilt above 0.8). The per-step reward is the six tracking terms minus the action-rate and joint-limit penalties. The sum is divided by the clip’s maximum attainable tracking reward, and the score is the unweighted mean over the 40 clips. A clip with a fall therefore keeps the reward earned before the fall and scores zero afterwards. This matches the normalized return defined by Liao et al. [39]. Failed clips are clips with a fall.
+
+Every checkpoint of the first training hour is evaluated (every 250 updates), then every 1000 updates, plus the last. Training wall clock excludes start-up compilation and all evaluation. Times to a score are first crossings of the 3-seed mean curve, linearly interpolated between evaluations.
+
+## H Additional LAFAN1 results
+
+Figure 7 shows every LAFAN1 run against wall clock, including the absolute-action variant of ∇Mimic, SHAC and both PPO baselines, with the numbers stated by Liao et al. [39]. Table 11 lists all runs, including the H100 and MuJoCo Warp runs and the 6 h PPO budgets. Table 12 gives the cost to reach 0.82, Tables 13 and 14 the full ablation results on the absolute- and residual-action recipes, and Table 15 the training-loop cost per policy update.
+
+![](images/611b2a2850e57660d9a50ed3b36ff537710430e1827f9ded68a876b6fcab987f.jpg)  
+∇Mimic, absolute actions (3 seeds) PPO, SuperMimic actor + resets (1 seed) PPO-Sim: final at 18 h  
+SHAC, published guard (3 seeds)
+
+Figure 7. All LAFAN1 runs: full-clip normalized return against training wall clock. Lines are seed means with a ±1 sd band when at least two seeds are evaluated. Every run trains on NablaEngine on one RTX PRO 6000. SuperMimic and PPO-Sim are the numbers stated in Liao et al. [39, §4.1].  
+Table 11. LAFAN1: full-clip normalized return at equal training wall clock
+
+<table><tr><td>Method</td><td>Operator</td><td>Training hardware</td><td>Seeds n</td><td>Budget (h)</td><td>Return @0.5 h</td><td>Return @1 h</td><td>Return @2 h</td><td>Return @3 h</td><td>Return @4 h</td><td>Time to 0.82 (h)</td><td>Per-seed time to 0.82 (h)</td><td>Final return (h)</td><td>Failed clips at end (of 40)</td></tr><tr><td>VMimic (NablaEngine)</td><td>NablaEngine</td><td>RTX PRO 6000 (Blackwell)</td><td>3</td><td>3</td><td>0.824 ± 0.008</td><td>0.854 ± 0.005</td><td>0.872 ± 0.001</td><td>0.875 ± 0.001</td><td>—</td><td>0.34</td><td>0.36 ± 0.05</td><td>0.875 ± 0.001 (1.30 h)</td><td>0.0 ± 0.0</td></tr><tr><td>VMimic, absolute actions (NablaEngine)</td><td>NablaEngine</td><td>RTX PRO 6000 (Blackwell)</td><td>3</td><td>3</td><td>0.821 ± 0.007</td><td>0.844 ± 0.004</td><td>0.861 ± 0.001</td><td>0.860 ±0.001</td><td>—</td><td>0.50</td><td>0.46 ± 0.09</td><td>0.865 ± 0.003 (1.14 h)</td><td>0.0 ± 0.0</td></tr><tr><td>VMimic, absolute actions (NablaEngine, H100)‡</td><td>NablaEngine</td><td>H100</td><td>1</td><td>3</td><td>0.816</td><td>0.848</td><td>0.861</td><td>0.862</td><td>—</td><td>0.41</td><td>0.41</td><td>0.858 (1.10 h)</td><td>0</td></tr><tr><td>VMimic, absolute actions (MuloCo Warp)‡</td><td>MuloCo Warp</td><td>RTX PRO 6000 (Blackwell)</td><td>1</td><td>3</td><td>0.625</td><td>0.764</td><td>0.783</td><td>0.825</td><td>—</td><td>2.49</td><td>2.49</td><td>0.826 (3.05 h)</td><td>1</td></tr><tr><td>SHAC (Au et al., 2022, published guards, our scale (NablaEngine))</td><td>NablaEngine</td><td>NablaEngine</td><td>3</td><td>3</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>not reached (best 0.373)</td><td>—</td><td>0.373 ± 0.001 (0.06 h)</td><td>23.0 ± 3.6</td></tr><tr><td>SHAC (published guards), our scale (MuloCo Warp)‡</td><td>MuloCo Warp</td><td>RTX PRO 6000 (Blackwell)</td><td>1</td><td>3</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>not reached (best 0.484)</td><td>—</td><td>0.484 (0.36 h)</td><td>17</td></tr><tr><td>SHAC (changed guards: non-finite updates skipped, element clip 0.1; NablaEngine)</td><td>NablaEngine</td><td>RTX PRO 6000 (Blackwell)</td><td>3</td><td>3</td><td>0.724 ± 0.019</td><td>0.790 ± 0.019</td><td>0.807 ± 0.008</td><td>0.816 ± 0.005</td><td>—</td><td>mean curve does not reach it</td><td>2.64 ± 0.34</td><td>0.809 ± 0.018 (3.13 h)</td><td>2.0 ± 2.0</td></tr><tr><td>SHAC (changed guards; MuloCo Warp)‡</td><td>MuloCo Warp</td><td>RTX PRO 6000 (Blackwell)</td><td>1</td><td>3</td><td>0.478</td><td>0.572</td><td>0.680</td><td>0.756</td><td>—</td><td>not reached (best 0.760)</td><td>—</td><td>0.760 (3.13 h)</td><td>4</td></tr><tr><td>PPO, BeyondMimic (NablaEngine)‡</td><td>NablaEngine (forward only)</td><td>RTX PRO 6000 (Blackwell)</td><td>1</td><td>6</td><td>0.465</td><td>0.529</td><td>0.641</td><td>0.638</td><td>0.695</td><td>not reached (best 0.751)</td><td>—</td><td>0.695 (6.00 h)</td><td>8</td></tr><tr><td>PPO, SuperMimic actor and reset sampling (NablaEngine)‡</td><td>NablaEngine (forward only)</td><td>RTX PRO 6000 (Blackwell)</td><td>1</td><td>6</td><td>0.428</td><td>0.489</td><td>0.586</td><td>0.658</td><td>0.692</td><td>not reached (best 0.692)</td><td>—</td><td>0.692 (6.00 h)</td><td>3</td></tr><tr><td>SuperMimic (paper, 1x H100)‡</td><td>learned world model</td><td>H100 (1 GPU)</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>within 1.2 (shared)</td><td>—</td><td>—</td><td>not reported</td></tr><tr><td>PPO-Sim (SuperMimic paper)‡</td><td>simulator (paper setting)</td><td>H100 (1/4 / 4 / 8 GPUs)</td><td>—</td><td>18</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>not reached in 18 h (shared)</td><td>—</td><td>0.60 / 0.70 / 0.72 (18 h; 1 / 4 / 8 GPUs)</td><td>not reported</td></tr><tr><td colspan="14">Appendix rows (earlier recipe)</td></tr><tr><td>VMimic, absolute actions, earlier recipe (no anchor-to-decode)‡</td><td>NablaEngine</td><td>RTX PRO 6000 (Blackwell)</td><td>1</td><td>3</td><td>0.797</td><td>0.842</td><td>0.859</td><td>0.863</td><td>—</td><td>0.47</td><td>0.47</td><td>0.865 (3.13 h)</td><td>0</td></tr></table>
+
+‡ <sub>single seed (no seed variance; a seed-noise reference is given in the notes)</sub>  
+<sup>a</sup> stated: reaches 0.82 within 1.2 h on one H100  
+<sup>b</sup> stated: does not reach 0.82 within 18 h; final 0.60 / 0.70 / 0.72 on 1 / 4 / 8 GPUs
+
+Failed clips = clips with a fall (training termination test) under the nominal evaluation.
+
+Falls, ∇Mimic (NablaEngine) (3 seeds): no seed fails a clip at any evaluated checkpoint from update 14,000 (1.47 h) on (the last fall is at update 13,000: 1 failed clip on 1 seed); update 6,000 (0.63 h) is the first checkpoint with 0 of 40 failed clips on all seeds.
+
+Falls, ∇Mimic, absolute actions (NablaEngine) (3 seeds): no seed fails a clip at any evaluated checkpoint from update 27,000 (2.88 h) on (the last fall is at update 26,000: 1 failed clip on 1 seed); update 7,000 (0.74 h) is the first checkpoint with 0 of 40 failed clips on all seeds.
+
+’(n=k of N)’ in a cell: only k of the row’s N seeds have a value there (a seed cut at a divergence or not evaluated up to that hour yet); final and crossing columns use only seeds evaluated up to the budget.
+
+Training wall clock: training time only for our runs, SHAC and PPO (start-up compilation and all evaluation excluded); SuperMimic and PPO-Sim hours as stated in the SuperMimic paper.
+
+SuperMimic’s stated numbers are on H100 GPUs; every run of ours and of the baselines we trained is on one RTX PRO 6000 (Blackwell) unless the hardware column says otherwise.
+
+Evaluation GPU is A40 or RTX PRO 6000; the evaluation is deterministic, small cross-GPU floating-point diferences are possible.
+
+Seed-noise references (diferent protocols; neither is a test of a single-seed row): 1-h screen (5 solver iterations), MuJoCo Warp, RTX PRO 6000 (Blackwell): sd 0.0138 o the full return over n=3 seeds; nominal evaluation on NablaEngine runs at matched updates: sd 0.0075 of the full return over n=3 seeds.
+
+Table 12. Cost to reach SuperMimic’s LAFAN1 score of 0.82
+
+<table><tr><td>Method</td><td>Hardware</td><td>n</td><td>Time to 0.82 (h)</td><td>Policy updates there</td><td>Differentiable window steps</td><td>Forward-only simulator steps</td><td>Total simulator transitions</td><td>Per-seed time to 0.82 (h)</td></tr><tr><td>VMimic (NablaEngine)</td><td>RTX PRO 6000 (Blackwell)</td><td>3</td><td>0.34</td><td>3,235 updates</td><td>8.48e8</td><td>3.31e7</td><td>8.81e8</td><td> ${0.36} \pm {0.05}$ </td></tr><tr><td>VMimic, absolute actions (NablaEngine)</td><td>RTX PRO 6000 (Blackwell)</td><td>3</td><td>0.50</td><td>4,650 updates</td><td>1.22e9</td><td>4.76e7</td><td>1.27e9</td><td> ${0.46} \pm {0.09}$ </td></tr><tr><td>VMimic, absolute actions (NablaEngine, H100) $^{\ddagger }$ </td><td>H100</td><td>1</td><td>0.41</td><td>3,719 updates</td><td>9.75e8</td><td>3.81e7</td><td>1.01e9</td><td>0.41</td></tr><tr><td>VMimic, absolute actions (MuJoCo Warp) $^{\ddagger }$ </td><td>RTX PRO 6000 (Blackwell)</td><td>1</td><td>2.49</td><td>4,918 updates</td><td>1.29e9</td><td>5.04e7</td><td>1.34e9</td><td>2.49</td></tr><tr><td>SHAC (Xu et al., 2022; published guard), our scale (NablaEngine)</td><td>RTX PRO 6000 (Blackwell)</td><td>3</td><td>not reached (best 0.373 at 0.06 h)</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>SHAC (published guard), our scale (MuJoCo Warp) $^{\ddagger }$ </td><td>RTX PRO 6000 (Blackwell)</td><td>1</td><td>not reached (best 0.484 at 0.36 h)</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>PPO, BeyondMimic (NablaEngine) $^{\ddagger }$ </td><td>RTX PRO 6000 (Blackwell)</td><td>1</td><td>not reached (best 0.751 at 5.75 h)</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>PPO, SuperMimic actor and reset sampling (NablaEngine) $^{\ddagger }$ </td><td>RTX PRO 6000 (Blackwell)</td><td>1</td><td>not reached (best 0.692 at 6.00 h)</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>SuperMimic (paper, 1x H100) $^{a}$ </td><td>H100 (1 GPU)</td><td>—</td><td>within 1.2 (stated)</td><td>not stated</td><td>—</td><td>not stated</td><td>not stated</td><td>—</td></tr></table>
+
+‡ <sub>single</sub> <sub>seed</sub> <sub>(no</sub> <sub>seed</sub> <sub>variance;</sub> <sub>a</sub> <sub>seed-noise</sub> <sub>reference</sub> <sub>is</sub> <sub>given</sub> <sub>in</sub> <sub>the</sub> <sub>notes)</sub>  
+<sup>a</sup> stated: reaches 0.82 within 1.2 h on one H100  
+Per-update step counts: ∇Mimic = 4096 x 64 = 262,144 diferentiable window steps + 4096 / 0.4 = 10,240 forward-only collector steps; SHAC = 4096 x 32, no collector; PPO = 4096 x 24 (BeyondMimic) or 8192 x 24 (SuperMimic actor and reset sampling) forward steps per iteration.  
+Hours are training time only for our runs (start-up compilation and evaluation excluded); SuperMimic’s hours are as stated in its paper.
+
+Table 13. Component ablations of ∇Mimic on the absolute-action recipe (LAFAN1, 3 seeds, \~1.5 h)
+
+<table><tr><td>Change to the final recipe</td><td>Component origin</td><td>Seeds</td><td>Matched at</td><td>Return: control</td><td>Return: variant</td><td>Δ return</td><td>Failed clips (of 40): control</td><td>Failed clips (of 40): variant</td></tr><tr><td>No PODS action targets (one Adam step per window)</td><td>ours</td><td>3</td><td>1.64 h (control checkpoints 1.14-1.63 h)</td><td>0.855 ± 0.001</td><td>0.806 ± 0.011</td><td>-0.049</td><td>0.1 ± 0.1</td><td>1.9 ± 0.8</td></tr><tr><td>No per-sample gradient clippinga</td><td>ours</td><td>2 of 3 (±0 diverged at 0.54 h, update 5,060)</td><td>1.65 h (control checkpoints 1.18-1.66 h)</td><td>0.855 ± 0.001</td><td>0.562 ± 0.079 (n=2 of 3)</td><td>-0.293</td><td>0.1 ± 0.1</td><td>10.9 ± 4.7 (n=2 of 3)</td></tr><tr><td>Residual actions instead of alternate setpointsb</td><td>action parameters on</td><td>3</td><td>1.64 h (control checkpoints 1.14-1.63 h)</td><td>0.85 ± 0.001</td><td>0.864 ± 0.001</td><td>+0.009</td><td>0.1 ± 0.1</td><td>0.0 ± 0.0</td></tr><tr><td>Uniform resets instead of return-based reset sampling</td><td>inherited: SuperMimic (reset sampling follows BeyondMimic)</td><td>3</td><td>1.65 h (control checkpoints 1.18-1.66 h)</td><td>0.855 ± 0.001</td><td>0.861 ± 0.003</td><td>+0.005</td><td>0.1 ± 0.1</td><td>0.1 ± 0.1</td></tr><tr><td>No replay starts (windows continue from the previous window’s end state)</td><td>inherited: SuperMimic (replay-buffer starts)</td><td>3</td><td>1.62 h (control checkpoints 1.14-1.63 h)</td><td>0.855 ± 0.001</td><td>0.874 ± 0.002</td><td>+0.019</td><td>0.1 ± 0.1</td><td>0.0 ± 0.0</td></tr><tr><td>H=32 windows instead of H=64</td><td>ours</td><td>3</td><td>1.64 h (control checkpoints 1.14-1.63 h)</td><td>0.855 ± 0.001</td><td>0.818 ± 0.019</td><td>-0.036</td><td>0.1 ± 0.1</td><td>0.2 ± 0.2</td></tr><tr><td>H=32 windows instead of H=64, at matched updates</td><td>ours</td><td colspan="2">3 update 26,000 (control updates 22,000-26,000, 2.28-2.80 h)</td><td>0.862 ± 0.002</td><td>0.818 ± 0.019</td><td>-0.043</td><td>0.1 ± 0.1</td><td>0.2 ± 0.2</td></tr></table>
+
+<sup>a</sup> additional seeds outside the 3-seed arm (not averaged): s3 diverged at 0.40 h, s4 completed
+
+additional seeds outside the 3-seed arm (not averaged): s3 completed, s4 completed
+
+Component origin: ’ours’ = introduced by this work; ’inherited’ = taken from SuperMimic (whose return-based reset sampling follows BeyondMimic); residual actions change the action parameterization rather than remove a component.
+
+Seeds that diverged (non-finite loss) or collapsed (critic value runaway with finite numbers: critic loss above 1e3, return falling to near zero) are listed in the Seeds column and left out of the mean; the variant cell then says ’(n=k of 3)’.
+
+Seed-noise references (diferent protocols): 1-h screen (5 solver iterations), MuJoCo Warp, RTX PRO 6000 (Blackwell): sd 0.0138 of the full return over n=3 seeds; nominal evaluation on NablaEngine runs at matched updates: sd 0.0075 of the full return over n=3 seeds.
+
+Table 14. Component ablations of ∇Mimic on the residual-action recipe (LAFAN1, 3 seeds, \~1.5 h)
+
+<table><tr><td>Change from the final recipe</td><td>Component origin</td><td>Seeds</td><td>Matched at</td><td>Return: control</td><td>Return: variant</td><td>Δ returns</td><td>Failed clips (of 40) : control</td><td>Failed clips (of 40) : variant</td></tr><tr><td>No PODS action targets (one Adam step per window)</td><td>ours</td><td>3</td><td>1.63 h (control checkpoints 1.14–1.58 h)</td><td>0.866 ± 0.002</td><td>0.822 ± 0.012</td><td>-0.044</td><td>0.1 ± 0.2</td><td>1.3 ± 0.8</td></tr><tr><td>No pre-sample gradient clipping</td><td>ours</td><td>0 of 3 (o) diverged at 0.59 h, update 5.510; s1 diverged at 0.31 h, update 2.930; s2 diverged at 0.37 h, update 3.500)</td><td></td><td></td><td>—</td><td>—</td><td></td><td></td></tr><tr><td>Uniform sets instead of retan-based reset samplinga</td><td>inherited: SuperMimic (reset sampling follows BeyondMimic)</td><td>3</td><td>1.64 h (control checkpoints 1.14–1.58 h)</td><td>0.866 ± 0.002</td><td>0.811 ± 0.065</td><td>-0.055</td><td>0.1 ± 0.2</td><td>2.8 ± 3.0</td></tr><tr><td>No replay starts (windows continue from the previous window’s end state)</td><td>inherited: SuperMimic (relay-buffer starts)</td><td>3</td><td>1.64 h (control checkpoints 1.14–1.58 h)</td><td>0.866 ± 0.002</td><td>0.884 ± 0.006</td><td>-0.018</td><td>0.1 ± 0.2</td><td>0.0 ± 0.0</td></tr><tr><td>H+2 windows instead of H=64b</td><td>ours</td><td>3 of 4 (s2 collapsed (critic value muuwa) at 1.10 h, update 17.080)</td><td>1.65 h (control checkpoints 1.15–1.80 h)</td><td>0.867 ± 0.002</td><td>0.824 ± 0.006 (n= 6)</td><td>-0.042</td><td>0.1 ± 0.2</td><td>0.4 ± 0.0 (n= 6)</td></tr><tr><td>H+3 windows instead of H=64, at matched updatesc</td><td>ours</td><td>3 of 4 (s2 collapsed (critic value muuwa) at 1.10 h, update 17.080)</td><td>25.583 (control updates 21.000–25.000, 21.8–23.63 h)</td><td>0.873 ± 0.002</td><td>0.824 ± 0.010 (n= 3)</td><td>-0.048</td><td>0.0 ± 0.0</td><td>0.4 ± 0.0 (n= 3)</td></tr></table>
+
+<sup>a</sup> a transient collapse falls inside the averaging window; the last checkpoints of all three seeds are 0.86-0.87  
+additional seeds outside the 3-seed arm (not averaged): s3 completed  
+<sup>c</sup> additional seeds outside the 3-seed arm (not averaged): s3 completed
+
+Component origin: ’ours’ = introduced by this work; ’inherited’ = taken from SuperMimic (whose return-based reset sampling follows BeyondMimic); residual actions change the action parameterization rather than remove a component.
+
+Seeds that diverged (non-finite loss) or collapsed (critic value runaway with finite numbers: critic loss above 1e3, return falling to near zero) are listed in the Seeds column and left out of the mean; the variant cell then says ’(n=k of 3)’.
+
+Seed-noise references (diferent protocols): 1-h screen (5 solver iterations), MuJoCo Warp, RTX PRO 6000 (Blackwell): sd 0.0138 of the full return over n=3 seeds; nominal evaluation on NablaEngine runs at matched updates: sd 0.0075 of the full return over n=3 seeds.
+
+Table 15. Training-loop cost per policy update
+
+<table><tr><td>Method</td><td>Operator</td><td>Hardware</td><td>Seconds per policy update (median)</td><td>Policy updates per hour (wall-clock slope)</td><td>Differentiable steps per update</td><td>Forward-only steps per update</td><td>Simulated steps per second</td><td>Engine speed-up vs MuJoCo Warp</td></tr><tr><td> $\forall Mimica^a$ </td><td>NablaEngine</td><td>RTX PRO 6000 (Blackwell)</td><td>0.374</td><td>9,503</td><td>262,144</td><td>10,240</td><td>729k</td><td>4.4x</td></tr><tr><td> $\forall Mimic, absolute actions^b$ </td><td>NablaEngine</td><td>RTX PRO 6000 (Blackwell)</td><td>0.373</td><td>9,383</td><td>262,144</td><td>10,240</td><td>729k</td><td>4.4x</td></tr><tr><td> $\forall Mimic, absolute actions, hoisted encoder (timing run)^c$ </td><td>NablaEngine</td><td>RTX PRO 6000 (Blackwell)</td><td>0.369</td><td>—</td><td>262,144</td><td>10,240</td><td>738k</td><td>4.4x</td></tr><tr><td> $\forall Mimic, absolute actions$ </td><td>MuJoCo Warp</td><td>RTX PRO 6000 (Blackwell)</td><td>1.633</td><td>1,966</td><td>262,144</td><td>10,240</td><td>167k</td><td>—</td></tr><tr><td> $\forall Mimic, absolute actions (H100)$ </td><td>NablaEngine</td><td>H100</td><td>0.382</td><td>9,275</td><td>262,144</td><td>10,240</td><td>712k</td><td> $5.9x^3$ </td></tr><tr><td> $\forall Mimic, absolute actions (H100)^d$ </td><td>MuJoCo Warp</td><td>H100</td><td>2.258</td><td>—</td><td>262,144</td><td>10,240</td><td>121k</td><td>—</td></tr><tr><td>SHAC, our scale</td><td>NablaEngine</td><td>RTX PRO 6000 (Blackwell)</td><td>0.196</td><td>18,365</td><td>131,072</td><td>0</td><td>669k</td><td>4.3x</td></tr><tr><td>SHAC, our scale</td><td>MuJoCo Warp</td><td>RTX PRO 6000 (Blackwell)</td><td>0.839</td><td>3,455</td><td>131,072</td><td>0</td><td>156k</td><td>—</td></tr><tr><td>PPO, BeyondMimice</td><td>NablaEngine (forward only)</td><td>RTX PRO 6000 (Blackwell)</td><td>0.126</td><td>28,240</td><td>0</td><td>98,304</td><td>781k</td><td>—</td></tr><tr><td>PPO, SuperMimic actor and reset samplingf</td><td>NablaEngine (forward only)</td><td>RTX PRO 6000 (Blackwell)</td><td>0.549</td><td>6,542</td><td>0</td><td>196,608</td><td>358k</td><td>—</td></tr></table>
+
+<sup>a</sup> residual actions  
+<sup>b</sup> final recipe  
+<sup>c</sup> speed reference for the final recipe’s encoder hoisting (bitwise-equivalent up to matmul rounding); 70-update timing run  
+<sup>d</sup> O64 recipe without anchor-to-decoder: a diferent recipe from the final engine runs; 30-update timing run  
+<sup>e</sup> per PPO iteration  
+<sup>f</sup> per PPO iteration  
+Simulated steps per second count diferentiable window steps (forward + adjoint) and forward-only steps together.
+
+The engine runs of the paper pin one engine release; earlier timing runs used the engine build of their day, so per-update times across rows mix engine versions with recipe changes.
+
+<sup>§</sup> on a speed-up: the MuJoCo Warp timing comes from a run of a diferent recipe (named in its notes), so the speed-up mixes the operator with recipe changes; the matched-recipe figure needs the final MuJoCo Warp run.

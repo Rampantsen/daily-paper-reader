@@ -1,0 +1,1095 @@
+DKWBC: Decoupling Motion Tracking and Balancing for Humanoid
+Whole-Body Control
+Dingkun Wei1,2, Zehong Shen2,∗, Huaijin Pi2,3, Xueyang Wang1,2,
+Xing Zhu2, Hujun Bao1, Yujun Shen2,†, Xiaowei Zhou1,†
+∗Project Lead
+†Corresponding Authors
+1Zhejiang University
+2Robbyant
+3The University of Hong Kong
+Abstract— Humanoid whole-body control requires a robot
+to track diverse reference motions while maintaining balance
+under gravity, torque limits, contact switching, and external
+disturbances. Existing reinforcement-learning-based trackers
+typically learn control outputs that jointly address motion
+tracking and balance. However, similar reference poses can
+correspond to substantially different dynamic demands, re-
+quiring a unified policy to learn motion-dependent control
+requirements alongside balance corrections. This can complicate
+learning and lead to high-frequency fluctuations in control
+outputs. We propose DKWBC, a dynamics-informed whole-
+body control framework that combines explicit model-based
+tracking with a learned balancing residual. Inspired by the
+model-based and environmental-wrench contributions to joint
+torques in floating-base dynamics, DKWBC uses inverse-
+dynamics feedforward and joint PD feedback to supply tracking
+torques, while a residual policy learns additional joint-torque
+corrections for balanced execution. By explicitly accounting
+for motion-dependent torque demands, this structure simplifies
+the policy’s learning task. Experiments in simulation and on
+real hardware demonstrate that a single learned balancing
+policy generalizes across motion datasets while maintaining
+accurate motion tracking and balance across ground support,
+attached payloads, and physical interaction. Project page:
+https://robbyant-research.github.io/DKWBC/.
+I. INTRODUCTION
+Humanoid robots offer a promising platform for general-
+purpose embodied intelligence, with the potential to move,
+manipulate, and interact flexibly with the physical world [1].
+Realizing this potential requires a single whole-body control
+policy that enables accurate and stable execution of diverse
+motions. Recent studies have advanced humanoid whole-body
+control by scaling human motion datasets [2], developing
+more expressive policy architectures [3], [4], and learning
+richer representations of motion and dynamics [5]–[7].
+Despite these recent advances, many approaches rely on
+a policy to predict joint position targets that a proportional-
+derivative (PD) controller converts into motor torques, jointly
+addressing motion tracking and balance [2], [8]. Diverse
+motions, however, impose different dynamic demands: even
+similar reference poses can be associated with substantially
+different velocities, accelerations, and required torques. A
+unified policy must learn these motion-dependent control
+requirements while maintaining balance under changing
+Dingkun Wei, Huaijin Pi, and Xueyang Wang conducted this work during
+their internships at Ant Group. This work was supported by Ant Group
+Research Intern Program.
+Fig. 1.
+Decoupling motion tracking and balancing. Left:
+A conventional policy jointly learns tracking and balancing,
+producing joint position targets that a proportional-derivative
+(PD) controller converts into torques. Right: DKWBC
+combines nominal tracking torques computed by inverse
+dynamics with a learned balancing residual for balance.
+Bottom: On the unseen motions shown, DKWBC tracks
+the reference poses more closely while maintaining balance.
+contacts and external loads. These competing demands can
+complicate learning and may encourage conservative outputs,
+reducing tracking accuracy across diverse motions.
+We propose DKWBC, a whole-body control framework
+that combines model-based motion tracking with learned
+residual control. Its core idea is inspired by the floating-base
+equations of motion [9], [10], where joint torques can be
+expressed in terms of a model-based contribution determined
+by the robot state and acceleration and a contribution from
+environmental wrenches. As shown in Fig. 1, DKWBC con-
+sists of a model-based tracking module that supplies nominal
+tracking torques and a residual policy that provides additional
+torque corrections for balanced execution. Specifically, the
+tracking module computes inverse-dynamics feedforward
+torques from the current state and reference acceleration,
+supplemented by joint PD feedback, while the residual policy
+learns additional joint torques through interaction with the
+environment. By explicitly modeling motion-dependent torque
+demands, this separation simplifies the policy’s learning task:
+1
+arXiv:2611.09605v2  [cs.RO]  10 Nov 2026
+
+
+learning residual corrections for balanced execution under
+the supplied tracking torques.
+This shift in the learning task enables DKWBC to
+outperform SONIC [2], a strong whole-body motion tracker,
+in scaling experiments under comparable training settings.
+On both BONES-SEED test sets, DKWBC achieves higher
+tracking accuracy and success rates than retrained SONIC
+across all evaluated training-data scales. Furthermore, by
+focusing learning on balanced execution, DKWBC maintains
+accurate motion tracking and balance under attached payloads
+and external disturbances, as demonstrated in simulation and
+real-robot tests. Our contributions are threefold:
+1) We propose DKWBC, a whole-body control framework
+that decouples motion tracking from balancing control
+by combining model-based nominal tracking torques
+with a learned balancing residual to maintain balance
+while accurately tracking reference motions.
+2) We design the two modules around their distinct
+objectives: inverse dynamics and joint feedback provide
+accurate motion tracking, while feedforward-torque ob-
+servations and direct residual torque actions encourage
+the policy to learn balancing capabilities shared across
+motions.
+3) We demonstrate that a single balancing policy general-
+izes across motion datasets while maintaining accurate
+motion tracking and balance across ground support,
+attached payloads, and external interaction, with vali-
+dation in simulation and on real hardware.
+II. RELATED WORK
+Humanoid whole-body motion tracking. Given a ref-
+erence robot motion, a motion-tracking policy computes
+actuator commands to reproduce the reference motion.
+DeepMimic [11] established motion imitation for learning
+simulated skills, while BeyondMimic [8] combines motion
+tracking on real humanoids with guided diffusion for skill
+composition. SONIC [2] scales motion data and policy
+capacity, while GMT [3] and Humanoid-GPT [4] use mixture-
+of-experts and causal Transformer policies, respectively.
+Representation learning further supports general control:
+UniTracker [5] encodes motion with a conditional variational
+autoencoder, BFM-Zero [6] represents motions, goals, and
+rewards in a shared latent space, and Any2Track [7] learns
+dynamics embeddings through world-model prediction for
+online adaptation. Our work complements these advances by
+computing motion-tracking torques with inverse dynamics
+and learning a support residual, changing the physical role
+of the policy output.
+Model-based and hybrid whole-body control. Classical
+whole-body controllers use robot dynamics to compute joint
+torques that track desired motions while maintaining balance
+and satisfying contact constraints, such as keeping supporting
+feet from slipping [1], [9]. Learning has long been used
+to improve these controllers: Gams et al. learn corrections
+to the desired center-of-mass acceleration within inverse-
+dynamics control [10], SEEC combines model-based end-
+effector tracking with model-guided residual learning for
+arm stabilization, including transfer to unseen locomotion
+controllers [12]. DKWBC instead decomposes the torques
+at all actuated joints: inverse dynamics computes the motion-
+tracking torque at execution time, while a learned support
+residual handles support and external loading without an
+online contact-force optimization. The residual can also
+compensate for model errors; the decomposition alone does
+not identify physical contact forces.
+Residual tracking and policy adaptation. Residual
+methods differ in both their baseline and the quantity being
+corrected. HiLo [13] and RobotDancing [14] learn joint-
+target corrections around reference motions. ASAP learns
+a delta-action model from real rollouts and inserts it into
+the simulator for policy fine-tuning [15]. OmniXtreme uses
+residual post-training with actuator-aware modeling for highly
+dynamic skills [16]. FADA separates a learned planner from
+a neural inverse-dynamics module and adapts the latter with
+target-domain rollouts [17]. We train the residual alongside
+an analytic tracking component that computes the motion-
+tracking torque by inverse dynamics at execution time. The
+distinction is therefore the torque-level allocation of motion
+tracking and support control, rather than the use of residual
+learning alone.
+Force adaptation and physical interaction. FALCON [18]
+and HAFO [19] coordinate upper- and lower-body policies
+for force-adaptive loco-manipulation; FALCON uses inverse
+dynamics to construct its torque-aware training curriculum.
+ResMimic refines a frozen general motion tracker with
+task-specific residuals for object interaction [20], whereas
+SceneBot conditions a general tracker on per-link contact
+labels to support terrain and object interactions [21]. CHIP
+enables controllable end-effector compliance through hind-
+sight perturbation [22], while ADAPT supplies a locomotion
+policy with analytical disturbance-observer estimates [23].
+The YAHMP study further examines how hand-force ran-
+domization and action parameterization affect tracking and
+physical interaction [24]. We evaluate full-body motion
+tracking and balance across ground support, attached payloads,
+and interaction forces using one support residual and run-
+time inverse-dynamics feedforward. This evaluation does
+not establish explicit force regulation or manipulation-task
+success.
+III. METHOD
+Our goal is to accurately track diverse reference motions
+while maintaining balance. To this end, we present DKWBC,
+which combines model-based tracking with learned residual
+control. As shown in Fig. 2, DKWBC consists of an inverse-
+dynamic based tracking module and a balancing policy.
+Section III-A explains the dynamics underlying our control
+decomposition, Section III-B describes the tracking module,
+and Section III-C defines the balancing policy and its learning
+objective.
+A. Dynamics-Informed Control Decomposition
+Given a floating-base humanoid with n actuated joints, we
+describe its configuration by q = (p, R, θ) ∈R3 × SO(3) ×
+2
+
+
+Fig. 2.
+Overview of DKWBC. The model-based tracking module combines inverse-dynamics feedforward with joint
+feedback. The residual policy receives robot and reference information together with the feedforward components, and
+predicts joint-torque corrections for balanced motion execution. The tracking and residual torques are summed to form the
+final joint-torque command, enabling the real robot to perform challenging motions such as standing long jumps.
+Rn, and its velocity by ν = (v, ω, ˙θ) ∈R6+n. Here, p and
+R describe the base position and orientation, v and ω are
+the world-frame base linear and angular velocities, and θ
+contains the joint positions. The equations of motion take the
+standard form [9], [10]:
+M(q) ˙ν + h(q, ν) = S⊤τ +
+X
+k
+J⊤
+k λk.
+(1)
+Here, M is the inertia matrix, including reflected actuator
+inertia, and h contains Coriolis, centrifugal, and gravity terms.
+The vector τ ∈Rn contains the actuated joint torques, and
+S = [0n×6 In] selects the joint coordinates. Each external
+wrench λk acts on the robot through the corresponding
+Jacobian Jk. Multiplying Eq. (1) by S and rearranging yields:
+τ = S[M(q) ˙ν + h(q, ν)] −S
+X
+k
+J⊤
+k λk.
+(2)
+Equation (2) reveals two contributions to the joint torque:
+a model-based term that can be computed given the robot
+state and acceleration, and an environmental wrench term
+involving contact and external forces that are difficult to
+observe directly. This motivates a control structure with
+two modules: a model-based tracking module that explicitly
+computes nominal tracking torques, and a residual policy that
+learns additional torque corrections for balanced execution.
+The two modules have distinct objectives and challenges.
+The tracking module aims to follow the reference motion
+as accurately as possible. A key challenge is that reference
+motions retargeted from humans are kinematically feasible
+but not necessarily dynamically feasible for the robot. The
+balancing module uses reinforcement learning to maintain
+balance while the robot executes the motion driven by the
+supplied tracking torques. Within the motion-imitation RL
+framework, its design should discourage the policy from
+relying on motion-specific tracking compensation, which can
+limit generalization across motions. Sections III-B and III-
+C describe how we design the two modules around these
+objectives and address their respective challenges.
+B. Model-Based Tracking Torque
+The tracking module evaluates the model-based term using
+the current robot state and the reference acceleration:
+τ id = S
+h
+c
+M(q) ˙νref + bh(q, ν)
+i
+,
+(3)
+where c
+M and bh are the nominal model quantities, and ˙νref
+is the reference acceleration.
+Reference derivatives. The tracking module takes the
+current state (q, ν) and the reference motion qref(t) as
+inputs. Reference joint velocities and base linear velocities
+are obtained by finite differences, and reference base angular
+velocities from relative rotations on SO(3). We smooth
+the reference velocities with a three-frame Gaussian filter
+(σ = 0.75 frames) and differentiate them to obtain ˙νref.
+Inverse-dynamics feedforward. We evaluate Eq. (3) with
+the recursive Newton–Euler algorithm [25] on the floating-
+base model, where gravity enters through the base acceleration
+and reflected actuator inertia is included in c
+M. Writing
+bh(q, ν) = bc(q, ν) + bg(q) splits the feedforward into three
+components, which also serve as policy observations in
+Section III-C:
+τ acc = Sc
+M(q) ˙νref,
+τ cor = Sbc(q, ν),
+τ grav = Sbg(q),
+τ id = τ acc + τ cor + τ grav.
+(4)
+Evaluating these terms at the current state captures
+configuration- and velocity-dependent effects, while ˙νref
+specifies the nominal motion demand.
+3
+
+
+Joint feedback. With an exact model, inverse dynamics
+provides the nominal torque for a dynamically feasible
+reference motion. As noted in Section III-A, feedforward
+alone may leave tracking errors for dynamically infeasible
+references. We therefore add joint-space PD feedback to
+correct joint position and velocity errors, using the fixed
+diagonal gain matrices Ktrk
+p
+and Ktrk
+d
+of BeyondMimic [8].
+Although this feedback contributes less than 10% of the
+complete tracking torque, it is essential for accurate execution.
+The feedback torque is
+τ pd = Ktrk
+p (θref −θ)
++ Ktrk
+d ( ˙θ
+ref −˙θ).
+(5)
+Together, τ id and τ pd form the complete tracking torque,
+which is added to the learned residual:
+τ trk = τ id + τ pd,
+τ cmd = τ trk + τ bal.
+(6)
+C. Learning Residual Corrections for Balanced Execution
+Reinforcement learning for motion imitation optimizes a
+control policy through closed-loop interaction between the
+robot and a simulated environment, using rewards based on
+reference-motion tracking errors and measures of stability to
+enable accurate and stable motion execution [8]. We retain
+this framework for residual policy learning. To encourage
+the policy to learn a generalizable ability to maintain
+balance under the supplied tracking torques and discourage
+tracking compensation, we introduce two modifications to its
+observations and actions.
+Tracking-torque observations. We explicitly expose the
+nominal tracking demand by adding the three n-dimensional
+feedforward components τ acc, τ cor, and τ grav from Eq. (4) to
+the observation. This lets the policy condition its corrections
+on the torque already supplied by the tracking module. The
+actor otherwise follows BeyondMimic, using a single obser-
+vation frame that contains the reference-motion command and
+proprioceptive information, excluding quantities unavailable
+at deployment. The last-action feature records the previous
+combined policy and feedforward torque, τ bal,t−1 + τ id,t−1.
+Direct torque actions. A common design in RL-based
+motion tracking is to predict joint-position targets at a lower
+frequency (e.g., 50 Hz) and convert them into torques through
+a higher-frequency PD controller (e.g., 200 Hz). The policy
+output thus passes through a position servo: even when the
+output is held fixed, the torque changes at each PD update
+with the current joint position and velocity. DKWBC instead
+predicts residual joint torques directly at 50 Hz and holds
+them constant between policy updates, while the tracking
+module provides joint feedback around the reference motion.
+This design is motivated by two considerations. First, the
+policy supplies additional torque directly, rather than indirectly
+generating torque by adjusting joint-position targets through
+a position servo. This removes the pathway through which
+learned position targets participate in fast joint feedback,
+making it harder for the policy to use that pathway for motion-
+specific tracking compensation. Second, the tracking module
+already provides nominal tracking torques and joint-error
+feedback. We therefore aim for the balancing policy to supply
+the additional torques required for balanced execution and
+to learn balancing capabilities shared across motions, rather
+than duplicating the joint-error corrections already provided
+by the tracking module.
+For stable training, each action is scaled by a fixed fraction
+of the corresponding torque limit τ max
+j
+:
+τ bal,t = sτ ⊙at,
+sτ,j = 0.25 τ max
+j
+,
+(7)
+where ⊙denotes elementwise multiplication, so a unit policy
+output corresponds to 25% of the joint torque limit. The
+residual is added to the tracking torque as in Eq. (6).
+IV. EXPERIMENTS
+Our evaluation focuses on three aspects:
+1) Whether the DKWBC policy learns more transferable
+balancing capabilities as the amount of training motion
+data increases.
+2) Whether DKWBC can adapt to different external forces
+while maintaining tracking and balance.
+3) Ablations of DKWBC to examine explicit decoupling
+and the effectiveness of its Tracking Module and
+Balancing Execution.
+A. Training-Data Scaling
+a) Baseline: We compare DKWBC with SONIC [2], a
+whole-body controller trained on large motion datasets. We
+adapt its official training pipeline for G1 motion tracking,
+removing VR inputs and SMPL parameters from motion-
+encoder training.
+b) Training Data: We use the BONES-SEED dataset [2]
+for training. We manually remove motions that are infeasible
+in our setting, such as leaning on external objects or
+penetrating the ground, and discard mirrored motions. The
+resulting dataset contains 128.53 hours of motion. To study
+the effect of training-data scale, we uniformly sample subsets
+of 2, 4, 8, 16, 32, 64, and 128 hours from this dataset for
+training.
+c) Evaluation Protocol: We evaluate success rate and
+MPJPE on BONES-SEED test-content and test-repetition [2].
+Following the thresholds in the official SONIC repository, a
+motion is considered successful only if every frame satisfies
+all three conditions: pelvis height error does not exceed 0.25
+m, pelvis orientation error does not exceed 1 rad, and the
+height error of each wrist and ankle does not exceed 0.25
+m. For each checkpoint, success rate is the proportion of
+successfully tracked motions in the full test set, and MPJPE
+is averaged over those successful motions with equal weight
+per motion. We report the mean success rate and MPJPE
+across four checkpoints from the same training run for
+each configuration, with shaded bands indicating ±1 sample
+standard deviation of the success rate. Test-content contains
+motions from categories unseen during training, while test-
+repetition contains unseen motions from categories seen
+during training. We manually exclude infeasible motions, such
+4
+
+
+Fig. 3.
+Motion-tracking performance of DKWBC compared with SONIC across training-data scales. The left and right
+panels show results on BONES-SEED test-content and test-repetition [2], respectively. Curves and shaded bands show the
+mean success rate and ±1 sample standard deviation across four evaluation checkpoints per configuration. Labels indicate
+MPJPE (mm), averaged over successfully tracked motions within each checkpoint and then across checkpoints. Stars mark
+results from the official SONIC checkpoint.
+Fig. 4.
+Qualitative motion-tracking comparison between SONIC (top) and DKWBC (bottom). Solid robots show the
+executed poses, and translucent green robots show the reference poses.
+as floating and sitting on a bench, and then remove mirrored
+motions. BONES-SEED test-content contains 3,145 motions
+totaling 6.031 hours, and BONES-SEED test-repetition
+contains 3,019 motions totaling 6.002 hours. For a fair
+comparison, DKWBC uses the same training-related settings
+as SONIC, including but not limited to the data sampling
+strategy, network configuration, and rewards.
+d) Results: As shown in Fig. 3, DKWBC achieves
+higher success rates and lower tracking errors than the re-
+trained SONIC PD-target policy across all tested training-data
+scales, supporting the effectiveness and data efficiency of our
+design. As training data increase, success approaches 100%
+and the curves flatten near this ceiling, while tracking accuracy
+also improves, particularly on unseen motion categories. From
+4h onward, DKWBC also tracks more accurately than the
+official SONIC checkpoint on both test sets. As shown in
+Fig. 4, DKWBC achieves more accurate motion tracking
+than the official SONIC policy. Together, these results support
+shifting the learning problem toward balanced execution
+while preserving motion fidelity through explicit tracking.
+We hypothesize that this separation reduces the need for
+conservative execution that PD-target control may favor for
+stability, allowing the policy to learn increasingly transferable
+balancing capabilities as data scale.
+B. Tracking under External Force
+a) Baseline: We compare DKWBC with FALCON [18]
+and ResMimic [20] to examine tracking during external-force
+interaction. FALCON adapts standing and locomotion to
+external forces, while ResMimic learns a residual around
+a general motion tracker. We port the training code for
+FALCON and ResMimic from their official repositories and
+train and evaluate both methods on the same training set.
+ResMimic trains a residual policy on top of a GMT policy.
+We evaluate two variants, using either the officially released
+GMT checkpoint or a GMT policy trained from scratch on
+this experiment’s training set.
+b) Dataset: To accommodate FALCON’s control inter-
+face, we select standing and locomotion sequences from
+G1-retargeted LAFAN and AMASS Test. The resulting
+set contains 217 motions: 209 locomotion and 8 stance
+sequences.
+c) Evaluation Protocol: We apply time-varying three-
+dimensional forces to both hands. During standing, the
+forces perturb the robot horizontally and vertically; during
+walking, the horizontal components oppose the commanded
+motion. Force amplitudes are determined from the current
+arm Jacobians and joint torque limits, with αg ∈{0, 0.5, 1}
+scaling the generated forces to nominal zero, half, and full
+strength. Small random perturbations remain at αg = 0. We
+report upper-body MPJPE, upper-body MPJVE, root-velocity
+error, and success rate at each force level separately. As
+shown in Table 1, DKWBC achieves the lowest errors on all
+three tracking metrics at every force level, with comparable
+success rates.
+5
+
+
+Fig. 5.
+Qualitative hardware examples of DKWBC on the G1 robot. Left: deep squats and walking under different payloads;
+right: complex motions. All motions are executed on the real robot using the same policy checkpoint. Please refer to the
+supplementary video for more hardware results.
+αg
+Method
+Upper
+MPJPE ↓
+(mm)
+Upper
+MPJVE ↓
+(m/s)
+Root vel.
+error ↓
+(m/s)
+Success ↑
+(%)
+0.00
+FALCON
+73.65
+0.19
+0.21
+100.00
+ResMimic
+53.60
+0.27
+0.21
+100.00
+ResMimic∗
+39.29
+0.27
+0.19
+100.00
+DKWBC
+21.99
+0.10
+0.12
+100.00
+0.50
+FALCON
+75.28
+0.19
+0.23
+100.00
+ResMimic
+52.77
+0.27
+0.21
+100.00
+ResMimic∗
+42.17
+0.27
+0.21
+100.00
+DKWBC
+22.05
+0.11
+0.13
+100.00
+1.00
+FALCON
+83.51
+0.21
+0.28
+99.08
+ResMimic
+54.96
+0.29
+0.24
+100.00
+ResMimic∗
+54.01
+0.30
+0.27
+99.08
+DKWBC
+24.68
+0.12
+0.16
+99.54
+Table 1. Comparison of DKWBC with baselines. ResMimic∗
+uses a GMT policy trained from scratch.
+C. Ablation Studies
+We conduct three groups of ablations to examine the
+contribution of DKWBC’s explicit decomposition and the
+effectiveness of its two components:
+1) Explicit decoupling. Compare explicitly decoupled and
+coupled formulations to assess the benefit of separating
+tracking from balancing.
+2) Tracking Module. Evaluate the tracking module with-
+out the learned residual to assess its ability to reproduce
+reference motions.
+3) Balancing Execution. Examine the effectiveness of
+learned balancing execution through its dependence on
+the tracking components and dynamics information.
+LAFAN contains a small number of long motion sequences.
+To prevent a localized tracking failure from causing an entire
+long sequence to be counted as unsuccessful, we divide these
+sequences into clips of up to 10 seconds for evaluation.
+1) Decoupled versus Coupled Control:
+a) Baseline: We use BeyondMimic [8] as the coupled-
+control baseline and DKWBC as the decoupled formulation,
+comparing position-target tracking with explicit analytic
+tracking plus a learned balancing residual. To accommodate
+the larger training set, both methods use the same adaptive
+motion sampling strategy and an enlarged policy network.
+Apart from the policy prediction targets, we keep their training
+settings identical, including rewards, domain randomization,
+network architecture, training budget, and maximum episode
+length, to ensure a fair comparison. Both methods are trained
+for 10,000 updates on LAFAN. During training, we introduce
+both attached payloads and environmental disturbances so
+that the controllers learn to track motions under external
+perturbations.
+b) Evaluation Protocol: We evaluate on LAFAN and
+assess transfer to BONES-SEED test-content and test-
+repetition [2] using the same checkpoints without fine-tuning.
+At test time, payloads and environmental disturbances are
+evaluated separately: G denotes ground tracking without
+additional loads, P covers a 5 kg backpack and 2 kg in each
+hand, and I applies horizontal root-velocity perturbations.
+Table 2 reports success rate together with MPJPE and
+MPJVE. Both errors are computed on the exact set of
+motions successfully completed by both methods within each
+condition, with equal weight per motion. For P, we first
+compute each payload condition separately and then average
+their results with equal weight.
+DKWBC achieves higher success and lower position and
+velocity errors on LAFAN and both BONES-SEED test splits
+under all G/P/I conditions. Although the two methods achieve
+similar success rates, coupled control incurs substantially
+larger tracking errors. One possible explanation is that the
+coupled policy favors more conservative control outputs,
+maintaining stability at the expense of tracking accuracy.
+These results show that DKWBC’s gains in tracking accuracy
+and motion completion extend to unseen motion datasets
+under payloads and external disturbances.
+c) Interpretation of the learned residual: Fig. 6 com-
+pares the learned residual with contact-compensation torques
+for selected joints during a single LAFAN motion seg-
+ment with ground contact in simulation. We compute the
+contact-compensation torque by substituting simulator con-
+tact wrenches and their corresponding Jacobians into the
+environmental wrench term −S P
+k J⊤
+k λk in Eq. (2). The
+agreement in amplitude and temporal variation is consistent
+with the residual’s intended role in contact compensation
+during this segment.
+6
+
+
+G: No additional load
+P: Backpack and hand payloads
+I: Environmental disturbance
+Dataset
+Method
+Success ↑
+(%)
+MPJPE ↓
+(mm)
+MPJVE ↓
+(m/s)
+Success ↑
+(%)
+MPJPE ↓
+(mm)
+MPJVE ↓
+(m/s)
+Success ↑
+(%)
+MPJPE ↓
+(mm)
+MPJVE ↓
+(m/s)
+LAFAN
+BeyondMimic (coupled)
+97.67
+34.06
+0.29
+95.75
+38.96
+0.32
+96.51
+37.66
+0.38
+DKWBC
+98.95
+26.59
+0.24
+97.73
+29.68
+0.27
+97.67
+30.22
+0.33
+BONES-SEED
+test-content
+BeyondMimic (coupled)
+92.15
+38.97
+0.27
+87.06
+42.71
+0.29
+90.30
+42.07
+0.36
+DKWBC
+93.07
+30.66
+0.23
+89.73
+34.71
+0.26
+92.18
+33.65
+0.32
+BONES-SEED
+test-repetition
+BeyondMimic (coupled)
+92.25
+36.68
+0.25
+87.16
+41.03
+0.28
+90.69
+40.28
+0.35
+DKWBC
+93.64
+30.24
+0.23
+89.15
+34.10
+0.26
+92.48
+32.78
+0.32
+Table 2. Experimental results for DKWBC and BeyondMimic (coupled). LAFAN is the training set, while BONES-SEED
+test-content and test-repetition [2] are test sets. Better results are shown in bold.
+Variant
+Tracking Module
+components
+Observations
+(actor ID)
+LAFAN
+BONES-SEED test-repetition
+Success ↑
+(%)
+MPJPE ↓
+(mm)
+MPJVE ↓
+(m/s)
+Success ↑
+(%)
+MPJPE ↓
+(mm)
+MPJVE ↓
+(m/s)
+DKWBC (full)
+ID + PD
+full
+95.93
+32.91
+0.30
+90.86
+43.16
+0.25
+wo PD
+ID
+full
+89.41
+44.52
+0.36
+88.64
+50.82
+0.27
+wo ID
+PD
+full
+91.97
+38.04
+0.34
+88.64
+48.50
+0.28
+wo ID (FF + obs)
+PD
+wo all ID
+91.15
+39.94
+0.36
+86.65
+53.62
+0.32
+Policy only (torque)
+None
+wo all ID
+88.82
+42.12
+0.38
+83.94
+55.12
+0.31
+Policy only (PD target)
+None
+wo all ID
+90.69
+41.23
+0.36
+84.90
+57.15
+0.33
+DKWBC (PD target)
+ID + PD
+full
+94.88
+35.91
+0.30
+90.43
+46.06
+0.27
+wo actor ID observations ID + PD
+wo all ID
+96.16
+32.19
+0.30
+89.17
+48.61
+0.27
+wo ID acceleration
+ID + PD
+wo acceleration
+96.62
+32.23
+0.30
+88.77
+48.40
+0.28
+wo ID Coriolis
+ID + PD
+wo Coriolis
+96.04
+31.77
+0.30
+90.46
+43.75
+0.26
+wo ID gravity
+ID + PD
+wo gravity
+96.04
+32.45
+0.30
+90.00
+46.16
+0.26
+Table 3. Component ablations on LAFAN and BONES-SEED test-repetition [2]. Bold values outperform full DKWBC on
+LAFAN or are best across variants on BONES-SEED test-repetition.
+Fig. 6.
+Learned residual and contact-compensation torques
+during a LAFAN motion segment executed by DKWBC
+with ground contact in simulation. All panels show the same
+time interval from the same execution. The horizontal axis
+is time (s), and the vertical axis is joint torque (N·m). Blue
+denotes the network’s residual torque τ bal; orange denotes
+the contact-compensation torque −S P
+k J⊤
+k λk, obtained by
+substituting simulator contact wrenches and their Jacobians
+into the environmental wrench term in Eq. (2).
+2) Effectiveness of the Tracking Module:
+a) Baseline: We compare the tracking module with PD
+controllers at different gains, keeping the damping ratio fixed
+as stiffness increases. We do not increase stiffness further
+because a stiffness factor of 3 already frequently drives the
+commanded torques to the joint torque limits.
+Controller
+Kp/Kd
+scale
+MPJPE ↓
+(mm)
+MPJVE ↓
+(m/s)
+MPJAE ↓
+(m/s2)
+PD
+1/1
+63.19
+0.31
+4.32
+2/
+√
+2
+34.24
+0.25
+4.02
+3/
+√
+3
+23.80
+0.21
+3.75
+FF only
+0/0
+171.73
+0.40
+4.47
+Tracking module 1/1
+4.45
+0.04
+0.89
+Table 4. Comparison of tracking module with PD variants.
+b) Evaluation Protocol: We ask whether the tracking
+module alone can reproduce the reference motion. All
+comparisons use a fixed root in mid-air, with gravity enabled
+and no contact. We disable the learned residual to isolate the
+tracking torque. Each controller applies its torque to the same
+robot from the same initial state while tracking the LAFAN
+references. We evaluate MPJPE, MPJVE, and MPJAE to
+measure position, velocity, and acceleration tracking.
+Table 4 summarizes the tracking errors. The tracking
+module achieves 4.45 mm MPJPE. These results show that
+the tracking module achieves substantially higher tracking
+accuracy than PD feedback alone, even with amplified gains.
+The much larger error with FF alone (171.73 mm MPJPE)
+indicates the limited dynamic feasibility of retargeted human
+motions, underscoring the need for position feedback in the
+tracking module.
+3) Effectiveness of Balancing Execution: Through action
+and observation ablations, we examine the roles of the
+Tracking Module and dynamics information in balanced
+execution.
+7
+
+
+a) Baseline: We compare full DKWBC with ablated
+variants, as summarized in Table 3. Training is conducted
+on LAFAN using matched networks, rewards, and domain
+randomization. Training uses ground support with the same
+BeyondMimic domain randomization, including pushes, with-
+out added payloads or the mixed force scenarios used in
+Section IV-C.1.
+b) Evaluation Protocol: We evaluate complete motions
+on LAFAN and BONES-SEED test-repetition [2], with
+MPJPE and MPJVE computed over all motions.
+c) Action design: Full DKWBC achieves higher success
+and lower MPJPE and MPJVE than the action variants on both
+datasets. Removing both ID feedforward and actor ID observa-
+tions (wo ID (FF + obs)) further reduces success and increases
+tracking errors compared with removing ID feedforward alone
+(wo ID), indicating that dynamics observations remain useful
+when only reference-motion PD feedback is retained. With
+the full Tracking Module, torque prediction improves tracking
+accuracy over PD-target prediction on BONES-SEED test-
+repetition, although the gain is smaller than the gain over the
+torque-only policy. Without the Tracking Module, however,
+Policy only (PD target) achieves higher success than Policy
+only (torque) on both datasets, while its tracking errors
+are higher on BONES-SEED test-repetition. These results
+support pairing torque prediction with analytic tracking to
+separate motion following from balanced execution; they do
+not establish a general advantage of torque actions without a
+tracker. The comparisons with matched training budgets also
+support retaining PD feedback.
+d) Observation design: Removing all or any one of the
+actor ID components improves success and lowers MPJPE
+on LAFAN, which shares the training motion set. MPJVE
+does not improve consistently: only removing the Coriolis
+component lowers it. This is because removing these obser-
+vations makes the policy more prone to overfitting. On the
+held-out BONES-SEED test-repetition set, every observation
+ablation reduces success and increases both MPJPE and
+MPJVE. Thus, improved fitting on LAFAN does not translate
+into better transfer. This pattern supports our interpretation
+that explicit tracking components provide useful context for
+learning transferable balancing execution, encouraging the
+policy to account for the analytic tracker’s contribution rather
+than relearn motion-specific tracking compensation.
+V. CONCLUSION
+We presented DKWBC, a humanoid whole-body control
+framework that separates model-based motion tracking from
+learned support control. By explicitly supplying nominal
+tracking torques through floating-base inverse dynamics
+and joint feedback, DKWBC reframes policy learning as
+achieving balanced execution across diverse reference motions.
+Across the tested training-data scales, DKWBC achieves
+higher success rates and lower tracking errors than the adapted
+SONIC baseline on both BONES-SEED test sets. Further
+experiments demonstrate improved cross-dataset transfer and
+tracking under payloads and external disturbances, while
+ablations highlight the contribution of inverse-dynamics
+observations to generalization beyond the training motions.
+Tests on the Unitree G1 demonstrate diverse motion execution
+and tracking under attached payloads. Together, these results
+support explicitly modeling nominal motion dynamics as
+a foundation for learning transferable support capabilities
+while preserving tracking accuracy. Future work will explore
+extending this decomposition to a broader range of whole-
+body physical interaction tasks.
+REFERENCES
+[1] L. Sentis and O. Khatib, “A whole-body control framework
+for humanoids operating in human environments,” in IEEE Int.
+Conf. Robot. Autom. (ICRA), 2006, pp. 2641–2648.
+[2] Z. Luo, Y. Yuan, T. Wang, C. Li, F. Casta˜neda, S. Chen, Z.-A.
+Cao, J. Li, D. Minor, Q. Ben, J. Park, D. Sami, Z. Wang,
+X. Da, R. Ding, C. Hogg, L. Song, E. Lim, E. Jeong, T. He,
+H. Xue, W. Xiao, S. Yuen, J. Kautz, Y. Chang, U. Iqbal, L. J.
+Fan, and Y. Zhu, “SONIC: Supersizing Motion Tracking for
+Natural Humanoid Whole-Body Control,” Science Robotics,
+vol. 11, no. 117, p. eaed4592, 2026.
+[3] Z. Chen, M. Ji, X. Cheng, X. Peng, X. B. Peng, and X. Wang,
+“GMT: General Motion Tracking for Humanoid Whole-Body
+Control,” arXiv preprint arXiv:2506.14770, 2025.
+[4] Z. Qi, X. Chen, D. Liu, C. Lin, Y. Lian, S. Liang, Z. Zhang,
+Y. Guan, J. Wang, W. Zhang, X. Yu, H. Wang, and L. Yi,
+“Humanoid-GPT: Scaling Data and Structure for Zero-Shot
+Motion Tracking,” arXiv preprint arXiv:2606.03985, 2026.
+[5] K. Yin, W. Zeng, K. Fan, M. Dai, Z. Wang, Q. Zhang, Z. Tian,
+J. Wang, J. Pang, and W. Zhang, “UniTracker: Learning
+Universal Whole-Body Motion Tracker for Humanoid Robots,”
+IEEE Robot. Autom. Lett., vol. 11, no. 7, pp. 8124–8131, 2026.
+[6] Y. Li, Z. Luo, T. Zhang, C. Dai, A. Kanervisto, A. Tirinzoni,
+H. Weng, K. Kitani, M. Guzek, A. Touati, A. Lazaric,
+M. Pirotta, and G. Shi, “BFM-Zero: A Promptable Behavioral
+Foundation Model for Humanoid Control Using Unsupervised
+Reinforcement Learning,” in Int. Conf. Learning Representa-
+tions (ICLR), 2026.
+[7] Z. Zhang, J. Guo, C. Chen, J. Wang, C. Lin, Y. Lian, H. Xue,
+Z. Wang, M. Liu, J. Lyu, H. Liu, H. Wang, and L. Yi,
+“Track Any Motions under Any Disturbances,” arXiv preprint
+arXiv:2509.13833, 2025.
+[8] Q. Liao, T. E. Truong, X. Huang, Y. Gao, G. Tevet, K. Sreenath,
+and C. K. Liu, “BeyondMimic: From Motion Tracking to
+Versatile Humanoid Control via Guided Diffusion,” arXiv
+preprint arXiv:2508.08241, 2025.
+[9] A. Herzog, N. Rotella, S. Mason, F. Grimminger, S. Schaal,
+and L. Righetti, “Momentum control with hierarchical inverse
+dynamics on a torque-controlled humanoid,” Autonomous
+Robots, vol. 40, no. 3, pp. 473–491, 2016.
+[10] A. Gams, S. A. Mason, A. Ude, S. Schaal, and L. Righetti,
+“Learning Task-Specific Dynamics to Improve Whole-Body
+Control,” in IEEE-RAS Int. Conf. Humanoid Robots (Hu-
+manoids), 2018, pp. 280–283.
+[11] X. B. Peng, P. Abbeel, S. Levine, and M. van de Panne,
+“DeepMimic: Example-Guided Deep Reinforcement Learning
+of Physics-Based Character Skills,” ACM Trans. Graph.,
+vol. 37, no. 4, pp. 143:1–143:14, 2018.
+[12] J. Jang, Z. Wang, Z. Zhou, F. Wu, and Y. Zhao, “SEEC: Stable
+End-Effector Control with Model-Enhanced Residual Learning
+for Humanoid Loco-Manipulation,” in IEEE Int. Conf. Robot.
+Autom. (ICRA), 2026.
+[13] Q. Zhang, C. Weng, G. Li, F. He, and Y. Cai, “HiLo: Learning
+Whole-Body Human-like Locomotion with Motion Tracking
+Controller,” arXiv preprint arXiv:2502.03122, 2025.
+8
+
+
+[14] Z. Sun, Y. Peng, Y. Meng, X. Li, B.-S. Huang, Z. Bing,
+X. Wang, and A. Knoll, “RobotDancing: Residual-Action Re-
+inforcement Learning Enables Robust Long-Horizon Humanoid
+Motion Tracking,” arXiv preprint arXiv:2509.20717, 2025.
+[15] T. He, J. Gao, W. Xiao, Y. Zhang, Z. Wang, J. Wang, Z. Luo,
+G. He, N. Sobanbabu, C. Pan, Z. Yi, G. Qu, K. Kitani,
+J. K. Hodgins, L. Fan, Y. Zhu, C. Liu, and G. Shi, “ASAP:
+Aligning Simulation and Real-World Physics for Learning
+Agile Humanoid Whole-Body Skills,” in Robotics: Science
+and Systems (RSS), 2025.
+[16] Y. Wang, S. Zhu, P. Zhi, Y. Li, J. Li, Y.-L. Li, Y. Xiao, X. Wang,
+B. Jia, and S. Huang, “OmniXtreme: Breaking the Generality
+Barrier in High-Dynamic Humanoid Control,” arXiv preprint
+arXiv:2602.23843, 2026.
+[17] A. Xie, N. Sobanbabu, I. Shikhare, A. Wang, M. Simchowitz,
+and G. Shi, “FADA: Few-Shot Domain Adaptation via Dy-
+namics Alignment for Humanoid Control,” arXiv preprint
+arXiv:2606.28476, 2026.
+[18] Y. Zhang, Y. Yuan, P. Gurunath, I. Gupta, S. Omidshafiei, A.-a.
+Agha-mohammadi, M. Vazquez-Chanlatte, L. Pedersen, T. He,
+and G. Shi, “FALCON: Learning Force-Adaptive Humanoid
+Loco-Manipulation,” in Learning for Dynamics and Control
+Conf. (L4DC), ser. Proceedings of Machine Learning Research,
+vol. 331, 2026, pp. 265–281.
+[19] C. Dong, H. Xu, W. Feng, Z. Wang, Y. Zhou, Y. Zhao,
+and B. He, “HAFO: A force-adaptive control framework for
+humanoid robots in intense interaction environments,” Control
+Engineering Practice, vol. 173, p. 106978, 2026.
+[20] S. Zhao, Y. Ze, Y. Wang, C. K. Liu, P. Abbeel, G. Shi,
+and R. Duan, “ResMimic: From General Motion Tracking
+to Humanoid Whole-body Loco-Manipulation via Residual
+Learning,” arXiv preprint arXiv:2510.05070, 2025.
+[21] S. Chen, S. Zhao, Z. Wu, J. Li, G. Shi, and C. K.
+Liu, “SceneBot: Contact-Prompted General Humanoid Whole
+Body Tracking with Scene-Interaction,” arXiv preprint
+arXiv:2606.27581, 2026.
+[22] S. Chen, Z.-a. Cao, Z. Luo, F. Casta˜neda, C. Li, T. Wang,
+Y. Yuan, L. J. Fan, C. K. Liu, and Y. Zhu, “CHIP: Adaptive
+Compliance for Humanoid Control through Hindsight Pertur-
+bation,” arXiv preprint arXiv:2512.14689, 2025.
+[23] B. Lyu, J. Jia, K. Zuo, Y. Lu, S. Han, G. Li, B. Ma, J. Li,
+G. Li, and J. Yang, “ADAPT: Analytical Disturbance-Aware
+Policy Training for Humanoid Locomotion,” arXiv preprint
+arXiv:2606.16542, 2026.
+[24] F. Amadio and E. M. Hoffman, “What Matters in Humanoid
+General Motion Tracking? An Empirical Study,” arXiv preprint
+arXiv:2607.19903, 2026.
+[25] J. Y. S. Luh, M. W. Walker, and R. P. C. Paul, “On-
+line computational scheme for mechanical manipulators,”
+Journal of Dynamic Systems, Measurement, and Control,
+vol. 102, no. 2, pp. 69–76, 06 1980. [Online]. Available:
+https://doi.org/10.1115/1.3149599
+9

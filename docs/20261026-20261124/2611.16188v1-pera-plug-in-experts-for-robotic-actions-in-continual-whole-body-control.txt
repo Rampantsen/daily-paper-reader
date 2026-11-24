@@ -1,0 +1,397 @@
+PERA: Plug-in Experts for Robotic Actions
+in Continual Whole-Body Control
+Shangchao Hu
+Yadan Sun
+Xibo Yu
+Wei Huang
+Abstract
+Motion imitation enables humanoid robots to acquire whole-body skills such as walking
+and dancing. However, fine-tuning an entire policy for a new skill can affect existing behaviors,
+while training a separate policy for each skill increases training and maintenance costs. We
+present PERA, a method for learning new skills by reusing existing motion capabilities.
+PERA freezes a pretrained mixture-of-experts policy and trains an additional task expert and
+its routing score using task rewards or teacher-action supervision. In Unitree G1 simulation,
+each added task module contains approximately 1.03% of the parameters of the base actor.
+Built on our pretrained policy, PERA successfully completes all ten new tasks. Disabling the
+expert restores the original computation path of the base policy, which still fully executes
+all 126 original motions. Enabling the expert also improves the execution of some dance
+motions not used to train that expert, indicating that its benefits extend beyond its training
+motions. Experiments with HoloMotion further demonstrate the applicability of PERA to
+different base policies.
+Keywords: humanoid robots; whole-body control; mixture of experts; skill expansion; online
+DAgger
+1
+Introduction
+Reference-based motion imitation provides an effective approach to humanoid whole-body control.
+With advances in motion data and policy learning, a single controller can perform walking,
+dancing, and a range of highly dynamic motions [1, 2, 3]. However, new tasks may involve
+contact patterns, posture constraints, or motion objectives not covered during training. Existing
+motion-tracking capabilities alone do not guarantee success on these tasks. It therefore remains
+necessary to learn new skills while preserving access to existing motion capabilities.
+Directly fine-tuning an entire policy applies new-task gradients to shared parameters and can
+change existing control behaviors. Maintaining a separate controller for each new task can
+isolate parameter updates, but requires repeated model storage and makes it difficult to share
+computation during execution. Skill expansion therefore calls for both reuse of existing motion
+knowledge and independent access to the original policy. We address this objective by combining
+a frozen base policy with additional task modules (Figure 1).
+Mixture-of-experts (MoE) networks provide a structural basis for incremental expansion. Experts
+reuse shared features and an action-output interface, while routing determines their participation
+and mixing weights from the input. Task-related feature transformations can thus be learned
+within an additional module. A new candidate can also change the selection and mixing of
+existing experts, so control outputs may change even when shared parameters remain fixed.
+Expert expansion must therefore specify both how additional modules are learned and how the
+original policy path is recovered when they are disabled.
+1
+arXiv:2611.16188v1  [cs.RO]  12 Nov 2026
+
+
+Figure 1: Skill expansion on a frozen base policy. Task experts are learned independently and
+plugged into the same controller on demand, while the base-policy parameters remain frozen. An explicit
+switch determines whether the selected expert participates in execution. Disabling the expert restores
+the original computation path.
+PERA learns task experts independently on a frozen MoE base policy, updating only the
+additional expert and its routing score. Training and execution use the same competitive
+routing, allowing a task module to learn while participating in control.
+We use proximal
+policy optimization (PPO) when task rewards are available, and behavior cloning with online
+DAgger when reliable teachers are available. During execution, an explicit switch enables the
+chosen expert on demand; disabling it bypasses the additional module and restores the original
+computation path.
+Our main contributions are: (1) an expert-expansion architecture and training method for
+continual robot skill learning, in which new experts reuse existing motion representations while
+the pretrained policy remains frozen; (2) an evaluation of the improvements provided by expert
+learning, showing higher task completion and improved tracking accuracy on some unseen
+motions; and (3) a modular skill library that supports independent training, storage, and
+on-demand invocation of task experts, allowing the skill set to grow through incremental module
+additions.
+2
+Related Work
+Whole-body motion control.
+DeepMimic [1] combines reference-motion imitation with task
+rewards to learn dynamic skills such as walking, rolling, and martial arts through reinforcement
+learning. PHC [2] progressively increases policy capacity to learn large motion collections and
+incorporates fall recovery, enabling continued execution under noisy references and unexpected
+loss of balance. SONIC [3] scales motion tracking along model capacity, motion data, and
+compute, and connects teleoperation and motion-planning interfaces through a unified motion
+representation, demonstrating the role of large-scale motion learning in general whole-body
+2
+
+
+control. KungfuBot2 [4] uses an orthogonal mixture-of-experts architecture to promote distinct
+motion representations, together with hybrid local–global tracking objectives and a segment-level
+reward to improve multi-skill and long-horizon motion control. This work studies versatile
+skills within a unified policy; PERA focuses on adding independently learned task experts after
+freezing a pretrained policy.
+Continual skill learning.
+Similarity-guided LoRA-PNN [5] selects reusable historical skills
+based on motion similarity and combines low-rank adaptation with progressive network ex-
+pansion to learn new motions, retaining historical branches while facilitating transfer across
+skills. LiMoDE [6] addresses lifelong robot manipulation by first learning dynamic experts
+through multitask pretraining and then combining new and frozen experts for new tasks. DM-
+PEL [7] progressively constructs a low-rank expert library, dynamically combines experts with a
+lightweight router, and uses expert coefficient replay to preserve expert invocation on historical
+tasks, balancing adaptation and knowledge retention.
+Expert modules and knowledge integration.
+MoE-Loco [8] uses expert specialization
+to alleviate gradient conflicts in multitask reinforcement learning, enabling a single policy to
+handle multiple terrains and gaits while exhibiting specialized expert behaviors. FlexOlmo [9]
+addresses language-model learning when training data cannot be shared: data owners train
+experts independently, then combine them through domain-informed routing, allowing modules
+to be included or excluded at inference time. CPC [10] separates skill acquisition from policy
+consolidation by training task teachers independently through reinforcement learning, continually
+distilling their behaviors into a unified student, and mitigating forgetting with an expandable
+expert architecture and prioritized trajectory replay.
+Pretrained control policies and model-assisted learning.
+HoloMotion-1 [11] trains a
+sparse MoE Transformer on video-reconstructed motions, motion-capture data, and other motion
+sources. Temporal modeling, sparse expert activation, and sequence-level training improve
+whole-body tracking, with evaluations of unseen-motion generalization and real-robot transfer.
+SuperMimic [12] jointly learns a differentiable world model and a control policy, optimizing the
+policy by backpropagating through short predicted trajectories to reduce the training cost of
+large-scale motion tracking.
+3
+Method
+PERA first pretrains a base policy on reference motions, then freezes its parameters and statistics
+and adds a feedforward network (FFN) expert and a scoring branch for each new task. The new
+and existing experts share the action-output head. Task rewards or teacher supervision update
+only the additional parameters. Figure 2 illustrates learning and execution.
+3.1
+Pretrained Whole-Body Motion-Tracking Policy
+The base policy follows the reference-motion encoder and observation-history decoder structure
+of SuperMimic [12]. The encoder extracts target features from a normalized reference-motion
+window gt, and the decoder combines them with the most recent ten normalized proprioceptive
+observations ot−9:t to produce control features:
+zt = Enc(gt),
+xt = Decfeat(ot−9:t, zt),
+(1)
+3
+
+
+where Decfeat denotes the feature-producing part of the decoder. The complete policy, including
+expert modules and the action-output mapping, is written compactly as
+at = πθ(ot−9:t, gt),
+(2)
+where at ∈R29 is the control action. Shared and routed experts transform the control features
+before the unified action-output head. Their selection and mixing are described in Section 3.2.
+Policy pretraining alternates simulator sampling, world-model fitting, and policy updates. A
+differentiable world model learns dynamics from collected state transitions, and the actor is
+updated using gradients of predicted returns over 32 steps. After pretraining, the existing
+experts, router, encoder, output head, and normalization statistics are frozen.
+Figure 2: Learning and executing a task expert inside a frozen actor. (a) PPO, or behavior
+cloning followed by online DAgger, updates only the additional FFN and routing score. (b) The eight
+existing routed experts and one enabled new expert jointly participate in Top-2 selection; the shared
+FFN is combined separately. Disabling the new expert restores the original routing.
+3.2
+Task-Expert Learning
+The FFN of an additional task expert is initialized by copying parameters from an existing
+expert, and then learns the new task while the base policy remains frozen.
+Training updates only the additional FFN and scoring branch; the base-policy parameters and
+normalization statistics remain frozen. Losses are computed from the actions of the expanded
+policy, and gradients propagate through the frozen output head to the additional module.
+Experts receive the normalized decoder feature ¯xt. The router uses the frozen routing-feature
+embedding ht; task context ct is also supplied to the new expert and its scoring branch when
+required.
+The router assigns each candidate expert a raw score ℓi. Adding a fixed bias δi gives the selection
+score vi:
+vi = ℓi + δi,
+(3)
+The existing experts retain their pretrained biases, and the new expert’s bias is determined
+before task training. All selection biases remain fixed during task training and testing.
+4
+
+
+When enabled, the new expert joins the eight existing candidates. The two experts with the
+highest vi are selected; a tie does not replace an existing expert with the new one. Let I denote
+the selected pair. Their mixing weights ωi are obtained by applying softmax to their raw scores
+ℓi, without the selection biases. All unselected routed experts have zero weight. The weighted
+sum of the routed-expert outputs is
+M(¯x, h, c) =
+X
+i∈I
+i̸=n
+ωiEi(¯x) + ωnEn(¯x, c),
+(4)
+where the weight of an unselected expert is zero. The shared expert Esh is always active and is
+combined separately from the routed-expert mixture inside the complete policy.
+Reward-based learning.
+When a task has an explicit reward function, the expanded policy
+collects state, action, and reward sequences in simulation. PPO [13] updates the additional FFN
+and scoring branch using these samples. The value network is trained separately, and the base
+policy remains frozen.
+Teacher supervision.
+When a reliable teacher is available, behavior cloning (BC) first trains
+the additional module to match the teacher’s actions. Online DAgger [14] then uses the teacher
+to label actions at states visited by the policy; the new samples are added to the training set for
+continued learning. The probability of executing teacher actions is gradually reduced until the
+expanded policy executes independently.
+3.3
+Expert Invocation and Original-Policy Recovery
+Each task expert independently stores its additional FFN, scoring branch, and fixed selection bias.
+During execution, the corresponding module can be enabled to participate in Top-2 selection.
+Disabling it bypasses the module and restores the original routing and action computation of
+the base policy. Because the base-policy parameters and normalization statistics remain frozen,
+disabling the module produces the same action as the base policy for the same input.
+4
+Experiments
+We first evaluate the original motion capabilities after disabling the added expert and transfer
+to unseen motions when the expert is enabled. We then compare our pretrained policy and
+HoloMotion-1 [11] after adding PERA experts on ten scenarios, using task teachers as references.
+4.1
+Evaluation Setup and Base Policies
+Experiments use a simulated 29-degree-of-freedom Unitree G1. Our pretrained policy implements
+an MoE network using multilayer perceptrons (MLPs), with eight routed experts and one shared
+expert. The actor contains approximately 10.4 million parameters.
+The ten new tasks use reference motions and paired terrain assets released with Deep Whole-body
+Parkour [15]. They comprise dive rolling, kneel climbing, jump sitting, and roll vaulting, forming
+ten motion–scene combinations across different terrains and wall settings (S01–S10; Table 1).
+All policies use the same reference motion and terrain for each scenario. The control frequency is
+50 Hz, and episodes begin at the first reference frame with the native failure conditions retained.
+5
+
+
+Table 1: Motion–scene combinations used for the ten new tasks.
+ID
+Motion
+Scene
+S01
+Dive roll
+Laboratory, without walls
+S02
+Dive roll
+Ramp, without walls
+S03
+Dive roll
+Laboratory, with walls
+S04
+Dive roll
+Ramp, with walls
+S05
+Kneel climb
+50 cm step, without walls
+S06
+Kneel climb
+50 cm step, with walls
+S07
+Jump sit
+Platform, without walls
+S08
+Jump sit
+Platform, with walls
+S09
+Roll vault
+Platform, without walls
+S10
+Roll vault
+Platform, with walls
+An episode is successful if the reference sequence finishes without a failure termination. Evaluated
+policies control the robot independently, without teacher-action execution. Endpoint position
+error is the distance between the root position at episode termination and the final reference
+root position, including failed episodes. Root tracking error measures the root-position distance
+to the time-aligned reference during execution. We compare task completion, endpoint position
+error, and root position error, averaging equally across scenarios (Table 3). The additional expert
+module for our pretrained policy contains approximately 1.03% of the base actor’s parameters.
+Joint-angle tracking error is measured by root mean square error (RMSE):
+RMSEq =
+v
+u
+u
+t 1
+TJ
+T
+X
+t=1
+J
+X
+j=1
+(qt,j −qref,t,j)2.
+(5)
+Here qt,j and qref,t,j are the actual and reference joint angles, respectively, and J = 29. To use
+the same comparison interval, we include only the first T frames during which neither policy has
+terminated. Errors are reported in degrees.
+4.2
+Capability Retention and Transfer
+Disabling the additional expert restores the base policy’s computation path and produces
+identical actions for identical inputs. Both the base policy and the controller with the expert
+disabled fully execute all 126 original motions, with similar mean returns and tracking errors
+(Table 2).
+Table 2: Capability retention and mean tracking errors on original motions.
+Metric
+Base policy
+Expert disabled
+Fully completed motions
+126
+126
+Mean normalized return
+0.7893
+0.7892
+Mean per-frame joint RMS (◦)
+8.0640
+8.0635
+Mean per-frame body RMS (cm)
+5.5674
+5.5554
+To test whether the capabilities provided by an expert extend beyond its training motions, we
+compare execution with the expert disabled and enabled on eight fast-dance references not used
+to train that expert. No policy parameters are updated during testing. Enabling the expert
+increases the fraction of episodes that fully execute the reference from 59.38% to 71.88%, and
+mean motion completion from 73.24% to 83.83% (Figure 3(a,b)). These results show that the
+improvements provided by the expert can extend beyond its training motions.
+6
+
+
+Figure 3: Execution of dance motions not used to train the expert. (a) Fraction of episodes
+that fully execute the reference motion. (b) Mean motion completion. (c) One replay of the motion with
+the largest completion improvement: joint-angle and aligned-body-position RMSE are compared over the
+first 66 frames during which neither policy has terminated. Base-policy error is normalized to 100%; blue
+bars show the relative error with the expert enabled.
+4.3
+Expert Expansion on Different Base Policies
+To evaluate PERA on different base policies, we add task experts to our pretrained policy and
+to HoloMotion, then compare endpoint and root position errors on the same ten tasks, with
+task teachers as references.
+Figure 4: Per-task errors after expert expansion on different base policies. (a) Endpoint
+position error. (b) Root position error. Each bar gives the error of PERA on our pretrained policy minus
+that of HoloMotion + expert. Positive values indicate lower error for HoloMotion + expert; negative
+values indicate lower error for PERA on our pretrained policy.
+After adding task experts to HoloMotion, mean endpoint position error across the ten tasks
+decreases from 173.36 cm to 28.51 cm, and mean root position error decreases from 15.12 cm
+to 14.37 cm. HoloMotion + expert has lower mean error on both metrics than PERA on our
+pretrained policy (Table 3), although the per-task results vary (Figure 4).
+We further compare the task teacher and HoloMotion + expert on the five tasks for which both
+policies fully complete all 16 evaluation episodes. The mean endpoint and root position errors of
+HoloMotion + expert are 27.40% and 14.70% lower than those of the teacher, respectively. Both
+errors are lower than the teacher’s on four tasks and higher on the remaining task (Figure 5).
+7
+
+
+Table 3: Mean position errors on ten tasks.
+Policy
+Endpoint error (cm)
+Root error (cm)
+HoloMotion only
+173.36
+15.12
+PERA (our pretrained policy)
+53.88
+18.69
+HoloMotion + expert
+28.51
+14.37
+Task teacher
+27.79
+14.87
+Figure 5: Position errors of HoloMotion + expert and task teachers. The comparison includes
+the five tasks on which both policies fully complete all 16 evaluation episodes. (a) Per-task position-error
+reductions relative to the teacher: positive values indicate lower error and negative values indicate higher
+error than the teacher. (b) Position errors averaged equally across the five tasks.
+5
+Conclusion
+We introduced PERA, which expands robot skills by adding task experts to a frozen pretrained
+motion policy. Each additional expert and its scoring branch are trained independently and
+participate in action generation alongside existing experts. Experts can be enabled on demand
+during execution; disabling them restores the original computation path of the base policy,
+supporting both new-task learning and access to the original policy.
+In Unitree G1 simulation, PERA built on our pretrained policy successfully completes all ten new
+tasks, while disabling the expert preserves full execution of the 126 original motions. Enabling an
+expert also improves some dance motions not used to train it, showing that its effects can extend
+beyond its training motions. Experiments with HoloMotion further demonstrate applicability to
+different base policies. These results support reusing existing motion capabilities and expanding
+robot skills through independently trained task experts that can be plugged in on demand.
+8
+
+
+References
+[1] X. B. Peng, P. Abbeel, S. Levine, and M. van de Panne. DeepMimic: Example-guided deep
+reinforcement learning of physics-based character skills. ACM Transactions on Graphics, 37(4):143:1–
+143:14, 2018. doi:10.1145/3197517.3201311.
+[2] Z. Luo, J. Cao, A. Winkler, K. Kitani, and W. Xu. Perpetual humanoid control for real-time
+simulated avatars. In Proceedings of the IEEE/CVF International Conference on Computer Vision
+(ICCV), 2023. arXiv:2305.06456.
+[3] Z. Luo, Y. Yuan, T. Wang, et al. SONIC: Supersizing motion tracking for natural humanoid
+whole-body control. Science Robotics, 11(117):eaed4592, 2026. doi:10.1126/scirobotics.aed4592.
+[4] J. Han, W. Xie, J. Zheng, J. Shi, W. Zhang, T. Xiao, and C. Bai. KungfuBot2: Learning versatile
+motion skills for humanoid whole-body control. arXiv:2509.16638v1, 2025.
+[5] Z. He, H. Huang, G. C. R. Bethala, et al. Continual humanoid motion learning. arXiv:2610.04231,
+2026.
+[6] Z. Gu and L. Wang. LiMoDE: Rethinking lifelong robot manipulation from a mixture-of-dynamic-
+experts perspective. arXiv:2606.26183, 2026.
+[7] Y. Lei, S. Mao, S. Zhou, H. Zhang, X. Li, and P. Luo. Dynamic mixture of progressive parameter-
+efficient expert library for lifelong robot learning. Transactions on Machine Learning Research, 2026.
+https://openreview.net/forum?id=MHVBrjS8cG.
+[8] R. Huang, S. Zhu, Y. Du, and H. Zhao. MoE-Loco: Mixture of experts for multitask locomotion.
+arXiv:2503.08564, 2025.
+[9] W. Shi, A. Bhagia, K. Farhat, et al. FlexOlmo: Open language models for flexible data use.
+arXiv:2507.07024, 2025.
+[10] Q. He, Y. Li, M. Yuan, et al. Continual policy consolidation for lifelong robot learning.
+arXiv:2601.22475, 2026.
+[11] M. Chen, K. Wang, B. Zhang, et al. HoloMotion-1 technical report. arXiv:2605.15336, 2026.
+[12] Q. Liao, Y. Shao, J. Long, K. Zakka, R. Horowitz, P. Abbeel, and K. Sreenath. SuperMimic: Scaling
+humanoid whole-body control with one differentiable world model. arXiv:2610.28480, 2026.
+[13] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov. Proximal policy optimization
+algorithms. arXiv:1707.06347, 2017.
+[14] S. Ross, G. Gordon, and D. Bagnell. A reduction of imitation learning and structured prediction to
+no-regret online learning. In Proceedings of the Fourteenth International Conference on Artificial
+Intelligence and Statistics (AISTATS), volume 15 of Proceedings of Machine Learning Research,
+pages 627–635, 2011. https://proceedings.mlr.press/v15/ross11a.html.
+[15] Z. Zhuang, S. Zhu, M. Zhao, and H. Zhao. Deep whole-body parkour. arXiv:2601.07701, 2026.
+9

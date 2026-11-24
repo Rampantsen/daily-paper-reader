@@ -1,0 +1,551 @@
+SONIC-K1: Porting a Universal Humanoid Motion Tracker
+to a Small Humanoid on a Single GPU
+Kyrylo Kolesnichenko1,2, Irvin Steve Cardenas2, and Jong-Hoon Kim2
+Fig. 1.
+A human reference motion (left) and SONIC-K1 tracking it on the
+Booster K1 in simulation (right).
+Abstract— We present SONIC-K1, to our knowledge the first
+open-weights whole-body motion tracker for the Booster K1
+humanoid, obtained by adapting the SONIC framework to this
+smaller robot. The policy is trained from scratch on a single
+shared GPU with a small fraction of the compute reported for
+SONIC. In MuJoCo simulation, it tracks nearly all held-out
+motion clips and performs well on external benchmarks under
+SONIC’s success criterion. The first release ran on the real K1
+but shook its legs on steps and turns, and simulation showed
+a sensitivity to actuation delay. We therefore post-trained it
+with the robot’s deployment torque limits, randomized 0–
+40 ms actuation delay and gain randomization. The post-trained
+v1.0 tracks 96.6% of held-out clips under real-robot torque
+limits and 40 ms of delay, compared with 76.7% before, and
+in our runs on the real K1 it walks and turns without the
+earlier leg shaking. These results show broad motion-tracking
+capability on a modest training budget. Code, policy weights
+and evaluation tools are publicly available.
+I. INTRODUCTION
+A general motion tracker is a single policy that takes
+a reference trajectory and outputs joint commands. Once
+a robot has one, motion capture, pose estimation from
+video and teleoperation can all drive the same controller.
+SONIC [1] pushed this approach to 700 h of motion data and
+128 GPUs. The code is open, but it is built for the Unitree
+G1, and most labs cannot afford to train it at that scale.
+1Institute of Social Sciences and Applied Informatics, Vilnius University,
+Lithuania
+2Advanced Telerobotics Research Lab - Computer Science Department,
+Kent State University, Kent, OH 44242, USA kkolesni@kent.edu
+Our lab works with the Booster K1 [2], a 22-DoF hu-
+manoid that is noticeably smaller than the G1, and we wanted
+a SONIC-style tracker for it on the hardware we have.
+We kept SONIC’s architecture, PPO settings and rewards,
+retargeted 9,991 Bones-SEED clips [3] to the K1 with
+UMR [4], and trained from scratch for 50,000 iterations on
+a single H100 that was shared with other users, then post-
+trained it for 4,000 more iterations on one RTX PRO 6000.
+The resulting model, SONIC-K1, is to our knowledge the
+first general motion tracker for the K1 with public weights.
+It tracks 97.4% of 1,985 held-out clips in MuJoCo [5] under
+SONIC’s success rule. On the real robot this first release
+(v0.1) shook its legs on steps and turns. A short post-training
+with the robot’s torque limits and actuation delay (v1.0, 4,000
+more iterations) fixed most of this: in simulation v1.0 tracks
+96.6% of held-out clips under real-robot limits and 40 ms of
+delay (v0.1: 76.7%), and in our robot runs it walks and turns
+without the earlier leg shaking.
+This report makes three contributions:
+1) SONIC-K1, the first open-weights general motion
+tracker for the Booster K1. It is trained with roughly
+1–1.5% of SONIC’s compute, and we list every change
+we made to the original recipe.
+2) An evaluation in two simulators on a 1,985-clip hold-
+out and on PHUMA, LAFAN1 and 100STYLE, plus
+a robustness sweep.
+3) A real-robot post-training recipe that makes the policy
+robust to the K1’s torque limits and actuation delay,
+tested on hardware, plus the released code (Apache-
+2.0), weights (CC BY-NC 4.0), evaluation tools and
+robot application.
+II. RELATED WORK
+SONIC [1] trains a single tracker for the Unitree G1
+on 700 h of motion data. It uses per-modality encoders, a
+quantized motion token and a shared decoder. We start from
+its public code and keep its architecture and training recipe.
+To give a sense of scale for our results, we also list numbers
+that the SONIC paper reports for BeyondMimic [6] and
+Any2Track [7], two other trackers for the G1.
+Our training data is the Bones-SEED motion-capture
+dataset [3], which we map to the K1 with UMR [4], a
+learned retargeting method for humanoid robots. Besides our
+own held-out Bones-SEED clips, we test on PHUMA [8],
+the external benchmark used in the SONIC paper, and
+on two standard human-motion datasets, LAFAN1 [9] and
+100STYLE [10].
+arXiv:2610.39327v3  [cs.RO]  5 Nov 2026
+
+
+TABLE I
+SONIC VS. SONIC-K1.
+SONIC
+SONIC-K1 (ours)
+Robot
+Unitree G1, 29 DoF
+Booster K1, 22 DoF
+Training data
+700 h in-house mocap
+9,991 Bones-SEED clips
+Compute
+128 GPUs × ∼3 days
+1 shared H100, 135.4 h
+Post-training
+–
+v1.0: 1 RTX PRO 6000, 9.2 h
+Parallel envs
+∼524K
+16,384
+Iterations
+∼100K
+50,000 (+4,000, v1.0)
+Init. action std
+0.05
+0.5
+Rewards
+SONIC Table 3
++ head joints; v1.0: + torque
+Delay
+none
+0–40 ms (v1.0)
+Training runs in Isaac Lab [11] with PPO [12]. We
+evaluate in MuJoCo [5], a different physics engine, to check
+that the policy does not depend on the training simulator.
+III. METHOD: PORTING SONIC TO THE K1
+A. Robot and data
+The K1 has 22 actuated joints: 2 in the head, 4 in each
+arm and 6 in each leg. It has no waist and no wrists. We use
+Booster’s official K1 22dof model for both retargeting and
+training. Bones-SEED contains 142,220 clips, all of which
+we retargeted to the K1 with UMR. An automatic check then
+removes clips with joint-limit violations, feet going through
+the floor, velocity spikes or NaNs, and tags each clip as
+feasible or not for the K1 (for example, motions that need a
+waist are not). We keep only clips that pass the check and are
+tagged feasible, which leaves 62,427. We trained on 9,991
+of them and kept 1,985 aside as a test set, chosen before
+training started and with no overlap (Fig. 2).
+B. Policy and training
+The architecture is unchanged from SONIC. Encoders turn
+a reference motion into a 64-D quantized (FSQ) token, and
+an MLP decoder combines the token with proprioception to
+produce joint targets. A PD controller tracks those targets;
+the policy runs at 50 Hz and physics at 200 Hz. The actor
+has 25.1M parameters. We trained the robot-motion and
+teleoperation encoders. The SMPL encoder is in the network
+but never saw any data.
+PPO hyper-parameters, adaptive motion sampling and re-
+wards are the same as in SONIC, and Table I lists what
+we changed. The biggest difference is scale. We ran 16,384
+environments for 50,000 iterations on one H100 NVL, which
+took 135.4 h of wall-clock time because other jobs were
+sharing the GPU (about 103 h if it had been ours alone). That
+is roughly 1–1.5% of SONIC’s 128 GPUs × ∼3 days. The
+real-robot post-training (v1.0, Sec. V) added 4,000 iterations,
+about 9.2 h on one NVIDIA RTX PRO 6000. We also raised
+the initial action standard deviation from 0.05 to 0.5, because
+with 0.05 the KL-adaptive scheme throttled the learning rate
+on the K1. Finally, we added a reward for tracking the head
+joints, since the K1 head is actuated, and scaled pushes and
+center-of-mass randomization by 0.7 for the smaller body.
+v0.1 did not model actuation delay.
+C. Evaluation protocol
+We use SONIC’s success rule: a rollout fails if the root or
+any end-effector ends up more than 0.25 m away in height
+from the reference. We also report two other rules. No-
+fall only checks that the robot stays up (root height within
+0.25 m, orientation within 1 rad). Official, the stricter rule in
+the SONIC repository, also limits world-frame foot position
+to 0.2 m. Tracking error is MPJPE-L over 12 K1 links, in
+mm, averaged over successful clips. For the MuJoCo runs
+we use the robot-motion encoder and deterministic actions.
+IV. EXPERIMENTS
+All results in this section are for the first release (v0.1,
+50,000 iterations), use 10 s windows, and apply SONIC’s
+0.25 m success rule. Section V covers the real-robot post-
+training (v1.0).
+A. Benchmarks
+Table II shows the MuJoCo results. On the 1,985 held-
+out Bones-SEED clips the policy succeeds 97.4% of the
+time, with an MPJPE-L of 15.4 mm. PHUMA provides G1
+trajectories, so we sampled 2,000 motions across its 15
+sources and mapped them from the G1 to the K1 with our
+own inverse kinematics. Of these, 1,758 passed our checks,
+and the policy succeeds on 93.6%. On 100STYLE we used
+the forward walk and run of all 100 styles, and the policy
+succeeds on 99.0%. LAFAN1 was the hardest set, at 70.6%
+of 10 s windows; we come back to it in the limitations.
+The right side of Table II lists G1 numbers for SONIC,
+BeyondMimic and Any2Track, copied from the SONIC
+paper. We did not rerun these methods. The robot, data,
+retargeting and test clips are all different, so these columns
+are only there to give a sense of scale and should not be read
+as a head-to-head comparison.
+We also checked the same hold-out in Isaac Lab, the
+simulator we trained in. No-fall success is 98.7% there and
+98.4% in MuJoCo, and official-rule success in Isaac Lab is
+93.1%, so moving between simulators costs very little. The
+amount of training data makes a large difference. An earlier
+run trained on only 10 clips reached 63.6% official success
+on the same hold-out (33.5 mm MPJPE-L). The released
+9,991-clip model reaches 93.1% (14.7 mm).
+B. Robustness
+Fig. 3 shows a perturbation sweep in MuJoCo with 200
+held-out clips per setting, reported under the no-fall and
+official rules. No-fall success stays at 98.0% or higher with
+PD gains scaled anywhere from 0.6 to 1.4×, with 70% motor
+strength, with a 2 kg payload, with 3× observation noise
+and with Booster’s torque caps. Dense pushes up to 3× the
+training range still give 97.0%, and very low friction (0.2)
+costs about 5 points. Latency is the exception. Success is
+98.5% at 20 ms of delay but falls to 56.0% at 40 ms.
+
+
+Bones-SEED
+142,220 clips
+UMR retarget
+to K1
+QA + feasibility
+62,427 clips
+train 9,991
+held-out 1,985
+SONIC PPO, Isaac Lab
+1 shared H100: v0.1
+Post-train, 1 RTX
+PRO 6000: v1.0
+MuJoCo eval
++ real K1
+Fig. 2.
+SONIC-K1 pipeline. Motion data is not redistributed; only the policy and code are released.
+TABLE II
+SONIC-K1 V0.1 RESULTS IN MUJOCO. SUCCESS IN %, MPJPE-L IN MM. THE G1 COLUMNS ARE NUMBERS REPORTED IN THE SONIC PAPER [1],
+SHOWN FOR SCALE ONLY.
+SONIC-K1 success
+G1, reported (SONIC rule)
+Test set
+Clips
+SONIC rule
+No-fall
+Official
+MPJPE-L
+SONIC
+BeyondMimic
+Any2Track
+Bones-SEED held-out
+1,985
+97.4
+98.4
+91.9
+15.4
+98.5
+82.0
+61.6
+PHUMA
+1,758
+93.6
+97.3
+85.0
+22.4
+97.2
+73.8
+78.5
+LAFAN1 (10 s windows)
+1,390
+70.6
+75.5
+45.0
+31.9
+–
+–
+–
+LAFAN1 (full clips)
+65
+18.5
+27.7
+0.0
+28.1
+–
+–
+–
+100STYLE
+200
+99.0
+98.5
+77.0
+22.5
+–
+–
+–
+0
+10
+20
+30
+40
+action latency (ms)
+40
+60
+80
+100
+success (%)
+no-fall
+official
+1
+2
+3
+4
+dense pushes (× training range)
+0.5
+1.0
+1.5
+floor friction
+40
+60
+80
+100
+success (%)
+0.6
+0.8
+1.0
+1.2
+1.4
+PD gain scale
+Fig. 3.
+Perturbation sweep for SONIC-K1 v0.1 in MuJoCo (200 held-out
+clips per setting). Latency is the only perturbation that causes a large drop.
+C. First test on the real K1
+We exported the policy to ONNX and ran it at 50 Hz on
+the robot’s onboard computer, with the robot on a safety belt,
+using the sample clips from the release kit. Upper-body clips,
+calm motions and slower whole-body motions such as squats
+ran smoothly. Clips with steps and turns were less reliable,
+with visible jitter in the legs. We do not have motion capture
+for the robot, so we cannot report tracking error on hardware.
+Section V addresses the leg problem.
+V. POST-TRAINING FOR THE REAL K1 (V1.0)
+Problem. On the real robot the first release (v0.1) shook
+its legs on steps and turns (Sec. IV-C). Two facts point
+to the training plant. First, training allowed leg torques of
+68/76/38/112/38 Nm for hip pitch/roll/yaw, knee and ankle,
+while Booster’s deployment limits are 30/35/20/40/20 Nm.
+Second, training had no actuation delay, and in simulation
+v0.1 drops from 98.5% to 56.0% success when the delay
+grows from 20 to 40 ms (Sec. IV-B). Raising kd helped in
+simulation but made the robot worse, and fine-tuning on a
+single failing clip did not help on hardware either.
+Method. We resume v0.1 with four changes and keep
+observations, rewards, PD gains, action scales and data
+unchanged, so the checkpoint stays valid:
+TABLE III
+REAL-ROBOT POST-TRAINING: V0.1 (50,000 ITERATIONS) VS. V1.0
+(54,000). SUCCESS IN % UNDER SONIC’S RULE (ISAAC ROWS:
+OFFICIAL RULE, FULL-LENGTH CLIPS, BOOSTER TORQUE CAPS),
+MPJPE-L IN MM OVER SUCCESSFUL CLIPS. REAL-ROBOT = BOOSTER
+TORQUE CAPS + OBSERVATION NOISE + THE GIVEN DELAY. BOTH
+CHECKPOINTS EVALUATED WITH THE SAME CODE AND SETTINGS.
+v0.1
+v1.0
+Test set
+Setting
+Clips succ
+L succ
+L
+MuJoCo held-out nominal
+1,985 97.5 15.4 97.4 17.1
+real-robot 20 ms 1,985 95.5 18.1 97.1 17.6
+real-robot 40 ms 1,985 76.7 21.2 96.6 18.2
+MuJoCo seen
+real-robot 40 ms 2,000 78.3 22.5 97.9 18.1
+PHUMA
+nominal
+1,758 93.8 22.6 92.3 25.2
+real-robot 40 ms 1,758 78.0 23.9 91.7 25.4
+Isaac official
+no delay
+1,985 92.3 15.3 90.7 17.0
+40 ms delay
+1,985 70.4 16.1 89.4 16.9
+• Deployment torque limits on hips, knees and ankles
+(30/35/20/40/20 Nm); arm and head limits unchanged.
+• Actuation delay: in every episode each joint command
+is delayed by a uniform 0–8 physics steps (0–40 ms).
+The upper bound rises linearly from 0 to 40 ms over the
+first 2,000 iterations.
+• Gain randomization: kp and kd scaled by U(0.9, 1.1)
+per episode for all joints, as in PBHC [13].
+• Torque-near-limit
+penalty,
+weight
+−0.5:
+P
+j∈legs clamp
+ |τ PD
+j |/τ max
+j
+−
+0.9, 0, 1
+
+on
+the
+unclipped PD demand.
+The run used 16,384 environments on one NVIDIA RTX
+PRO 6000 (96 GB) at 8.3 s per iteration. The released v1.0 is
+iteration 54,000, i.e. 4,000 iterations or about 9.2 GPU-hours
+on top of v0.1. Held-out metrics were flat within evaluation
+noise from about 53,000 iterations on. One practical point:
+SONIC’s trainer keeps a 1,024-clip window on the GPU and
+redraws it every 250 iterations, which on a single GPU made
+the training metrics jump at every redraw. We therefore keep
+all 9,991 clips on the GPU.
+Simulation results. Table III compares both versions with
+the same evaluation code. Under the real-robot torque limits
+with 40 ms of delay, v1.0 tracks 96.6% of the 1,985 held-out
+
+
+TABLE IV
+REAL K1 (BELT, KD×1.0): V0.1 VS. THE POST-TRAINING RUN AT
+53,000 ITERATIONS ON THE SAME CLIPS (FIRST RUN OF EACH). LEG
+JITTER = RMS OF 0.1 S HIGH-PASSED LEG JOINT ANGLES; CAPPED =
+CONTROL TICKS WITH A TORQUE CAP ACTIVE; HF = SHARE OF LEG
+JOINT-VELOCITY POWER ABOVE 4 HZ. LUNGE COMPARED OVER THE
+FIRST 7.1 S OF BOTH RUNS.
+Clip
+jitter (deg)
+gyro HF (rad/s) capped (%)
+HF (%)
+yawn
+0.038 →0.032
+0.023 →0.015
+0.0 →0.0
+44 →49
+squat
+0.202 →0.140
+0.088 →0.064
+1.5 →0.0
+5 →3
+forward lunge 0.597 →0.365
+0.226 →0.112
+8.1 →1.1
+29 →10
+clips instead of 76.7%, and PHUMA improves from 78.0% to
+91.7%. In Isaac Lab under the stricter official rule, success
+at 40 ms rises from 70.4% to 89.4%. Without delay, v1.0
+stays close to v0.1 (97.4% vs. 97.5% on the held-out set),
+at slightly lower accuracy: MPJPE-L 17.1 vs. 15.4 mm, and
+92.3% vs. 93.8% on PHUMA.
+Real robot. We ran v1.0 on the K1 with the same setup
+as before. In our runs (observed and on video), walking,
+turning, squats and lunges no longer showed the leg shak-
+ing, including the walk-and-turn clip on which v0.1 shook.
+Table IV gives leg jitter measured on three clips from robot
+logs of the same run at 53,000 iterations, which matches v1.0
+within noise in simulation. On the forward lunge, leg jitter
+falls from 0.597 to 0.365 deg, the share of control ticks at a
+torque limit from 8.1% to 1.1%, and the share of leg joint-
+velocity power above 4 Hz from 29% to 10%. We release the
+robot application with v1.0: a motion menu on the Booster
+SDK with a damping key that works at any time and guards
+for tilt, falls, joint speed and stale sensor data.
+VI. WEAKNESSES AND LIMITATIONS
+Post-training largely removed the leg shaking we observed
+on the real robot; on some motions the hands sometimes
+touch the body. Motions that need floor contact or props,
+such as falling and getting up in LAFAN1, are outside our
+training data, and very long clips build up global drift. Most
+of our evaluation is in simulation, with one training seed, and
+we did not ablate the four post-training changes. The SMPL
+and video encoders are not trained yet, so video input is
+retargeted to the K1 first.
+VII. CONCLUSION AND FUTURE WORK
+SONIC-K1 is the first open-weights general motion tracker
+for the Booster K1. SONIC was designed for 128 GPUs, but
+our port, trained on one GPU, still reaches 97.4% success
+on held-out motion under SONIC’s own rule. A short post-
+training with the robot’s torque limits, actuation delay and
+gain randomization made it work on the real K1: v1.0 tracks
+96.6% of held-out clips under real-robot limits and 40 ms of
+delay, and in our runs it walks and turns without the earlier
+leg shaking on hardware.
+Our next step is a proper evaluation on the robot with
+tracking metrics. Further plans are a larger model trained
+on the full 62K-clip pool, whole-body teleoperation through
+the teleoperation encoder we already trained, and driving the
+robot from video. For video we currently estimate human
+pose and retarget it, and a trained SMPL encoder would
+remove the retargeting step.
+Release. The code, including the robot application, is
+available under Apache-2.0 at https://github.com/
+Kyk0/sonic-k1, the weights (v1.0 and v0.1) under CC
+BY-NC 4.0 at https://huggingface.co/Kyry10/
+sonic-k1, and the project page is https://kyry.me/
+sonic-k1. The Booster K1 model is BSD-3-Clause. Train-
+ing data includes Motion Data by Bones Studio (https:
+//bones.studio/). We do not redistribute the motion
+data, either raw or retargeted.
+ACKNOWLEDGMENTS
+We thank NVIDIA GEAR for open-sourcing SONIC,
+Bones Studio for Bones-SEED, the UMR authors, and
+Booster Robotics for the K1 models.
+REFERENCES
+[1] Z. Luo, Y. Yuan, T. Wang, C. Li, F. Casta˜neda, S. Chen, Z.-A. Cao,
+J. Li, D. Minor, Q. Ben, J. Park, D. Sami, Z. Wang, X. Da, R. Ding,
+C. Hogg, L. Song, E. Lim, E. Jeong, T. He, H. Xue, W. Xiao, S. Yuen,
+J. Kautz, Y. Chang, U. Iqbal, L. Fan, and Y. Zhu, “SONIC: Supersizing
+motion tracking for natural humanoid whole-body control,” arXiv
+preprint arXiv:2511.07820, 2025.
+[2] Booster Robotics, “Booster K1 humanoid robot,” https://www.booster.
+tech/.
+[3] Bones Studio, “Bones-SEED motion dataset,” https://huggingface.co/
+datasets/bones-studio/seed, https://bones.studio/.
+[4] H. Cao, Y. Fang, T. Kwon, R. Yu, J. Ma, J. Tan, Y. Zhou, B. Du, Y. Gu,
+Y. Gao, R. Dai, L. Han, and R. Xu, “Unified motion retargeting for
+humanoids with learned point cloud correspondence,” arXiv preprint
+arXiv:2609.02134, 2026.
+[5] E. Todorov, T. Erez, and Y. Tassa, “MuJoCo: A physics engine for
+model-based control,” in 2012 IEEE/RSJ International Conference on
+Intelligent Robots and Systems (IROS), 2012, pp. 5026–5033.
+[6] Q. Liao, T. E. Truong, X. Huang, Y. Gao, G. Tevet, K. Sreenath,
+and C. K. Liu, “BeyondMimic: From motion tracking to ver-
+satile
+humanoid
+control
+via
+guided
+diffusion,”
+arXiv
+preprint
+arXiv:2508.08241, 2025.
+[7] Z. Zhang, J. Guo, C. Chen, J. Wang, C. Lin, Y. Lian, H. Xue, Z. Wang,
+M. Liu, J. Lyu, H. Liu, H. Wang, and L. Yi, “Track any motions under
+any disturbances,” arXiv preprint arXiv:2509.13833, 2025.
+[8] K. Lee, S. Kim, Y. Lee, M. Park, H. Kim, D. Hwang, D. Kim, H. Lee,
+and J. Choo, “PHUMA: Physically reliable humanoid locomotion
+dataset,” arXiv preprint arXiv:2510.26236, 2025.
+[9] F. G. Harvey, M. Yurick, D. Nowrouzezahrai, and C. Pal, “Robust
+motion in-betweening,” ACM Transactions on Graphics, vol. 39, no. 4,
+2020.
+[10] I. Mason, S. Starke, and T. Komura, “Real-time style modelling of
+human locomotion via feature-wise transformations and local motion
+phases,” Proceedings of the ACM on Computer Graphics and Inter-
+active Techniques, vol. 5, no. 1, pp. 1–18, 2022.
+[11] NVIDIA, M. Mittal, P. Roth, J. Tigue, A. Richard, O. Zhang, P. Du,
+A. Serrano-Mu˜noz, X. Yao, R. Zurbr¨ugg, N. Rudin et al., “Isaac
+Lab: A GPU-accelerated simulation framework for multi-modal robot
+learning,” arXiv preprint arXiv:2511.04831, 2025.
+[12] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov,
+“Proximal
+policy
+optimization
+algorithms,”
+arXiv
+preprint
+arXiv:1707.06347, 2017.
+[13] W. Xie, J. Han, J. Zheng, H. Li, X. Liu, J. Shi, W. Zhang, C. Bai,
+and X. Li, “KungfuBot: Physics-based humanoid whole-body control
+for learning highly-dynamic skills,” arXiv preprint arXiv:2506.12851,
+2025.

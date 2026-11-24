@@ -1,0 +1,648 @@
+# HIPC: HUMANOID ITERATIVE PLANNING AND CON-TROL VIA GOAL-CONDITIONED MOTION CLOSURE
+
+Yi Han<sup>1∗</sup>, Xingyu Chen<sup>2,3∗</sup>, Zixuan Lang<sup>3</sup>, Qianyang Wu<sup>4</sup>, Yuhang Lin<sup>5</sup>, Ji Ma<sup>6</sup>, Liang Li<sup>7</sup>, Dongting Li<sup>7</sup>, Xinpeng Liu<sup>1</sup>, Ruoli Dai<sup>3</sup>, Hesheng Wang<sup>1†</sup>, Renjing Xu<sup>2†</sup>, Lei Han<sup>3†</sup> <sup>1</sup>SJTU <sup>2</sup>HKUST(GZ) <sup>3</sup>Noitom <sup>4</sup>ShanghaiTech <sup>5</sup>ZJU <sup>6</sup>HKU <sup>7</sup>THU https://hipc-humanoid.github.io/
+
+![](images/8bf8d46a8786f94787d8682e863790cf41dd66c11aac7cd54be0dc6153848d8d.jpg)  
+Figure 1: We propose Humanoid Interactive Planning and Control (HIPC), a real-time asynchronous closedloop framework for goal-reaching task. HIPC feeds back realized robot states into the planner, enabling the system to interpret and execute multimodal conditions, including root pose, joint angle, end-effector, naturallanguage instructions, and their combinations, and continuously correct accumulated spatial drift.
+
+## ABSTRACT
+
+Recent generative models are widely used to provide whole-body motion for humanoid tracking. Current methods combine motion generators with controllers in an open-loop paradigm, which leads to critical issues: tracking errors can accumulate into spatial drift, and the planner cannot adapt to unexpected physical disturbances without feedback from physical execution. However, directly feeding realized states back to the planner in a closed loop can cause discontinuities, resulting in physical jitter and even falls, since such states are out of distribution during training. To bridge this gap, we propose HIPC, a real-time Humanoid Iterative Planning and Control framework that couples a generative model with motion tracking into a unified planning-and-control paradigm. HIPC introduces a goal-conditioned motion planning trained with a canonical motion representation that avoids gimbal-lock singularities under extreme orientations and supports motion generation on diverse geometric and semantic conditions. Then, HIPC adopts two strategies, deviation-decayed recovery and history re-anchoring, to mitigate the out-of-distribution shift caused by realized-state feedback. Finally, HIPC operates a real-time asynchronous planning-and-control system, with latency compensation to reduce temporal mismatch for inference delay. Extensive experiments confirm the effectiveness of HIPC under switching and composition of diverse conditions. Results show that HIPC achieves state-of-the-art goal-reaching accuracy among existing methods while simultaneously demonstrating robustness to physical perturbations and the ability to recover from falls.
+
+## 1 INTRODUCTION
+
+Recent general motion trackers (Luo et al., 2026; Zeng et al., 2026; RoboParty Lab Team, 2026) have made diverse whole-body behaviors executable through a single policy, providing a reusable control interface and shifting the challenge upstream from task-specific control to motion planning. Early works like optimization-based planning (Kuindersma et al., 2016) is difficult to scale up due to highdimensional whole-body coordination and complex contact constraints (Gu et al., 2026a), motivating generative planners that synthesize diverse references for general tracker (Xie et al., 2026). Although the recent planner (Chen et al., 2026) provides explicit objectives that guide whole-body movements to goal, it still lacks diverse goal condition type and precise closed-loop execution.
+
+Composing a generative planner with a whole-body tracker leaves the planning-to-control interface open-loop (Kaynov, 2008), Since physical execution inevitably deviates from kinematic references, creating a Tracking Gap. Although the tracker locally corrects such deviations, the tracking errors remain invisible to the planner and can accumulate into spatial drift, motivating motion planning control paradigm to maintain spatial consistency. Meanwhile, physical disturbances and imperfect state estimation may cause the robot state to deviate from the planned motion (Rotella et al., 2014), potentially exceeding the tracker’s recovery capability and requiring the planner to adapt motion generation through body-state feedback. Both challenges call for incorporating realized physical states into generative motion planning. Nevertheless, directly incorporating realized states causes an Execution Distribution Gap, as physical execution histories differ from the kinematic distribution during training. Existing self-rollout strategies mitigate autoregressive distribution shift (Chen et al., 2026), but do not directly capture structured deviations induced by downstream dynamics.
+
+Moreover, replanning from realized states that deviate from the current reference can create discontinuities between successive motion chunks. Non-negligible Inference Delay (Black et al., 2026; 2025) further misaligns planning and execution as the robot continues to evolve during generation. Together, these effects can produce abrupt reference transitions, physical jitter, and even loss of balance. Closed-loop motion-data refinement can incorporate controller feedback during training (Chen et al.), but couples motion synthesis to a specific downstream controller (Xu et al., 2026). The key challenge is to close the planning-control loop while enabling smooth physical execution without sacrificing planner-controller modularity.
+
+In this paper, we introduce HIPC, a real-time Humanoid Iterative Planning and Control framework that closes the loop between generative motion planning and whole-body tracking. HIPC combines a more diverse goal-conditioned motion planner with execution-consistent state feedback and latency-aware asynchronous architecture. It corrects accumulated spatial drift and supports recovery from physical disturbances while preserving planner-native motion histories. It further anticipates the state reached during planner inference for smooth reference handoff. This enables closed-loop whole-body planning without requiring controller-specific rollout data or sacrificing planner–controller modularity.
+
+In summary, the primary contributions of this work are three-fold:
+
+Goal-Conditioned Motion Planner with Canonical Representation. We introduce a generative model in a goal reaching paradigm as motion planner, and train this generator with a canonical motion representation conditioned on diverse geometric goals and semantic text.
+
+Execution-Consistent Motion Closure for Real State Feedback. We propose a history reanchoring strategy to incorporate realized robot states into the planning history while keeping it close to the planner’s training distribution.
+
+Latency-Aware Asynchronous Planning and Control. We decouple low-frequency generative planning from high-frequency whole-body tracking through a non-blocking asynchronous dualsystem architecture, which maintains continuous real-time control and smooth reference handoff during close-loop replanning.
+
+## 2 RELATED WORK
+
+Human Motion Generation. Human motion generation has largely evolved along two complementary paradigms. Diffusion-based models such as MDM (Tevet et al., 2023) model continuous motion distributions through iterative denoising, while autoregressive approaches such as
+
+Table 1: Functional comparison of representative humanoid motion generation and planning–control approaches. “Real-State Feedback” denotes feedback of realized physical states to the planner for online replanning. “Joint” denotesjoint-level configuration goals. “Perturbation” and “Get Up” denote recoveryfrom external perturbations andfallen states, respectively.
+
+<table><tr><td rowspan="2">Method</td><td rowspan="2">Text</td><td rowspan="2">Real-Time</td><td rowspan="2">Real-State Feedback</td><td colspan="4">Goal Condition</td><td colspan="2">OOD Recovery</td></tr><tr><td>Root</td><td>End Effector</td><td>Velocity</td><td>Joint</td><td>Perturbation</td><td>Get Up</td></tr><tr><td>Kimodo</td><td>√</td><td>✕</td><td>✕</td><td>√</td><td>√</td><td>✕</td><td>√</td><td>✕</td><td>✕</td></tr><tr><td>TextOp</td><td>√</td><td>√</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td></tr><tr><td>ARDY</td><td>√</td><td>√</td><td>✕</td><td>√</td><td>√</td><td>√</td><td>√</td><td>✕</td><td>✕</td></tr><tr><td>OMG</td><td>√</td><td>√</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td></tr><tr><td>ReactiveBFM</td><td>√</td><td>√</td><td>√</td><td>√</td><td>✕</td><td>✕</td><td>✕</td><td>√</td><td>√</td></tr><tr><td>HIPC (Ours)</td><td>√</td><td>√</td><td>√</td><td>√</td><td>√</td><td>√</td><td>√</td><td>√</td><td>√</td></tr></table>
+
+MotionGPT (Jiang et al., 2023) formulate motion generation as sequential prediction in a unified motion–language space. Recent methods increasingly combine the strengths of advanced architectures through masked modeling (Guo et al., 2024; Chen, 2024), hybrid conditions (Zhao et al., 2025; Li et al., 2025), and scaling controllable modeling (Rempe et al., 2026; Zhao et al., 2026). HIPC adopts the autoregressive diffusion paradigm as its motion planner backbone.
+
+Humanoid Whole-Body Control. Physics-based motion imitation established a powerful framework for acquiring dynamic motor skills from reference motion. Early methods such as Deep-Mimic (Peng et al., 2018) and AMP (Peng et al., 2021) mainly focus on tracking individual motions or limited skill sets, while later systems such as HumanX (Wang et al., 2026b), HAIC (Li et al., 2026a), and VAIC (Li et al., 2026b) demonstrate increasingly agile whole-body behaviors and dynamic interactions. Recent works further scale motion data and model capacity to build universal motion trackers, such as SONIC (Luo et al., 2026) and ScaleBFM (Zeng et al., 2026), consolidating diverse behaviors into reusable low-level control policies. HIPC builds on this progress by coupling its generative planner with a general-purpose whole-body tracker as the execution interface.
+
+Humanoid Generative Motion Control. Generative control first emerged in humanoid robotics as a motion prior, GMP (Zhang et al., 2025), PDF-HR (Gu et al., 2026b) and PFM-HR (Gao et al., 2026) learn a motion distribution to improve policy exploration. Meanwhile, in physics-based character animation CLoSD (Tevet et al., 2025) couples an autoregressive diffusion planner with an RL tracker and closes the loop through simulated physical execution. Recent works extend this paradigm to physical humanoids. MotionBricks (Wang et al., 2026a) deploys a motion generator on a humanoid, but leaves the execution-side coupling problem unexplored. Heracles (Tao et al., 2026) identifies large state deviations as a key limitation of rigid reference tracking and introduces a state-conditioned diffusion middleware that preserves tracking near the reference while generating recovery motions under large deviations. TextOp (Xie et al., 2026) demonstrates real-time text-driven motion generation and execution, while ReactiveBFM (Chen et al., 2026) further studies execution feedback and asynchronous replanning. HIPC addresses the resulting execution-history and temporal-alignment issues while preserving a modular planner-controller interface.
+
+## 3 PROPOSED METHOD
+
+In this section, we present our closed-loop humanoid planning-and-control framework HIPC, as illustrated in Fig. 2. We first introduce canonical motion representation of the goal-conditioned motion planner in Sec. 3.1. Next, Sec. 3.2 addresses the distribution shift caused by directly feeding realized physical states back into the planner through execution-aware data preparation and history reanchoring. Finally, Sec. 3.3 presents the asynchronous planning-and-control system used for realworld deployment, together with latency compensation for continuous real-time replanning.
+
+## 3.1 GOAL-CONDITIONED MOTION PLANNING
+
+We formulate whole-body planning as conditional autoregressive motion generation. At each replanning step t, the planner observes the most recent H = 16 motion frames $\mathbf { x } _ { t - H + 1 : t }$ together with an optional condition set $\mathbf { c } _ { t } .$ and predicts a future motion chunk of $F = 6 4$ frames:
+
+![](images/1d93dd47fdb6f4773c18cc9540167f8e202a70592bbfb8627463f43b05e82276.jpg)  
+Figure 2: Interactive text-conditioned Generated Motion Sequence on motion controller.
+
+$$
+\hat {\mathbf {x}} _ {t + 1: t + F} = G _ {\theta} \left(\mathbf {x} _ {t - H + 1: t}, \mathbf {c} _ {t}\right).\tag{1}
+$$
+
+The generated chunk serves as a kinematic reference for the downstream universal whole-body controller. The condition set $\mathbf { c } _ { t }$ supports both geometric goals and semantic text commands, enabling diverse goal-directed whole-body motion generation.
+
+Canonical Motion Representation. Existing motion representations commonly decompose root orientation into roll, pitch, and yaw and construct a heading-aligned local frame, which can suffer from gimbal-lock singularities under large body rotations. We instead represent root motion through relative rigid-body transformations between consecutive root frames and treat horizontal and vertical quantities asymmetrically, using incremental horizontal quantities and direct vertical states. This canonical representation is invariant to global horizontal translation and heading and remains continuous across arbitrary root orientations, including upright, tilted, and fallen configurations. We define each motion frame as
+
+$$
+\mathbf {x} _ {t} = \left[ h _ {t}, \mathbf {g} _ {t}, ^ {E _ {t - 1}} \Delta \mathbf {p} _ {t - 1} ^ {\mathrm{h}}, ^ {E _ {t - 1}} \mathbf {R} _ {E _ {t}}, \mathbf {q} _ {t}, \mathbf {b} _ {t} \right],\tag{2}
+$$
+
+where ${ \bf R } _ { t } \in \mathrm { S O } ( 3 )$ and ${ \cal W } _ { \mathbf { p } _ { t } } \in \mathbb { R } ^ { 3 }$ denote the root orientation and position in the world frame, respectively. Here, $h _ { t }$ is the root height above ground, $\mathbf { g } _ { t } = \mathbf { R } _ { t } ^ { \top } \mathbf { g } \in \mathbb { R } ^ { 3 }$ is the gravity direction expressed in the current root frame, $\mathbf { \bar { q } } _ { t } \in \mathbb { R } ^ { 2 9 }$ contains the joint angles of the 29-DoF Unitree G1, and ${ \mathbf b } _ { t } \in \{ 0 , 1 \} ^ { 2 }$ denotes binary foot-contact states. The relative root translation and rotation are defined as $\dot { \boldsymbol E } _ { t - 1 } \dot { \Delta } \mathbf p _ { t - 1 } = \mathbf R _ { t - 1 } ^ { \top } \dot { \left( \^ W \mathbf p _ { t } - ^ { W } \mathbf p _ { t - 1 } \right) }$ and $E _ { t - 1 } \mathbf { R } _ { E _ { t } } = \mathbf { R } _ { t - 1 } ^ { \top } \mathbf { R } _ { t }$ , respectively, with $E _ { t - 1 } \Delta \mathbf { p } _ { t - 1 } ^ { \mathrm { h } }$ obtained by projecting $E _ { t - 1 } \Delta \mathbf { p } _ { t - 1 }$ onto the horizontal plane orthogonal to $\mathbf { g } _ { t - 1 }$ . All rotations provided to the network are encoded using the continuous 6D representation (Zhou et al., 2019), yielding a 44-dimensional motion representation.
+
+Goal-Conditioned Motion Generation. The planner supports optional geometric and semantic conditions, which can be provided independently, jointly, or omitted entirely. Geometric conditions specify explicit goals at time $t ^ { \star }$ , including root position $E _ { t } \Delta \mathbf { p } _ { t ^ { \star } } ^ { \mathrm { r o o t } }$ , root orientation ${ \cal E } _ { t } { \bf R } _ { t ^ { \star } } ^ { \mathrm { r o o t } }$ root linear velocity $\breve { E } _ { t } \mathbf { { \sigma } _ { \mathbf { V } _ { t ^ { \star } } ^ { \mathrm { r o o t } } } }$ , joint configuration $\mathbf { q } _ { t ^ { \star } } ,$ , and hand and foot end-effector positions $E _ { t } \Delta \mathbf { p } _ { t ^ { \star } } ^ { \mathrm { e e } } \in \mathbb { R } ^ { 4 \times 3 }$ . An optional time-to-arrival condition resolves temporal ambiguity by specifying when the goal should be reached. At each replanning step, spatial goals are re-expressed in the current root coordinate system, allowing the planner to respond naturally to changing targets despite being trained on fixed motion clips. Text provides complementary semantic guidance for motion styles that are difficult to specify through sparse geometric goals, rather than encoding complex task procedures. We show in Sec. 4 that this formulation supports diverse static and dynamic goal-conditioned applications.
+
+Our planner adopts the VAE–LDM formulation used in DART (Zhao et al., 2025) and TextOp (Xie et al., 2026). We first train a VAE to encode future motion chunks into a compact latent space and reconstruct them conditioned on recent motion history, and then freeze the VAE while training a latent diffusion model over the motion latents. During LDM training, we randomly sample a target frame from each future chunk, use its geometric state to construct the goal condition, and take the corresponding frame offset as the time-to-arrival condition. The sampled goal frame also provides the geometric goal error used for auxiliary supervision. To reduce autoregressive exposure bias, we further adopt self-rollout training, progressively replacing ground-truth history with modelgenerated motion during sequential chunk prediction.
+
+![](images/7f71d7c87a9bf5149041a2bf0f265ba6eae5bca29d7cd72418c7f6d745b7dd8b.jpg)  
+Figure 3: Geometry coverage and planning–control gaps. (a) Egocentric root-trajectory distribution in the training data. (b) Data-derived reachable workspace of hand and foot end-effectors. (c) Planning–control gaps caused by tracking deviation, execution-distribution shift, and inference delay, leading to reference discontinuities and physical jitter.
+
+## 3.2 EXECUTION-CONSISTENT MOTION CLOSURE
+
+Closing the motion loop requires the planner to remain reliable across diverse geometric goals, absorb realized-state feedback without leaving the training distribution, and recover from executioninduced deviations. We address these challenges through goal-aware data construction, state-history fusion, and recovery-oriented training.
+
+Motion Clips with Geometry Coverage. To make training motion cover the geometry goal as much space as possible, we use retargeted AMASS (Mahmood et al., 2019), LAFAN (Harvey et al., 2020) and HiPHI (Ji et al., 2026) through GMR (Araujo et al., 2025), segmented into fixed-length clips, and converted to the canonical representation in Eq. (2). We geometrically filter the retargeted motions by removing clips with severe self-collision or sustained center-of-mass displacement far outside the support region of the feet, and further discard motion categories that do not admit meaningful geometric goal specification. After filtering, we obtain 33,488 training clips and 1,764 validation clips across 189 action categories. To further improve directional coverage of geometric goals, we increase the sampling probability of clips associated with less frequent target directions during training. The resulting egocentric root and end-effector distributions are shown in Fig. 3(a,b), covering a broad range of reachable goals for real-world deployment.
+
+Hybrid State via History Re-anchoring. At planning time t, the realized robot state generally deviates from its planner prediction. We construct each hybrid history state by applying the current tracking deviation consistently to the generated history:
+
+$$
+\mathbf {s} _ {\tau} ^ {\mathrm{hyb}} = \pmb {\delta} _ {t} \oplus \mathbf {s} _ {\tau} ^ {\mathrm{pred}}, \qquad \pmb {\delta} _ {t} = \mathbf {s} _ {t} ^ {\mathrm{real}} \ominus \mathbf {s} _ {t} ^ {\mathrm{pred}},\tag{3}
+$$
+
+where τ denotes an arbitrary frame in the planner history. The operators ⊖ and ⊕ denote statewise deviation and composition, respectively, using rigid-body composition for the root pose and additive offsets for joint configurations. In particular, ${ \bf s } _ { t } ^ { \mathrm { h y b } } = { \bf s } _ { t } ^ { \mathrm { r e a l } }$ , so the latest realized state is directly incorporated into the planner history, and earlier frames are reconstructed from plannergenerated kinematics rather than controller-executed trajectories, avoiding dynamics-dependent execution histories and their high-frequency fluctuations. The reanchored states are then converted to the canonical motion representation x and used as planner history.
+
+Deviation-Decayed Recovery. To expose the planner to tracking deviations encountered by the hybrid history at deployment, we apply the same uniformly sampled deviation <sup>˜</sup>δ coherently to the entire history using the state transformation in Eq. (3). Over the future trajectory, the deviation progressively decays within a random recovery horizon, guiding the motion back toward the original ground-truth trajectory. This constructs a recoverable neighborhood around the motion manifold, allowing the planner to correct tracking deviations before they accumulate into persistent planning drift. For get-up motions, we apply stronger deviations only to the preceding fallen states while preserving the original get-up trajectory. This constructs additional recovery samples from diverse fallen configurations that converge to plausible pre-get-up states before entering the original get-up motion, increasing both the diversity and proportion of get-up examples in training.
+
+![](images/e3fb8b7217e1bbdda42687c3330b50eaf291c8ba3f2cf81e1a9b547d529a498b.jpg)  
+Figure 4: Static and switching goal reaching. Left: Trajectories from diverse initial states converge to a sharedfixed goal. Right: The robot continuously adapts its motion to switching goals ofdifferent types.
+
+## 3.3 ASYNCHRONOUS PLANNING AND CONTROL MECHANISM
+
+For real-time deployment, we propose two mechanisms for asynchronous planning and control via a fast-in-slow dual-system architecture and latency-aware history shifting. Asynchronous system try to keep high-frequency control non-blocking and reducing reference discontinuity caused by inference latency. Although asynchronous execution prevents planner inference from blocking the controller, the robot continues following the previous reference during generation and may therefore advance beyond the state from which the new chunk was planned.
+
+Fast-in-Slow Dual-System Architecture. Planning and control run as independent processes and communicate through a publisher–subscriber protocol. The planner replans at 2 Hz from the latest hybrid history with the goal re-expressed in the current egocentric frame, and publishes the resulting reference motion for the controller to track at 50 Hz; the realized robot state is then fed back to both the controller and planner. During planner inference, the controller continues tracking the latest available reference and switches to the newly published trajectory once it arrives. This fast-in-slow design enables non-blocking replanning while maintaining uninterrupted high-frequency control.
+
+Latency Compensation via History Shift. To reduce the discontinuity caused by inference latency, RTC (Black et al., 2026; 2025) notes that blending independently generated chunks can produce invalid intermediate actions and instead accounts for committed actions during inference or training. However, we regard it as a temporal misalignment of the autoregressive history and compensate for it through a predictive history shift. Let d denote the expected number of motion steps before the new reference becomes available, estimated by an exponential moving average of recent inference times. We select the predicted history window $[ t + d - H + 1 , t + d ]$ and construct it bidirectionally from the latest realized state s<sup>real</sup>, using the predicted relative kinematics to reconstruct the past and propagate forward toward the anticipated handoff state. The goal is then re-expressed relative to the anticipated handoff state $\mathbf { s } _ { t + d } ^ { \mathrm { h y b } } .$ . This simple shift aligns both history and goal conditioning with the expected reference switch, reducing latency-induced handoff inconsistency without output blending, inference-time inpainting, or delay-aware retraining.
+
+## 4 EXPERIMENTS
+
+To systematically analyze our proposed method, we adopt a comprehensive experiments covering Motion Quality and Executability, Goal-Reaching Precision, and Robustness and Recovery, and answering the following questions: (Q1) Can HIPC generate diverse and executable motions that can be tracked by a general controller? (Q2) Can HIPC accurately reach different geometric goal conditions? (Q3) Is HIPC robust from out-of-distribution physical states?
+
+Table 2: Comparison ofplanning-motion quality and tracker-conditioned execution. “→” denotes closer agreement with the dataset reference. Bold values denote the best results excluding the dataset. Mean ± standard deviation over three rollout seeds  
+(a) Replanning smoothness and geometric quality of planning motion
+
+<table><tr><td rowspan="2">Method</td><td colspan="2">Replanning Smoothness</td><td colspan="2">Ground Penetration</td><td colspan="2">Self-Penetration</td><td colspan="2">Foot-Ground Contact</td></tr><tr><td>PJ →</td><td>AUJ ↓</td><td>Time (%) ↓</td><td>Depth (cm) ↓</td><td>Time (%) ↓</td><td>Depth (cm) ↓</td><td>Skate (cm/s) ↓</td><td>Float (cm) ↓</td></tr><tr><td>Dataset</td><td> $0.166 \pm 0.717$ </td><td> $0.915 \pm 1.420$ </td><td> $93.000 \pm 14.551$ </td><td> $2.963 \pm 0.784$ </td><td> $29.440 \pm 37.016$ </td><td> $3.119 \pm 1.688$ </td><td> $0.886 \pm 1.631$ </td><td> $0.139 \pm 1.058$ </td></tr><tr><td>Kimodo</td><td> $0.982 \pm 0.778$ </td><td> $4.991 \pm 3.505$ </td><td> $44.427 \pm 19.989$ </td><td> $2.462 \pm 1.697$ </td><td> $9.710 \pm 14.081$ </td><td> $2.981 \pm 1.604$ </td><td> $6.885 \pm 76.076$ </td><td> $0.129 \pm 1.368$ </td></tr><tr><td>ARDY</td><td> $0.822 \pm 0.482$ </td><td> $4.170 \pm 2.883$ </td><td> $28.057 \pm 11.985$ </td><td> $2.291 \pm 1.217$ </td><td> $15.250 \pm 17.508$ </td><td> $2.964 \pm 1.535$ </td><td> $29.663 \pm 117.040$ </td><td> $0.445 \pm 2.240$ </td></tr><tr><td>TextOp</td><td> $1.003 \pm 0.959$ </td><td> $6.946 \pm 6.606$ </td><td> $70.987 \pm 21.212$ </td><td> $5.163 \pm 5.111$ </td><td> $34.243 \pm 27.974$ </td><td> $3.831 \pm 2.146$ </td><td> $103.696 \pm 288.884$ </td><td> $1.146 \pm 4.905$ </td></tr><tr><td>OMG</td><td> $0.915 \pm 0.461$ </td><td> $6.388 \pm 2.847$ </td><td> $52.363 \pm 19.597$ </td><td> $2.909 \pm 3.089$ </td><td> $30.160 \pm 27.405$ </td><td> $3.685 \pm 1.884$ </td><td> $85.147 \pm 163.188$ </td><td> $0.940 \pm 3.133$ </td></tr><tr><td>HIPC (Ours)</td><td> $0.492 \pm 0.264$ </td><td> $2.894 \pm 1.166$ </td><td> $90.920 \pm 13.026$ </td><td> $2.080 \pm 0.730$ </td><td> $5.350 \pm 17.259$ </td><td> $3.773 \pm 2.104$ </td><td> $17.378 \pm 62.129$ </td><td> $0.042 \pm 0.380$ </td></tr></table>
+
+(b) Goal-reaching, distributional, and semantic quality of tracking result
+
+<table><tr><td rowspan="2">Method</td><td colspan="2">Execution</td><td colspan="2">Motion Distribution</td><td colspan="4">Text-Motion Alignment</td></tr><tr><td>Fall (%) ↓</td><td> $E_{\text{pos}}(\mathbf{m})$  ↓</td><td>FID ↓</td><td>DIV →</td><td>R@1 ↑</td><td>R@2 ↑</td><td>R@3 ↑</td><td>MM-Dist ↓</td></tr><tr><td>Dataset</td><td>-</td><td>-</td><td>0.000 ± 0.000</td><td>1.188 ± 0.008</td><td>0.178 ± 0.022</td><td>0.270 ± 0.021</td><td>0.339 ± 0.017</td><td>1.301 ± 0.080</td></tr><tr><td>Kimodo</td><td>7.000 ± 25.515</td><td>0.457 ± 0.408</td><td>0.621 ± 0.001</td><td>1.190 ± 0.007</td><td>0.132 ± 0.024</td><td>0.210 ± 0.024</td><td>0.286 ± 0.023</td><td>1.329 ± 0.002</td></tr><tr><td>ARDY</td><td>1.667 ± 12.802</td><td>0.242 ± 0.238</td><td>0.605 ± 0.006</td><td>1.228 ± 0.005</td><td>0.100 ± 0.012</td><td>0.173 ± 0.024</td><td>0.241 ± 0.024</td><td>1.338 ± 0.002</td></tr><tr><td>TextOp</td><td>24.667 ± 43.107</td><td>-</td><td>0.743 ± 0.009</td><td>1.238 ± 0.002</td><td>0.079 ± 0.005</td><td>0.157 ± 0.000</td><td>0.231 ± 0.006</td><td>1.333 ± 0.000</td></tr><tr><td>OMG</td><td>7.000 ± 25.515</td><td>-</td><td>0.747 ± 0.032</td><td>1.194 ± 0.012</td><td>0.075 ± 0.011</td><td>0.139 ± 0.016</td><td>0.203 ± 0.022</td><td>1.322 ± 0.012</td></tr><tr><td>HIPC (Ours)</td><td>0.000 ± 0.000</td><td>0.101 ± 0.067</td><td>0.574 ± 0.000</td><td>1.194 ± 0.000</td><td>0.106 ± 0.000</td><td>0.175 ± 0.000</td><td>0.236 ± 0.000</td><td>1.324 ± 0.000</td></tr></table>
+
+## 4.1 EXPERIMENTAL SETUP AND REAL-WORLD DEPLOYMENT
+
+All experiments use the 29-DoF Unitree G1, with HIPC as the high-level planner and SONIC (Luo et al., 2026) as the downstream tracker. HIPC replans asynchronously at 2 Hz, while SONIC tracks the latest reference at 50 Hz. For comparison, each baseline uses the same SONIC tracker and 2 Hz closed-loop protocol; evaluations are offline unless otherwise stated to avoid inference-latency effects.
+
+For real-world deployment, HIPC and SONIC run off-board on an NVIDIA RTX 4070 GPU, with motion capture providing robot poses for egocentric goal construction. Across five goal configurations with three trials each, HIPC responds online to goal switches and corrects spatial deviations, including target overshoot. If the robot falls during locomotion, it can recover to standing and continue toward the goal without manual intervention. Additional details are provided in the Appendix.
+
+## 4.2 ANALYSIS FOR MOTION QUALITY AND EXECUTABILITY
+
+To address Q1, we evaluate HIPC from two perspectives: the quality of the generated motions and their executed motions. The former focuses on replanning smoothness and geometric plausibility, while the latter evaluates whether the generated references remain stable, goal-directed, and semantically meaningful after physical execution. All metric definitions are provided in the Appendix.
+
+Comparison on Motion Quality. We evaluate planning-motion quality on 100STYLE (Mason et al., 2022), using sampled motion histories and future root positions as planar goals. As shown in Table 2, HIPC substantially improves replanning smoothness and geometric quality, with lower boundary jerk, limited penetration, and reduced foot artifacts, while preserving motion diversity and text–motion alignment comparable to existing generative baselines. These improvements also translate to physical execution: after SONIC tracking, HIPC achieves zero falls and the lowest endpoint error among goal-conditioned baselines (0.101 m), together with the best FID. Overall, the results indicate that HIPC produces references that are not only smoother across replanning boundaries, but also more physically executable without sacrificing the distributional and semantic properties of generated motion.
+
+Ablation on Motion Closure Mechanism. Table 3 isolates the effects of execution feedback, history re-anchoring, and latency compensation. Predicted history avoids execution-induced distribution shift but leaves tracking deviations unobserved, causing spatial drift, while directly using realized histories introduces dynamics-dependent mismatch and less smooth handoff. History reanchoring resolves this trade-off by anchoring planner-native history to the realized state while preserving its kinematic structure, substantially improving goal accuracy. The additional reconstruction increases average end-to-end planning latency from 92 ms to 120 ms, still within the 2 Hz replanning budget. Latency compensation then accounts for state evolution during this interval, recovering smooth and stable handoff. Together, these results validate execution-consistent history re-anchoring and latency-aware replanning for closing the planning–control loop.
+
+Table 3: Ablation of motion-closure mechanisms. We compare planner-history constructions and handoff strategies that isolate execution feedback, history re-anchoring, and latency compensation. Metrics evaluate goal accuracy, stability, and seam smoothness; results are mean±std over three seeds.
+
+<table><tr><td colspan="2">Iterative Design</td><td colspan="2">Goal Reaching</td><td>Smoothness</td></tr><tr><td>Planner History</td><td>Chunk Handoff</td><td> $E_{\text{pos}}$  (m) ↓</td><td>Fall (%) ↓</td><td>Seam PJ ↓</td></tr><tr><td>Predicted</td><td>Direct Switching</td><td>0.371 ± 0.037</td><td>0.000 ± 0.000</td><td>0.005 ± 0.000</td></tr><tr><td>Realized</td><td>Direct Switching</td><td>0.547 ± 0.093</td><td>4.444 ± 3.143</td><td>0.012 ± 0.002</td></tr><tr><td>Hybrid</td><td>Direct Switching</td><td>0.147 ± 0.028</td><td>2.222 ± 3.143</td><td>0.009 ± 0.002</td></tr><tr><td>Hybrid</td><td>Latency Compensation</td><td>0.129 ± 0.017</td><td>0.000 ± 0.000</td><td>0.005 ± 0.000</td></tr></table>
+
+## 4.3 ANALYSIS FOR GOAL REACHING ABILITY
+
+To answer Q2, we evaluate HIPC from two complementary aspects: unified realization of diverse static goal conditions and online tracking of dynamically updated goals from upstream planners.
+
+Static Goal Achievement. We evaluate HIPC on 330 trials covering 11 goal configurations, with 30 trials per setting and states and targets sampled from 100STYLE (Mason et al., 2022). Table 4 shows that a single planner supports root position, orientation, velocity, joint, and end-effector goals, together with representative compositions. While individual goals are matched accurately, composed conditions exhibit cross-goal interference: increasing the number of constraints does not consistently improve each component and can reduce its accuracy as multiple objectives compete within the same motion. This trade-off is most apparent for full-state goals, and adding text introduces a further modest degradation, showing that semantic and geometric conditioning can be combined but are not completely decoupled.
+
+Dynamic Goal Tracking. As shown in Fig. 5, we evaluate HIPC in six Replica indoor scenes (Straub et al., 2019) imported into Isaac Sim, using two upstream navigation modules: an occupancy-map-based A\* planner with obstacle inflation and the vision-and-language navigation model OmniNav (Xue et al., 2025). Their waypoints are transformed into HIPC’s egocentric goal conditions for online navigation. Across 50 navigation trials each, A\* and OmniNav achieve 90% and 70% success in reaching the final navigation goal, respectively. The gap reflects the greater reliability of map-based geometric planning, while the VLN result shows that HIPC can reliably track dynamically updated navigation goals from higher-level upstream planners, supporting its use as a planner-agnostic whole-body execution interface.
+
+![](images/bd1cf27eb583ce3279c8dca3a3f43cd360cf138f00e64b22df185e6276c30c3e.jpg)  
+Figure 5: Dynamic goal trackingfor navigation. HIPC executes dynamically updated waypointsfrom visionand-language navigation planners as egocentric whole-body goals in Replica scenes.
+
+Table 4: Goal reaching under individual and representative composed conditions. For individual goals, “Error” denotes the corresponding goal-specific metric. Representative compositions are evaluated jointly over all specified components; additional combinations are reported in the Appendix.  
+(a) Individual goals  
+(b) Composed goals
+
+<table><tr><td>Goal Condition</td><td>Error</td></tr><tr><td>Root Position</td><td>0.079 ±0.049</td></tr><tr><td>Root Orientation</td><td>0.092 ±0.026</td></tr><tr><td>Joint Configuration</td><td>0.129 ±0.085</td></tr><tr><td>Root Velocity</td><td>0.361 ±0.303</td></tr><tr><td>End-Effector Position</td><td>0.156 ±0.051</td></tr></table>
+
+<table><tr><td>Goal Condition</td><td> $E_{\text{pos}}$  (m) ↓</td><td> $E_{\text{ori}}$  (rad) ↓</td><td> $E_{\text{MPJPE}}^{\text{goal}}$  (m) ↓</td><td> $E_{\text{vel}}$  (m/s) ↓</td><td> $E_{\text{ee}}$  (m) ↓</td></tr><tr><td>Position + Orientation</td><td> $0.110 \pm 0.069$ </td><td> $\mathbf{0.082} \pm 0.044$ </td><td>-</td><td>-</td><td>-</td></tr><tr><td>Position + Joint</td><td> $0.112 \pm 0.060$ </td><td>-</td><td> $0.116 \pm 0.081$ </td><td>-</td><td>-</td></tr><tr><td>Position + Velocity</td><td> $0.095 \pm 0.061$ </td><td>-</td><td>-</td><td> $\mathbf{0.576} \pm 0.469$ </td><td>-</td></tr><tr><td>Position + End-Effector</td><td> $\mathbf{0.085} \pm 0.038$ </td><td>-</td><td>-</td><td>-</td><td> $\mathbf{0.146} \pm 0.035$ </td></tr><tr><td>Full-state Goal</td><td> $0.130 \pm 0.063$ </td><td> $0.133 \pm 0.053$ </td><td> $\mathbf{0.056} \pm 0.016$ </td><td> $0.577 \pm 0.470$ </td><td> $0.182 \pm 0.076$ </td></tr><tr><td>Full-state Goal + Text</td><td> $0.142 \pm 0.137$ </td><td> $0.166 \pm 0.121$ </td><td> $0.069 \pm 0.029$ </td><td> $0.579 \pm 0.455$ </td><td> $0.206 \pm 0.142$ </td></tr></table>
+
+Table 5: Robustness tophysicalperturbations andfall recovery. (a) evaluates goal reaching after randomized external disturbances. (b) induces falls with a 500 N horizontal force for 0.1 s in a uniformly random direction, then commands a same-position standing goal and reports recovery rate and get-up time over successful trials.  
+(a) Robustness under perturbations
+
+<table><tr><td>Method</td><td>Fall (%) ↓</td><td> $E_{\text{pos}}$  (m) ↓</td><td>Response PJ ↓</td></tr><tr><td>TextOp</td><td>29.167 ±0.851</td><td>1.615 ±0.065</td><td>0.070 ±0.007</td></tr><tr><td>Kimodo</td><td>7.986 ±2.140</td><td>0.443 ±0.014</td><td>0.059 ±0.005</td></tr><tr><td>ARDY</td><td>2.431 ±1.299</td><td>0.251 ±0.022</td><td>0.045 ±0.005</td></tr><tr><td>OMG</td><td>8.681 ±4.019</td><td>2.642 ±0.109</td><td>0.068 ±0.005</td></tr><tr><td>HIPC (Ours)</td><td>0.000 ±0.000</td><td>0.105 ±0.005</td><td>0.034 ±0.001</td></tr></table>
+
+(b) Recovery after induced falls
+
+<table><tr><td>Variant</td><td>Recovery (%) ↑</td><td> $T_{\text{getup}}$  (s) ↓</td></tr><tr><td>Heading-based Representation</td><td>0.000 ±0.000</td><td>-</td></tr><tr><td>w/o History Re-anchoring</td><td>0.000 ±0.000</td><td>-</td></tr><tr><td>w/o Deviation-Decayed Recovery</td><td>0.000 ±0.000</td><td>-</td></tr><tr><td>HIPC</td><td>53.333 ±9.428</td><td>7.227 ±0.318</td></tr></table>
+
+## 4.4 ROBUSTNESS AND RECOVERY ANALYSIS
+
+To answer Q3, we evaluate whether HIPC can close the planning–control loop under large execution deviations caused by transient perturbations and dynamically induced falls. We assess its ability to preserve goal-directed motion after disturbances and recover from fallen states through endpoint error, fall rate, response smoothness, recovery success, and get-up time.
+
+Robustness to Physical Perturbations. Following the same goal-reaching protocol as Sec. 4.2, we apply randomized external forces and evaluate post-perturbation stability, goal preservation, and response smoothness. As shown in Table 5(a), HIPC achieves zero falls together with the lowest endpoint error and response PJ, demonstrating that execution-consistent replanning can correct disturbance-induced deviations while preserving both task accuracy and smooth physical execution.
+
+Fall Recovery. We induce diverse falls using a 500 N horizontal force for 0.1 s with random direction, then command an upright standing goal at the same position. HIPC recovers in 53.33% of trials with a mean get-up time of 7.23 s, whereas the heading-based representation and variants without history re-anchoring or deviation-decayed recovery achieve no successful recoveries (Table 5(b)). This confirms the importance of yaw-free representation, execution-consistent history construction, and recovery-oriented training.
+
+## 5 CONCLUSION AND LIMITATION
+
+Conclusion. We presented HIPC, a closed-loop humanoid planning-and-control framework that integrates goal-conditioned generative motion planning with execution-consistent feedback and latency-aware asynchronous control. By closing the loop between motion generation and physical execution while preserving planner–controller modularity, HIPC supports accurate goal reaching, robust perturbation recovery, and recovery from unseen fallen configurations across diverse wholebody tasks.
+
+Limitations. Despite these strengths, HIPC currently closes the loop primarily between motion planning and physical execution, while relying on externally provided goal states rather than direct environment perception. In real-world deployment, accurate spatial goals are therefore obtained from external localization systems such as motion capture, which increases sensing and communication complexity. Additionally, controller-dependent tracking errors may persist despite HIPC’s closed-loop corrections. Addressing these errors while preserving real-time performance and planner–controller modularity remains a direction for future work.
+
+## REFERENCES
+
+Joao Pedro Araujo, Yanjie Ze, Pei Xu, Jiajun Wu, and C Karen Liu. Retargeting matters: General motion retargeting for humanoid motion tracking. arXiv preprint arXiv:2510.02252, 2025.
+
+Kevin Black, Allen Z Ren, Michael Equi, and Sergey Levine. Training-time action conditioning for efficient real-time chunking. arXiv preprint arXiv:2512.05964, 2025.
+
+Kevin Black, Manuel Galliker, and Sergey Levine. Real-time execution of action chunking flow policies. Advances in Neural Information Processing Systems, 38:33383–33407, 2026.
+
+Xiao Chen, Weishuai Zeng, Xiaojie Niu, Zirui Wang, Jianan Li, Huayi Wang, Furui Xu, Jiahe Chen, Weixiang Zhong, Lihe Ding, et al. Reactivebfm: Reactive closed-loop motion planning towards universal humanoid whole-body control. arXiv preprint arXiv:2606.30362, 2026.
+
+Xingyu Chen. Text-driven human motion generation with motion masked diffusion model. arXiv preprint arXiv:2409.19686, 2024.
+
+Xingyu Chen, Hanyu Wu, Sikai Wu, Diyun Xiang, Haodong Zhang, Yangchen Zhou, Yukang Gao, Yi Gu, Renjing Xu, et al. Human motion as humanoid robot data: A scalable whole-body motion transfer via implicit kinodynamic motion retargeting. In RSS 2026 Workshop on Data-Centric Robotics: What Data Do Robots Really Need?
+
+Yukang Gao, Yi Gu, Yangchen Zhou, Xingyu Chen, Zhaorui Wang, Fanghai Zhang, Hanyang Cao, Zhengyang Shen, Ji Ma, Runhan Zhang, et al. Pfm-hr: Pose flow matching for humanoid robots. arXiv preprint arXiv:2608.03227, 2026.
+
+Yan Gu, Guanya Shi, Fan Shi, I-Chia Chang, Yen-Jen Wang, Qilong Cheng, Zachary Olkin, Ivan Lopez-Sanchez, Yunchu Feng, Jian Zhang, et al. Evolution of humanoid locomotion control. Science Robotics, 11(117):eaed3973, 2026a.
+
+Yi Gu, Yukang Gao, Yangchen Zhou, Xingyu Chen, Yixiao Feng, Mingle Zhao, Yunyang Mo, Zhaorui Wang, Lixin Xu, and Renjing Xu. Hr: Pose distance fields for humanoid robots. arXiv preprint arXiv:2602.04851, 2026b.
+
+Chuan Guo, Yuxuan Mu, Muhammad Gohar Javed, Sen Wang, and Li Cheng. Momask: Generative masked modeling of 3d human motions. In 2024 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pp. 1900–1910. IEEE, 2024.
+
+Felix G. Harvey, Mike Yurick, Derek Nowrouzezahrai, and Christopher Pal. Robust motion in-´ betweening. 39(4), 2020.
+
+Jiahao Ji, Ji Ma, Runhan Zhang, Runyi Yu, Wenjia Wang, Weiheng Chi, Qianqian Peng, Weichao Yan, Yongfei Gu, Ye Tian, et al. Hiphi: A large-scale benchmark for high-precision human motion and object-interaction. arXiv preprint arXiv:2608.16222, 2026.
+
+Biao Jiang, Xin Chen, Wen Liu, Jingyi Yu, Gang Yu, and Tao Chen. Motiongpt: Human motion as a foreign language. Advances in Neural Information Processing Systems, 36:20067–20079, 2023.
+
+Dmitry Kaynov. Open motion control architecture for humanoid robots. 2008.
+
+Scott Kuindersma, Robin Deits, Maurice Fallon, Andres Valenzuela, Hongkai Dai, Frank Perme-´ nter, Twan Koolen, Pat Marion, and Russ Tedrake. Optimization-based locomotion planning, estimation, and control design for the atlas humanoid robot. Autonomous robots, 40(3):429–455, 2016.
+
+Dongting Li, Xingyu Chen, Qianyang Wu, Bo Chen, Sikai Wu, Hanyu Wu, Guoyao Zhang, Liang Li, Mingliang Zhou, Diyun Xiang, et al. Haic: Humanoid agile object interaction control via dynamics-aware world model. arXiv preprint arXiv:2602.11758, 2026a.
+
+Dongting Li, Qianyang Wu, Xingyu Chen, Liang Li, Yuhang Lin, Sikai Wu, Guoyao Zhang, Mingliang Zhou, Diyun Xiang, Qiang Zhang, et al. Vaic: Vision-guided humanoid agile object interaction control via decoupled commands. arXiv preprint arXiv:2606.09286, 2026b.
+
+Jiefeng Li, Jinkun Cao, Haotian Zhang, Davis Rempe, Jan Kautz, Umar Iqbal, and Ye Yuan. Genmo: A generalist model for human motion. In 2025 IEEE/CVF International Conference on Computer Vision (ICCV), pp. 11766–11776. IEEE, 2025.
+
+Zhengyi Luo, Ye Yuan, Tingwu Wang, Chenran Li, Fernando Castaneda, Sirui Chen, Zi-Ang Cao,˜ Jiefeng Li, David Minor, Qingwei Ben, et al. Sonic: Supersizing motion tracking for natural humanoid whole-body control. Science Robotics, 11(117):eaed4592, 2026.
+
+Naureen Mahmood, Nima Ghorbani, Nikolaus F Troje, Gerard Pons-Moll, and Michael J Black. Amass: Archive of motion capture as surface shapes. In Proceedings of the IEEE/CVF international conference on computer vision, pp. 5442–5451, 2019.
+
+Ian Mason, Sebastian Starke, and Taku Komura. Real-time style modelling of human locomotion via feature-wise transformations and local motion phases. Proceedings ofthe ACM on Computer Graphics and Interactive Techniques, 5(1), may 2022. doi: 10.1145/3522618.
+
+Xue Bin Peng, Pieter Abbeel, Sergey Levine, and Michiel Van de Panne. Deepmimic: Exampleguided deep reinforcement learning of physics-based character skills. ACM Transactions On Graphics (TOG), 37(4):1–14, 2018.
+
+Xue Bin Peng, Ze Ma, Pieter Abbeel, Sergey Levine, and Angjoo Kanazawa. Amp: Adversarial motion priors for stylized physics-based character control. ACM Transactions on Graphics (ToG), 40(4):1–20, 2021.
+
+Davis Rempe, Mathis Petrovich, Ye Yuan, Haotian Zhang, Xue Bin Peng, Yifeng Jiang, Tingwu Wang, Umar Iqbal, David Minor, Michael de Ruyter, et al. Kimodo: Scaling controllable human motion generation. arXiv preprint arXiv:2603.15546, 2026.
+
+RoboParty Lab Team. Mimiclite: Efficient and effective general humanoid motion tracking. https://github.com/EGalahad/mimic-lite, 2026. Technical report: https:// github.com/Roboparty/MimicLite/blob/main/mimic-lite.pdf.
+
+Nicholas Rotella, Michael Bloesch, Ludovic Righetti, and Stefan Schaal. State estimation for a humanoid robot. In 2014 IEEE/RSJ International Conference on Intelligent Robots and Systems, pp. 952–958. IEEE, 2014.
+
+Julian Straub, Thomas Whelan, Lingni Ma, Yufan Chen, Erik Wijmans, Simon Green, Jakob J Engel, Raul Mur-Artal, Carl Ren, Shobhit Verma, et al. The replica dataset: A digital replica of indoor spaces. arXiv preprint arXiv:1906.05797, 2019.
+
+Zelin Tao, Zeran Su, Peiran Liu, Jingkai Sun, Wenqiang Que, Jiahao Ma, Jialin Yu, Jiahang Cao, Pihai Sun, Hao Liang, et al. Heracles: Bridging precise tracking and generative synthesis for general humanoid control. arXiv preprint arXiv:2603.27756, 2026.
+
+Guy Tevet, Sigal Raab, Brian Gordon, Yoni Shafir, Daniel Cohen-or, and Amit Haim Bermano. Human motion diffusion model. In The Eleventh International Conference on Learning Representations, 2023. URL https://openreview.net/forum?id=SJ1kSyO2jwu.
+
+Guy Tevet, Sigal Raab, Setareh Cohan, Daniele Reda, Zhengyi Luo, Xue Bin Peng, Amit Bermano, and Michiel Van de Panne. Closd: Closing the loop between simulation and diffusion for multitask character control. In International Conference on Learning Representations, volume 2025, pp. 46506–46520, 2025.
+
+Tingwu Wang, Olivier Dionne, Michael De Ruyter, David Minor, Davis Rempe, Kaifeng Zhao, Mathis Petrovich, Ye Yuan, Chenran Li, Zhengyi Luo, Brian Robison, Xavier Blackwell, Bernardo Antoniazzi, Xue Bin Peng, Yuke Zhu, and Simon Yuen. Motionbricks: Scalable real-time motions with modular latent generative model and smart primitives, 2026a. URL https://arxiv.org/abs/2604.24833.
+
+Yinhuai Wang, Qihan Zhao, Yuen Fui Lau, Runyi Yu, Hok Wai Tsui, Qifeng Chen, Jingbo Wang, Jiangmiao Pang, and Ping Tan. Humanx: Toward agile and generalizable humanoid interaction skills from human videos. arXiv preprint arXiv:2602.02473, 2026b.
+
+Weiji Xie, Jiakun Zheng, Jinrui Han, Jiyuan Shi, Weinan Zhang, Chenjia Bai, and Xuelong Li. Textop: Real-time interactive text-driven humanoid robot motion generation and control. arXiv preprint arXiv:2602.07439, 2026.
+
+Weisheng Xu, Qiwei Wu, Jiaxi Zhang, Jing Tan, Yangfan Li, Yuetong Fang, Jiaqi Xiong, Kai Wu, Rong Ou, and Renjing Xu. Iterative closed-loop motion synthesis for scaling the capabilities of humanoid control. In Proceedings ofthe IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp. 16398–16407, 2026.
+
+Xinda Xue, Junjun Hu, Minghua Luo, Xie Shichao, Jintao Chen, Zixun Xie, Quan Kuichen, Guo Wei, Mu Xu, and Zedong Chu. Omninav: A unified framework for prospective exploration and visual-language navigation. arXiv preprint arXiv:2509.25687, 2025.
+
+Weishuai Zeng, Kangning Yin, Xiaojie Niu, Shunlin Lu, Weixiang Zhong, Jiahe Chen, Feiyu Jia, Xiao Chen, Zirui Wang, Furui Xu, et al. Scaling behavior foundation model for humanoid robots. arXiv preprint arXiv:2607.15163, 2026.
+
+Haodong Zhang, Liang Zhang, Zhenghan Chen, Lu Chen, Yue Wang, and Rong Xiong. Natural humanoid robot locomotion with generative motion prior. In 2025 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), pp. 6622–6629. IEEE, 2025.
+
+Kaifeng Zhao, Gen Li, and Siyu Tang. Dartcontrol: A diffusion-based autoregressive motion model for real-time text-driven motion control. In International Conference on Learning Representations, volume 2025, pp. 23569–23592, 2025.
+
+Kaifeng Zhao, Mathis Petrovich, Haotian Zhang, Tingwu Wang, Siyu Tang, and Davis Rempe. Autoregressive diffusion with hybrid representation for interactive human motion generation. ACM Transactions on Graphics (TOG), 45(4):1–14, 2026.
+
+Yi Zhou, Connelly Barnes, Jingwan Lu, Jimei Yang, and Hao Li. On the continuity of rotation representations in neural networks. In 2019 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pp. 5738–5746. IEEE, 2019.
+
+## A APPENDIX
+
+## A.1 MOTION GENERATION
+
+Horizontal Projection. The horizontal root increment is defined with respect to the instantaneous gravity direction rather than a yaw-aligned world plane. Given the local root displacement
+
+$$
+{ } ^ { E _ { t - 1 } } \Delta \mathbf { p } _ { t - 1 } = \mathbf { R } _ { t - 1 } ^ { \top } \left( ^ { W } \mathbf { p } _ { t } - ^ { W } \mathbf { p } _ { t - 1 } \right) ,\tag{4}
+$$
+
+we remove its component parallel to the local gravity vector $\mathbf { g } _ { t - 1 } = \mathbf { R } _ { t - 1 } ^ { \top } \mathbf { g }$ . The projected horizontal displacement is therefore
+
+$$
+{ } ^ { E _ { t - 1 } } \Delta \mathbf { p } _ { t - 1 } ^ { \mathrm{h} } = { } ^ { E _ { t - 1 } } \Delta \mathbf { p } _ { t - 1 } - \frac { \left( { } ^ { E _ { t - 1 } } \Delta \mathbf { p } _ { t - 1 } \right) ^ { \top } \mathbf { g } _ { t - 1 } } { \| \mathbf { g } _ { t - 1 } \| _ { 2 } ^ { 2 } } \mathbf { g } _ { t - 1 } .\tag{5}
+$$
+
+Equivalently, this applies the orthogonal projection matrix
+
+$$
+\mathbf {P} _ {t - 1} ^ {\mathrm{h}} = \mathbf {I} - \frac {\mathbf {g} _ {t - 1} \mathbf {g} _ {t - 1} ^ {\top}}{\| \mathbf {g} _ {t - 1} \| _ {2} ^ {2}}\tag{6}
+$$
+
+to the local displacement. This construction defines horizontal motion intrinsically from gravity and therefore remains valid even when the root is strongly tilted or inverted.
+
+State–Motion Representation Conversion. Our canonical representation admits deterministic conversion between a state trajectory and its motion representation. Let a robot state be
+
+$$
+\mathbf {s} _ {t} = \left[ ^ {W} \mathbf {p} _ {t}, \mathbf {R} _ {t}, \mathbf {q} _ {t}, \mathbf {b} _ {t} \right],\tag{7}
+$$
+
+and consider a sequence of $T + 1$ states $\mathbf { s } _ { 0 : T }$ . Applying Eq. 2 to each consecutive pair $\left( \mathbf { s } _ { t - 1 } , \mathbf { s } _ { t } \right)$ produces $T$ motion frames $\mathbf { x } _ { 1 : T }$ . Hence, in our planner, $H + F + 1$ states correspond to $H + F$ motion frames.
+
+The inverse conversion follows directly from the incremental construction. Given $\mathbf { x } _ { 1 : T }$ and the initial root pose $( ^ { W } \mathbf { p } _ { 0 } , \mathbf { R } _ { 0 } )$ , we recursively reconstruct the root orientation as
+
+$$
+\mathbf {R} _ {t} = \mathbf {R} _ {t - 1} ^ {E _ {t - 1}} \mathbf {R} _ {E _ {t}}.\tag{8}
+$$
+
+The local horizontal displacement is transformed back to the world frame and accumulated, while the vertical coordinate is assigned directly from the predicted height:
+
+$$
+\begin{array}{r} ^ {W} \Delta {\bf p} _ {t - 1} ^ {\mathrm{h}} = {\bf R} _ {t - 1} ^ {E _ {t - 1}} \Delta {\bf p} _ {t - 1} ^ {\mathrm{h}}, \\ ^ {W} {\bf p} _ {t} ^ {\mathrm{h}} = ^ {W} {\bf p} _ {t - 1} ^ {\mathrm{h}} + ^ {W} \Delta {\bf p} _ {t - 1} ^ {\mathrm{h}}, \\ (^ {W} {\bf p} _ {t}) _ {z} = h _ {t}. \end{array}\tag{9}
+$$
+
+The joint configuration $\mathbf { q } _ { t }$ and contact state $\mathbf { b } _ { t }$ are stored explicitly in $\mathbf { x } _ { t }$ , and $\mathbf { g } _ { t }$ is consistent with the reconstructed orientation through $\mathbf { g } _ { t } = \mathbf { R } _ { t } ^ { \top } \mathbf { g }$ . Consequently, $\mathbf { x } _ { \mathrm { 1 : } T }$ together with the initial root pose uniquely determines the subsequent states $\mathbf { s } _ { 1 : T }$ , up to numerical precision in the rotation representation.
+
+The mapping is intentionally not bijective. When converting $\mathbf { s } _ { 0 : T }$ to $\mathbf { x } _ { \mathrm { 1 : } T }$ , the initial joint and contact states $\left( { \bf q } _ { 0 } , { \bf b } _ { 0 } \right)$ are not retained, and the global planar translation and heading are removed by the canonical representation. Therefore, recovering the original $T + 1$ states additionally requires the initial full state; with only the initial root pose, the remaining $T$ states are reconstructible, whereas $\mathbf { s } _ { 0 }$ is not fully recoverable
+
+State Deviation and Composition. We define the operators $\ominus$ and $\oplus$ used in history re-anchoring directly in the robot state space. For the root pose, let
+
+$$
+\mathbf {T} (\mathbf {s}) = \left[ \begin{array}{c c} \mathbf {R} & ^ {W} \mathbf {p} \\ \mathbf {0} ^ {\top} & 1 \end{array} \right] \in \mathrm{SE} (3).\tag{10}
+$$
+
+Given two states $\mathbf { s } ^ { a }$ and $\mathbf { s } ^ { b }$ , their state deviation $\pmb { \delta } = \mathbf { s } ^ { a } \ominus \mathbf { s } ^ { b }$ consists of the relative root transform and joint offset
+
+$$
+\Delta \mathbf {T} = \mathbf {T} (\mathbf {s} ^ {a}) \mathbf {T} (\mathbf {s} ^ {b}) ^ {- 1}, \quad \Delta \mathbf {q} = \mathbf {q} ^ {a} - \mathbf {q} ^ {b}.\tag{11}
+$$
+
+Applying this deviation to another state s is defined by
+
+$$
+\boldsymbol {\delta} \oplus \mathbf {s} = [ \Delta \mathbf {T} \mathbf {T} (\mathbf {s}), \mathbf {q} + \Delta \mathbf {q}, \mathbf {b} ],\tag{12}
+$$
+
+where the first term denotes rigid-body composition of the root pose and the contact state is inherited from s. By construction,
+
+$$
+\left(\mathbf {s} ^ {a} \ominus \mathbf {s} ^ {b}\right) \oplus \mathbf {s} ^ {b} = \mathbf {s} ^ {a},\tag{13}
+$$
+
+for the root pose and joint configuration. In Eq. 3, the deviation measured at the current frame is applied uniformly to every planner-generated state in the history, yielding a coherent rigid-body displacement and joint-space offset rather than independently replacing individual historical states.
+
+Losses. The VAE is trained with feature reconstruction, latent regularization, and kinematic supervision:
+
+$$
+\mathcal {L} _ {\mathrm{VAE}} = \lambda_ {\mathrm{rec}} \mathcal {L} _ {\mathrm{rec}} + \lambda_ {\mathrm{KL}} \mathcal {L} _ {\mathrm{KL}} + \mathcal {L} _ {\mathrm{geo}},\tag{14}
+$$
+
+where $\mathcal { L } _ { \mathrm { r e c } }$ is a Huber loss on the canonical motion features and ${ \mathcal { L } } _ { \mathrm { K L } }$ regularizes the latent posterior toward a standard Gaussian. The geometric loss is
+
+$$
+\begin{array}{r} \mathcal {L} _ {\mathrm{geo}} = \lambda_ {\mathrm{trans}} \mathcal {L} _ {\mathrm{body}} ^ {\mathrm{trans}} + \lambda_ {\mathrm{rot}} \mathcal {L} _ {\mathrm{body}} ^ {\mathrm{rot}} + \lambda_ {\mathrm{dof}} \mathcal {L} _ {\mathrm{dof}} + \lambda_ {\mathrm{vel}} \mathcal {L} _ {\mathrm{dof}} ^ {\mathrm{vel}} \\ + \lambda_ {\mathrm{contact}} \mathcal {L} _ {\mathrm{contact}} + \lambda_ {\mathrm{chord}} \mathcal {L} _ {\mathrm{chord}}. \end{array}\tag{15}
+$$
+
+The first four terms supervise FK-space body poses, joint configurations, and angular velocities, while $\mathcal { L } _ { \mathrm { { c o n t a c t } } }$ penalizes support-foot velocity during contact. Euclidean quantities use the Huber loss, and body orientations use a chordal rotation distance.
+
+We further constrain the relative root rotation encoded by the representation directly on $\mathrm { S O ( 3 ) }$ . After mapping the predicted 6D rotation to a rotation matrix,
+
+$$
+\mathcal {L} _ {\mathrm{chord}} = \frac {1}{F} \sum_ {t = 1} ^ {F} \left\| \hat {\mathbf {R}} _ {t} ^ {\mathrm{rel}} - \mathbf {R} _ {t} ^ {\mathrm{rel}} \right\| _ {F} ^ {2}.\tag{16}
+$$
+
+Unlike $\mathcal { L } _ { \mathrm { b o d y } } ^ { \mathrm { r o t } }$ , which supervises global orientations of all body links after forward kinematics, this term directly constrains the relative-root-rotation variable itself.
+
+The diffusion planner is optimized with
+
+$$
+\mathcal {L} _ {\mathrm{LDM}} = \lambda_ {\mathrm{simple}} \mathcal {L} _ {\mathrm{simple}} + \lambda_ {\mathrm{rec}} \mathcal {L} _ {\mathrm{rec}} + \mathcal {L} _ {\mathrm{geo}} + \mathcal {L} _ {\mathrm{goal}},\tag{17}
+$$
+
+where $\mathcal { L } _ { \mathrm { s i m p l e } }$ is the Huber denoising loss in latent space. For geometric conditioning, we reconstruct the state trajectory from the predicted canonical motion and evaluate the specified quantities at the goal frame $t ^ { \star }$ , determined by the time-to-arrival condition when provided and otherwise set to the final predicted frame. The goal objective is
+
+$$
+\begin{array}{r} \mathcal {L} _ {\mathrm{goal}} = \lambda_ {\mathrm{pos}} ^ {\mathrm{h}} \mathcal {L} _ {\mathrm{pos}} ^ {\mathrm{h}} + \lambda_ {\mathrm{pos}} ^ {\mathrm{v}} \mathcal {L} _ {\mathrm{pos}} ^ {\mathrm{v}} + \lambda_ {\mathrm{ori}} \mathcal {L} _ {\mathrm{ori}} + \lambda_ {\mathrm{g}} \mathcal {L} _ {\mathrm{g}} \\ + \lambda_ {\mathrm{joint}} \mathcal {L} _ {\mathrm{joint}} + \lambda_ {\mathrm{vel}} \mathcal {L} _ {\mathrm{vel}} + \lambda_ {\mathrm{ee}} \mathcal {L} _ {\mathrm{ee}}. \end{array}\tag{18}
+$$
+
+These terms supervise horizontal displacement, height, root orientation, gravity direction, joint configuration, root velocity, and four hand/foot end-effector positions, respectively. Each goal loss is applied only to samples for which the corresponding condition is enabled and retained after condition dropout, and its weight is selected from the locomotion or recovery loss profile.
+
+## A.2 MOTION GENERATION
+
+Horizontal Projection. The horizontal root increment is defined with respect to the instantaneous gravity direction rather than a yaw-aligned world plane. Given the local root displacement
+
+$$
+{ } ^ { E _ { t - 1 } } \Delta \mathbf { p } _ { t - 1 } = \mathbf { R } _ { t - 1 } ^ { \top } \left( ^ { W } \mathbf { p } _ { t } - ^ { W } \mathbf { p } _ { t - 1 } \right) ,\tag{19}
+$$
+
+we remove its component parallel to the local gravity vector $\mathbf { g } _ { t - 1 } = \mathbf { R } _ { t - 1 } ^ { \top } \mathbf { g }$ . The projected horizontal displacement is therefore
+
+$$
+{ } ^ { E _ { t - 1 } } \Delta \mathbf { p } _ { t - 1 } ^ { \mathrm{h} } = { } ^ { E _ { t - 1 } } \Delta \mathbf { p } _ { t - 1 } - \frac { \left( { } ^ { E _ { t - 1 } } \Delta \mathbf { p } _ { t - 1 } \right) ^ { \top } \mathbf { g } _ { t - 1 } } { \| \mathbf { g } _ { t - 1 } \| _ { 2 } ^ { 2 } } \mathbf { g } _ { t - 1 } .\tag{20}
+$$
+
+Equivalently, this applies the orthogonal projection matrix
+
+$$
+\mathbf {P} _ {t - 1} ^ {\mathrm{h}} = \mathbf {I} - \frac {\mathbf {g} _ {t - 1} \mathbf {g} _ {t - 1} ^ {\top}}{\| \mathbf {g} _ {t - 1} \| _ {2} ^ {2}}\tag{21}
+$$
+
+to the local displacement. This construction defines horizontal motion intrinsically from gravity and therefore remains valid even when the root is strongly tilted or inverted.
+
+State–Motion Representation Conversion. Our canonical representation admits deterministic conversion between a state trajectory and its motion representation. Let a robot state be
+
+$$
+\mathbf {s} _ {t} = \left[ ^ {W} \mathbf {p} _ {t}, \mathbf {R} _ {t}, \mathbf {q} _ {t}, \mathbf {b} _ {t} \right],\tag{22}
+$$
+
+and consider a sequence of $T + 1$ states $\mathbf { s } _ { 0 : T }$ . Applying Eq. 2 to each consecutive pair $\left( \mathbf { s } _ { t - 1 } , \mathbf { s } _ { t } \right)$ produces $T$ motion frames $\mathbf { x } _ { 1 : T }$ . Hence, in our planner, $H + F + 1$ states correspond to $H + F$ motion frames.
+
+The inverse conversion follows directly from the incremental construction. Given $\mathbf { x } _ { 1 : T }$ and the initial root pose $( ^ { W } \mathbf { p } _ { 0 } , \mathbf { R } _ { 0 } )$ , we recursively reconstruct the root orientation as
+
+$$
+\mathbf {R} _ {t} = \mathbf {R} _ {t - 1} ^ {E _ {t - 1}} \mathbf {R} _ {E _ {t}}.\tag{23}
+$$
+
+The local horizontal displacement is transformed back to the world frame and accumulated, while the vertical coordinate is assigned directly from the predicted height:
+
+$$
+\begin{array}{c} ^ {W} \Delta \mathbf {p} _ {t - 1} ^ {\mathrm{h}} = \mathbf {R} _ {t - 1} ^ {E _ {t - 1}} \Delta \mathbf {p} _ {t - 1} ^ {\mathrm{h}}, \\ ^ {W} \mathbf {p} _ {t} ^ {\mathrm{h}} = ^ {W} \mathbf {p} _ {t - 1} ^ {\mathrm{h}} + ^ {W} \Delta \mathbf {p} _ {t - 1} ^ {\mathrm{h}}, \\ (^ {W} \mathbf {p} _ {t}) _ {z} = h _ {t}. \end{array}\tag{24}
+$$
+
+The joint configuration $\mathbf { q } _ { t }$ and contact state $\mathbf { b } _ { t }$ are stored explicitly in $\mathbf { x } _ { t } ,$ , and $\mathbf { g } _ { t }$ is consistent with the reconstructed orientation through $\mathbf { g } _ { t } = \mathbf { R } _ { t } ^ { \top } \mathbf { g } .$ . Consequently, $\mathbf { x } _ { \mathrm { 1 : } T }$ together with the initial root pose uniquely determines the subsequent states $\mathbf { s } _ { 1 : T }$ , up to numerical precision in the rotation representation.
+
+The mapping is intentionally not bijective. When converting ${ \bf s } _ { 0 : T }$ to $\mathbf { x } _ { \mathrm { 1 : } T }$ , the initial joint and contact states $\left( { \bf q } _ { 0 } , { \bf b } _ { 0 } \right)$ are not retained, and the global planar translation and heading are removed by the canonical representation. Therefore, recovering the original $T + 1$ states additionally requires the initial full state; with only the initial root pose, the remaining $T$ states are reconstructible, whereas $\mathbf { s } _ { 0 }$ is not fully recoverable.
+
+Losses. The VAE is trained with feature reconstruction, latent regularization, and kinematic supervision:
+
+$$
+\mathcal {L} _ {\mathrm{VAE}} = \lambda_ {\mathrm{rec}} \mathcal {L} _ {\mathrm{rec}} + \lambda_ {\mathrm{KL}} \mathcal {L} _ {\mathrm{KL}} + \mathcal {L} _ {\mathrm{geo}},\tag{25}
+$$
+
+where $\mathcal { L } _ { \mathrm { r e c } }$ is a Huber loss on the canonical motion features and ${ \mathcal { L } } _ { \mathrm { K L } }$ regularizes the latent posterior toward a standard Gaussian. The geometric loss is
+
+$$
+\begin{array}{r} \mathcal {L} _ {\mathrm{geo}} = \lambda_ {\mathrm{trans}} \mathcal {L} _ {\mathrm{body}} ^ {\mathrm{trans}} + \lambda_ {\mathrm{rot}} \mathcal {L} _ {\mathrm{body}} ^ {\mathrm{rot}} + \lambda_ {\mathrm{dof}} \mathcal {L} _ {\mathrm{dof}} + \lambda_ {\mathrm{vel}} \mathcal {L} _ {\mathrm{dof}} ^ {\mathrm{vel}} \\ + \lambda_ {\mathrm{contact}} \mathcal {L} _ {\mathrm{contact}} + \lambda_ {\mathrm{chord}} \mathcal {L} _ {\mathrm{chord}}. \end{array}\tag{26}
+$$
+
+The first four terms supervise FK-space body poses, joint configurations, and angular velocities, while $\mathcal { L } _ { \mathrm { { c o n t a c t } } }$ penalizes support-foot velocity during contact. Euclidean quantities use the Huber loss, and body orientations use a chordal rotation distance.
+
+We further constrain the relative root rotation encoded by the representation directly on $\mathrm { S O ( 3 ) }$ . After mapping the predicted 6D rotation to a rotation matrix,
+
+$$
+\mathcal {L} _ {\mathrm{chord}} = \frac {1}{F} \sum_ {t = 1} ^ {F} \left\| \hat {\mathbf {R}} _ {t} ^ {\mathrm{rel}} - \mathbf {R} _ {t} ^ {\mathrm{rel}} \right\| _ {F} ^ {2}.\tag{27}
+$$
+
+Unlike $\mathcal { L } _ { \mathrm { b o d y } } ^ { \mathrm { r o t } }$ , which supervises global orientations of all body links after forward kinematics, this term directly constrains the relative-root-rotation variable itself.
+
+The diffusion planner is optimized with
+
+$$
+\mathcal {L} _ {\mathrm{LDM}} = \lambda_ {\mathrm{simple}} \mathcal {L} _ {\mathrm{simple}} + \lambda_ {\mathrm{rec}} \mathcal {L} _ {\mathrm{rec}} + \mathcal {L} _ {\mathrm{geo}} + \mathcal {L} _ {\mathrm{goal}},\tag{28}
+$$
+
+where $\mathcal { L } _ { \mathrm { s i m p l e } }$ is the Huber denoising loss in latent space. For geometric conditioning, we reconstruct the state trajectory from the predicted canonical motion and evaluate the specified quantities at the goal frame $t ^ { \star }$ , determined by the time-to-arrival condition when provided and otherwise set to the final predicted frame. The goal objective is
+
+$$
+\begin{array}{r} \mathcal {L} _ {\mathrm{goal}} = \lambda_ {\mathrm{pos}} ^ {\mathrm{h}} \mathcal {L} _ {\mathrm{pos}} ^ {\mathrm{h}} + \lambda_ {\mathrm{pos}} ^ {\mathrm{v}} \mathcal {L} _ {\mathrm{pos}} ^ {\mathrm{v}} + \lambda_ {\mathrm{ori}} \mathcal {L} _ {\mathrm{ori}} + \lambda_ {\mathrm{g}} \mathcal {L} _ {\mathrm{g}} \\ + \lambda_ {\mathrm{joint}} \mathcal {L} _ {\mathrm{joint}} + \lambda_ {\mathrm{vel}} \mathcal {L} _ {\mathrm{vel}} + \lambda_ {\mathrm{ee}} \mathcal {L} _ {\mathrm{ee}}. \end{array}\tag{29}
+$$
+
+These terms supervise horizontal displacement, height, root orientation, gravity direction, joint configuration, root velocity, and four hand/foot end-effector positions, respectively. Each goal loss is applied only to samples for which the corresponding condition is enabled and retained after condition dropout, and its weight is selected from the locomotion or recovery loss profile.
+
+## A.3 EVALUATION METRICS
+
+Motion Quality. Motion quality is assessed in the feature space of a G1-specific text–motion contrastive evaluator inspired by TMR. The evaluator maps a two-second motion segment into a 512-dimensional $\ell _ { 2 } \cdot$ -normalized embedding: the 30 G1 body positions are expressed in the local root frame, sampled at 30 Hz over 60 frames, and the root translation and heading of the first frame are canonicalized away. Text is encoded by a frozen T5-3B encoder followed by a learned projection into the same feature space.
+
+Every cohort is embedded by this single fixed evaluator, so the three cohorts of a case are directly comparable: the ground truth is the future source window that follows the conditioning history, whereas the reference and executed cohorts are the first two seconds of the planned and of the physically executed trajectory of the same case. Source windows are recorded at 50 Hz and resampled to the evaluator’s 30 Hz input contract. Since the learned feature space is specific to this evaluator, absolute values are comparable across methods within a table but not with numbers reported under a different evaluator. Unless stated otherwise, the metrics below are evaluated over the 2-second window that follows the conditioning history and does not contain the history frames themselves.
+
+• Frechet Inception Distance (FID). FID is the principal metric for assessing the distributional similarity between generated and real motions in the extracted feature space. Let $( \mu _ { g } , \Sigma _ { g } )$ and $( \mu _ { x } , \Sigma _ { x } )$ be the means and covariances of the ground-truth and of a candidate cohort of embeddings. The FID is computed as
+
+$$
+\mathrm{FID} = \| \mu_ {g} - \mu_ {x} \| _ {2} ^ {2} + \mathrm{Tr} \left(\Sigma_ {g} + \Sigma_ {x} - 2 (\Sigma_ {g} \Sigma_ {x}) ^ {1 / 2}\right),\tag{30}
+$$
+
+and is reported as $\operatorname { F I D } ( G , R )$ for the planning reference and $\mathrm { F I D } ( G , E )$ for the executed motion. It is one dataset-level statistic rather than a mean of per-case values, and $\mathrm { F I D } ( G , G ) = 0$ is reported as the dataset sanity row.
+
+• Diversity (DIV). Diversity measures the spread of a cohort in the feature space. Randomly sampled pairs of distinct motion embeddings are compared, and their Euclidean distances are averaged:
+
+$$
+\mathrm{DIV} = \frac {1}{P} \sum_ {p = 1} ^ {P} \left\| x _ {a _ {p}} - x _ {b _ {p}} \right\| _ {2}, \quad a _ {p} \neq b _ {p},\tag{31}
+$$
+
+with $P = 3 0 0$ sampled pairs. The quantity to match is the diversity of the dataset, so DIV is reported for the dataset, the reference, and the executed cohort and is scored by its agreement with the dataset value; insufficient and excessive diversity are both errors.
+
+• R-precision (R@K). R@K evaluates text-to-motion semantic alignment by retrieval. A candidate batch of $M = 3 2$ motion–text pairs is formed, each text is used as a query, and the M motion embeddings of the batch are ranked by Euclidean distance to the query embedding. A query is a hit at K when its paired motion is among the K nearest candidates, and
+
+$$
+\mathrm{R@} K = \frac {1}{M} \sum_ {i = 1} ^ {M} \mathbb {I} \left(\operatorname{rank} _ {i} \leq K\right)\tag{32}
+$$
+
+is the mean hit rate over the batch. Because retrieval is defined text-to-motion, each text is the query and each candidate is a motion; the transposed motion-to-text score is a different quantity and is not reported. The final incomplete batch is completed with real negative motions so that every scored query is ranked against 32 real candidates; zero-padded candidates are invalid because real embeddings are unit normalized, which would place every dummy at a fixed distance and alter the ranking. The reported value averages 20 deterministic batch permutations.
+
+• Multimodal Distance (MM-Dist). MM-Dist directly measures the average proximity between a motion and its corresponding text in the feature space. For N valid text–motion pairs, let $\{ h _ { i } \} _ { i = 1 } ^ { N }$ and $\{ x _ { i } \} _ { i = 1 } ^ { N }$ be their respective text and motion feature vectors. MM-Dist is computed as
+
+$$
+\mathrm{MM-Dist} = \frac {1}{N} \sum_ {i = 1} ^ {N} \| x _ {i} - h _ {i} \| _ {2}.\tag{33}
+$$
+
+Despite its name, it is a paired text–motion distance rather than a distributional or a conditional-diversity statistic.
+
+• Multimodality (MMod.). Multimodality measures the diversity of motions generated under the same text condition. For each of $C$ conditions, all distinct pairs of embeddings produced by independent repetitions of that condition are compared and averaged, and the condition-level values are then averaged:
+
+$$
+\mathrm{MMod.} = \frac {1}{C} \sum_ {c = 1} ^ {C} \frac {1}{P _ {c}} \sum_ {p = 1} ^ {P _ {c}} \left\| x _ {c, a _ {p}} - x _ {c, b _ {p}} \right\| _ {2}.\tag{34}
+$$
+
+MMod is well defined only across independently generated samples. Every run reads the same source segment, so the apparent cross-run ground-truth samples are duplicate copies of one motion whose pairwise distance is mechanically zero; the dataset MMod is therefore not reported. Since multimodality reflects conditional motion diversity rather than a quantity to be maximized unconditionally, the reference and executed cohorts are evaluated by their agreement with the dataset reference.
+
+• Peak Jerk (PJ). PJ captures the most extreme instantaneous jerk occurring in a motion. Let $\mathbf { p } _ { t } ^ { b } \in \mathbb { R } ^ { 3 }$ be the world position of body b at frame t, obtained by forward kinematics from the evaluated joint configuration, and let
+
+$$
+\mathbf {j} _ {t} ^ {b} = \Delta^ {3} \mathbf {p} _ {t} ^ {b} = \mathbf {p} _ {t} ^ {b} - 3 \mathbf {p} _ {t - 1} ^ {b} + 3 \mathbf {p} _ {t - 2} ^ {b} - \mathbf {p} _ {t - 3} ^ {b}\tag{35}
+$$
+
+be its third finite difference. Following the FlowMDM convention, the jerk is not divided by $\Delta t ^ { 3 }$ , so the metric is expressed in $\mathrm { m / f r a m e ^ { 3 } }$ . The framewise jerk magnitude is the largest $\ell _ { 1 }$ jerk over all $B = 3 0$ bodies, and PJ is the mean over the N evaluated cases of the largest framewise magnitude within the evaluation window $\textstyle { \mathcal { T } } _ { i } \colon$
+
+$$
+\mathrm{PJ} = \frac {1}{N} \sum_ {i = 1} ^ {N} \max _ {t \in \mathcal {T} _ {i}} \max _ {1 \leq b \leq B} \left\| \mathbf {j} _ {t, i} ^ {b} \right\| _ {1}.\tag{36}
+$$
+
+• Area Under the Jerk (AUJ). AUJ measures the cumulative deviation of a motion’s smoothness from the dataset level. Let $j _ { \mathrm { a v g } }$ be the mean ground-truth framewise jerk magnitude, that is, the average of max $\| \mathbf { j } _ { t } ^ { b } \| _ { 1 }$ over all ground-truth evaluation windows, and let $J _ { t } = \operatorname* { m a x } _ { b } \| \mathbf { j } _ { t } ^ { b } \| _ { 1 }$ denote the framewise jerk magnitude of the evaluated motion. The metric is computed as
+
+$$
+\mathrm{AUJ} = \sum_ {t \in \mathcal {T}} \left| J _ {t} - j _ {\mathrm{avg}} \right|.\tag{37}
+$$
+
+AUJ is a per-case quantity that is averaged over cases; exceeding the dataset smoothness and being smoother than it are both penalized.
+
+• Seam PJ and Response PJ. The same jerk profile is also evaluated over short windows that isolate a discontinuity. Seam PJ centers a window of ±10 frames around every replanning seam, takes the largest framewise jerk magnitude within that window, and averages over the seams of the episode; the initial plan, which starts from a hold, is not a seam. Response PJ takes the largest framewise jerk magnitude over the fixed 2-second window that begins at the onset of the external perturbation, evaluated on the physically executed motion.
+
+• Ground Penetration. Ground penetration measures geometric violations between the generated robot motion and the ground plane. The floor is the plane geom of the robot model, whose surface lies at $z = 0 ,$ . For every non-visual collision geom q of the model, let $s _ { t , q }$ be its signed distance to the floor at frame t; the maximum penetration depth at frame t is
+
+$$
+d _ {t} ^ {\mathrm{GP}} = \max _ {q} \left[ - s _ {t, q} \right] _ {+}, \qquad [ x ] _ {+} = \max (x, 0).\tag{38}
+$$
+
+A frame counts as penetrating only when $d _ { t } ^ { \mathrm { G P } }$ strictly exceeds $\tau _ { p } = 1$ cm, which suppresses contact noise. The penetration time is the percentage of penetrating frames,
+
+$$
+\mathrm{GP} _ {\mathrm{time}} = \frac {1 0 0}{T} \sum_ {t = 1} ^ {T} \mathbb {I} \left(d _ {t} ^ {\mathrm{GP}} > \tau_ {p}\right),\tag{39}
+$$
+
+and the penetration depth is averaged over the penetrating frames only,
+
+$$
+\mathrm{GP} _ {\mathrm{depth}} = \frac {\sum_ {t = 1} ^ {T} d _ {t} ^ {\mathrm{GP}} \mathbb {I} (d _ {t} ^ {\mathrm{GP}} > \tau_ {p})}{\sum_ {t = 1} ^ {T} \mathbb {I} (d _ {t} ^ {\mathrm{GP}} > \tau_ {p})},\tag{40}
+$$
+
+reported in centimeters. A penetration depth of $0 \pm 0$ cm is reported when no frame violates the threshold.
+
+• Self-Penetration. Self-penetration measures intersections between robot bodies that are not kinematically adjacent. Let $\mathcal { P }$ be the set of collision-geom pairs whose bodies belong to different branches of the kinematic tree, excluding every pair in which one body is an ancestor of the other, and let $s _ { t , ( i , j ) }$ be their signed distance at frame t. The maximum self-penetration depth is
+
+$$
+d _ {t} ^ {\mathrm{SP}} = \max _ {(i, j) \in \mathcal {P}} \left[ - s _ {t, (i, j)} \right] _ {+}.\tag{41}
+$$
+
+The self-penetration time and depth apply the same $\tau _ { p } = 1$ cm violation threshold and the same averaging rule as ground penetration,
+
+$$
+\mathrm{SP} _ {\text {time}} = \frac {1 0 0}{T} \sum_ {t = 1} ^ {T} \mathbb {I} \left(d _ {t} ^ {\mathrm{SP}} > \tau_ {p}\right), \qquad \mathrm{SP} _ {\text {depth}} = \frac {\sum_ {t = 1} ^ {T} d _ {t} ^ {\mathrm{SP}} \mathbb {I} (d _ {t} ^ {\mathrm{SP}} > \tau_ {p})}{\sum_ {t = 1} ^ {T} \mathbb {I} (d _ {t} ^ {\mathrm{SP}} > \tau_ {p})}.\tag{42}
+$$
+
+• Foot Skating. Foot skating measures the residual motion of a foot that should be planted. Contact is not read from the evaluated motion but from the source reference, so that a motion cannot improve the metric merely by losing contact. Let $\mathcal { F }$ contain the two foot sites of the robot model and let $\mathbf { p } _ { t , f } ^ { x y }$ be the horizontal position of source foot $f$ at source frame t. The contact indicator is
+
+$$
+c _ {t, f} = \mathbb {I} \left(\left\| \mathbf {p} _ {t, f} ^ {x y} - \mathbf {p} _ {t - 1, f} ^ {x y} \right\| _ {2} \cdot f _ {s} <   0. 0 1 \mathrm{m/s}\right), \qquad f _ {s} = 5 0 \mathrm{Hz},\tag{43}
+$$
+
+following the stance rule of OmniRetarget, which thresholds the horizontal source-foot speed and applies no additional height test. The label of the interval $( t - 1 , t )$ belongs to its endpoint frame $t ,$ and the resulting mask is reused unchanged for the dataset, reference, and executed motion. Foot skating is the mean 3D speed of the evaluated foot over the labeled intervals,
+
+$$
+E _ {\mathrm{skate}} = \frac {\sum_ {t = 1} ^ {T - 1} \sum_ {f \in \mathcal {F}} c _ {t , f} \left\| \mathbf {p} _ {t , f} - \mathbf {p} _ {t - 1 , f} \right\| _ {2} \cdot f _ {s}}{\sum_ {t = 1} ^ {T - 1} \sum_ {f \in \mathcal {F}} c _ {t , f}},\tag{44}
+$$
+
+reported in $\mathrm { c m / s }$
+
+• Foot Floating. Foot floating measures how far a foot that should be planted stays above the ground. Let $s _ { t , f }$ be the smallest signed distance from the floor to the seven collision capsules of foot $f$ at frame t. The clearance is truncated below at zero, because penetration is measured separately by the ground-penetration metric:
+
+$$
+E _ {\mathrm{float}} = \frac {\sum_ {t = 1} ^ {T - 1} \sum_ {f \in \mathcal {F}} c _ {t , f} [ s _ {t , f} ] _ {+}}{\sum_ {t = 1} ^ {T - 1} \sum_ {f \in \mathcal {F}} c _ {t , f}},\tag{45}
+$$
+
+evaluated at the labeled endpoint frames and reported in centimeters.
+
+Goal Reaching and Execution. The goal-reaching experiments evaluate the physically executed motion against the goal state specified by the condition and against the execution outcome. Unless stated otherwise, every error below is evaluated at the final frame of the rollout, and metrics are computed only for the components that the corresponding condition enables.
+
+• Goal Position Error $( E _ { \mathrm { p o s } } )$ . The position error is the Euclidean distance between the final executed root position and the goal root position,
+
+$$
+E _ {\mathrm{pos}} = \left\| \mathbf {p} _ {T} - \mathbf {p} _ {g} \right\| _ {2}.\tag{46}
+$$
+
+When the goal specifies only a horizontal position, as in the benchmark and perturbation protocols, the error is measured in the xy plane and the root height is intentionally excluded; when the goal specifies a full 3D root position, all three components are used.
+
+• Goal Orientation Error $( E _ { \mathrm { o r i } } )$ . The orientation error is the geodesic angle between the final executed root orientation and the goal root orientation,
+
+$$
+E _ {\mathrm{ori}} = 2 \arccos \left(\left| \mathbf {q} _ {T} \cdot \mathbf {q} _ {g} \right|\right),\tag{47}
+$$
+
+where $\mathbf { q } _ { T }$ and ${ \bf q } _ { g }$ are unit quaternions; the error is reported in radians.
+
+• Goal Joint-Configuration Error $( E _ { \mathrm { M P J P E } } ^ { \mathrm { g o a l } } )$ . The joint-configuration error is the rootrelative MPJPE between the body positions obtained by forward kinematics from the final executed state and from the goal state:
+
+$$
+E _ {\mathrm{MPJPE}} ^ {\mathrm{goal}} = \frac {1}{J} \sum_ {j = 1} ^ {J} \| (\mathbf {p} _ {T} [ j ] - \mathbf {p} _ {T} [ 0 ]) - (\mathbf {p} _ {g} [ j ] - \mathbf {p} _ {g} [ 0 ]) \| _ {2},\tag{48}
+$$
+
+where index 0 is the root link and J is the number of links. Removing the root translation isolates the joint configuration from the remaining root-position offset.
+
+• Goal Root-Velocity Error $\left( E _ { \mathrm { v e l } } \right)$ . The root-velocity error compares the velocity of the final executed frame, obtained by finite differencing the last two frames, with the goal root velocity:
+
+$$
+E _ {\mathrm{vel}} = \left\| f _ {s} \left(\mathbf {p} _ {T} - \mathbf {p} _ {T - 1}\right) - \mathbf {v} _ {g} \right\| _ {2},\tag{49}
+$$
+
+reported in ${ \mathrm { m / s } } .$
+
+• Goal End-Effector Error $( E _ { \mathrm { e e } } ) .$ . The end-effector error is the mean position error over the four end-effector anchors, that is, both hands and both feet:
+
+$$
+E _ {\mathrm{ee}} = \frac {1}{4} \sum_ {e = 1} ^ {4} \left\| \mathbf {p} _ {T} ^ {\mathrm{ee}, e} - \mathbf {p} _ {g} ^ {\mathrm{ee}, e} \right\| _ {2},\tag{50}
+$$
+
+where the executed and the goal anchors are resolved by the same forward kinematics.
+
+• Fall Rate. Let $h _ { t }$ denote the executed pelvis height. An execution is considered fallen if its pelvis height drops below the threshold $h _ { \operatorname* { m i n } } \stackrel { = } { = } 0 . 3$ m at any frame,
+
+$$
+F _ {i} = \mathbb {I} \left(\min _ {1 \leq t \leq T _ {i}} h _ {i, t} <   h _ {\min}\right).\tag{51}
+$$
+
+The fall rate over $N$ executions is
+
+$$
+\mathrm{Fall} = \frac {1 0 0}{N} \sum_ {i = 1} ^ {N} F _ {i}.\tag{52}
+$$
+
+Fall is scanned over the complete executed rollout rather than the 2-second evaluation window, so a fall that occurs after the window is still counted; under the perturbation protocol the scan starts at the force onset.
+
+• Recovery Rate. The recovery experiment applies a horizontal force of 500 N for 0.1 s to the torso in a uniformly random direction and then commands a standing goal at the current root position. Let $\theta _ { t }$ denote the root tilt, that ${ \mathrm { i s } } ,$ the angle between the root +z axis and the world vertical direction, which is invariant to yaw. A trial counts as fallen when, starting at the force onset, the executed motion satisfies both $h _ { t } < 0$ .45 m and $\theta _ { t } > 1 . 0$ rad continuously for 0.2 s, which verifies that the perturbation actually caused a fall. A fallen trial is recovered when the upright predicate
+
+$$
+U _ {t} = \mathbb {I} \left(h _ {t} \geq 0. 6 3 \mathrm{m} \wedge \theta_ {t} \leq 0. 3 5 \mathrm{rad}\right)\tag{53}
+$$
+
+holds continuously for 1.0 s and the pelvis height never drops below 0.3 m from that moment until the end of the rollout; the second condition prevents a trial that stands up and falls again from being counted as a recovery. The recovery rate is the percentage of fallen trials that recover,
+
+$$
+\mathrm{Recovery} = \frac {1 0 0}{N _ {\mathrm{fall}}} \sum_ {i = 1} ^ {N _ {\mathrm{fall}}} R _ {i}.\tag{54}
+$$
+
+• Get-Up Time $\left( T _ { \mathrm { g e t u p } } \right) .$ . For a recovered trial, the get-up time is measured from the force onset to the start of the first stable upright interval,
+
+$$
+T _ {\mathrm{getup}} = \frac {k ^ {\star}}{f _ {s}} - \tau_ {\mathrm{on}},\tag{55}
+$$
+
+where $k ^ { \star }$ is the first frame at which $U _ { t }$ holds continuously for 1.0 s and $\tau _ { \mathrm { o n } }$ is the force onset time. The start of the interval rather than its end is used, because the subsequent second validates that the robot was already stably upright at that moment. $T _ { \mathrm { g e t u p } }$ is reported in seconds and averaged over recovered trials only, so it must be read jointly with the recovery rate: a method that recovers only the easiest trials would otherwise appear favorable.
+
+Aggregation. Each metric is computed per case, averaged within a rollout run, and reported as the mean and population standard deviation over runs, so the tabulated spread reflects rollout-seed variation rather than variation in case difficulty. The goal-conditioning experiment is the exception: its runs execute the same trajectory synchronously and deterministically, so its spread is measured across cases and averaged over runs. The feature-space metrics are cohort statistics rather than percase values: FID, DIV, R@K, and MM-Dist are computed once per run over all cases of that run and then aggregated across runs, whereas MMod is first averaged within each text condition and then across conditions. All reported values are rounded to three decimals.

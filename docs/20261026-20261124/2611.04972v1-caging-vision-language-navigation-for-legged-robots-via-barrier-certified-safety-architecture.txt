@@ -1,0 +1,974 @@
+Accepted to IEEE-RAS Humanoids 2026
+Caging Vision-Language Navigation for Legged Robots
+via Barrier-Certified Safety Architecture
+Abhijeet Mangesh Kulkarni1, Saimouli Katragadda1, Yuze Du1, Zijun Sha2, and Guoquan Huang1
+Abstract— By harnessing the inherent commonsense capabil-
+ities of pretrained Large Language Models (LLMs) and Vision-
+Language Models (VLMs), current Vision-Language Action
+(VLA) models for legged robots excel at interpreting language-
+based navigation commands but lack the physical grounding
+and explicit safety assurance required for real-world operation.
+Therefore, this paper aims to cage Legged-Vision-Language
+Navigation (VLN) through a safety architecture that provides
+physical grounding and ensures navigation safety. The key
+idea is not to abandon the powerful capabilities of end-to-
+end VLA planning, but rather to augment and cage them.
+In particular, we integrate a high-level VLA planner with
+a low-level physical-grounding layer that leverages efficient
+state estimation, in-situ 3D spatial perception, and an Signed
+Distance Field (SDF) representation to generate executable
+trajectories. We provide a navigation planner with provable
+collision-avoidance guarantees under the stated assumptions
+by combining a low-dimensional B´ezier-parameterized MPPI
+planner with Discrete Exponential Barrier Function (dEBF)
+constraints. The proposed Legged-VLN system is modular,
+making it compatible with various VLM/VLA models and
+agnostic to the robot platform. The proposed system is vali-
+dated with extensive real-world experiments on humanoid and
+quadrupedal robots, demonstrating versatile, efficient, and safe
+vision-language driven navigation capabilities.
+I. INTRODUCTION
+Legged robots, including humanoids and quadrupeds, are
+being engineered to work hand-in-hand with humans and
+perform practical, real-world tasks with precision and pur-
+pose (e.g. [1]). A fundamental prerequisite for accomplishing
+such tasks is the ability to navigate safely to locations
+where subsequent actions can be performed. Traditionally,
+navigation missions are specified as sequences of goal poses
+through a navigation interface, which typically requires either
+a trained operator or an expert-authored behavior tree [2].
+Recent advances in VLMs/VLAs [3] have enabled VLN, al-
+lowing users to specify navigation missions through intuitive
+natural-language instructions rather than manually defined
+waypoints. However, to deploy these robots alongside hu-
+mans, it is imperative that VLN systems are demonstrably
+safe—generating motion that are both semantically correct
+and collision free. This work directly addresses this critical
+challenge of ensuring physical safety in Legged-VLN.
+This work was partially supported by the University of Delaware (UD)
+College of Engineering, Delaware NASA/EPSCoR Seed Grant, NSF (IIS-
+2410019), and Toyota Motor Engineering & Manufacturing North America.
+1The authors are with the Robot Perception and Navigation Group
+(RPNG), University of Delaware, Newark, DE 19716, USA. Email:
+{amkulk, saimouli, yuzedu, ghuang}@udel.edu.
+2Zijun Sha is with the Frontier Research Center, Toyota Motor Cor-
+poration, Tokyo, Japan. Email: zijun sha@mail.toyota.co.jp
+The core issue is that while pretrained models offer pow-
+erful visual-semantic reasoning, their navigation outputs [4]–
+[6] typically ignore the robot’s kinematics, local obstacle
+configurations, and formal safety constraints. Consequently,
+an end-to-end VLA planner might propose an instruction-
+following navigation commands that are physically unexe-
+cutable or prone to collisions. Therefore, rather than exe-
+cuting these outputs directly, they must be treated as high-
+level navigation proposals that are physically grounded and
+verified. We refer to this verification process as caging: the
+interposition of a safety-assured physical-grounding layer
+between the VLM/VLA planner and the robot’s locomotion
+controller, preserving the reasoning capabilities of pretrained
+models while providing provable collision-avoidance guaran-
+tees under the stated assumptions.
+To this end, we propose a dual-layer caging architecture
+for Legged-VLN that integrates high-level semantic rea-
+soning with low-level, safety-assured motion planning. We
+evaluate the complete framework in real-world indoor and
+outdoor environments using a Unitree G1 humanoid and a
+Ghost Robotics Vision 60 quadruped.
+Specifically, the main contributions of this work are:
+• A dual-layer caging architecture that decouples se-
+mantic reasoning from physical execution by treating
+pretrained VLM/VLA outputs as high-level proposals
+and mapping them to locally feasible goal poses with
+open-vocabulary terminal alignment.
+• A safety-assured motion planner utilizing an ef-
+ficient, low-dimensional B´ezier-parameterized Model
+Predictive Path Integral (MPPI) formulation with SDF-
+based dEBF constraints, providing provable collision-
+avoidance guarantees under stated assumptions.
+• Extensive real-world validation on both humanoid and
+quadrupedal platforms, demonstrating cross-platform
+applicability and reliable, safe execution of natural-
+language navigation instructions.
+II. RELATED WORK
+Vision-language navigation for legged robots. VLN was
+formalized by the Room-to-Room benchmark [7] and later
+extended from discrete navigation graphs to continuous
+environments through R2R-CE [8]. Recent VLAs directly
+map visual and language observations to robot actions. Of
+particular relevance, QUAR-VLA targets quadruped con-
+trol [9], while NaVILA performs language-conditioned nav-
+igation on legged robots [4]. These models provide strong
+semantic action proposals, but their learned outputs do not
+arXiv:2611.04972v1  [cs.RO]  3 Nov 2026
+
+
+Fig. 1: The proposed Legged-VLN architecture separates semantic grounding (top) from safety-assured physical grounding (bottom).
+explicitly encode the robot footprint, the current local ob-
+stacle geometry, or a formal closed-loop safety condition.
+Recent safety-aware VLA methods address this gap either
+by aligning the policy through constrained learning, as in
+SafeVLA [10], or by correcting manipulation actions with
+a plug-and-play Control Barrier Function (CBF) layer, as
+in VLSA/AEGIS [11]. Our work instead targets legged
+navigation: it leaves the semantic model unchanged and
+cages its proposals using online geometric perception and
+horizon-level motion certification. This separation allows the
+front end and robot platform to change without transferring
+responsibility for navigation safety to the learned model.
+Semantic and geometric grounding. Methods such as 3D-
+LLM [12] and Chat-Scene [13] enrich language models with
+3D scene structure for spatial reasoning. Open-vocabulary
+detection and segmentation models, including Grounding-
+DINO [14] and SAM2 [15], additionally enable language-
+specified objects to be localized without a fixed task vocab-
+ulary. Splat-Nav [16] more tightly couples these domains by
+using a language-embedded Gaussian-splat map to specify
+goals, construct safe polytope corridors, and generate B´ezier
+trajectories. Our architecture instead uses the learned front
+end and open-vocabulary perception to generate semantic
+goals and refine terminal alignment, while an incrementally
+updated environmental SDF grounds every proposed motion
+in locally observed free space. Safety is therefore evaluated
+from geometric clearance rather than semantic confidence.
+Safety in sampling-based predictive control. For legged
+robots, sequential MPC over convex safe corridors enables
+reactive bipedal planning in cluttered environments [17].
+MPPI supports derivative-free trajectory optimization with
+nonlinear and nonsmooth costs [18]; low-dimensional trajec-
+tory parameterizations further improve sampling efficiency in
+cluttered environments [19]. Discrete-time barrier conditions
+provide a route to forward-invariant safety [20], [21], and re-
+cent sampling-based controllers incorporate barrier functions
+through shielded refinement [22], barrier-rate guidance with
+learned SDFs [23], or discrete barrier states [24]. In contrast,
+our physical-grounding layer combines B´ezier-parameterized
+MPPI, value-only queries to an incrementally updated en-
+vironmental SDF, soft dEBF-guided sampling, and hard
+rollout certification with a safe backup. This construction
+cages interchangeable VLM/VLA proposals and is deployed
+unchanged at the planning level on both quadrupedal and
+humanoid platforms.
+III. SYSTEM OVERVIEW
+We address the problem of language-driven, safety-critical
+navigation for legged robots operating in cluttered, unknown
+environments. That is, given (i) a natural-language instruc-
+tion describing a high-level task and optionally a target
+object, (ii) onboard sensing (e.g., vision, LiDAR, IMU, leg
+kinematics), and (iii) platform actuation limits, the objective
+is to synthesize a control sequence {uk}T −1
+k=0 that steers the
+robot from an initial pose x0 to a a goal region or an object-
+relative pose while being caged to safely execute the com-
+mands. Formally, the robot must: (i) ground the language into
+a sequence of high-level, spatially referenced subgoals; (ii)
+convert these into feasible, collision-free subgoals; and (iii)
+ensure safety at all times. The solution should be modular
+(compatible with different legged platforms and VLM/VLA
+models), and real-time capable. Success is achieved when the
+robot reaches the goal region or establishes a valid object-
+relative pose (for open-vocabulary targets), without violating
+safety constraints throughout the trajectory.
+A. Robot Dynamics and Environment Models
+We represent the robot pose in 2D as x = [ px, py, ψ ]⊤∈
+R3, where (px, py) is the global position and ψ the yaw.
+The control is the body-frame twist uk = [ vx, vy, ω ]⊤with
+sampling time ∆t, and we adopt a constant-velocity, discrete-
+time dynamic model:
+xk+1 = xk + R(ψk) uk ∆t
+(1)
+This planar body-twist model is suitable for motion planning
+for both the humanoid and quadrupedal robots.
+The local environment is encoded by a SDF ϕ : R2 →R.
+For any point p ∈R2, ϕ(p) returns the minimum Euclidean
+distance to the nearest obstacle surface; ϕ(p) > 0 indicates
+
+
+free space, ϕ(p) = 0 lies on an obstacle boundary, and
+ϕ(p) < 0 is inside an obstacle.
+B. The Proposed Caging Framework
+Our framework employs a hierarchical control architecture
+that translates high-level semantic instructions into safety-
+assured motion (see Fig. 1). The upper layer converts visual
+and language inputs into spatial navigation goals. The lower
+layer converts these goals into feasible control commands
+while enforcing safety constraints. This separation allows
+the semantic planner and the robot platform to be changed
+independently, while preserving a common safety-assured
+execution layer.
+1) Semantic Grounding Layer: This layer converts vi-
+sual observations and natural-language instructions into a
+sequence of high-level navigation actions. A VLM processes
+the user’s command together with the current scene and
+predicts discrete actions, such as turning left or right in 15◦
+increments up to 45◦, or moving forward in 25 cm increments
+up to 75 cm. The Kinematic Goal Projector maps each action
+to a planar goal pose xgoal in the local map and verifies
+that the resulting waypoint is reachable and collision-free.
+After the mission-level action sequence is completed, an
+open-vocabulary object-centric grounding module may be
+activated to define the robot’s final approach relative to a
+specified object. The semantic grounding components are
+detailed in Section IV.
+2) Physical Grounding Layer: This layer converts the
+goal poses xgoal provided by the semantic grounding
+layer into executable control commands while enforcing
+the prescribed safety constraints. For the humanoid plat-
+form, which is equipped with high-quality LiDAR, we use
+FastLIVO2 [25] to obtain robust LiDAR–inertial odometry.
+For the quadruped platform, an invariant EKF [26] fuses
+leg-kinematic and IMU measurements. The local environ-
+ment is represented by an incrementally updated SDF [27],
+which provides obstacle-clearance information directly to
+the motion planner. To enable real-time reactive planning
+with formal safety guarantees under the stated assumptions,
+we develop an efficient low-dimensional MPPI planner aug-
+mented with dEBF constraints as discussed in Section V.
+Additionlly an optional JPS global planner [28] can be
+included to reduce the susceptibility to local minima.
+IV. HIGH-LEVEL VLA PLANNING
+The Kinematic Goal Projector converts discrete high-level
+action commands generated by the VLA model (e.g., turn
+left, turn right, move forward) into, obstacle-free
+goal poses in the map. To achieve this, the module integrates
+odometry, and an SDF representation of the environment.
+The SDF grid is queried for the signed distance ϕ(p) at
+candidate position p, which is obstacle free if ϕ(p) ≥dclear,
+with dclear = 0.3 m as the minimum clearance threshold. If
+the primary position pd is occupied, we select a valid alterna-
+tive within a local radius which is after sampling candidate
+poses on the radius. Candidate poses are evaluated with a
+cost function that prioritizes proximity to the desired pose,
+alignment with the robot’s heading, and obstacle clearance:
+Cgoal(p) = ∥p −pd∥
+|
+{z
+}
+proximity
++wψ|∆ψ| −wϕϕ(p)
+(2)
+where ∆ψ is the angular deviation from the forward direction
+and wψ, wϕ are weighting parameters. The valid candidate
+with the lowest cost is dispatched to the local planner. This
+design ensures the navigation module always receives goals
+in safe regions. Moreover, this also reduces the risk of local
+minima and provides more reliable final goal locations for
+local planners.
+The open vocabulary object-centric grounding module
+is activated after the mission-level language navigation is
+complete. Its purpose is to semantically ground the final stage
+of the task: detecting and approaching a user-specified target
+object. To achieve this, we integrate Grounding-DINO [14]
+for open-vocabulary object detection and SAM2 [15] for
+precise segmentation, producing both bounding boxes and
+fine-grained masks. The segmentation mask or bounding box
+centroid is then projected into 3D using the robot’s lidar,
+odometry and camera intrinsics, yielding a target position
+in the global frame. To reject spurious detections, the target
+position pt must satisfy dmin ≤∥pt −pr∥≤dmax, with
+dmin = 0.5 m and dmax = 3.0 m.
+The navigation state transitions through SEARCHING,
+APPROACHING, and CLOSE, depending on detection confi-
+dence and the measured target distance. When the distance
+falls below a threshold dstop (set to 0.50 m in our experi-
+ments), the robot halts in front of the target. This ensures
+the robot reaches semantically meaningful endpoints, rather
+than merely completing geometric navigation. As will be
+shown in our experiments, enabling this module allows the
+robot to consistently approach user-specified objects, thereby
+extending the system from pure language-conditioned motion
+planning to semantically grounded, object-aware interaction.
+V. PHYSICAL GROUNDING LAYER
+The semantic layer specifies where to move but does not
+account for robot geometry, obstacles, or closed-loop safety.
+The Physical Grounding Layer in Fig. 1 therefore acts as
+an execution cage, converting each semantic goal xgoal into
+a dynamically feasible and safe motion. This separation
+allows the VLM/VLA front end to remain independent of
+the mechanisms responsible for physical safety.
+The planner combines: (i) low-dimensional MPPI, with
+horizon controls parameterized by B´ezier control points;
+(ii) an SDF-based dEBF cost that biases sampling toward
+collision-free trajectories; and (iii) a hard rollout filter with
+a one-step-safe backup policy. The cost improves sampling
+efficiency, while the filter and backup policy establish safety
+under the stated modeling, mapping, and tracking assump-
+tions. Unlike collision penalties, which may trade safety for
+goal progress, the proposed method explicitly certifies each
+executed command. It also avoids numerical differentiation
+of an incrementally updated SDF, as required by many
+
+
+gradient-based Model Predictive Control (MPC) formula-
+tions [21] and also avoids storage and querying of a separate
+gradient map. We instead evaluate it along sampled rollouts
+using only SDF value queries, accommodating nonsmooth
+costs, nonlinear constraints, and online map updates.
+A. Low-Dimensional Barrier-Certified MPPI
+At each control cycle, MPPI samples N control sequences,
+rolls out their trajectories, and updates the sampling mean
+by exponential cost weighting [18]. For T (n) = {x(n)
+k }H
+k=0,
+w(n) ∝exp(−J(n)/λ), where λ > 0 controls concentration
+around low-cost samples.
+To reduce dimension and suppress non-smooth commands,
+each sequence is represented by a degree-d B´ezier curve [19]:
+u(s) =
+d
+X
+j=0
+d
+j
+
+(1 −s)d−jsjPj,
+s ∈[0, 1],
+(3)
+where {Pj}d
+j=0 are control points. The optimization thus uses
+d+1 control points instead of one control vector per horizon
+step and produces smooth commands by construction. After
+certification, only the first command is executed before
+replanning. The rollout objective is
+J(n) = C(n)
+goal + C(n)
+ctl + C(n)
+safety,
+(4)
+where the first two terms rank goal progress and command
+quality, while C(n)
+safety shapes sampling but does not provide
+the safety guarantee.
+B. Goal-Tracking and Control Costs
+Let pk and pgoal be the current and desired planar
+positions, with ℓpos(xk) = ∥pk−pgoal∥2. Yaw tracks motion
+direction far from the goal and terminal yaw ψgoal near it
+αψ = σ
+∥pk −pgoal∥2 −dswitch
+sswitch
+
+,
+(5)
+where dswitch and sswitch set the transition location and
+sharpness, and
+ℓyaw(xk) = αψ|ψk −ψhead
+k
+| + (1 −αψ)|ψk −ψgoal|, (6)
+with ψhead
+k
+induced by predicted motion. Thus,
+Cgoal =
+H−1
+X
+k=0
+(wposℓpos,k + wyawℓyaw,k) .
+(7)
+Command magnitude and componentwise limit violations are
+penalized by
+Cctl =
+H−1
+X
+k=0
+ 
+wctl∥uk∥2 +
+3
+X
+q=1
+wlim[|uk,q| −uq,max]+
+!
+,
+(8)
+where [z]+ = max(z, 0). Together with the B´ezier represen-
+tation, this discourages aggressive commands and encourages
+compliance with platform velocity limits.
+Fig. 2: Multi-point safety models for (a) Ghost Robotics Vision 60
+and (b) Unitree G1. Each point has a radius representing the local
+footprint.
+C. SDF-Based dEBF Safety
+For barrier function h : Rn →R, define the safe set
+S ≜{x ∈Rn | h(x) ≥0}.
+(9)
+The discrete exponential barrier condition [20]
+h(xk+1) ≥γh(xk),
+(10)
+with γ ∈[0, 1), limits the rate of approach to the boundary:
+as h(xk) →0, the allowable next-step decrease vanishes. Re-
+peated satisfaction preserves nonnegative barriers and makes
+γ an interpretable conservatism parameter, with larger values
+retaining more clearance.
+We approximate the robot by M body-fixed spheres of
+radii ri ≥0 (Fig. 2). The map gi(xk) gives sphere center
+pi,k
+∈R2, and the SDF ϕ gives clearance ci(xk) ≜
+ϕ(pi,k) −ri. Setting hi(xk) ≜ci(xk) yields
+S ≜
+M
+\
+i=1
+Si,
+Si ≜{x | hi(x) ≥0}.
+The robot is collision-free iff all barriers are nonnegative and
+both the platforms are captured with few SDF queries.
+During optimization, predicted dEBF violations are penal-
+ized to favor candidates likely to pass hard certification:
+Csafety(T (n)) =
+H−1
+X
+k=0
+M
+X
+i=1
+wi
+h
+γhi(x(n)
+k ) −hi(x(n)
+k+1) + εbar
+i
++,
+(11)
+where wi weights geometric points and εbar > 0 adds
+a planning margin. This cost guides sampling; safety is
+enforced by explicit constraint checking.
+The controller first uses (11) to bias sampling toward safe
+regions, then executes the lowest-cost rollout satisfying (10)
+for every geometric point and predicted transition. If none is
+admissible, it applies a one-step-safe backup κ(xk) satisfying
+hi(xk + R(ψk)κ(xk)∆t) ≥γhi(xk),
+∀i.
+(12)
+Theorem 1 (Safety of dEBF-Certified MPPI). Assume: (A1)
+the state follows (1); (A2) valid robot geometry and the SDF
+define S = TM
+i=1{x | hi(x) ≥0}; (A3) for every xk ∈
+S, a one-step backup κ(xk) exists and satisfies (12); (A4)
+the controller executes the first sampled command only if its
+transition satisfies (10) for every barrier, otherwise apply the
+backup; and (A5) x0 ∈S. Then, for k ∈N0 and γ ∈[0, 1),
+hi(xk) ≥γkhi(x0) ≥0,
+∀i ∈{1, . . . , M},
+(13)
+so S is forward invariant.
+
+
+Algorithm 1 Barrier-Certified Low-Dimensional MPPI
+1: Input: x0, λ, Nsamples, Niters, κ(·)
+2: Initialize B´ezier control points P
+3: for m = 1 to Niters do
+4:
+Sample P (j) ∼N(P, Σ), j = 1, . . . , Nsamples
+5:
+for j = 1 to Nsamples do
+6:
+Construct u(j) using (3)
+7:
+Roll out (1) from x0
+8:
+Evaluate J(j) and ˜w(j) ←exp(−J(j)/λ)
+9:
+end for
+10:
+w(j) ←˜w(j)/ PNsamples
+ℓ=1
+˜w(ℓ)
+11:
+P ←PNsamples
+j=1
+w(j)P (j)
+12: end for
+13: I ←argsortj J(j)
+14: for j ∈I do
+15:
+if (10) holds ∀i, k along rollout j then
+16:
+return first command u(j)
+0
+17:
+end if
+18: end for
+19: return κ(x0)
+The proof is in Appendix I. For (1), zero body velocity is a
+valid backup from any safe state, making the planning-level
+certification recursively feasible. Unlike collision penalty-
+only MPPI, the dEBF couples consecutive clearances and
+regulates approach rate rather than only penalizing penetra-
+tion and thus resulting a longer ”lookahead” with a shorter
+horizon [21]. Unlike gradient-based SDF-constrained MPC,
+it requires no map derivatives; unlike CBF-in-MPPI methods
+with a separate refinement stage [22], it certifies sampled
+rollouts directly. The margin εbar improves candidate robust-
+ness, while the hard filter and backup enforce the constraint.
+The resulting front-end-agnostic safety cage reacts to newly
+observed geometry and its evaluations are presented Sec. VI.
+VI. EXPERIMENTAL VALIDATION
+We structure the evaluation around three questions. (Q1)
+How does the proposed dEBF affect obstacle clearance and
+object-approach behavior relative to standard MPPI? (Q2)
+Does dEBF reduce observed collision incidence both without
+a global path planner and when JPS-based global replan-
+ning [28] is available? (Q3) Does the complete physical-
+grounding cage remain effective across environment scales,
+semantic front ends, and legged platforms? We first charac-
+terize dEBF in simulation, then isolate its effect on a Unitree
+G1 humanoid, and finally evaluate end-to-end navigation on
+the G1 and a Ghost Robotics Vision 60 quadruped.
+A. Experimental Setup and Metrics
+Simulation. We use Gazebo to simulate a Vision 60, LiDAR,
+and ground-truth odometry. The mapping and perception
+pipeline mirrors the hardware implementation. The goal is
+held fixed so that the experiments isolate the local planner
+under different dEBF parameters and obstacle configurations.
+Hardware. The G1 and Vision 60 carry an RGB camera,
+IMU, and LiDAR for online state estimation, mapping,
+and geometric grounding. Platform-specific locomotion con-
+trollers track the commanded body-frame velocity, while an
+NVIDIA A4500 executes the mapping and motion-planning
+stack. The semantic front ends are executed locally or
+accessed through their respective interfaces.
+Planner parameters. For all experiments, the dEBF decay
+parameter is set to γ = 0.95. At each control update, MPPI
+uses 200 samples and 10 optimization iterations. Each rollout
+is discretized with a 0.05 s step over a horizon of 50 time
+steps, corresponding to a 2.5 s prediction horizon.
+The G1 is the primary controlled-evaluation platform. We
+conduct physical grounding layer ablations in a 4 m × 4 m
+arena, an end-to-end study in a 6 m × 6 m static-clutter
+environment, and a system-level caging study in a 12 m ×
+12 m environment. The controlled studies compare MPPI
+with and without dEBF across ChatGPT, Claude, Gemini,
+and NaVILA. The moderate-scale study uses 25 instructions,
+each repeated three times under both planner configurations,
+yielding 75 trials per configuration. The large-scale study
+evaluates 15 instructions once with and once without the
+complete the physical-grounding cage for each of the four
+semantic front ends, yielding 120 executions. The Vision 60
+experiments assess cross-platform deployment in real indoor
+and outdoor environments.
+Metrics. Success Rate (SR) is the fraction of trials that
+complete the instructed navigation task. Collision Rate (CR)
+is the fraction in which the robot contacts an obstacle or vio-
+lates the predefined collision boundary. End-to-End Success
+Rate (E2E SR) requires both task completion and collision-
+free execution. For object-centric navigation, Object SR
+denotes successful localization and approach, and Navigation
+Error (NE) is the final distance to the desired object-relative
+terminal position, following standard VLN practice [4]. We
+report only metrics annotated for each study and do not infer
+unrecorded task success from collision outcomes.
+B. Simulation Characterization of dEBF
+Figure 3 illustrates how dEBF shapes local motion. In-
+creasing the decay parameter γ requires a predicted trajectory
+to retain a larger fraction of its current barrier value (10)
+and therefore produces more conservative motion around
+an obstacle (Fig. 3(a)). In a narrow passage, the standard
+collision-penalty MPPI maintains a relatively high speed un-
+til it approaches the obstacle boundary, whereas MPPI+dEBF
+slows as predicted clearance decreases (Fig. 3(b)). The
+object-approach example similarly shows a smooth reduction
+in speed during the final approach (Fig. 3(c)).
+These behaviors arise from the temporal coupling in the
+discrete barrier condition. A conventional collision penalty
+evaluates individual predicted states and may trade obstacle
+proximity against goal progress. In contrast, dEBF constrains
+the permitted decrease in clearance between consecutive
+predicted states, regulating both intersection with the safe-
+set boundary and the rate at which a rollout approaches it.
+Making dEBF+MPPI highly suitable for safe and smooth
+navigation through cluttered and narrow spaces.
+
+
+Fig. 3: Qualitative effects of dEBF on clearance and approach-rate regulation. (a) Effect of γ on obstacle clearance. (b) Speed modulation
+in a narrow passage for collision-penalty MPPI and MPPI+dEBF. (c) Smooth final approach in a object approach.
+C. Controlled dEBF Ablations on G1
+We conduct two complementary studies in the 4 m × 4 m
+G1 arena. In the first, JPS is disabled and a fixed obstacle
+interferes with the nominal direction to a target object. Thus,
+avoidance is determined by local MPPI, with or without
+dEBF. In the second, JPS is enabled in both configurations
+and a previously unobserved obstacle is suddenly introduced
+after the robot begins moving. The obstacle is incorporated
+into the online map and triggers global replanning. This
+paired design evaluates whether dEBF adds short-horizon
+protection during perception, map updating, and replanning
+rather than comparing local and global planning. Initial pose,
+obstacle and target placement, velocity limits, planner param-
+eters, and timeout are held fixed within each comparison.
+Tables I and II show a consistent collision reduction in
+both settings. Without JPS, the aggregate CR decreases from
+80% to 0%; with JPS shared by both configurations, it
+decreases from 100% to 0%. No collisions were observed in
+any of the 40 dEBF-enabled controlled trials. The aggregate
+Object SR changes from 35% to 40% in the static study
+and from 55% to 70% in the sudden-obstacle-introduction
+study. The corresponding aggregate E2E SR increases from
+15% to 40% and from 0% to 70%, respectively. JPS and
+dEBF serve complementary roles. JPS supplies global route
+guidance around mapped obstacles, reducing local MPPI’s
+susceptibility to local minima; dEBF constrains short-horizon
+rollouts during map-update and replanning transitions.
+The consistent collision reduction shows that dEBF im-
+proves physical execution across all four tested semantic
+models. The proposed Legged-VLN architecture physically
+grounds the model’s navigation proposals but does not mod-
+ify its semantic reasoning. Task completion therefore remains
+dependent on the underlying model; for example, the Claude
+trials in the no-JPS setting are collision-free with dEBF yet
+do not complete the object-approach task. Thus, these results
+demonstrate improved collision avoidance without implying
+improved semantic reasoning or target selection.
+D. End-to-End Scaling and Cross-Platform Transfer
+We next evaluate longer language-conditioned missions.
+On G1, the 6 m × 6 m environment contains multiple static
+obstacles and tasks ranging from one- or two-action in-
+structions to longer sequences involving multiple landmarks
+and turns. Each of 25 instructions is executed three times
+under standard MPPI and MPPI+dEBF, yielding 75 trials
+per configuration. On Vision 60, we use the same planning-
+level interface in real indoor and outdoor environments.
+State estimation, sensor coverage, footprint geometry, and
+low-level locomotion remain platform specific; in particular
+a platform-specific multi-point footprint is used for SDF
+queries as in Fig 2.
+As shown in Table III, dEBF reduces observed CR on both
+platforms. On G1, CR decreases from 0.33 to 0.00 for simple
+tasks and from 0.50 to 0.00 for complex tasks, while SR
+remains 0.75. The unchanged SR indicates that the reduction
+was not obtained by suppressing a larger fraction of task
+executions. On Vision 60, dEBF reduces CR from 0.67 to
+0.20 for simple tasks and from 0.91 to 0.08 for complex
+tasks while increasing the recorded SR.
+The remaining Vision 60 collisions are primarily associ-
+ated with incomplete environmental representation, including
+thin wires, table edges, narrow poles, and geometry in sensor
+blind spots due to an older LiDAR VLP16. Since the barrier
+is evaluated against the current SDF, absent geometry cannot
+be certified. Overall, introduction of the proposed caging
+architecture enhance the safety of the commands proposed
+by VLM/VLA models.
+E. System-Level Caging Across Semantic Front Ends
+The final G1 safety study uses a 12 m × 12 m indoor
+environment and 15 instructions ranging from single-stage
+commands to multi-stage tasks with multiple landmarks and
+spatial constraints. For each front end, the same instructions
+are executed with the complete physical-grounding cage
+disabled and enabled. Caging enables MPPI, JPS, and dEBF
+jointly. In uncaged they are turned off to clearly demonstrate
+the benefits of the proposed caging architecture. Table IV
+summarizes 120 executions. All of the 60 trails without
+the proposed caging architecture results in collisions for
+these longer tasks, whereas no collision is observed with
+the caging architecture. The same trend occurs within every
+semantic frontend VLM/VLA model, showing that caging is
+a necessity for all the models tested with longer tasks.
+
+
+TABLE I: Static-obstacle G1 evaluation with
+JPS disabled. Results compare dEBF Off/On
+using five trials per front end and 20 aggre-
+gate trials per planner configuration.
+Front End N
+CR
+Off/On
+Obj. SR
+Off/On
+E2E SR
+Off/On
+Gemini
+5
+100/0% 40/80%
+0/80%
+ChatGPT
+5
+80/0%
+0/40%
+0/40%
+Claude
+5
+60/0%
+80/0%
+40/0%
+NaVILA
+5
+80/0%
+20/40% 20/40%
+Aggregate 20
+80/0%
+35/40% 15/40%
+TABLE II: G1 with JPS enabled and a sud-
+denly introduced obstacle. Results compare
+dEBF Off/On using 5 trials per front end and
+20 aggregate trials per planner configuration.
+Front End N
+CR
+Off/On
+Obj. SR
+Off/On
+E2E SR
+Off/On
+Gemini
+5
+100/0% 100/100% 0/100%
+ChatGPT
+5
+100/0%
+60/100%
+0/100%
+Claude
+5
+100/0%
+40/60%
+0/60%
+NaVILA
+5
+100/0%
+20/20%
+0/20%
+Aggregate 20 100/0%
+55/70%
+0/70%
+TABLE III: End-to-end G1 and Vision 60
+evaluation with MPPI and MPPI+dEBF. Re-
+sults use 75 G1 trials per planner and the
+available Vision 60 category-level rates.
+Simple
+Complex
+Method
+SR ↑
+CR ↓
+SR ↑
+CR ↓
+Unitree G1
+MPPI
+0.75
+0.33
+0.75
+0.50
+MPPI+dEBF
+0.75
+0.00
+0.75
+0.00
+Ghost Robotics Vision 60
+MPPI
+0.47
+0.67
+0.46
+0.91
+MPPI+dEBF
+0.73
+0.20
+0.54
+0.08
+(a) Unitree G1: “Move forward, step onto the black mat, and stop at the TV monitor in front of the window on the right.”
+(b) Vision 60: “Go out the door, turn left, and stop at the bike.”
+Fig. 4: Representative language-conditioned executions on the humanoid and quadruped platforms.
+TABLE IV: System-level G1 caging ablation. Each entry reports
+collisions/trials (CR).
+Front End
+Caging Off
+Caging On
+ChatGPT 5.6 Luna
+15/15 (100%)
+0/15 (0%)
+Gemini 3.5 Flash
+15/15 (100%)
+0/15 (0%)
+Claude Fable 5
+15/15 (100%)
+0/15 (0%)
+NaVILA
+15/15 (100%)
+0/15 (0%)
+Aggregate
+60/60 (100%)
+0/60 (0%)
+TABLE V: Object-centric terminal grounding on Vision 60.
+Grounding
+Evaluated Endpoints
+Mean NE (m) ↓
+Disabled
+5
+1.50
+Enabled
+3
+0.29
+F. Object-Centric Grounding and Evaluation Scope
+Collision-aware execution does not ensure that a mission
+terminates at the intended semantic object. We therefore
+evaluate an auxiliary terminal-grounding stage on Vision 60.
+After mission-level navigation, Grounding-DINO and SAM2
+detect and segment the language-specified target. Its esti-
+mated position is projected into the global frame, and the
+robot performs a final object-relative approach. Table V
+reports a decrease in mean endpoint error from 1.50 m to
+0.29 m with object-centric grounding. This layer is beneficial
+for missions that require approaching an object.
+G. Discussion and Limitations
+The controlled ablations in Sec. VI-C and end-to-end
+evaluation in Sec. VI-D show that uncaged collision risk
+increases with task length and complexity. This trend cul-
+minates in the long-horizon G1 ablation (Sec. VI-E), where
+all 60 uncaged trials collide, whereas caging reduces the
+aggregate CR to 0% across four semantic models. JPS
+provides global route guidance around mapped obstacles,
+reducing the local planner’s susceptibility to local minima,
+but does not certify local execution; with JPS enabled, adding
+dEBF reduces CR from 100% to 0% (Table II). Similar
+improvements on Vision 60 support portability across the
+tested task scales, environments, and platforms.
+These results remain subject to the assumptions of Theo-
+rem 1. Certification uses the current SDF and cannot account
+for unobserved geometry. The planar body-twist and multi-
+point models also exclude state-estimation error, latency,
+and tracking error. Object-centric grounding (Sec. VI-F)
+improves terminal alignment, but the cage cannot correct
+erroneous or unreachable semantic goals.
+VII. CONCLUSIONS AND FUTURE WORK
+We presented a modular caging architecture for legged
+VLN that separates semantic reasoning from physically
+grounded execution. High-level VLM/VLA outputs are
+treated as navigation proposals and converted into geometric
+goals, while a low-dimensional B´ezier-parameterized MPPI
+planner uses the online SDF and dEBF constraints to gen-
+erate executable motion. This separation permits different
+semantic front ends and legged platforms to share the same
+planning-level safety interface. We prove collision avoidance
+for dEBF-constrained MPPI under the stated assumptions.
+
+
+We extensively evaluated the proposed Legged-VLN archi-
+tecture on a Unitree G1 humanoid and a Ghost Robotics
+Vision 60 quadruped. The real-world experiments demon-
+strate modularity across platforms and substantially reduced
+observed collision incidence, while open-vocabulary object
+grounding improves semantic terminal alignment under the
+tested conditions. Future work will incorporate uncertainty
+in state estimation and mapping, as well as moving obsta-
+cles, into the safety analysis to narrow the gap between
+the formal model and hardware execution. We will also
+extend the capabilities of VLA models beyond navigation to
+richer humanoid skills, including grasping, object handover,
+and fine-grained target interaction. Finally, integrating multi-
+modal memory will support longer-horizon reasoning toward
+general-purpose robotic assistants.
+APPENDIX I
+PROOF OF SAFE MOTION PLAN
+Theorem 1. By induction on the control step k.
+Base case: By Assumption (A5), x0 ∈S, so hi(x0) ≥0
+for every i. Since γ0 = 1, we have hi(x0) = γ0hi(x0) ≥0.
+Thus, (13) holds at k = 0.
+Inductive step: Suppose that, at some step k,
+hi(xk) ≥γkhi(x0) ≥0,
+∀i.
+By Assumption (A4), the controller applies one of two
+inputs. If a certified MPPI candidate exists, it executes a first
+command whose resulting transition satisfies (10) for every
+i. Otherwise, it applies the backup input uk = κ(xk), which
+satisfies the same one-step condition by Assumption (A3)
+and (12). Hence, in either case,
+hi(xk+1) ≥γhi(xk),
+∀i.
+Applying the inductive hypothesis for all i gives
+hi(xk+1) ≥γhi(xk) ≥γ
+ γkhi(x0)
+
+= γk+1hi(x0) ≥0,
+where the final inequality follows from γ ∈[0, 1) and
+hi(x0) ≥0. Therefore, (13) holds at step k+1. By induction,
+every barrier remains nonnegative for all k ∈N0. Thus
+xk ∈S for all time, and the safe set is forward invariant.
+REFERENCES
+[1] Unitree Robotics, “Unitree A2, a Quadruped Robotic Dog with
+Industrial Applications [Video],” YouTube video, 2025, launched in
+Hangzhou on August 5, 2025.
+[2] S. Macenski, F. Mart´ın, R. White, and J. G. Clavero, “The marathon
+2: A navigation system,” in 2020 IEEE/RSJ International Conference
+on Intelligent Robots and Systems (IROS), 2020, pp. 2718–2725.
+[3] R. Sapkota, Y. Cao, K. I. Roumeliotis, and M. Karkee, “Vision-
+language-action models: Concepts, progress, applications and chal-
+lenges,” arXiv preprint arXiv:2505.04769, 2025.
+[4] A.-C. Cheng, Y. Ji, Z. Yang, Z. Gongye, X. Zou, J. Kautz, E. Biyik,
+H. Yin, S. Liu, and X. Wang, “Navila: Legged robot vision-language-
+action model for navigation,” in Robotics: Science and Systems (RSS),
+June 2025.
+[5] Q. Bu, Y. Yang, J. Cai, S. Gao, G. Ren, M. Yao, P. Luo, and H. Li,
+“Univla: Learning to act anywhere with task-centric latent actions,”
+arXiv preprint arXiv:2505.06111, 2025.
+[6] X. Chen, H. Wei, P. Zhang, C. Zhang, K. Wang, Y. Guo, R. Yang,
+Y. Wang, X. Xiao, L. Zhao, J. Chen, and J. Bian, “villa-x: Enhanc-
+ing latent action modeling in vision-language-action models,” arXiv
+preprint arXiv:2507.23682, 2025.
+[7] P. Anderson, Q. Wu, D. Teney, J. Bruce, M. Johnson, N. S¨underhauf,
+I. Reid, S. Gould, and A. Van Den Hengel, “Vision-and-language
+navigation: Interpreting visually-grounded navigation instructions in
+real environments,” in CVPR, 2018.
+[8] J. Krantz, E. Wijmans, A. Majumdar, D. Batra, and S. Lee, “Beyond
+the nav-graph: Vision-and-language navigation in continuous environ-
+ments,” in ECCV, 2020.
+[9] P. Ding, H. Zhao, Z. Wang, Z. Wei, S. Lyu, and D. Wang, “Quar-vla:
+Vision-language-action model for quadruped robots,” in ECCV, 2024.
+[10] B. Zhang, Y. Zhang, J. Ji, Y. Lei, J. Dai, Y. Chen, and Y. Yang,
+“SafeVLA: Towards safety alignment of vision-language-action model
+via constrained learning,” in Advances in Neural Information Process-
+ing Systems, vol. 38, 2025.
+[11] S. Hu, Z. Liu, S. Liu, J. Cen, Z. Meng, S. Wang, X. Li, and X. He,
+“Vlsa: Vision-language-action models with plug-and-play safety con-
+straint layer,” arXiv, 2026.
+[12] Y. Hong, H. Zhen, P. Chen, S. Zheng, Y. Du, Z. Chen, and C. Gan,
+“3dllm: Injecting the 3d world into large language models,” in
+NeurIPS, 2023.
+[13] H. Huang, Z. Wang, R. Huang, L. Liu, X. Cheng, Y. Zhao, T. Jin, and
+Z. Zhao, “Chat-scene: Bridging 3d scene and large language models
+with object identifiers,” arXiv preprint, 2024.
+[14] S. Liu, Z. Zeng, T. Ren, F. Li, H. Zhang, J. Yang, C. Li,
+J. Yang, H. Su, J. Zhu, et al., “Grounding dino: Marrying dino with
+grounded pre-training for open-set object detection,” arXiv preprint
+arXiv:2303.05499, 2023.
+[15] N. Ravi, V. Gabeur, Y.-T. Hu, R. Hu, C. Ryali, T. Ma, H. Khedr,
+R. R¨adle, C. Rolland, L. Gustafson, E. Mintun, J. Pan, K. V. Alwala,
+N. Carion, C.-Y. Wu, R. Girshick, P. Doll´ar, and C. Feichtenhofer,
+“Sam 2: Segment anything in images and videos,” 2024.
+[16] T. Chen, O. Shorinwa, J. Bruno, A. Swann, J. Yu, W. Zeng, K. Nagami,
+P. M. Dames, and M. Schwager, “Splat-nav: Safe real-time robot nav-
+igation in gaussian splatting maps,” IEEE Transactions on Robotics,
+vol. 41, pp. 2765–2784, Mar. 2025.
+[17] K. S. Narkhede, A. M. Kulkarni, D. A. Thanki, and I. Poulakakis, “A
+sequential mpc approach to reactive planning for bipedal robots using
+safe corridors in highly cluttered environments,” IEEE Robotics and
+Automation Letters, vol. 7, no. 4, pp. 11 831–11 838, 2022.
+[18] G. Williams, A. Aldrich, and E. A. Theodorou, “Information-theoretic
+model predictive control: Theory and applications to autonomous
+driving,” IEEE Transactions on Robotics, vol. 34, no. 6, pp. 1603–
+1622, 2018.
+[19] A. M. Kulkarni, I. Poulakakis, and G. Huang, “Learning neural
+observer-predictor models for limb-level sampling-based locomotion
+planning,” in 2026 IEEE International Conference on Robotics and
+Automation (ICRA), 2026, pp. 21 515–21 522.
+[20] A. Agrawal and K. Sreenath, “Discrete control barrier functions for
+safety-critical control of discrete systems with application to bipedal
+robot navigation,” in Proc. Robot. Sci. Syst., 2017.
+[21] J. Zeng, B. Zhang, and K. Sreenath, “Safety-critical model predictive
+control with discrete-time control barrier function,” in Proc. Amer.
+Control Conf., 2021, pp. 3882–3889.
+[22] J. Yin, C. Dawson, C. Fan, and P. Tsiotras, “Shield model predictive
+path integral: A computationally efficient robust mpc approach using
+control barrier functions,” arxiv:2302.11719, 2023.
+[23] H. Parwana, T. Kim, K. Long, B. Hoxha, H. Okamoto, G. Fainekos,
+and D. Panagou, “Br-mppi: Barrier rate guided mppi for enforcing
+multiple inequality constraints with learned signed distance field,”
+arxiv:2506.07325, 2025.
+[24] F. Wang, Y. Cheng, and C. Tao, “Mppi-dbas: Safe trajectory optimiza-
+tion with adaptive exploration,” arxiv:2502.14387, 2025.
+[25] C. Zheng, W. Xu, Z. Zou, T. Hua, C. Yuan, D. He, B. Zhou, Z. Liu,
+J. Lin, F. Zhu, Y. Ren, R. Wang, F. Meng, and F. Zhang, “Fast-
+livo2: Fast, direct lidar–inertial–visual odometry,” IEEE Transactions
+on Robotics, vol. 41, pp. 326–346, 2025.
+[26] A. Barrau and S. Bonnabel, “The invariant extended kalman filter as
+a stable observer,” IEEE Transactions on Automatic Control, vol. 62,
+no. 4, pp. 1797–1812, 2017.
+[27] L. Han, F. Gao, B. Zhou, and S. Shen, “Fiesta: Fast incremental
+euclidean distance fields for online motion planning of aerial robots,”
+in 2019 IEEE/RSJ International Conference on Intelligent Robots and
+Systems (IROS).
+IEEE, 2019, pp. 4423–4430.
+[28] D. Harabor and A. Grastien, “Online graph pruning for pathfinding
+on grid maps,” in Proceedings of the Twenty-Fifth AAAI Conference
+on Artificial Intelligence, vol. 25, no. 1, 2011, pp. 1114–1119.

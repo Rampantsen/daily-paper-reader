@@ -1,0 +1,303 @@
+# TOKENS OF MOTION: PRIMITIVE MOTION LEARNINGFOR HUMAN-HUMANOID SKILL TRANSFER
+
+Hanwen Ren<sup>1,2</sup>\*, Meng Zheng<sup>1</sup>, Wenzhe Cui<sup>1</sup>, Benjamin Planche<sup>1</sup>, Zhongpai Gao<sup>1</sup>, Anwesa Choudhuri<sup>1</sup>, Terrence Chen<sup>1</sup>, Ziyan Wu<sup>1</sup>
+
+<sup>1</sup>United Imaging Intelligence, Boston, MA, USA
+
+<sup>2</sup>Purdue University, West Lafayette, IN, USA
+
+## ABSTRACT
+
+Human videos provide a scalable source of manipulation experience, yet transferring them to robots remains challenging because human demonstrations lack robot-compatible actions and differ substantially from robots in embodiment and kinematics. We propose Motion Primitivesfor Action Composition and Transfer (M-PACT), a framework that addresses this challenge by factorizing primitive motion learning from embodiment-specific motion realization. This separation allows us to learn generalizable and reusable motion primitives from large-scale 3D human hand-pose trajectories, while requiring only limited embodiment-specific robot data to ground these primitives into executable motions. Specifically, we first discover local motion segments from human hand trajectories and learn a compact primitivemotion representation that captures recurring manipulation patterns independently of robot embodiment. Given task and observation context, these primitives are then selected and composed, while a lightweight embodiment-specific decoder maps them to robot motions. Crucially, transferring to a new embodiment preserves the learned primitive representation and requires adapting only the realization model, substantially reducing the dependence on costly robot demonstrations. Experiments across EgoDex, HoloAssist, and HumanoidEveryday demonstrate cross-dataset and cross-embodiment transferability of proposed M-PACT, with lightweight decoder adaptation achieving strong humanoid motion reconstruction using as few as ∼100 robot demonstrations. These results establish factorized primitive learning as a scalable bridge from large-scale human motion data to humanoid manipulation.
+
+## 1 INTRODUCTION
+
+Developing robots capable of diverse manipulation in unstructured environments remains a central goal in robotics and artificial intelligence. Most manipulation policies are learned from robot-centric experience, including demonstrations collected through teleoperation or kinesthetic teaching and interactions acquired through reinforcement learning or autonomous exploration. Although such data provide directly executable actions, collecting them at sufficient scale and diversity remains costly and difficult across tasks, environments, and embodiments Brohan et al. (2022); O’Neill et al. (2024). Human videos offer a compelling alternative: they are abundant and capture diverse object interactions, behavioral strategies, and long-horizon activities in natural settings Grauman et al. (2022). They can therefore complement limited robot demonstrations and broaden the task and behavioral coverage of robot learning systems Kareer et al. (2025). However, human demonstrations lack robot-compatible action supervision, while human and robot effectors differ substantially in morphology, kinematics, appearance, and feasible action spaces Kareer et al. (2025); Chen et al. (2025). Directly imitating human trajectories can consequently produce ambiguous or kinematically infeasible robot actions. Bridging this embodiment gap requires representations that abstract away embodiment-specific execution while preserving transferable motion structure, for effective and generalizable robot control.
+
+Vision-language-action (VLA) models (Pertsch et al., 2025; Black et al., 2024; Intelligence et al., 2025; Liu et al., 2025; Brohan et al., 2023) offer a promising framework for general-purpose manipulation by mapping visual observations and language instructions directly to robot actions. Recent models such as $\Psi _ { 0 }$ Wei et al. (2026), H-RDT Bi et al. (2026), and Being-H0 Luo et al. (2025) further pretrain on large-scale egocentric human videos before adapting to specific robot embodiments, demonstrating the potential of human data to broaden behavioral coverage. However, two limitations remain. First, human videos lack robot-executable actions, so converting them into control supervision still requires costly robot demonstrations or computationally intensive human-motion estimation. Second, existing pretraining paradigms often couple human motion with scene appearance and context rather than explicitly isolating transferable motion structure, limiting generalization across scenes, tasks, and embodiments.
+
+![](images/563ac0dcec71e04324027ea35134f5018c9b42efa7753a6d8bfc1b9c44558e2a.jpg)  
+Figure 1: Proposed Motion Primitives for Action Composition and Transfer (M-PACT) pipeline.
+
+Existing human-to-robot skill transfer approaches primarily bridge the embodiment gap by geometric alignment of human hand and robot trajectories Kareer et al. (2025); Chen et al. (2025); Shi et al. (2025); Haldar & Pinto (2025); Zhou et al. (2026); Li et al. (2024), visual transformation of human demonstrations into robot-centric observations Li et al. (2025); Lepert et al. (2025); Chen et al. (2026a), or reconstructing hand-object interactions and retargeting to dexterous robot hands Wang et al. (2024); Mu et al. (2026); Singh et al. (2025); Chen et al. (2026b); Paliwal et al. (2026); Lai et al. (2026). However, hand-object manipulation is inherently compositional and behaviorally multimodal: a single task may comprise heterogeneous motions such as grasping, lifting, placing, etc., each admitting multiple valid executions. Representing such a skill as a monolithic, full-trajectory supervision signal requires an imitation-learning policy to model long and highly variable motion sequences while simultaneously resolving human-robot embodiment differences, making learning difficult and limiting the reuse of shared behaviors across tasks. Recent approaches have begun to introduce temporal hierarchy, however, these methods generally transfer human behavior through complete trajectories Singh et al. (2025); Chen et al. (2025), coarse semantic subtasks Mu et al. (2026); Shi et al. (2025), fixed-horizon trajectory and action predictions Haldar & Pinto (2025); Zhou et al. (2026). Consequently, recurring local motion patterns can remain coupled to task-level ordering and global scene context, limiting their systematic recomposition and transfer across novel tasks and environments.
+
+To this end, we propose to learn Motion Primitivesfor Action Composition and Transfer (M-PACT), a framework that learns localized primitive motions from human videos by factorizing transferable interaction structure from scene- and embodiment-specific realizations. This factorization allows individual primitives to be transferred across embodiments and compositionally reused across tasks and environments. At its core, a self-supervised motion segmentation module, SkillSeg, partitions 3D human hand trajectories using frame-level kinematic cues, and maps the resulting segments into an embodiment-agnostic vocabulary of primitive-motion tokens, by Embodied Primitive Motion Tokenization (EPMT) module. Learned from web-scale egocentric video corpora, EPMT transforms abundant, behaviorally diverse, and cost-effective human pose trajectories into reusable manipulation primitives. We then condition these primitive representations on contextual features from visual foundation models and perform lightweight fine-tuning using labeled video-motion-action data, enabling M-PACT to select, compose, and realize primitives for diverse manipulation tasks. By sepa rating reusable motion structure from task-specific context and robot-specific control, our approach substantially reduces the need for costly robot demonstrations while improving generalization across tasks and scenes. In summary, our contributions are threefold:
+
+• We propose to learn a motion tokenizer, EPMT that discovers localized, embodiment-agnostic primitive motions from human hand trajectories. Trained on low-cost, web-scale hand-pose data extracted from egocentric videos, EPMT learns primitive tokens that can be reused for skill transfer across embodiments.
+
+• We introduce M-PACT, a multi-stage transfer framework that integrates EPMT with context-aware visual representations to select and compose primitive tokens and ground them into embodimentspecific, robot-executable actions. This design supports manipulation tasks of varying horizons with lightweight fine-tuning on labeled video-motion-action data.
+
+• We evaluate motion reconstruction, cross-dataset representation reuse, humanoid decoder adaptation, and contextual primitive prediction across three datasets, complemented by qualitative real-world humanoid demonstrations.
+
+## 2 RELATED WORK
+
+Learning Manipulation from Human Demonstrations. Human demonstrations offer a scalable source of manipulation experience, motivating approaches based on shared representations, geometric alignment, and motion retargeting. EgoMimic jointly trains policies from aligned egocentric human and robot data, while Point Policy predicts keypoint trajectories that are converted into robot actions through geometric constraints Kareer et al. (2025); Haldar & Pinto (2025). For dexterous manipulation, DexCap transfers captured hand motions through inverse kinematics and imitation learning, whereas DexImit reconstructs hand–object interactions and synthesizes robot demonstrations through subtask decomposition and trajectory generation Wang et al. (2024); Mu et al. (2026). In contrast, we first learn a compact vocabulary of local hand-motion primitives, then separately model contextual selection and embodiment-specific decoding, disentangling reusable motion structure from task context and robot execution.
+
+Temporal Abstraction and Reusable Skill Discovery. Temporal abstraction organizes demonstrations into reusable behavioral units. CompILE jointly discovers segment boundaries and latent behaviors, while Play-LMP and SPiRL learn latent plans or skill priors from unstructured experience Kipf et al. (2019); Lynch et al. (2020); Pertsch et al. (2021). MimicPlay learns a planner through human hand-trajectory prediction and uses it to guide a robot policy trained from teleoperated demon strations Wang et al. (2023a). Our approach instead discovers boundaries from hand kinematics and represents each segment through factorized translation, rotation, and aperture effects. These local primitives are not predefined semantic subtasks and can therefore be reused across demonstrated skills before contextual prediction is learned over the fixed vocabulary.
+
+Discrete Action Representations and Motion Tokenization. Discrete action representations support categorical prediction and sequence modeling. VQ-BeT uses hierarchical vector quantization to model multimodal actions, while FAST tokenizes transformed robot action sequences for efficient autoregressive learning Lee et al. (2024); Pertsch et al. (2025). LAPA extends action tokenization to videos without robot labels by learning latent actions between frames and subsequently adapting with robot data Ye et al. (2025). Our framework instead learns from segmented 3D hand trajectories under a shared kinematic convention. Translation and aperture use independent discrete codebooks, rotation remains continuous, and the decoder reconstructs each segment’s net effect conditioned on its initial state. This structure enables embodiment-specific adaptation while keeping the motion encoders and codebooks fixed.
+
+## 3 METHOD
+
+## 3.1 FRAMEWORK OVERVIEW
+
+Our central design separates a shared motion representation from embodiment-specific effect decoding. We learn the representation from human hand trajectories and retain it when fitting a compact decoder to robot demonstrations. This allows us to study which motion information can be reused across datasets and embodiments, and which mappings require adaptation.
+
+The framework has three stages. SkillSeg first partitions trajectories into local motion segments using self-supervised reconstruction. Embodied Primitive Motion Tokenization (EPMT) then encodes each segment into discrete translation and aperture tokens and a continuous rotation latent, trained jointly with a state-conditioned effect decoder. Finally, target-embodiment adaptation fits a new decoder while freezing the segmentation model, motion encoders, and codebooks. Thus, embodiment adaptation changes the mapping from a shared representation to motion effects while preserving the representation itself. An illustration of the proposed pipeline is shown in Figure 2.
+
+![](images/def77591f483561e5fe37f93a47196440210f2648834f5543690d7757685bd55.jpg)  
+Figure 2: Overview of Motion Primitives for Action Composition and Transfer (M-PACT) pipeline.
+
+We study two extensions of this core. Context-Conditioned EPMT (CC-EPMT) predicts the representation from information available at a segment’s start. Human-to-humanoid grounding continues the robot decoder on human-derived representations to examine the resulting reconstruction trade-off. These components are trained in stages. Representation reconstruction, contextual prediction, and offline motion realization are evaluated separately, so their respective errors can be distinguished.
+
+## 3.2 SHARED CROSS-EMBODIMENT MOTION REPRESENTATION
+
+We represent a demonstration by a hand-state sequence $\tau = \{ ( p _ { t } , R _ { t } , \alpha _ { t } ) \} _ { t = 0 } ^ { T - 1 }$ , where $p _ { t } \in \mathbb { R } ^ { 3 }$ is wrist position, $R _ { t } ~ \in ~ \mathrm { S O ( 3 ) }$ is wrist orientation, and $\alpha _ { t } ~ \in ~ \mathbb { R }$ is hand aperture. For human demonstrations, aperture is the thumb-index fingertip distance and poses are in the head-camera convention. Robot trajectories are recovered through forward kinematics and mapped into the same convention using a coordinate transformation, arm-length scaling, wrist-orientation alignment, and an affine aperture calibration. We denote this embodiment-specific mapping by $A _ { e }$ and use $\left( { p _ { t } , R _ { t } , \alpha _ { t } } \right)$ for the aligned quantities throughout the method. See Appendix for concrete humanoid mapping.
+
+The shared convention makes motion inputs comparable across embodiments; it does not require identical kinematics or guarantee that an aligned human motion is robot-reachable. Statistical normalization is applied separately: the tokenizer uses its source-training statistics, while each embodiment-specific decoder carries its own hand-state and effect normalizers. We write $\pi _ { 6 } ( R ) \in \mathbb { R } ^ { 6 }$ for the concatenated first two columns of a rotation matrix and $\mathrm { L o g } _ { v } ( R ) \in \mathbb { R } ^ { 3 }$ for its axis–angle rotation vector.
+
+## 3.3 SKILLSEG: SELF-SUPERVISED MOTION SEGMENTATION
+
+Local motion phases provide temporal units for learning reusable primitives. SkillSeg discovers their boundaries without annotated segment labels by learning a differentiable temporal decomposition that supports motion reconstruction for cross-embodiment generalization. A temporal network receives smoothed kinematic features $f _ { t }$ containing translational velocity, speed, aperture, aperture rate, and rotation-representation derivatives. It predicts an increment $q _ { t } \in ( 0 , 1 )$ . A binary motion gate $m _ { t }$ suppresses accumulation during inactive frames, yielding a soft segment index $\begin{array} { r } { c _ { t } = \sum _ { s = 0 } ^ { t } m _ { s } q _ { s } } \end{array}$ . For a segment slot $k ,$ soft membership is defined by a triangular kernel:
+
+$$
+w _ {t, k} = \max \left(0, 1 - \frac {| c _ {t} - (k + 1 / 2) |}{\rho}\right), \qquad \widetilde {w} _ {t, k} = \frac {w _ {t , k}}{\sum_ {s} w _ {s , k} + \varepsilon},\tag{1}
+$$
+
+where $\rho = 0 . 6$ . A frame encoder is pooled into a segment embedding $\begin{array} { r } { { a } _ { k } = \sum _ { t } \widetilde { w } _ { t , k } F ( f _ { t } ) } \end{array}$ , which is quantized through an auxiliary vector-quantization codebook. With $v _ { t }$ denoting translational velocity, an auxiliary decoder reconstructs the motion target $\begin{array} { r } { d _ { k } = \sum _ { t } w _ { t , k } v _ { t } } \end{array}$ . This membership-weighted velocity sum is proportional to a soft displacement integral at the fixed frame rate. Both the segment embeddings and targets depend on the boundary predictions, allowing reconstruction gradients to shape the temporal decomposition.
+
+The segmentation objective combines reconstruction, vector-quantization, rate, and entropy terms:
+
+$$
+\mathcal {L} _ {\mathrm{seg}} = \mathcal {L} _ {\mathrm{motion}} + \lambda_ {c} \mathcal {L} _ {\mathrm{VQ}} + \lambda_ {r} \frac {(c _ {T - 1} - N ^ {\star}) ^ {2}}{\max ((N ^ {\star}) ^ {2} , 1)} - \lambda_ {e} H (q).\tag{2}
+$$
+
+Here, ${ \mathcal { L } } _ { \mathrm { m o t i o n } }$ is mean squared error between the auxiliary decoder’s predictions and $d _ { k }$ , averaged over active slots; $\mathcal { L } _ { \mathrm { V Q } }$ is the auxiliary quantization loss. A slot is active when its membership mass exceeds $1 0 ^ { - 3 }$ . The duration-dependent target $N ^ { \star }$ controls the segment count, and $H ( q )$ is mean Bernoulli entropy. The rate term controls temporal granularity, while the entropy term discourages saturated increments. The segmentation decoder receives no initial hand-state information. Its auxiliary encoder and codebook serve segmentation training and are distinct from the factor-specific EPMT modules below.
+
+At inference, we average the increments of $M = 7$ independently trained networks, apply the common motion gate, and extract boundaries at successive integer crossings of the cumulative score. Crossings within $K = 8$ frames of the previous boundary are skipped. Including the trajectory endpoints gives $0 = b _ { 0 } < \cdots < b _ { M } = T$ , with segment i containing frames $[ b _ { i - 1 } , b _ { i } )$ . Training details and gate definitions appear in Appendix.
+
+## 3.4 EPMT: FACTORIZED PRIMITIVE MOTION TOKENIZATION
+
+EPMT learns recurring motion components across demonstrated skills without receiving skill labels. Separate encoders expose translation, rotation, and aperture as individually addressable channels, while a common decoder reconstructs their combined motion effect. This design provides a structured interface for factor prediction and decoder adaptation; it does not impose statistical independence between factors.
+
+Segment features and factorized encoding. Let $a _ { i } = b _ { i - 1 }$ and $e _ { i } = b _ { i } - 1$ be the first and last included frames of segment i. We linearly resample each channel at $L = 8$ uniformly spaced points:
+
+$$
+(x _ {i} ^ {\mathrm{tr}}, x _ {i} ^ {\mathrm{rot}}, x _ {i} ^ {\mathrm{ap}}) = \operatorname{resample} _ {L} \bigl (\{(p _ {t} - p _ {a _ {i}}, \pi_ {6} (R _ {a _ {i}} ^ {\top} R _ {t}), \alpha_ {t}) \} _ {t = a _ {i}} ^ {e _ {i}} \bigr) \in \mathbb {R} ^ {3 L} \times \mathbb {R} ^ {6 L} \times \mathbb {R} ^ {L}.\tag{3}
+$$
+
+Translation is expressed as displacement from the segment start in the shared coordinate axes; rotation is relative to its initial wrist orientation. Aperture retains its absolute aligned value. Le $\bar { x } _ { i } ^ { f } = \mathcal { N } _ { x } ^ { f } ( x _ { i } ^ { f } )$ denote component-wise standardization using fixed source-training statistics for factor $f .$ . Translation and aperture are quantized, whereas rotation remains continuous:
+
+$$
+\begin{array}{r l} & (z _ {i} ^ {\mathrm{tr}}, z _ {i} ^ {\mathrm{rot}}, z _ {i} ^ {\mathrm{ap}}) = \big (\mathrm{VQ} _ {1 6} (E _ {\mathrm{tr}} (\bar {x} _ {i} ^ {\mathrm{tr}})), E _ {\mathrm{rot}} (\bar {x} _ {i} ^ {\mathrm{rot}}), \mathrm{VQ} _ {4} (E _ {\mathrm{ap}} (\bar {x} _ {i} ^ {\mathrm{ap}})) \big) \\ & \qquad \in \{1, \ldots , 1 6 \} \times \mathbb {R} ^ {3} \times \{1, \ldots , 4 \}. \end{array}\tag{4}
+$$
+
+The operator $\mathrm { V Q } _ { K }$ returns the nearest codebook entry’s index. The codebook sizes are $K _ { \mathrm { t r } } = 1 6$ and $K _ { \mathrm { a p } } = 4$ , with 32-dimensional embeddings and lookups $e ^ { f } ( k ) = c _ { k } ^ { f }$ for $f \in \{ \mathrm { t r } , \mathrm { a p } \}$ . We distinguish the symbolic representation from its embedded decoder input:
+
+$$
+Z _ {i} = (z _ {i} ^ {\mathrm{tr}}, z _ {i} ^ {\mathrm{rot}}, z _ {i} ^ {\mathrm{ap}}), \qquad \widetilde {Z} _ {i} = [ e ^ {\mathrm{tr}} (z _ {i} ^ {\mathrm{tr}}), z _ {i} ^ {\mathrm{rot}}, e ^ {\mathrm{ap}} (z _ {i} ^ {\mathrm{ap}}) ] \in \mathbb {R} ^ {6 7}.\tag{5}
+$$
+
+This hybrid representation makes translation and aperture independently enumerable while retaining continuous rotational variation. The two discrete indices require six bits in total; the three-dimensional rotation latent has an additional precision-dependent storage cost. Factorization is a structural choice rather than a requirement for minimum reconstruction error, and we compare it with joint encoding in the experiments.
+
+State-conditioned effect reconstruction. The initial state and net motion effect are
+
+$$
+h _ {i} = [ p _ {a _ {i}}, \pi_ {6} (R _ {a _ {i}}), \alpha_ {a _ {i}} ] \in \mathbb {R} ^ {1 0},\tag{6}
+$$
+
+$$
+y _ {i} = [ p _ {e _ {i}} - p _ {a _ {i}}, \mathrm{Log} _ {v} (R _ {a _ {i}} ^ {\top} R _ {e _ {i}}), \alpha_ {e _ {i}} - \alpha_ {a _ {i}} ] \in \mathbb {R} ^ {7}.\tag{7}
+$$
+
+Let $\mathcal { N } _ { h }$ and $\mathcal { N } _ { y }$ denote component-wise standardization of states and effects, with $\bar { h } _ { i } = \mathcal { N } _ { h } ( h _ { i } )$ and $\bar { y } _ { i } = \mathcal { N } _ { y } ( y _ { i } )$ . The three effect channels are denoted by superscripts tr, rot, and ap. The decoder predicts a normalized effect: $\widehat { \bar { y } } _ { i } = D _ { \theta } ( \mathcal { N } _ { h } ( h _ { i } ) , \widetilde { Z } _ { i } ) , \hat { y } _ { i } = \mathcal { N } _ { u } ^ { - 1 } ( \widehat { \bar { y } } _ { i } )$ . Conditioning on $h _ { i }$ permits a shared primitive representation to produce different effects from different initial configurations. We balance the three factors by averaging errors within each channel before averaging across channels:
+
+$$
+\ell_ {\mathrm{bal}} (\hat {\bar {y}}, \bar {y}) = \frac {1}{3} \left(\frac {\| \hat {\bar {y}} ^ {\mathrm{tr}} - \bar {y} ^ {\mathrm{tr}} \| _ {2} ^ {2}}{3} + \frac {\| \hat {\bar {y}} ^ {\mathrm{rot}} - \bar {y} ^ {\mathrm{rot}} \| _ {2} ^ {2}}{3} + | \hat {\bar {y}} ^ {\mathrm{ap}} - \bar {y} ^ {\mathrm{ap}} | ^ {2}\right).\tag{8}
+$$
+
+The encoders and decoder minimize:
+
+$$
+\mathcal {L} _ {\mathrm{EPMT}} = \mathbb {E} _ {i} \left[ \ell_ {\mathrm{bal}} (\widehat {\bar {y}} _ {i}, \mathcal {N} _ {y} (y _ {i})) + \beta \sum_ {f \in \{\mathrm{tr,ap} \}} \mathcal {L} _ {\mathrm{commit}, i} ^ {f} \right].\tag{9}
+$$
+
+The commitment losses penalize encoder distance from stop-gradient codebook embeddings. Straightthrough estimation passes reconstruction gradients to the discrete-factor encoders, and exponential moving averages update the codebooks. Although the encoders observe within-segment trajectories, supervision reconstructs only their net effects. Thus, the representation summarizes motion outcomes without explicitly requiring preservation of the full trajectory.
+
+## 3.5 CROSS-EMBODIMENT DECODER ADAPTATION AND GROUNDING
+
+Target-embodiment adaptation. To transfer the learned representation to a target embodiment, we align robot demonstrations through $A _ { e }$ and process them using the frozen SkillSeg and EPMT modules. The resulting segments provide tuples $( h _ { i } ^ { e } , \widetilde Z _ { i } ^ { e } , y _ { i } ^ { e } )$ , from which we train a new embodiment specific decoder:
+
+$$
+\theta_ {e} = \arg \min _ {\theta} \mathbb {E} _ {i} \left[ \ell_ {\mathrm{bal}} \left(D _ {\theta} \left(\mathcal {N} _ {h} ^ {e} (h _ {i} ^ {e}), \widetilde {Z} _ {i} ^ {e}\right), \mathcal {N} _ {y} ^ {e} (y _ {i} ^ {e})\right) \right].\tag{10}
+$$
+
+Each decoder uses the same $7 7 .$ -dimensional input, 7-dimensional output, and 27,399-parameter architecture. Its state and effect normalizers are fitted on the target training data, while the motionfeature normalization, segmentation networks, encoders, and codebooks remain fixed. Source and target demonstrations need not be paired: each target segment supplies its own initial state, encoded representation, and observed effect. Thus, transferring EPMT to a new embodiment requires only learning a compact realization model rather than a new motion vocabulary.
+
+Human-to-humanoid grounding. The adaptation above learns to realize shared primitive representations extracted from robot demonstrations. When primitives instead originate from human demonstrations, the joint distribution of initial states and primitive representations can shift. We therefore optionally continue the robot decoder $\theta _ { \mathrm { r o b } }$ on aligned human segments while keeping the EPMT representation and robot-fitted normalizers fixed:
+
+$$
+\mathcal {L} _ {\mathrm{gnd}} (\theta) = \mathbb {E} _ {i \sim \mathcal {D} _ {\mathrm{hum}}} \left[ \operatorname{MSE} \left(D _ {\theta} \left(\mathcal {N} _ {h} ^ {\mathrm{rob}} (h _ {i} ^ {\mathrm{hum}}), \widetilde {Z} _ {i} ^ {\mathrm{hum}}\right), \mathcal {N} _ {y} ^ {\mathrm{rob}} (y _ {i} ^ {\mathrm{hum}})\right) \right].\tag{11}
+$$
+
+All continuation inputs and targets come from human segments; no paired human–robot trajectories or robot-effect labels are required. Only the embodiment-specific decoder is updated, preserving the learned primitive vocabulary. We evaluate the resulting trade-off between reconstruction of human-derived motions and preservation of native robot fidelity. Detailed sequential replay, inversekinematics evaluation, and execution procedures are provided in the Appendix.
+
+## 3.6 CC-EPMT: CONTEXT-CONDITIONED PRIMITIVE PREDICTION
+
+EPMT encodes a segment after observing its motion. CC-EPMT instead predicts its representation from context available at the segment’s start.
+
+Context variants. The model accepts state-only context or additional visual and language features. With $\mathcal { N } _ { h } ^ { \mathrm { c t x } }$ denoting the predictor’s state standardization, representative inputs are
+
+$$
+u _ {i} ^ {\text { state }} = \mathcal {N} _ {h} ^ {\text { ctx }} (h _ {i}), \qquad u _ {i} ^ {\text { full }} = [ \bar {f} _ {\text { img }} (I _ {i}), \bar {f} _ {\text { text }} (\ell_ {i}), \mathcal {N} _ {h} ^ {\text { ctx }} (h _ {i}) ].\tag{12}
+$$
+
+Here, $I _ { i }$ is the initial image, $\ell _ { i }$ is the task name, and the image and text features come from frozen CLIP encoders. Subsets of these blocks define the text-only and text–state variants. Each context block is standardized using its training statistics. The decoder input separately uses the state normalizer associated with its fixed checkpoint.
+
+Prediction objective. A shared trunk predicts categorical distributions $P _ { \phi } ^ { \mathrm { t r } } ( \cdot \mid u _ { i } )$ and $P _ { \phi } ^ { \mathrm { a p } } ( \cdot \mid u _ { i } )$ and a continuous rotation latent ${ \hat { z } } _ { i } ^ { \mathrm { r o t } } = g _ { \phi } ( u _ { i } )$ . The frozen EPMT encoder supplies the training labels. In addition to classification and latent regression, we supervise the effect implied by the predicted factors. For each discrete factor, define the expected embedding $\begin{array} { r } { \mu _ { i } ^ { f } = \sum _ { k = 1 } ^ { K _ { f } } \bar { P _ { \phi } ^ { f } } ( k \mid \bar { u _ { i } } ) c _ { k } ^ { f } , } \end{array}$ $f ~ \in ~ \{ \mathrm { t r } , \mathrm { a p } \}$ . The frozen decoder combines the expected embeddings and predicted rotation latent with the initial hand state, $\hat { \overline { { y } } } _ { i } ^ { \mathrm { s o f t } } = D _ { \theta } \left( \mathcal { N } _ { h } ( h _ { i } ) , [ \mu _ { i } ^ { \mathrm { t r } } , \hat { z } _ { i } ^ { \mathrm { r o t } } , \mu _ { i } ^ { \mathrm { a p } } ] \right)$ . For vectors in $\mathbb { R } ^ { d }$ , define $\mathrm { M S E } ( a , b ) = d ^ { - 1 } \| a - b \| _ { 2 } ^ { 2 }$ . The contextual objective is
+
+$$
+\begin{array}{r l} & {\mathcal {L} _ {\mathrm{CC}} = \mathbb {E} _ {i} \big [ - \log P _ {\phi} ^ {\mathrm{tr}} (z _ {i} ^ {\mathrm{tr}} \mid u _ {i}) - \log P _ {\phi} ^ {\mathrm{ap}} (z _ {i} ^ {\mathrm{ap}} \mid u _ {i})} \\ & {\qquad + \lambda_ {\mathrm{rot}} \operatorname{MSE} (\widehat {z} _ {i} ^ {\mathrm{rot}}, z _ {i} ^ {\mathrm{rot}}) + \lambda_ {\mathrm{pose}} \operatorname{MSE} (\widehat {y} _ {i} ^ {\mathrm{soft}}, \mathcal {N} _ {y} (y _ {i})) \big ].} \end{array}\tag{13}
+$$
+
+Expected embeddings make the decoded-effect term differentiable w.r.t. the categorical predictions. The representation and decoder remain frozen; only the contextual predictor is optimized. The term couples factor prediction through the frozen decoder during training. At inference, discrete predictions use codebook entries rather than expected embeddings. We evaluate the contribution of decoded-effect supervision by setting $\lambda _ { \mathrm { p o s e } } = 0$ with the architecture and training budget fixed.
+
+To isolate robot translation prediction, the experiments additionally fit independent translation classifiers with cross-entropy using state, text, or both. These classifiers use the frozen translation vocabulary but have no rotation/aperture heads or decoded-effect objective. They are distinguished from the shared-trunk CC-EPMT model and from the multi-network controller implementation in Appendix.
+
+## 3.7 PRIMITIVE COMPOSITION AND CLOSED-LOOP SKILL REALIZATION
+
+The components above define a common interface from human motion to embodiment-specific execution. A manipulation skill is represented as a sequence of local primitive decisions rather than as a single retargeted trajectory. At each decision step, CC-EPMT uses the current observation, task context, and hand state to predict the next factorized primitive representation $\hat { Z } _ { t } = ( \hat { z } _ { t } ^ { \mathrm { t r } } , \hat { z } _ { t } ^ { \mathrm { r o t } } , \hat { z } _ { t } ^ { \mathrm { a p } } )$ The embodiment-specific decoder then realizes this shared representation from the current robot state:
+
+$$
+\hat {y} _ {t} ^ {e} = (\mathcal {N} _ {y} ^ {e}) ^ {- 1} \left[ D _ {\theta_ {e}} \left(\mathcal {N} _ {h} ^ {e} (h _ {t} ^ {e}), \widetilde {\hat {Z}} _ {t}\right) \right].\tag{14}
+$$
+
+The decoded effect specifies the next embodiment-specific motion target, which is passed to robot execution stack. After execution, the robot is re-observed and the updated state conditions next primitive decision. Repeating this predict–realize–observe cycle composes local primitives into multi-step manipulation skills while allowing execution to adapt to the state reached by previous actions.
+
+This interface also defines cross-embodiment skill transfer in M-PACT: human demonstrations provide the shared primitive vocabulary and, when available, primitive sequences, while embodiment adaptation changes only the mapping from these primitives to executable robot motion. Consequently, the same primitive representation can support recorded human-to-humanoid transfer as well as autonomous closed-loop primitive prediction. Sec. 4.3 evaluates these modes on the real humanoid, while detailed motion realization, sequential replay, inverse-kinematics evaluation, and execution procedures are provided in Appendix.
+
+## 4 EXPERIMENTS
+
+We separately evaluate representation transfer, design choices, contextual prediction, and humanoid realization to isolate representation, prediction, and execution errors. Experimental setups are:
+
+Datasets. EgoDex Hoque et al. (2025) provides representation training (27,411 episodes; 2.92M retained segments), HoloAssist Wang et al. (2023b) frozen transfer (35,087; 0.80M), and HumanoidE veryday Zhao et al. (2025) G1 adaptation (4,064; 96,241). We remove segments outside 5–90 frames or with negligible change in all factors. EgoDex uses a 90/10 episode split (292,806 test segments); robot decoder evaluation uses 85/15 (14,754 test segments), and robot prediction uses 70/30 (28,871 test segments). Candidate sets average three episode-level calibration/test partitions.
+
+Task generalization holds out 37/124 task names under three seeds against matched episode splits. Statistics are training-only and the source tokenizer stays frozen.
+
+Evaluation Metrics. We report median endpoint translation, rotation, and aperture error; robot translation is scaled to human-equivalent units by σ = 0.561. Parentheses denote error divided by median motion magnitude (below one beats zero change). We also report code use, top-1 accuracy, and 90%-coverage translation-set size. Replay uses interpolated-path and geodesic orientation errors; multi-run values average runs unless stated otherwise.
+
+## 4.1 EPMT RECONSTRUCTION, TRANSFER, AND ABLATIONS
+
+Transfer and adaptation. Table 1 evaluates whether the EPMT vocabulary learned on EgoDex remains useful across datasets and embodiments. With the source decoder, EPMT reconstructs EgoDex motions with normalized errors well below the zero-change baseline. When transferred to HoloAssist without decoder adaptation, all codes remain active and normalized errors remain below one, although the increased translation and rotation errors and reduced effective vocabulary indicate a distribution shift. On HumanoidEveryday, refitting only the target decoder yields low normalized translation and rotation errors while preserving full code utilization, supporting reuse of the learned vocabulary for a different embodiment. Aperture remains challenging: despite a small absolute error of 0.229 cm, its normalized error of 1.388 does not outperform zero change because aperture variations in this dataset are limited.
+
+Table 1: Reconstruction with a shared EPMT representation. HoloAssist uses the frozen source decoder; HumanoidEveryday fits only a target decoder. Parentheses give error relative to median motion magnitude. All discrete codes remain active across datasets.
+
+<table><tr><td>Metric</td><td>EgoDex</td><td>HoloAssist</td><td>HumanoidEveryday</td></tr><tr><td>Decoder</td><td>Source</td><td>Frozen</td><td>Refitted</td></tr><tr><td>Translation (cm)</td><td>2.658 (0.532)</td><td>3.123 (0.811)</td><td>3.442 (0.454)</td></tr><tr><td>Rotation (°)</td><td>0.931 (0.041)</td><td>2.732 (0.152)</td><td>0.901 (0.062)</td></tr><tr><td>Aperture (cm)</td><td>0.439 (0.493)</td><td>0.454 (0.525)</td><td>0.229 (1.388)</td></tr><tr><td>Translation codes used</td><td>16/16</td><td>16/16</td><td>16/16</td></tr><tr><td>Aperture codes used</td><td>4/4</td><td>4/4</td><td>4/4</td></tr><tr><td>Effective translation vocabulary</td><td>10.23</td><td>8.63</td><td>13.19</td></tr></table>
+
+Ablations. To examine how temporal segmentation affects primitive-motion learning, we compare fixed-window, heuristic, and learned frontends through their downstream reconstruction performance. With the same tokenizer, learned segmentation gives the lowest translation (3.022 cm) and aperture (4.514 mm) errors (Table 2). Because frontends define different targets, this tests the full segmentation– tokenization pipeline; the learned row is a single-seed precursor to final SkillSeg. Additional EPMT representation ablations are provided in the supplementary.
+
+Table 2: Segmentation and downstream reconstruction on each frontend’s own segments.
+
+<table><tr><td>Segmentation</td><td>Rate (s-1)</td><td>Segments</td><td>Trans. (cm)</td><td>Ap. (mm)</td></tr><tr><td>Fixed windows, 19 frames</td><td>1.616</td><td>51,337</td><td>3.451</td><td>4.655</td></tr><tr><td>Previous heuristic</td><td>1.742</td><td>55,353</td><td>3.188</td><td>5.220</td></tr><tr><td>Learned candidate</td><td>1.752</td><td>55,669</td><td>3.022</td><td>4.514</td></tr></table>
+
+## 4.2 CC-EPMT PREDICTION
+
+We evaluate shared-trunk CC-EPMT on human motion and independent target-domain translation classifiers on robot motion.
+
+Human-motion prediction. To evaluate contextual primitive selection while separating prediction error from reconstruction error, we compare motions decoded from predicted factors with those reconstructed from recorded EPMT factors. Both use the same frozen decoder and are evaluated on 292,806 held-out EgoDex segments. All prediction variants share the same architecture and training budget; results are reported for one seed. Results from Table 3a show context improves translation accuracy from 36.37% to 40.42% and error from 5.307 to 4.952 cm, but remains far from recorded factors, especially in rotation (20.28<sup>◦</sup> versus 0.93<sup>◦</sup>; Table 3a). Prediction is therefore the main downstream error source. Removing decoded-effect supervision changes errors by at most 0.03<sup>◦</sup> (0.13 accuracy points); one seed cannot establish an auxiliary-loss benefit.
+
+Table 3: Human and robot contextual primitive prediction. Robot calibrated-set statistics average three partitions.
+
+(a) CC-EPMT on held-out EgoDex; accuracy is percent.
+
+<table><tr><td>Representation</td><td>Trans. (cm)</td><td>Rot. (°)</td><td>Ap. (mm)</td><td>Trans. top-1</td><td>Ap. top-1</td></tr><tr><td>Recorded EPMT</td><td>2.658</td><td>0.93</td><td>4.39</td><td>—</td><td>—</td></tr><tr><td>State-only prediction</td><td>5.307</td><td>21.65</td><td>9.19</td><td>36.37</td><td>57.54</td></tr><tr><td>Context prediction</td><td>4.952</td><td>20.28</td><td>8.46</td><td>40.42</td><td>59.07</td></tr><tr><td>Context, no effect loss</td><td>4.960</td><td>20.25</td><td>8.47</td><td>40.29</td><td>59.08</td></tr><tr><td>Training-majority label</td><td>—</td><td>—</td><td>—</td><td>35.01</td><td>54.67</td></tr></table>
+
+(b) Robot translation prediction (T: text; S: state).
+
+<table><tr><td>Predictor</td><td>Top-1 (%)</td><td>Size</td><td>Cov. (%)</td></tr><tr><td>Frozen human (T+S)</td><td>7.48</td><td>13.25</td><td>89.6</td></tr><tr><td>Robot (S)</td><td>30.64</td><td>9.12</td><td>89.9</td></tr><tr><td>Robot (T)</td><td>22.83</td><td>11.36</td><td>90.0</td></tr><tr><td>Robot (T+S)</td><td>33.98</td><td>8.35</td><td>89.9</td></tr><tr><td>Majority</td><td>22.56</td><td>—</td><td>—</td></tr></table>
+
+Robot prediction and candidate sets. To evaluate whether human-derived motion primitives can be selected from robot-domain context, we train translation classifiers conditioned on state, language, or both. These models predict primitive codes directly, without images or decoder execution. Top-1 accuracy is evaluated on 28,871 test segments using one seed, while candidate-set results are averaged over three episode-level calibration/test partitions.
+
+Combining language and state achieves 33.98% accuracy, compared with 30.64% for state alone, 22.56% for the majority baseline, and 7.48% for frozen human transfer (Table 3b). At approximately 90% coverage, target-domain adaptation reduces the mean candidate-set size from 13.25 to 8.35 out of 16 codes. However, language reduces held-out-task accuracy by 0.8 percentage points, providing limited evidence of improved task generalization. Coverage measures inclusion of the recorded code rather than feasibility or task success; candidate-set construction is detailed in the supplement.
+
+## 4.3 REAL WORLD EXPERIMENTS
+
+We evaluate our framework on a real humanoid through four increasingly challenging settings: a) EPMT – Motion Reconstruction. We compress a previously executed robot manipulation episode into discrete primitive tokens and decode them back into robot motion, testing whether real manipulation can be faithfully represented through a compact token space, b) Human2Robot – Cross-Embodiment Transfer. Primitive decisions are extracted from egocentric human demonstrations and executed by the humanoid, with only the decoder adapted, testing whether human-derived motion primitives can transfer across embodiments, c) CC-EPMT (State-Only) – Closed-Loop Token Prediction. Rather than providing the token sequence, the robot predicts the next primitive from its current arm state, executes it, and re-observes, enabling autonomous closed-loop primitive composition without visual or task context, d) CC-EPMT (Full) – Context-Conditioned Manipulation. We further condition primitive prediction on the robot’s camera observation and task instruction, testing whether visual and task context improves the selection and execution of appropriate motion primitives.
+
+Together, these four settings progressively validate EPMT from motion reconstruction and crossembodiment transfer to autonomous closed-loop prediction and context-conditioned manipulation. The results demonstrate how the same primitive token representation can bridge human motion and real-world humanoid execution across different levels of autonomy and context. Qualitative results can be found in https://tinyurl.com/ykxkbu3z and supplementary.
+
+## 5 CONCLUSION
+
+We presented M-PACT, a framework that bridges human demonstrations and humanoid manipulation through a shared primitive motion representation. By separating reusable motion structure from embodiment-specific realization, EPMT enables primitive reuse across datasets and adaptation to humanoid motion through a lightweight decoder, while CC-EPMT extends these primitives to context-conditioned prediction and closed-loop execution. Experiments across human and humanoid datasets, together with real-world humanoid demonstrations, validate the framework from motion reconstruction and cross-embodiment transfer to autonomous manipulation. Overall, our results demonstrate the potential of factorized primitive motion tokens as a reusable interface between scalable human motion data and embodiment-specific robot control.
+
+## REFERENCES
+
+Hongzhe Bi, Lingxuan Wu, Tianwei Lin, Hengkai Tan, Zhizhong Su, Hang Su, and Jun Zhu. Hrdt: Human manipulation enhanced bimanual robotic manipulation. In Proceedings of the AAAI Conference on Artificial Intelligence, 2026.
+
+Kevin Black, Noah Brown, Danny Driess, et al. π<sub>0</sub>: A vision-language-action flow model for general robot control. arXiv preprint arXiv:2410.24164, 2024.
+
+Anthony Brohan, Noah Brown, Justice Carbajal, et al. RT-1: Robotics transformer for real-world control at scale. In arXiv preprint arXiv:2212.06817, 2022.
+
+Anthony Brohan, Noah Brown, Justice Carbajal, et al. RT-2: Vision-language-action models transfer web knowledge to robotic control. In arXiv preprint arXiv:2307.15818, 2023.
+
+Cheng Chen, Jerry Bai, Jiacheng Wei, Boyu Chen, Xiaoji Zheng, Fan Wu, Minghao Yang, Tianrun Chen, Ruibo Li, Xiaoyu Yue, et al. Anyworld: Factorized egocentric world models for crossembodiment generalization. arXiv preprint arXiv:2608.29242, 2026a.
+
+Hanzhi Chen, Boyang Sun, Anran Zhang, Marc Pollefeys, and Stefan Leutenegger. VidBot: Learning generalizable 3d actions from in-the-wild 2d human videos for zero-shot robotic manipulation. In CVPR, 2025.
+
+Hongyi Chen, Tony Dong, Tiancheng Wu, Liquan Wang, Yash Jangir, Yaru Niu, Yufei Ye, Homanga Bharadhwaj, Zackory Erickson, and Jeffrey Ichnowski. Dexterous manipulation policies from rgb human videos via 3d hand-object trajectory reconstruction. arXiv preprint arXiv:2602.09013, 2026b.
+
+Kristen Grauman, Andrew Westbury, Eugene Byrne, et al. Ego4d: Around the World in 3,000 Hours of Egocentric Video. In IEEE/CVF Computer Vision and Pattern Recognition (CVPR), 2022.
+
+Siddhant Haldar and Lerrel Pinto. Point policy: Unifying observations and actions with key points for robot manipulation. In CoRL, 2025.
+
+Ryan Hoque, Peide Huang, David J. Yoon, Mouli Sivapurapu, and Jian Zhang. Egodex: Learning dexterous manipulation from large-scale egocentric video, 2025. URL https://arxiv.org/ abs/2505.11709.
+
+Physical Intelligence, Ali Amin, Raichelle Aniceto, Ashwin Balakrishna, Kevin Black, Ken Conley, Grace Connors, James Darpinian, Karan Dhabalia, Jared DiCarlo, et al. π<sup>∗</sup><sub>0.6</sub>: a VLA that learns from experience. arXiv preprint arXiv:2511.14759, 2025.
+
+Simar Kareer, Dhruv Patel, Ryan Punamiya, Pranay Mathur, Shuo Cheng, Chen Wang, Judy Hoffman, and Danfei Xu. Egomimic: Scaling imitation learning via egocentric video. In ICRA, 2025.
+
+Thomas Kipf, Yujia Li, Hanjun Dai, Vinicius Zambaldi, Alvaro Sanchez-Gonzalez, Edward Grefen stette, Pushmeet Kohli, and Peter Battaglia. Compile: Compositional imitation learning and execution. In International Conference on Machine Learning, pp. 3418–3428. PMLR, 2019.
+
+Yuanchuan Lai, Qing Gao, Ziyan Liang, Junjie Hu, and Zhaojie Ju. ObjRetarget: An object-aware motion retargeting framework with anthropomorphic arm constraints and polyhedral hand modeling. IROS, 2026.
+
+Seungjae Lee, Yibin Wang, Haritheja Etukuru, H Jin Kim, Nur Muhammad Mahi Shafiullah, and Lerrel Pinto. Behavior generation with latent actions. arXiv preprint arXiv:2403.03181, 2024.
+
+Marion Lepert, Jiaying Fang, and Jeannette Bohg. Phantom: Training robots without robots using only human videos. In CoRL, 2025.
+
+Guangrun Li, Yaoxu Lyu, Zhuoyang Liu, Chengkai Hou, Jieyu Zhang, and Shanghang Zhang. H2r: A human-to-robot data augmentation for robot pre-training from videos. arXiv preprint arXiv:2505.11920, 2025.
+
+Jinhan Li, Yifeng Zhu, Yuqi Xie, Zhenyu Jiang, Mingyo Seo, Georgios Pavlakos, and Yuke Zhu. Okami: Teaching humanoid robots manipulation skills through single video imitation. In CoRL, 2024.
+
+Songming Liu, Lingxuan Wu, Bangguo Li, Hengkai Tan, Huayu Chen, Zhengyi Wang, Ke Xu, Hang Su, and Jun Zhu. RDT-1b: a diffusion foundation model for bimanual manipulation. In ICLR, 2025.
+
+Hao Luo, Yicheng Feng, Wanpeng Zhang, Sipeng Zheng, Ye Wang, Haoqi Yuan, Jiazheng Liu, Chaoyi Xu, Qin Jin, and Zongqing Lu. Being-h0: Vision-language-action pretraining from large-scale human videos. arXiv preprint arXiv:2507.15597, 2025.
+
+Corey Lynch, Mohi Khansari, Ted Xiao, Vikash Kumar, Jonathan Tompson, Sergey Levine, and Pierre Sermanet. Learning latent plans from play. In Conference on robot learning, pp. 1113–1132. Pmlr, 2020.
+
+Juncheng Mu, Sizhe Yang, Yiming Bao, Hojin Bae, Tianming Wei, Linning Xu, Boyi Li, Huazhe Xu, and Jiangmiao Pang. Deximit: Learning bimanual dexterous manipulation from monocular human videos. In Robotics: Science and Systems (RSS), 2026.
+
+Abby O’Neill, Abdul Rehman, Abhiram Maddukuri, Abhishek Gupta, Abhishek Padalkar, Abraham Lee, Acorn Pooley, Agrim Gupta, Ajay Mandlekar, Ajinkya Jain, et al. Open x-embodiment: Robotic learning datasets and rt-x models: Open x-embodiment collaboration<sup>0</sup>. In ICRA, 2024.
+
+Bhawna Paliwal, Haritheja Etukuru, William Liang, Pieter Abbeel, Nur Muhammad Mahi Shafiullah, and Jitendra Malik. Do as i do: Dexterous manipulation data from everyday human videos. arXiv preprint arXiv:2606.19333, 2026.
+
+Karl Pertsch, Youngwoon Lee, and Joseph Lim. Accelerating reinforcement learning with learned skill priors. In Conference on robot learning, pp. 188–204. PMLR, 2021.
+
+Karl Pertsch, Kyle Stachowicz, Brian Ichter, Danny Driess, Suraj Nair, Quan Vuong, Oier Mees, Chelsea Finn, and Sergey Levine. Fast: Efficient action tokenization for vision-language-action models. arXiv preprint arXiv:2501.09747, 2025.
+
+Junyao Shi, Zhuolun Zhao, Tianyou Wang, Ian Pedroza, Amy Luo, Jie Wang, Jason Ma, and Dinesh Jayaraman. Zeromimic: Distilling robotic manipulation skills from web videos. In 2025 IEEE International Conference on Robotics and Automation (ICRA), pp. 16939–16947. IEEE, 2025.
+
+Himanshu Gaurav Singh, Antonio Loquercio, Carmelo Sferrazza, Jane Wu, Haozhi Qi, Pieter Abbeel, and Jitendra Malik. Hand-object interaction pretraining from videos. In ICRA. IEEE, 2025.
+
+Chen Wang, Linxi Fan, Jiankai Sun, Ruohan Zhang, Li Fei-Fei, Danfei Xu, Yuke Zhu, and Anima Anandkumar. Mimicplay: Long-horizon imitation learning by watching human play. arXiv preprint arXiv:2302.12422, 2023a.
+
+Chen Wang, Haochen Shi, Weizhuo Wang, Ruohan Zhang, Li Fei-Fei, and C. Karen Liu. DexCap: Scalable and portable mocap data collection system for dexterous manipulation. arXiv preprint arXiv:2403.07788, 2024.
+
+Xin Wang, Taein Kwon, Mahdi Rad, Bowen Pan, Ishani Chakraborty, Sean Andrist, Dan Bohus, Ashley Feniello, Bugra Tekin, Felipe Vieira Frujeri, et al. Holoassist: an egocentric human interaction dataset for interactive ai assistants in the real world. In 2023 IEEE/CVF International Conference on Computer Vision (ICCV), pp. 20213–20224. IEEE, 2023b.
+
+Songlin Wei, Hongyi Jing, Boqian Li, Zhenyu Zhao, Jiageng Mao, Zhenhao Ni, Sicheng He, Jie Liu, Xiawei Liu, Kaidi Kang, et al. Ψ : An open foundation model towards universal humanoid loco-manipulation. arXiv preprint arXiv:2603.12263, 2026.
+
+Seonghyeon Ye, Joel Jang, Byeongguk Jeon, Se June Joo, Jianwei Yang, Baolin Peng, Ajay Mandlekar, Reuben Tan, Yu-Wei Chao, Bill Yuchen Lin, et al. Latent action pretraining from videos. In International Conference on Learning Representations, volume 2025, pp. 28213–28239, 2025.
+
+Zhenyu Zhao, Hongyi Jing, Xiawei Liu, Jiageng Mao, Abha Jha, Hanwen Yang, Rong Xue, Sergey Zakharov, Vitor Guizilini, and Yue Wang. Humanoid everyday: A comprehensive robotic dataset for open-world humanoid manipulation. arXiv preprint arXiv:2510.08807, 2025.
+
+Han Zhou, Jinjin Cao, Liyuan Ma, Xueji Fang, and Guo-Jun Qi. Traj2Action: A co-denoising framework for trajectory-guided human-to-robot skill transfer. arXiv preprint arXiv:2510.00491, 2026.

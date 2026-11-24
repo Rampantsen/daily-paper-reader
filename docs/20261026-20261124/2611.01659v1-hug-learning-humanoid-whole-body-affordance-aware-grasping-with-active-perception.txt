@@ -1,0 +1,811 @@
+# HuG: Learning Humanoid Whole-Body Afordance-Aware Grasping with Active Perception
+
+Xuanbin Peng<sup>∗</sup> <sup>§</sup>, Lai Wei<sup>∗</sup>, Yuze Zhai<sup>∗</sup>, Qingyuan Yu<sup>∗</sup>, Keyi Wang Jianglong Ye<sup>†</sup>, Xiaolong Wang<sup>†</sup>
+
+UC San Diego xuanbinpeng.com/hug
+
+Conference on Robot Learning (CoRL) 2026, Austin, TX, USA
+
+![](images/13a708ea76366d1913bdd5b45b8ad7e7f6a0fe4191b6f30a408310319a359b6c.jpg)  
+Figure 1. Humanoid whole-body afordance-aware grasping. Top: our system runs zero-shot on a Unitree G1, coupling active perception with whole-body control to discover and grasp objects across diverse everyday scenes, from deep squats at low tables to full extension at high shelves. Bottom: the policy is trained entirely on large-scale synthetic data generated and filtered with kinodynamic feasibility
+
+Abstract. Acquiring objects in human environments is hard for humanoids: targets are partially occluded under egocentric viewpoints, and reaching them demands coordinated whole-body motion that keeps the target visible and reachable while the base stays stable. We present HuG, a framework for whole-body afordance-aware grasping with active perception that couples perception and action through a Perceive–Align–Grasp pipeline: belief-driven active perception resolves occlusion by treating viewpoint as an explicit decision variable; a point-cloud–conditioned afordance policy proposes wholebody grasps; and an afordance-aware alignment stage repositions the body to the most executable configuration. A key insight is that, on a floating base, kinematic validity is not enough: we curate training data with controller-in-the-loop dynamics simulation, rejecting 73% of kinematically valid grasps that would destabilize the deployment controller, so the policy learns kinodynamically feasible afordances. Trained entirely in simulation with zero real demonstrations, HuG attains 87.5% real world success on a multi-level shelf task, generalizes to novel objects, and holds ≥73% at every tested height. Beyond generalizing within its training distribution, the policy extrapolates spatially: at scale in simulation it succeeds at table heights well below any seen during training, indicating that kinodynamically filtered synthetic data grounds afordances in object geometry and whole-body feasibility rather than in memorized configurations.
+
+Keywords: Humanoid Manipulation, Whole-Body Grasping, Active Perception
+
+## 1 Introduction
+
+Humanoid robots promise to bring general-purpose object acquisition into human environments. Yet in realistic homes and labs, targets are rarely presented in a clean tabletop configuration: they are frequently partially occluded under egocentric viewpoints and spread across diverse spatial configurations, and reaching them demands coordinated whole-body motion—turning the head, bending the torso, squatting— to maintain visibility, reachability, and stability at once. Consider retrieving an item from a cluttered multi-level shelf: the target may be visible only from a specific angle, sit at a height requiring a deep squat or a full extension, and aford a stable grasp only from particular approach directions. Such tasks demand tightly coupling perception with whole-body action: not as independent modules, but as stages in which viewpoint, posture, and grasp decisions jointly shape one another.
+
+Three threads of prior work have each made striking progress on this coupling, yet each leaves a critical gap. (i) Imitation from real demonstrations scales humanoid manipulation through teleoperation [1–4], with ACT [5]-style architectures and difusion policies such as ViA [6] supporting long-horizon tasks; but these policies are bounded by their demonstration coverage, generalizing poorly to objects and layouts outside it; worse, on a floating base every action error also shifts the body, so errors compound over long-horizon rollouts into end-efector drift that centimeter-level grasping cannot absorb. (ii) Largescale synthetic learning enables zero-shot sim-to-real via end-to-end policies [7–10] and modular grasp synthesis [11–17]; but end-to-end humanoid policies reason about dynamics only implicitly, while grasp planners are built for fixed-base tabletops, so a kinematically valid grasp can be dynamically infeasible once a floating-base humanoid must execute it under whole-body control. Neither line explicitly enforces kinodynamic whole-body feasibility during data generation. (iii) Active perception regulates viewpoints, from classical active perception and active SLAM [18, 19] to learned perceptual strategies [6, 20–22]; but on humanoids, viewpoint regulation either emerges implicitly from demonstrations, bounded by their coverage [6], or is confined to the head with the body left passive [23]. Yet a body-attached camera binds viewpoint to whole-body posture [24–26], so resolving occlusion can require lowering the torso or leaning, not merely looking. Humans, by contrast, couple perception and whole-body action instinctively: they lean past occlusions, squat to low shelves, and turn to approach from stable angles. Current humanoid grasping systems lack this coupling.
+
+We present HuG, a hierarchical framework for whole-body afordance-aware grasping with active perception (Fig. 1) that realizes this coupling through a Perceive–Align–Grasp pipeline: (1) belief-driven active perception, a Bayes-style belief filter over an egocentric viewpoint grid that resolves occlusion by systematic search, treating viewpoint as an explicit decision variable rather than emergent behavior; (2) kinodynamically filtered afordance learning, where an afordance is a kinodynamically feasible whole-body grasp configuration for the observed object: a point-cloud-conditioned CVAE is trained on 600k synthetic trajectories that each pass controller-in-the-loop dynamics simulation, which rejects 73% of kinematically valid grasps that would destabilize the controller; and (3) whole-body afordance-aware alignment, which samples � diverse candidates and repositions the whole body to the configuration of highest execution quality rather than highest grasp confidence. Trained entirely from synthetic data with zero real demonstrations, our system attains 87.5% real-world success on a multi-level shelf task, generalizes across novel objects (90/85% ID/OOD), holds ≥73% at every tested height, and transfers zeroshot to diverse everyday scenes with cluttered backgrounds and unseen objects. At scale in simulation, the same policy extrapolates to table heights well below its training range, where every single-component ablation loses 25–81 points: the learned afordances are grounded in object geometry and whole-body feasibility, not in memorized configurations.
+
+## Our contributions are:
+
+• Kinodynamic-aware whole-body afordance learning. A large-scale synthetic data engine that co-optimizes whole-body posture with the hand and enforces controller-in-the-loop dynamic feasibility, so the learned afordances are kinodynamically feasible by construction.
+
+• A zero-demonstration Perceive–Align–Grasp system. A complete humanoid pipeline that discovers occluded targets, repositions the whole body to an executable grasp configuration, and executes it under whole-body control, without any real-world demonstration.
+
+• Extensive real-world validation. The complete pipeline runs zero-shot on a Unitree G1 humanoid, outperforming imitation and grasp-planning baselines and generalizing to unseen objects, heights, and everyday scenes.
+
+## 2 Related Work
+
+## 2.1 Humanoid Whole-Body Loco-Manipulation
+
+Coordinating locomotion and manipulation on humanoids couples floating-base stability with end-efector precision. Learned whole-body controllers now track expressive motions and coordinate legs and arms under contact and force disturbances [27–36], and teleoperation systems built on them have made wholebody demonstration collection practical enough to train capable manipulation policies [1–4, 36–52]. These policies, however, remain bounded by their demonstration coverage, and on a floating base, pose drift compounds over long-horizon rollouts. Sim-to-real visual policies [7–10, 17, 22, 25, 53–56] remove the demonstration bottleneck, most directly VIRAL [7], but leave perception to data scaling. In contrast, we formulate perception as an active optimization problem, coordinating whole-body motion to search for and maximize target observability.
+
+## 2.2 Learning from Synthetic Data
+
+The cost of real interaction data has driven a shift toward simulation-based learning, from domain randomization [57–64] and synthetic grasp datasets [11–15, 65–68] to generative, automated pipelines [69– 73]. Most directly comparable to ours, billion-scale grasping foundation models [16] backed by GPUaccelerated simulators [74, 75] and large asset libraries [76] achieve zero-shot generalization in cluttered scenes. These eforts, however, predominantly target fixed-base settings or omit the dynamical plausibility of generated samples, admitting candidates that are kinematically valid but dynamically infeasible under closed-loop whole-body control. In contrast, we co-optimize whole-body posture with the hand for each grasp and enforce kinodynamic feasibility under whole-body execution on a floating base, with the deployment controller in the loop.
+
+![](images/dd88acb4c5afcea6cb7f58a1145882dc4c920e593275b788265734c432698571.jpg)  
+Figure 2. System and training pipelines. The system pipeline (top) follows a Perceive–Align–Grasp structure, combining active perception, whole-body alignment, and robust grasp execution. The training pipeline (bottom) constructs large-scale synthetic data with kinodynamic filtering to learn afordance-aware whole-body grasping.
+
+## 2.3 Active Perception for Manipulation
+
+Active perception spans reconstruction, recognition, and manipulation [18, 19, 77–81], and has been coupled with grasping on fixed arms and mobile manipulators [20, 21, 82, 83], where the camera moves largely independently of balance. On humanoids the camera is body-attached, so a viewpoint change is a whole-body motion [24–26], and reaching a viewpoint is itself a whole-body planning problem [84]. Recent humanoid systems address this only partially: ViA [6] learns coordinated head–bimanual control from demonstrations but is bounded by their coverage, and Choice Policy [23] regulates an active head while leaving the body passive, so the camera cannot reach the configurations occlusion demands.
+
+## 3 Method
+
+Our framework comprises two complementary pipelines (Fig. 2). The system pipeline follows a Perceive– Align–Grasp structure: active perception (Sec. 3.2) discovers the target under egocentric occlusion; the afordance model proposes whole-body grasp configurations, which alignment ranks and repositions the body toward; and a collision-aware planner executes the selected grasp through the whole-body controller (Sec. 3.4). The training pipeline builds large-scale synthetic data filtered for kinodynamic feasibility, yielding the afordance model that drives both alignment and grasping (Sec. 3.3). Both share one hierarchical whole-body controller coupling upper-body IK with an RL lower-body policy (Sec. 3.1).
+
+## 3.1 Hierarchical Whole-Body Controller
+
+Whole-body grasping places two competing demands on the controller: task-space precision for endefector placement, and floating-base stability across the diverse postures that diferent object heights and reaches require. End-to-end policies struggle to meet both under the tight tolerances of zero-shot sim-to-real transfer.
+
+A hierarchical two-layer design decouples these concerns. The high-level whole-body IK [85] maps desired end-efector poses (wrist, hand, and head, in the world frame) to upper-body joint targets $\mathbf { q } _ { \mathrm { u p p e r } }$ and lower-body commands $\mathbf { u } _ { \mathrm { l o w e r } } = ( v _ { x } , v _ { y } , v _ { \mathrm { y a w } } , h )$ , with ℎ the pelvis height. For the low-level RL locomotion policy, we use the decoupled whole-body controller of SONIC (GR00T) [38], which tracks $\mathbf { u } _ { \mathrm { l o w e r } }$ from proprioception, outputting lower-body targets that realize the motion while maintaining balance.
+
+This coupling poses a challenge: as the RL policy shifts pelvis height or base position, the root pose drifts in the world frame, and an IK solver blind to this drift renders world-frame targets unreachable—fatal for centimeter-level grasping. A closed-loop pelvis compensator closes the gap, pre-warping every task-space target by the low-pass-filtered mismatch between the IK-assumed and FK-realized pelvis pose (App. A gives the $S E ( 3 )$ update and filter). Crucially, the same controller drives synthetic-data filtering (Sec. 3.3), so training data is supported on actions the deployment system can actually execute.
+
+## 3.2 Active Perception
+
+We cast object discovery under egocentric occlusion as sequential viewpoint selection that maximizes the probability of detecting the target. The module is a finite-state machine with a Search mode (global exploration) and an Inspect mode (local refinement after detection); the target is named by a text query to Grounding DINO [86] (e.g., “red cup”), making acquisition language-conditioned without a separate language module.
+
+Search. We maintain a normalized belief $p ( i , j )$ , the probability that the target is visible from camera pose $( \mathrm { y a w } _ { i } , z _ { j } )$ , over a discretized grid of camera yaw and height. Each camera pose is a head-pose target for the whole-body controller (Sec. 3.1), so reaching a viewpoint is a whole-body motion: the robot squats or rises to look, not only turns its head. For a candidate pose � , the view frustum projects to a mask $\mathcal { M } ( T )$ with probability ofdetection $\begin{array} { r } { \mathrm { P o D } ( T ) = \sum _ { ( i , j ) \in \mathcal { M } ( T ) } p ( i , j ) } \end{array}$ . We execute the viewpoint maximizing score $\begin{array} { r } { \left( T \right) = \mathrm { P o D } ( T ) - w _ { c } ( d _ { \mathrm { y a w } } ^ { 2 } + d _ { z } ^ { 2 } ) - w _ { o } r _ { \mathrm { o v e r l a p } } , } \end{array}$ with $( d _ { \mathrm { y a w } } , d _ { z } )$ the displacement from the current camera pose, trading detection likelihood against camera motion and revisiting.
+
+Belief update. After observing Grounding DINO confidence $s _ { t }$ at the executed viewpoint $T _ { t } ,$ cells in the frustum $\mathcal { M } _ { t }$ are updated by a Bayes-style multiplicative rule,
+
+$$
+p _ {t + 1} (i, j) \propto \lambda_ {t} (i, j) p _ {t} (i, j), \quad \sum_ {i, j} p _ {t + 1} = 1,\tag{1}
+$$
+
+with a detection-dependent likelihood ratio $\lambda _ { t }$ that amplifies frustum cells on a hit $\begin{array} { r } { ( \lambda _ { t } = 1 + \alpha \frac { s _ { t } - \tau } { 1 - \tau } } \end{array}$ for $s _ { t } \geq \tau ,$ rising with confidence above threshold $\tau ) ,$ decays them on a miss $( \lambda _ { t } = 1 - \gamma$ for $s _ { t } < \tau )$ , and leaves cells outside the frustum unchanged. Hits concentrate belief; misses redistribute mass to unvisited viewpoints, driving systematic exploration.
+
+Inspect and termination. Search hands of to Inspect once max<sub>�,�</sub> $p ( i , j )$ stays above a convergence threshold for � steps; Inspect then refines the viewpoint by point-cloud visibility quality (visible-point count, depth continuity, normal stability) and terminates when observation quality saturates, passing a stable observation to alignment.
+
+## 3.3 Learning Kinodynamic-Aware Whole-Body Afordance
+
+Given a stable observation, the robot must decide how to approach and grasp the object with its whole body. We learn a whole-body afordance policy that maps a single-view segmented point cloud � to candidate keyframe actions, each a (pre-grasp, grasp, post-grasp) sequence of end-efector poses and hand commands executed by the whole-body controller. Every training sample has survived controller-in-the loop execution, so the learned afordances are kinodynamically feasible by construction.
+
+Large-scale World-frame Randomization. Unlike fixed-base grasping, where object variation is largely in-plane, a floating-base humanoid must adapt its entire body to diferent object heights and reaches. We randomize table geometry and object placement across a wide reachable workspace in the world frame, with objects drawn from a large-scale mesh dataset under randomized scale and mass (App. B). This forces diverse whole-body strategies: squatting for low objects, extending for far ones, and adapting the whole-body configuration to everything in between.
+
+Kinodynamic-aware Data Engine. We build the dataset through a three-stage pipeline: (i) wholebody–hand grasp co-optimization jointly synthesizes the whole-body configuration and hand joints for each of $N _ { \mathrm { c a n d } }$ candidates by energy-based optimization in joint space [85], coupling hand contact with a reachable whole-body posture, unlike gripper-based or fixed-upper-body generators that ignore humanoid morphology (energy terms in App. B); (ii) motion planning builds collision-free pre-grasp→grasp→postgrasp trajectories; (iii) controller-in-the-loop dynamics simulation rolls out each trajectory under the same WB-IK + RL stack used at deployment. A trajectory is kept only if it satisfies three criteria: task success (object lifted ${ \ge } 5$ cm and held), stable execution (no fall, bounded base attitude), and trackability (end-efector error within deployment tolerances). This last stage is the key to kinodynamic awareness: in our profiling it rejects 73% of kinematically valid grasps (Sec. 4.3.1), because the whole-body controller cannot stay stable through the reach or IK tracking diverges under interaction forces. We further filter by camera visibility to avoid degenerate observations (App. B).
+
+Observation and Action Spaces. The observation is a segmented single-view partial point cloud $\mathbf { P } \in \mathbb { R } ^ { N \times 3 }$ of the target, transformed from camera to robot task frame to match the egocentric deployment view. The action is a three-stage keyframe trajectory ${ \bf { a } } = ( { \bf { a } } ^ { \mathrm { { p r e } } } , { \bf { a } } ^ { \mathrm { { g r a s p } } } , { \bf { a } } ^ { \mathrm { { p o s t } } } )$ , where each stage $\mathbf { a } ^ { s } = \left[ \mathbf { p } ^ { s } , \mathbf { r } ^ { s } , \mathbf { h } ^ { s } \right]$ gives end-efector translation $\mathbf { p } ^ { s } \in \mathbb { R } ^ { 3 }$ , orientation $\mathbf { r } ^ { s } \in \mathbb { S } ^ { 3 }$ (unit quaternion), and hand joint targets $\mathbf { h } ^ { s } \in \mathbb { R } ^ { 6 }$
+
+Whole-body Afordance Policy. Since a point cloud admits multiple feasible grasps, we model the afordance as a multimodal distribution with a point-cloud conditioned CVAE: a PointNet [87] encodes �, conditioning a CVAE that decodes the keyframe action from a sampled latent. At inference we draw several latents for diverse proposals, ranked and executed by the alignment stage (Sec. 3.4; architecture and training in App. C).
+
+## 3.4 Whole-Body Alignment and Execution
+
+Once active perception settles on a stable viewpoint, the target is segmented with SAM [88] into an object-only point cloud and passed to the afordance model (Sec. 3.3) for grasp proposal and whole-body alignment.
+
+Candidate Generation and Ranking. The CVAE decoder draws � latents into � diverse candidate keyframe sequences $\{ \mathbf { a } _ { k } \} _ { k = 1 } ^ { K } \mathrm { ; }$ ; trained only on kinodynamically verified data, its proposals are strongly biased toward configurations the whole-body controller can execute. For each, we solve whole-body IK for the pre-grasp target and rank by $\mathrm { r a n k } ( { \mathbf { a } } _ { k } ) = w _ { \mathrm { i k } } Q _ { \mathrm { I K } } ( { \mathbf { a } } _ { k } ) - w _ { \mathrm { p r o x } } \| { \mathbf { q } } _ { k } - { \mathbf { q } } _ { \mathrm { c u r r } } \|$ , where $Q _ { \mathrm { I K } }$ is IK quality (inverse residual norm) and $\| \mathbf { q } _ { k } - \mathbf { q } _ { \mathrm { c u r r } } \|$ the joint-space reconfiguration cost. This favors kinematically achievable proposals that need minimal whole-body motion, which matters for floating-base stability. IK evaluation is batched and lightweight (∼1 ms for all � candidates).
+
+Execution. The top-ranked candidate is executed via collision-aware Cartesian motion planning through the whole-body controller (Sec. 3.1); if planning fails, e.g., due to scene collision, the system falls back to the next candidate in ranked order. The robot approaches the pre-grasp pose, closes the hand, and performs the post-grasp lift. Unlike methods that select from a predefined library of stable poses, our alignment configurations are learned from kinodynamically filtered data, object-specific via point-cloud conditioning, and dynamics-aware by construction.
+
+## 4 Experiments
+
+We evaluate our system through three complementary evaluations: Task 1 tests full pipeline integration under realistic shelf conditions; Task 2 isolates manipulation from perception with oracle observations on real hardware; Task 3 measures spatial and object generalization at scale in simulation, including extrapolation beyond the training height range. Beyond aggregate comparison, we investigate whether large-scale kinodynamically filtered synthetic training generalizes across the full humanoid workspace and novel objects, which pipeline component fails in which regime, and how performance scales with synthetic data volume.
+
+## 4.1 Experimental Setup
+
+Hardware. We evaluate on the Unitree G1 humanoid with a 3-DOF active head [39], ZED Mini stereo camera, and Inspire dexterous hands. All inference runs on an external desktop (RTX 5090); commands are transmitted via Ethernet to the onboard computer.
+
+Task 1: Full Pipeline (Perceive → Align → Grasp). Objects are placed on a multi-level shelf with partial occlusions and randomized heights. The robot starts from a nominal pose with no prior knowledge of the target and must autonomously discover, align to, and grasp the object. We run �=40 trials over 10 YCB [89] objects (5 ID, 5 OOD); OOD objects are held out from the training set. Target objects are specified via natural language, conditioning the DINO text prompt for detection.
+
+Task 2: Align & Grasp (Oracle Perception). To isolate manipulation from perception confounds, we provide oracle observations on a height-adjustable table at five controlled levels: H1 (0.50 m), H2 (0.60 m), H3 (0.70 m), H4 (0.80 m), H5 (0.85 m); 10 objects × 5 heights × 3 trials = 150 (75 ID, 75 OOD). Task 2 is the hardware anchor for the height profile measured at scale in Task 3. ACT and ViA receive demonstrations at H2 and H4 only, so the remaining heights measure their sensitivity to demonstration coverage; our method trains on continuously randomized heights in simulation.
+
+Task 3: Large-Scale Simulation Evaluation. To evaluate spatial generalization at a scale impractical on hardware, we sweep 17 table heights (0.10–0.90 m in 5 cm steps) with randomized planar placement and randomized object yaw, over two object catalogs: YCB (12 everyday objects) and RoboCasa [90] (11 objects spanning a broader shape distribution: smaller, thinner, and more elongated geometries, e.g., peeler, whisk, chicken drumstick). Six system variants (Ours and five ablations/baselines, below) are evaluated on identical scene sets, so every delta is paired; ∼18,800 trials in total. Success is scored from telemetry under a criterion stricter than the real-world one: the object must be lifted ≥5 cm and held for 2 s with bounded in-hand slip, and the robot must remain upright (App. E.5). Crucially, training tables span only 0.40–0.90 m: all evaluations at 0.10–0.35 m probe extrapolation below the training range.
+
+Metrics. Success rate (SR): object lifted ≥5 cm and stably held. For Task 1 we additionally report Det. (%): object successfully localized, and Gr|Det (%): grasp success given detection, which decomposes failures into perception vs. manipulation stages.
+
+Baselines. We compare against end-to-end imitation methods, modular grasp planners, and ablations of our pipeline. Vanilla ACT [5]: end-to-end visuomotor policy with a fixed head and no active viewpoint control. ACT+ Active Head: ACT with the active head enabled during both demonstration collection and policy execution, isolating the contribution of active perception. ViA [6]: difusion policy with learned active perception, adapted to floating-base control. GraspNet + WB-IK [11]: parallel-jaw grasp poses from the pretrained checkpoint, mapped to dexterous-hand pre-grasps and executed via our WB-IK controller (+ AP: adding our active perception). Dex1B (adapted) + WB-IK + AP [12]: large-scale dexterous grasp framework adapted to our humanoid. Data is generated across the full workspace with upper-body optimization (arm IK only, no whole-body–hand co-optimization), without dynamics filtering or alignment. Dex1B shares our CVAE + PointNet architecture and hand type, directly isolating the contribution of kinodynamic filtering and whole-body alignment. ACT and ViA are trained on teleoperated demonstrations of ID objects (Task 1: 70 full-pipeline demonstrations per object at every evaluated shelf level, with randomized horizontal placement, so their height coverage matches the test conditions; Task 2: grasp-only at H2/H4). Our method uses zero real demonstrations: 600k synthetic trajectories only.
+
+<table><tr><td rowspan="2" colspan="2">Method</td><td colspan="2">SR (%)</td><td colspan="2">Stage (%)</td></tr><tr><td>All</td><td>ID/OOD</td><td>Det.</td><td>Gr|Det</td></tr><tr><td rowspan="6">Baselines</td><td>Vanilla ACT</td><td>32.5</td><td>55/10</td><td>52.5</td><td>61.9</td></tr><tr><td>ACT + Active Head</td><td>40.0</td><td>65/15</td><td>57.5</td><td>69.6</td></tr><tr><td>ViA (adapted)</td><td>50.0</td><td>85/15</td><td>70.0</td><td>71.4</td></tr><tr><td>GraspNet + WB-IK</td><td>22.5</td><td>-</td><td>50.0</td><td>45.0</td></tr><tr><td>+ Our Perc.</td><td>40.0</td><td>-</td><td>90.0</td><td>44.4</td></tr><tr><td>Dex1B + WB-IK + AP</td><td>52.5</td><td>55/50</td><td>92.5</td><td>56.8</td></tr><tr><td></td><td>Ours (Full)</td><td>87.5</td><td>90/85</td><td>92.5</td><td>94.6</td></tr><tr><td rowspan="4">Abl.</td><td>-Perceive</td><td>50.0</td><td>55/45</td><td>57.5</td><td>87.0</td></tr><tr><td>-Whole-Body</td><td>20.0</td><td>20/20</td><td>87.5</td><td>22.9</td></tr><tr><td>-Align</td><td>62.5</td><td>65/60</td><td>85.0</td><td>73.5</td></tr><tr><td>-Dyn. Filter</td><td>62.5</td><td>65/60</td><td>90.0</td><td>69.4</td></tr></table>
+
+(a)
+
+![](images/28ae53f216e496381b0a37424909a8889f9d540912db56c5311beb21be048ce7.jpg)  
+(b)
+
+<table><tr><td>Stage</td><td>Filter</td><td>Output</td><td>Survival</td></tr><tr><td>1</td><td>Grasp opt. + IK + coll.</td><td>12.4 M</td><td>2.4%</td></tr><tr><td>2</td><td>Collision-free MP</td><td>298 K</td><td>2.4%</td></tr><tr><td>3</td><td>Dynamics sim. (WBC)</td><td>80.7 K</td><td>27.0%</td></tr><tr><td></td><td>Final (+ view sel.)</td><td>18 K</td><td>—</td></tr></table>
+
+(c)  
+Figure 3. Quantitative results. (a) Task 1 full-pipeline evaluation (�=40, 10 objects, 5 ID/5 OOD); Det. = object localized, Gr|Det = grasp success given detection. (b) Task 2 spatial generalization across five heights (oracle perception, 10 objects; solid = ID, hatched = OOD, green = ACT/ViA demo heights): ours ≥73% everywhere, while ACT/ViA succeed only at their demonstrated heights (a demonstration-coverage efect; Sec. 4.3.2) and Dex1B/–Dyn. Filter degrade at the extremes. (c) Kinodynamic data filtering: 73% of kinematically valid grasps fail under the deployment whole-body controller (508 M SDF candidates → 18 K training grasps).
+
+Ablations. –Perceive: fixed camera pose, bypassing active viewpoint search. –Whole-Body: active perception is enabled for object discovery, but the base is fixed during grasping, with no squatting or torso adaptation (arm-only manipulation). –Align: skip the whole-body alignment stage; instead of ranking � candidates and repositioning the body, sample a single grasp candidate and execute directly from the current configuration. –Dyn. Filter: remove dynamics simulation from the data pipeline, retaining only kinematic and collision filtering. –Compensator: disable the closed-loop pelvis compensator (Sec. 3.1), so task-space targets are not corrected for pelvis drift.
+
+## 4.2 Main Results
+
+Fig. 3a summarizes Task 1. Our full system reaches 87.5% SR (90/85 ID/OOD) with 94.6% Gr|Det (once the object is found, grasping almost always succeeds), using zero real demonstrations, while the strong imitation baseline (ViA) needs teleoperated demos to reach 50%.
+
+Baselines fail along distinct axes. End-to-end imitation memorizes object-specific behavior: ViA holds 85% ID but collapses to 15% OOD, as cumulative errors over the long-horizon floating-base action space stall it on unseen objects. Gripper-based planners fail at execution, not discovery: adding our perception to GraspNet lifts Det. 50→90%, yet Gr|Det is unchanged (45.0→44.4%), because parallel-jaw pre-grasps give postures unnatural for the humanoid hand (Fig. 7c) and hand–environment collisions (Fig. 7d). Large-scale dexterous data alone is insuficient: Dex1B (adapted), which shares our CVAE + PointNet and hand type, matches our Det. (92.5%) yet reaches only 56.8% Gr|Det, below –Dyn. Filter (69.4%): built for tabletop settings, its data lacks both whole-body–hand co-optimization and dynamic feasibility (Sec. 4.3.3 dissects this by height).
+
+Each module addresses a distinct failure stage. Stage-wise metrics separate perception (Det.) from manipulation (Gr|Det): –Perceive cuts Det. by 35 pts (perception is the discovery bottleneck, Sec. 4.3.4), while the three manipulation ablations each collapse Gr|Det along a diferent axis. –Whole-Body falls to 22.9% (cannot reach without squatting), –Align to 73.5% (sub-optimal approach from the current pose), and –Dyn. Filter to 69.4% (dynamically infeasible training data). The full 94.6% confirms all four are necessary; we dissect them next and resolve each ablation’s failure regime across the workspace in Sec. 4.3.3.
+
+## 4.3 Analysis
+
+## 4.3.1 Kinodynamic filtering rejects 73% of valid grasps
+
+Kinematic feasibility alone is insuficient for a floating base. Fig. 3c traces the pipeline on an example profiling run: 508M candidates yield 18K training grasps, and 73% of kinematically valid trajectories are dynamically infeasible: they satisfy IK, collision, and planning constraints yet jitter (Fig. 7a), twist (Fig. 7b), or destabilize under the deployment controller. Removing the filter (–Dyn. Filter) drops Gr|Det 94.6→69.4% at near-identical Det. (90.0 vs. 92.5%); Dex1B, which also lacks it, drops further (56.8%); controller-in-the-loop verification is essential for training-data quality. The consequence is sharpest at scale (Fig. 4): trained on the same scenes without the filter, the policy is merely weaker inside the training range (64 vs. 87/80% on YCB/RoboCasa) but collapses to 3–6% below it—the filter is what turns in-distribution competence into extrapolation (Sec. 4.3.2).
+
+## 4.3.2 Extrapolation beyond the training height range
+
+At scale in simulation (Task 3, Fig. 4, ∼18.8K paired trials), the full system holds 87.4/79.8% (YCB/RoboCasa) within the trained 0.40–0.90 m range and 81.1/71.4% at 0.10–0.35 m, below the training floor and reached from deep squats at shin height. It loses only 6–8 pts under extrapolation, while the other variants collapse there to 0–6% and –Align drops to 40–46%. Trained on large-scale, kinodynamically filtered data, the afordance policy learns rich local geometric features under a strong kinodynamic prior: its proposals remain object-relative and controller-executable even when the body configuration leaves the training distribution. Below the training floor (0.10–0.35 m), whole-body control and dynamics filtering become indispensable (removing either collapses success to near zero), and alignment’s contribution roughly doubles (13–15 → 25–41 pts), as maintaining stable, feasible whole-body execution becomes the dominant factor (Sec. 4.3.3). Object dificulty and the spatial envelope are analyzed in App. E.5.
+
+The full system’s profile carries over to hardware. Across five real heights (Task 2, Fig. 3b, 150 trials), ours holds 73–97% with near-identical ID/OOD (85.3 vs. 84.0%), comparable to the simulated 80–93% (YCB) at the same heights; Dex1B and –Dyn. Filter degrade at the extremes, qualitatively consistent with the simulation results. ACT and ViA, given demonstrations at two heights, collapse at the unseen ones, as expected: teleoperated policies are bounded by their demonstration coverage, and collecting demonstrations across the full workspace is prohibitively expensive—precisely where sim-to-real training on large-scale synthetic data shines.
+
+![](images/3dac0b3951237c11f4dbf3a82e7cc50a21f5c64ae681373ced217982b7e58db9.jpg)
+
+(a)
+
+<table><tr><td rowspan="2">Method</td><td colspan="2">YCB</td><td colspan="2">RoboCasa</td></tr><tr><td>Extrap. 0.10–0.35 m</td><td>In-range 0.40–0.90 m</td><td>Extrap. 0.10–0.35 m</td><td>In-range 0.40–0.90 m</td></tr><tr><td>Ours (Full)</td><td>81.1</td><td>87.4</td><td>71.4</td><td>79.8</td></tr><tr><td>-Align</td><td>40.1</td><td>72.4</td><td>46.0</td><td>67.2</td></tr><tr><td>-Dyn. Filter</td><td>2.8</td><td>64.4</td><td>5.7</td><td>63.6</td></tr><tr><td>Dex1B + WB-IK</td><td>0.7</td><td>47.7</td><td>0.4</td><td>39.2</td></tr><tr><td>-Compensator</td><td>2.1</td><td>43.6</td><td>1.9</td><td>44.0</td></tr><tr><td>-Whole-Body</td><td>0.0</td><td>6.1</td><td>0.0</td><td>11.4</td></tr></table>
+
+(b)  
+Figure 4. Large-scale simulation evaluation (∼18,800 paired trials; Task 3 protocol in Sec. 4.1). (a) SR vs. table height on YCB (left) and RoboCasa (right). Training tables span 0.40–0.90 m (dashed line); the shaded band is extrapolation below the training range. (b) SR (%) aggregated over the extrapolation and in-range bands (95% Wilson CIs for the Full rows are within ±4 pts, e.g. YCB extrapolation 81.1 [77.7, 84.1]). The full system loses only 6–8 pts below the training floor; removing any single component collapses extrapolation to 0–6% (–Align to ∼40–46%).
+
+## 4.3.3 Each component has a distinctfailure signature
+
+The per-height curves (Fig. 4a) resolve where each component matters, which a single ablation number cannot. –Compensator rises with height, from ∼0% below 0.40 m to 59–81% at 0.70–0.90 m: pelvis drift grows with squat depth, so uncompensated targets miss most exactly where posture deviates most from nominal; the curve is a direct measurement of drift versus depth. –Dyn. Filter shows a clif at the training floor (0% at ≤0.20 m, ≥60% from 0.45 m): unfiltered data yields grasps executable only in nominal postures. –Whole-Body is near zero below 0.65 m and peaks at 21–27%: this is the arm-only reach envelope, and it quantifies how much of the workspace exists only through the torso and legs. –Align costs a uniform 13–15 pts inside the training range but 25–41 pts below it: candidate selection matters most where feasible proposals are scarce. Dex1B is 0% at ≤0.30 m and falls of again above 0.80 m (34–23% on YCB): fixed-upperbody generation contains neither low postures nor extended high reaches, a coverage limit of the generator. Coverage is not the whole gap: even in-range it stays ∼40 pts below Full (47.7/39.2 vs. 87.4/79.8%), the compound cost of generating without whole-body–hand co-optimization or dynamic-feasibility filtering. Together these signatures explain the Task 1 stage-wise ablations (Sec. 4.2) mechanistically: each module removes a diferent failure regime, and only their union covers the workspace.
+
+![](images/45772f7dc0d4174861a5ab235653a51087af9f415880b238c068aa6320d93026.jpg)  
+Figure 5. Whole-body spatial coverage. Adapting its entire body, our policy grasps in simulation across a continuous table-height range (0.10–0.90 m), from deep squats for low targets to full extension for high ones. Training tables spanned 0.40–0.90 m; the leftmost frames lie below the training range.
+
+## 4.3.4 Active perception resolves the discovery botleneck
+
+Is the bottleneck finding the object or grasping it? –Perceive cuts Det. by 35 pts (92.5→57.5%) while Gr|Det stays high (87.0 vs. 94.6%): grasping is reliable given a good view; discovery is the bottleneck. Learned alternatives confirm the gap (ViA 70.0%, ACT+Active Head 57.5% Det. vs. our 92.5%). Our systematic viewpoint search takes 10–15 updates (∼8 s), a long search that end-to-end policies would have to learn jointly with manipulation; this motivates the modular separation of discovery from execution.
+
+## 4.3.5 Synthetic data scaling drives generalization
+
+In a dedicated real-world scaling study (App. E.4), SR rises from 9.2% (5k trajectories) to ∼89% at 400k and plateaus thereafter (88.3% at 600k), with OOD benefiting most (5.0→90.0%) and the relative OOD degradation narrowing from 62% to under 2% above 300k; data diversity progressively closes the generalization gap to novel objects. Scale and filtering are complementary: scale closes the object gap, while kinodynamic filtering is what enables extrapolation beyond the training range (Sec. 4.3.2).
+
+## 5 Conclusion and Limitations
+
+We presented a hierarchical Perceive–Align–Grasp framework for humanoid whole-body afordanceaware grasping with active perception. By coordinating belief-driven viewpoint regulation, whole-body alignment, and a kinodynamically filtered afordance model, our system reaches 87.5% real-world success with zero real demonstrations, outperforming end-to-end imitation and modular grasp-planning baselines by large margins. Three findings anchor the design: 73% of kinematically valid grasps are dynamically infeasible under the deployment controller, so controller-in-the-loop data curation is essential for floating base manipulation; perception is the dominant bottleneck under egocentric occlusion (without active perception, detection falls to 57.5% while Gr|Det remains 87%); and at scale in simulation the policy extrapolates to table heights well below its training range, evidence that kinodynamically filtered afordances are grounded in object geometry and whole-body feasibility rather than memorized configurations.
+
+Limitations. Our system is predominantly open-loop at the high-level decision stage, prioritizing interpretability and stability over reactive replanning. The remaining real-world failures (∼12.5%) stem mainly from open-vocabulary detection, where DINO + SAM mis-identify targets under severe occlusion or on reflective surfaces, and from occasional collisions at workspace extremes near joint limits. Deployment currently uses double support without stepping, so targets beyond arm-plus-lean reach require repositioning; the controller interface already exposes velocity commands, and extending alignment to stepping is a natural next step. Synthetic-data generation is also costly (∼700 GPU-hours per 600k trajectories): fully parallelizable and amortized across deployments, but re-run when the controller or policy architecture changes. Future work may close the loop across perception and execution, co-train the stages end-to-end, and adapt data synthesis to the deployed controller.
+
+## Acknowledgments
+
+This work was supported, in part, by NSF CAREER Award IIS-2240014 and NSF CCF-2112665 (TILOS).
+
+## References
+
+[1] Q. Ben, F. Jia, J. Zeng, J. Dong, D. Lin, and J. Pang. HOMIE: Humanoid loco-manipulation with isomorphic exoskeleton cockpit, 2025. URL https://arxiv.org/abs/2502.13013.
+
+[2] Y. Ze, S. Zhao, W. Wang, A. Kanazawa, R. Duan, P. Abbeel, G. Shi, J. Wu, and C. K. Liu. TWIST2: Scalable, portable, and holistic humanoid data collection system, 2025. URL https://arxiv. org/abs/2511.02832.
+
+[3] T. He, Z. Luo, W. Xiao, C. Zhang, K. Kitani, C. Liu, and G. Shi. Learning human-to-humanoid real-time whole-body teleoperation. arXiv preprint arXiv:2403.04436, 2024.
+
+[4] Y. Li, Y. Lin, J. Cui, T. Liu, W. Liang, Y. Zhu, and S. Huang. CLONE: Closed-loop whole-body humanoid teleoperation for long-horizon tasks, 2025. URL https://arxiv.org/abs/2506.08931.
+
+[5] T. Z. Zhao, V. Kumar, S. Levine, and C. Finn. Learning fine-grained bimanual manipulation with low-cost hardware. RSS, 2023.
+
+[6] H. Xiong, X. Xu, J. Wu, Y. Hou, J. Bohg, and S. Song. Vision in action: Learning active perception from human demonstrations. arXiv preprint arXiv:2506.15666, 2025.
+
+[7] T. He, Z. Wang, H. Xue, Q. Ben, Z. Luo, W. Xiao, Y. Yuan, X. Da, F. Castañeda, S. Sastry, C. Liu, G. Shi, L. Fan, and Y. Zhu. VIRAL: Visual sim-to-real at scale for humanoid loco-manipulation. arXiv preprint arXiv:2511.15200, 2025.
+
+[8] H. Xue, T. He, Z. Wang, Q. Ben, W. Xiao, Z. Luo, X. Da, F. Castañeda, G. Shi, S. Sastry, L. J. Fan, and Y. Zhu. Opening the sim-to-real door for humanoid pixel-to-action policy transfer. arXiv preprint arXiv:2512.01061, 2025. URL https://arxiv.org/abs/2512.01061.
+
+[9] T. Lin, K. Sachdev, L. Fan, J. Malik, and Y. Zhu. Sim-to-real reinforcement learning for vision-based dexterous manipulation on humanoids. arXiv preprint arXiv:2502.20396, 2025.
+
+[10] S. Wei, H. Jing, B. Li, Z. Zhao, J. Mao, Z. Ni, S. He, J. Liu, X. Liu, K. Kang, S. Zang, W. Yuan, M. Pavone, D. Huang, and Y. Wang. � : An open foundation model towards universal humanoid loco-manipulation, 2026. URL https://arxiv.org/abs/2603.12263.
+
+[11] H.-S. Fang, C. Wang, M. Gou, and C. Lu. GraspNet-1Billion: A large-scale benchmark for general object grasping. In Proceedings ofthe IEEE/CVFConference on Computer Vision and Pattern Recognition, pages 11444–11453, 2020.
+
+[12] J. Ye, K. Wang, C. Yuan, R. Yang, Y. Li, J. Zhu, Y. Qin, X. Zou, and X. Wang. Dex1B: Learning with 1b demonstrations for dexterous manipulation, 2025. URL https://arxiv.org/abs/2506. 17198.
+
+[13] R. Wang, J. Zhang, J. Chen, Y. Xu, P. Li, T. Liu, and H. Wang. Dexgraspnet: A large-scale robotic dexterous grasp dataset for general objects based on simulation. In ICRA, 2023.
+
+[14] J. Zhang, H. Liu, D. Li, X. Yu, H. Geng, Y. Ding, J. Chen, and H. Wang. DexGraspNet 2.0: Learning generative dexterous grasping in large-scale synthetic cluttered scenes, 2024. URL https:// arxiv.org/abs/2410.23004.
+
+[15] Y. Xu, W. Wan, J. Zhang, H. Liu, Z. Shan, H. Shen, R. Wang, H. Geng, Y. Weng, J. Chen, et al. Unidexgrasp: Universal robotic dexterous grasping via learning diverse proposal generation and goal-conditioned policy. In CVPR, 2023.
+
+[16] S. Deng, M. Yan, S. Wei, H. Ma, Y. Yang, J. Chen, Z. Zhang, T. Yang, X. Zhang, W. Zhang, H. Cui, Z. Zhang, and H. Wang. GraspVLA: a grasping foundation model pre-trained on billion-scale synthetic action data, 2025. URL https://arxiv.org/abs/2505.03233.
+
+[17] R. Dong, Z. Li, A. Gupta, X. He, and S. Gupta. HERO: Learning humanoid end-efector control for visual whole-body open-vocabulary object grasping, 2026. URL https://arxiv.org/abs/ 2602.16705.
+
+[18] R. Bajcsy. Active perception. Proceedings ofthe IEEE, 76(8):966–1005, 1988. doi: 10.1109/5.5968.
+
+[19] J. A. Placed, J. Strader, H. Carrillo, N. Atanasov, V. Indelman, L. Carlone, and J. A. Castellanos. A survey on active simultaneous localization and mapping: State of the art and new frontiers, 2023. URL https://arxiv.org/abs/2207.00254.
+
+[20] R. Jangir, N. Hansen, S. Ghosal, M. Jain, and X. Wang. Look closer: Bridging egocentric and thirdperson views with transformers for robotic manipulation. IEEE Robotics and Automation Letters, 7(2): 2146–2153, 2022. doi: 10.1109/LRA.2022.3144512.
+
+[21] E. S. Hu, J. Wang, X. Yuan, F. Luo, M. Li, G. Lambrechts, O. Rybkin, and D. Jayaraman. Real-world reinforcement learning of active perception behaviors, 2025. URL https://arxiv.org/abs/ 2512.01188.
+
+[22] Z. Luo, C. Tessler, T. Lin, Y. Yuan, T. He, W. Xiao, Y. Guo, G. Chechik, K. Kitani, L. Fan, and Y. Zhu. Emergent active perception and dexterity ofsimulated humanoids from visual reinforcement learning. arXiv preprint arXiv:2505.12278, 2025. URL https://arxiv.org/abs/2505.12278.
+
+[23] H. Qi, Y.-J. Wang, T. Lin, Y. Brent, Y. Ma, K. Sreenath, and J. Malik. Coordinated humanoid manipulation with choice policies. arXiv:2512.25072, 2025.
+
+[24] D. Kim, M. Srouji, C. Chen, and J. Zhang. ARMOR: Egocentric perception for humanoid robot collision avoidance and motion planning, 2024. URL https://arxiv.org/abs/2412.00396.
+
+[25] M. Liu, Z. Chen, X. Cheng, Y. Ji, R. Qiu, R. Yang, and X. Wang. Visual whole-body control for legged loco-manipulation. The 8th Conference on Robot Learning, 2024.
+
+[26] T. Yin, Z. Mei, T. Sun, L. Zha, E. Zhou, J. Bao, M. Yamane, O. Shorinwa, and A. Majumdar. WoMAP: World models for embodied open-vocabulary object localization, 2025. URL https://arxiv. org/abs/2506.01600.
+
+[27] X. Cheng, Y. Ji, J. Chen, R. Yang, G. Yang, and X. Wang. Expressive whole-body control for humanoid robots. In Robotics: Science and Systems (RSS), 2024. URL https://arxiv.org/abs/2402. 16796.
+
+[28] C. Lu, X. Cheng, J. Li, S. Yang, M. Ji, C. Yuan, G. Yang, S. Yi, and X. Wang. Mobile-TeleVision: Predictive motion priors for humanoid whole-body control. In IEEE International Conference on Robotics and Automation (ICRA), 2025. URL https://arxiv.org/abs/2412.07773.
+
+[29] Q. Liao, T. E. Truong, X. Huang, Y. Gao, G. Tevet, K. Sreenath, and C. K. Liu. BeyondMimic: From motion tracking to versatile humanoid control via guided difusion, 2025. URL https: //arxiv.org/abs/2508.08241.
+
+[30] L. Yang, X. Huang, Z. Wu, A. Kanazawa, P. Abbeel, C. Sferrazza, C. K. Liu, R. Duan, and G. Shi. OmniRetarget: Interaction-preserving data generation for humanoid whole-body loco-manipulation and scene interaction, 2025. URL https://arxiv.org/abs/2509.26633.
+
+[31] Y. Zhang, Y. Yuan, P. Gurunath, I. Gupta, S. Omidshafiei, A. akbar Agha-mohammadi, M. Vazquez-Chanlatte, L. Pedersen, T. He, and G. Shi. FALCON: Learning force-adaptive humanoid locomanipulation, 2025. URL https://arxiv.org/abs/2505.06776.
+
+[32] W. Sun, L. Feng, B. Cao, Y. Liu, Y. Jin, and Z. Xie. ULC: A unified and fine-grained controller for humanoid loco-manipulation, 2025. URL https://arxiv.org/abs/2507.06905.
+
+[33] L. Wei, X. Peng, R.-Z. Qiu, T. Huang, X. Cheng, and X. Wang. HMC: Learning heterogeneous metacontrol for contact-rich loco-manipulation, 2025. URL https://arxiv.org/abs/2511. 14756.
+
+[34] S. Chen, Z. Cao, Z. Luo, F. Castañeda, C. Li, T. Wang, Y. Yuan, L. Fan, C. K. Liu, and Y. Zhu. CHIP: Adaptive compliance for humanoid control through hindsight perturbation, 2025. URL https://arxiv.org/abs/2512.14689.
+
+[35] T. Zhang, X. Peng, F. Lin, X. Xiong, and Y. Lou. Whole-body compliance control for quadruped manipulator with actuation saturation of joint torque and ground friction. In 2024 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), pages 11124–11131, 2024. doi: 10.1109/IROS58592.2024.10802754.
+
+[36] Y. Niu, Z. Fang, B. Chen, S. Zhou, R. K. Senthilkumaran, H. Zhang, B. Chen, C. Qiu, H. E. Tseng, J. Francis, and D. Zhao. Learning versatile humanoid manipulation with touch dreaming, 2026. URL https://arxiv.org/abs/2604.13015.
+
+[37] M. Ji, X. Peng, F. Liu, J. Li, G. Yang, X. Cheng, and X. Wang. ExBody2: Advanced expressive humanoid whole-body control. arXiv preprint arXiv:2412.13196, 2024.
+
+[38] Z. Luo, Y. Yuan, T. Wang, C. Li, S. Chen, F. Castañeda, Z.-A. Cao, J. Li, D. Minor, Q. Ben, X. Da, R. Ding, C. Hogg, L. Song, E. Lim, E. Jeong, T. He, H. Xue, W. Xiao, Z. Wang, S. Yuen, J. Kautz, Y. Chang, U. Iqbal, L. Fan, and Y. Zhu. SONIC: Supersizing motion tracking for natural humanoid whole-body control. arXiv preprint arXiv:2511.07820, 2025.
+
+[39] J. Li, X. Cheng, T. Huang, S. Yang, R.-Z. Qiu, and X. Wang. AMO: Adaptive motion optimization for hyper-dexterous humanoid whole-body control, 2025. URL https://arxiv.org/abs/ 2505.03738.
+
+[40] T. He, Z. Luo, X. He, W. Xiao, C. Zhang, W. Zhang, K. Kitani, C. Liu, and G. Shi. OmniH2O: Universal and dexterous human-to-humanoid whole-body teleoperation and learning. In Conference on Robot Learning (CoRL), 2024. URL https://arxiv.org/abs/2406.08858.
+
+[41] Z. Fu, Q. Zhao, Q. Wu, G. Wetzstein, and C. Finn. HumanPlus: Humanoid shadowing and imitation from humans. In Conference on Robot Learning (CoRL), 2024. URL https://arxiv.org/abs/ 2406.10454.
+
+[42] Y. Ze, Z. Chen, J. P. Araújo, Z. Cao, X. B. Peng, J. Wu, and C. K. Liu. TWIST: Teleoperated whole-body imitation system, 2025. URL https://arxiv.org/abs/2505.02833.
+
+[43] X. Cheng, J. Li, S. Yang, G. Yang, and X. Wang. Open-TeleVision: Teleoperation with immersive active visual feedback. In Conference on Robot Learning (CoRL), 2024. URL https://arxiv. org/abs/2407.01512.
+
+[44] Y. Li, L. Ma, Y. Lin, Y. Du, M. Liu, K. Hu, J. Cui, Y. Zhu, W. Liang, B. Jia, and S. Huang. OmniClone: Engineering a robust, all-rounder whole-body humanoid teleoperation system, 2026. URL https: //arxiv.org/abs/2603.14327.
+
+[45] T. Zhu, G. Cai, Z. Yang, G. Ren, H. Xie, Z. Wang, J. Wu, J. Wang, X. Yang, Y. Mu, and Y. Yan. CLOT: Closed-loop global motion tracking for whole-body humanoid teleoperation, 2026. URL https://arxiv.org/abs/2602.15060.
+
+[46] R. Nai, B. Zheng, J. Zhao, H. Zhu, S. Dai, Z. Chen, Y. Hu, Y. Hu, T. Zhang, C. Wen, and Y. Gao. Humanoid manipulation interface: Humanoid whole-body manipulation from robot-free demonstrations, 2026. URL https://arxiv.org/abs/2602.06643.
+
+[47] L. Heng, Y. Tang, J. Xu, H. Bao, D. Huang, and Y. Wang. HumDex: Humanoid dexterous manipulation made easy, 2026. URL https://arxiv.org/abs/2603.12260.
+
+[48] J. Li, Y. Zhu, Y. Xie, Z. Jiang, M. Seo, G. Pavlakos, and Y. Zhu. OKAMI: Teaching humanoid robots manipulation skills through single video imitation. In Conference on Robot Learning (CoRL), 2024. URL https://arxiv.org/abs/2410.11792.
+
+[49] R.-Z. Qiu, S. Yang, X. Cheng, C. Chawla, J. Li, T. He, G. Yan, D. J. Yoon, R. Hoque, L. Paulsen, G. Yang, J. Zhang, S. Yi, G. Shi, and X. Wang. Humanoid Policy ∼ human policy, 2025. URL https://arxiv.org/abs/2503.13441.
+
+[50] Y. Ze, Z. Chen, W. Wang, T. Chen, X. He, Y. Yuan, X. B. Peng, and J. Wu. Generalizable humanoid manipulation with 3D difusion policies. In IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2025. URL https://arxiv.org/abs/2410.10803.
+
+[51] G. Jiang, Y. Liang, J. Ye, J.-Y. Huang, C. Jing, R. Duan, P. Abbeel, X. Wang, and X. Zou. Cross-hand latent representation for vision-language-action models, 2026. URL https://arxiv.org/ abs/2603.10158.
+
+[52] R.-Z. Qiu, Y. Song, X. Peng, S. A. Suryadevara, G. Yang, M. Liu, M. Ji, C. Jia, R. Yang, X. Zou, and X. Wang. WildLMa: Long horizon loco-manipulation in the wild. arXiv preprint arXiv:2411.15131, 2024.
+
+[53] X. Xu, Y. Zhang, Y.-L. Li, L. Han, and C. Lu. Humanvla: Towards vision-language directed object rearrangement by physical humanoid. Advances in Neural Information Processing Systems, 37:18633– 18659, 2024.
+
+[54] Z. Luo, J. Cao, S. Christen, A. Winkler, K. Kitani, and W. Xu. Omnigrasp: Grasping diverse objects with simulated humanoids. Advances in Neural Information Processing Systems, 37:2161–2184, 2024.
+
+[55] W. Liu, Y. Wan, J. Wang, Y. Kuang, W. Cui, X. Shi, H. Li, D. Zhao, Z. Zhang, and H. Wang. FetchBot: Learning generalizable object fetching in cluttered scenes via zero-shot Sim2Real, 2025. URL https://arxiv.org/abs/2502.17894.
+
+[56] N. Sun, H. Shen, Y. Zhang, L. Feng, H. Wang, Y. Xiangli, Y. Jin, and P. Liu. DexWeave: Learning dexterous humanoid loco-manipulation from human demonstrations. arXiv, 2026.
+
+[57] J. Tobin, R. Fong, A. Ray, J. Schneider, W. Zaremba, and P. Abbeel. Domain randomization for transferring deep neural networks from simulation to the real world, 2017. URL https:// arxiv.org/abs/1703.06907.
+
+[58] X. B. Peng, M. Andrychowicz, W. Zaremba, and P. Abbeel. Sim-to-real transfer of robotic control with dynamics randomization. In 2018 IEEE International Conference on Robotics and Automation (ICRA), page 3803–3810. IEEE, May 2018. doi: 10.1109/icra.2018.8460528. URL http://dx.doi. org/10.1109/ICRA.2018.8460528.
+
+[59] OpenAI, M. Andrychowicz, B. Baker, M. Chociej, R. Jozefowicz, B. McGrew, J. Pachocki, A. Petron, M. Plappert, G. Powell, A. Ray, J. Schneider, S. Sidor, J. Tobin, P. Welinder, L. Weng, and W. Zaremba. Learning dexterous in-hand manipulation, 2019. URL https://arxiv.org/abs/1808. 00177.
+
+[60] OpenAI, I. Akkaya, M. Andrychowicz, M. Chociej, M. Litwin, B. McGrew, A. Petron, A. Paino, M. Plappert, G. Powell, R. Ribas, J. Schneider, N. Tezak, J. Tworek, P. Welinder, L. Weng, Q. Yuan, W. Zaremba, and L. Zhang. Solving Rubik’s cube with a robot hand, 2019. URL https://arxiv. org/abs/1910.07113.
+
+[61] J. Tan, T. Zhang, E. Coumans, A. Iscen, Y. Bai, D. Hafner, S. Bohez, and V. Vanhoucke. Sim-toreal: Learning agile locomotion for quadruped robots, 2018. URL https://arxiv.org/abs/ 1804.10332.
+
+[62] A. Kumar, Z. Fu, D. Pathak, and J. Malik. RMA: Rapid motor adaptation for legged robots, 2021. URL https://arxiv.org/abs/2107.04034.
+
+[63] Z. Xie, G. Berseth, P. Clary, J. Hurst, and M. van de Panne. Feedback control for Cassie with deep reinforcement learning, 2018. URL https://arxiv.org/abs/1803.05580.
+
+[64] L. Wei, J. Ma, Y. Hu, and R. Zhang. Ensuring force safety in vision-guided robotic manipulation via implicit tactile calibration, 2025. URL https://arxiv.org/abs/2412.10349.
+
+[65] J. Mahler, J. Liang, S. Niyaz, M. Laskey, R. Doan, X. Liu, J. A. Ojea, and K. Goldberg. Dex-Net 2.0: Deep learning to plan robust grasps with synthetic point clouds and analytic grasp metrics, 2017. URL https://arxiv.org/abs/1703.09312.
+
+[66] G. Zhang, Q. Xu, H. Zhang, J. Ma, L. He, Y. Bao, Z. Ping, Z. Yuan, C. Lu, C. Yuan, et al. UniDex: A robot foundation suite for universal dexterous hand control from egocentric human videos. arXiv preprint arXiv:2603.22264, 2026.
+
+[67] Y.-W. Chao, W. Yang, Y. Xiang, P. Molchanov, A. Handa, J. Tremblay, Y. S. Narang, K. Van Wyk, U. Iqbal, S. Birchfield, et al. DexYCB: A benchmark for capturing hand grasping of objects. In CVPR, 2021.
+
+[68] J. Ye, L. Wei, G. Jiang, C. Jing, X. Zou, and X. Wang. From power to precision: Learning fine-grained dexterity for multi-fingered robotic hands, 2025. URL https://arxiv.org/abs/2511. 13710.
+
+[69] Y. Wang, Z. Xian, F. Chen, T.-H. Wang, Y. Wang, K. Fragkiadaki, Z. Erickson, D. Held, and C. Gan. RoboGen: Towards unleashing infinite data for automated robot learning via generative simulation, 2024. URL https://arxiv.org/abs/2311.01455.
+
+[70] A. Mandlekar, S. Nasiriany, B. Wen, I. Akinola, Y. Narang, L. Fan, Y. Zhu, and D. Fox. MimicGen: A data generation system for scalable robot learning using human demonstrations, 2023. URL https://arxiv.org/abs/2310.17596.
+
+[71] Z. Xue, S. Deng, Z. Chen, Y. Wang, Z. Yuan, and H. Xu. DemoGen: Synthetic demonstration generation for data-eficient visuomotor policy learning, 2025. URL https://arxiv.org/ abs/2502.16932.
+
+[72] L. Wang, Y. Ling, Z. Yuan, M. Shridhar, C. Bao, Y. Qin, B. Wang, H. Xu, and X. Wang. GenSim: Generating robotic simulation tasks via large language models, 2024. URL https://arxiv. org/abs/2310.01361.
+
+[73] T. Yu, T. Xiao, A. Stone, J. Tompson, A. Brohan, S. Wang, J. Singh, C. Tan, D. M, J. Peralta, B. Ichter, K. Hausman, and F. Xia. Scaling robot learning with semantically imagined experience, 2023. URL https://arxiv.org/abs/2302.11550.
+
+[74] NVIDIA, M. Mittal, P. Roth, J. Tigue, A. Richard, O. Zhang, and P. D. et al. Isaac Lab: A GPUaccelerated simulation framework for multi-modal robot learning, 2025. URL https://arxiv. org/abs/2511.04831.
+
+[75] S. Tao, F. Xiang, A. Shukla, Y. Qin, X. Hinrichsen, X. Yuan, C. Bao, X. Lin, Y. Liu, T. kai Chan, Y. Gao, X. Li, T. Mu, N. Xiao, A. Gurha, V. N. Rajesh, Y. W. Choi, Y.-R. Chen, Z. Huang, R. Calandra, R. Chen, S. Luo, and H. Su. ManiSkill3: GPU parallelized robotics simulation and rendering for generalizable embodied AI, 2025. URL https://arxiv.org/abs/2410.00425.
+
+[76] M. Deitke, D. Schwenk, J. Salvador, L. Weihs, O. Michel, E. VanderBilt, L. Schmidt, K. Ehsani, A. Kembhavi, and A. Farhadi. Objaverse: A universe of annotated 3D objects, 2022. URL https: //arxiv.org/abs/2212.08051.
+
+[77] R. Eidenberger and J. Scharinger. Active perception and scene modeling by planning with probabilistic 6D object poses. In IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), pages 1036–1043, 2010. doi: 10.1109/IROS.2010.5651927.
+
+[78] S. Isler, R. Sabzevari, J. Delmerico, and D. Scaramuzza. An information gain formulation for active volumetric 3D reconstruction. In IEEE International Conference on Robotics and Automation (ICRA), pages 3477–3484, 2016. doi: 10.1109/ICRA.2016.7487527.
+
+[79] J. Delmerico, S. Isler, R. Sabzevari, and D. Scaramuzza. A comparison of volumetric information gain metrics for active 3D object reconstruction. Autonomous Robots, 42(2):197–208, 2018. doi: 10.1007/s10514-017-9634-0.
+
+[80] N. Dengler, S. Pan, V. Kalagaturu, R. Menon, M. Dawood, and M. Bennewitz. Viewpoint push planning for mapping of unknown confined spaces. In IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2023. URL https://arxiv.org/abs/2303.03126.
+
+[81] X. Zou, Y. Song, R.-Z. Qiu, X. Peng, J. Ye, S. Liu, and X. Wang. M3: 3D-spatial MultiModal memory, 2025. URL https://arxiv.org/abs/2503.16413.
+
+[82] M. Breyer, L. Ott, R. Siegwart, and J. J. Chung. Closed-loop next-best-view planning for target-driven grasping. In IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2022. URL https://arxiv.org/abs/2207.10543.
+
+[83] S. Jauhri, S. Lueth, and G. Chalvatzaki. Active-perceptive motion generation for mobile manipulation. In IEEE International Conference on Robotics and Automation (ICRA), 2024. URL https://arxiv. org/abs/2310.00433.
+
+[84] P. Kaiser, C. Mandery, A. Boltres, and T. Asfour. Afordance-based multi-contact whole-body pose sequence planning for humanoid robots in unknown environments. In 2018 IEEE International Conference on Robotics and Automation (ICRA), pages 3114–3121, 2018. doi: 10.1109/ICRA.2018. 8461087.
+
+[85] J. Ye, X. Peng, C. Mc Gartoll, C. Jing, L. Wei, J. Chen, X. Zou, and X. Wang. RoboKit: Accelerating parallel diferentiable optimization for robot learning. In Conference on Robot Learning (CoRL), 2026.
+
+[86] S. Liu, Z. Zeng, T. Ren, F. Li, H. Zhang, J. Yang, Q. Jiang, C. Li, J. Yang, H. Su, J. Zhu, and L. Zhang. Grounding DINO: Marrying DINO with grounded pre-training for open-set object detection. In European Conference on Computer Vision (ECCV), 2024. URL https://arxiv.org/abs/ 2303.05499.
+
+[87] C. R. Qi, H. Su, K. Mo, and L. J. Guibas. PointNet: Deep learning on point sets for 3D classification and segmentation. In IEEE Conference on Computer Vision and Pattern Recognition (CVPR), pages 652–660, 2017. URL https://arxiv.org/abs/1612.00593.
+
+[88] A. Kirillov, E. Mintun, N. Ravi, H. Mao, C. Rolland, L. Gustafson, T. Xiao, S. Whitehead, A. C. Berg, W.- Y. Lo, P. Dollár, and R. Girshick. Segment anything. In IEEE/CVF International Conference on Computer Vision (ICCV), pages 4015–4026, 2023. URL https://arxiv.org/abs/2304.02643.
+
+[89] B. Calli, A. Walsman, A. Singh, S. Srinivasa, P. Abbeel, and A. M. Dollar. Benchmarking in manipulation research: Using the Yale-CMU-Berkeley object and model set. IEEE Robotics & Automation Magazine, 22(3):36–52, 2015. doi: 10.1109/MRA.2015.2448951.
+
+[90] S. Nasiriany, A. Maddukuri, L. Zhang, A. Parikh, A. Lo, A. Joshi, A. Mandlekar, and Y. Zhu. RoboCasa: Large-scale simulation of everyday tasks for generalist robots. In Robotics: Science and Systems (RSS), 2024. URL https://arxiv.org/abs/2406.02523.
+
+[91] F. Xiang, Y. Qin, K. Mo, Y. Xia, H. Zhu, F. Liu, M. Liu, H. Jiang, Y. Yuan, H. Wang, L. Yi, A. X. Chang, L. J. Guibas, and H. Su. SAPIEN: A simulated part-based interactive environment. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pages 11097–11107, 2020.
+
+## A Hierarchical Whole-Body Loco-Manipulation Controller
+
+## A.1 Frames and Notation
+
+We use the standard rigid-body transform notation ${ } ^ { A } \mathbf { T } _ { B } \in S E ( 3 )$ , which maps a 3D point expressed in frame � into frame �. The corresponding rotation and translation are ${ } ^ { A } \mathbf { R } _ { B } \in S O ( 3 )$ and ${ \bf \nabla } ^ { A } { \bf p } _ { B } \in \mathbb { R } ^ { 3 }$
+
+## Key frames..
+
+$\mathcal { W } _ { 0 } ( t )$ : the instantaneous support frame used by the upper-body controller. In double support, its origin is defined at the mid-point of the two contact feet and its yaw is aligned with the average heading of the feet. We set roll/pitch to zero to maintain a gravity-aligned frame and to avoid injecting foot tilt noise into the upper-body task frame.
+
+• <sup></sup>: the kinematic reference frame of the full-body URDF used for forward kinematics (FK) from joint encoders.
+
+• <sup></sup> : pelvis frame, treated as the floating base in the reduced upper-body IK model.
+
+$\mathcal { F } _ { L } , \mathcal { F } _ { R } \colon$ left/right foot frames used as contacts.
+
+$\mathcal { E } _ { L } , \mathcal { E } _ { R } \colon$ left/right end-efector frames used by the manipulation tasks.
+
+$\mathcal { E } _ { H } \colon$ head camera frame used for active perception. We treat head gaze as an additional task-space target in the same support frame ${ \mathcal W } _ { 0 } ( t ) , \mathrm { i . e . , } { \mathcal W } _ { { \mathcal E } _ { H } } ( t )$ (or equivalently a desired head orientation / optical-axis direction), and include � in the task index set <sup></sup> when head tracking is enabled.
+
+Robot configuration.. We split the robot state into a lower-body part and an upper-body part:
+
+$$
+\mathbf {q} = \left[ \begin{array}{c} \mathbf {q} _ {\text {lower}} \\ \mathbf {q} _ {\text {upper}} \end{array} \right],\tag{2}
+$$
+
+where $\mathbf { q } _ { \mathrm { l o w e r } }$ contains leg joints (and any joints actuated by the low-level locomotion controller), and $\mathbf { q } _ { \mathrm { u p p e r } }$ contains waist/torso joints, arms, and optionally head joints (depending on the IK model).
+
+## A.2 Hierarchical Control Decomposition
+
+Our control stack follows a standard outer/inner-loop organization: (i) an outer-loop whole-body IK module produces task-consistent upper-body commands together with a compact lower-body command interface, and (ii) an inner-loop RL controller (the decoupled whole-body controller of SONIC (GR00T) [38]) realizes the commanded pelvis motion while enforcing contact consistency and stability. A key design requirement is to maintain consistency between the pelvis pose assumed by the reduced IK model and the pelvis motion realized by the low-level controller.
+
+High-level IK (upper-body whole-body IK).. At time �, given desired task-space targets expressed in the support frame ${ \mathcal { W } } _ { 0 } ( t )$ ,
+
+$$
+\left\{\mathcal {W} _ {0} \mathbf {T} _ {\mathcal {E} _ {k}} ^ {\mathrm{des}} (t) \right\} _ {k \in \mathcal {K}}, \qquad \mathcal {K} \subseteq \{L, R, H \},\tag{3}
+$$
+
+the IK module solves
+
+$$
+\left(\mathbf {q} _ {\text {upper}} ^ {\star} (t), \mathbf {u} _ {\text {lower}} (t)\right) = \pi_ {\mathrm{IK}} \Big (\{\mathcal {W} _ {0} \mathbf {T} _ {\mathcal {E} _ {k}} ^ {\text {des}} (t) \} _ {k \in \mathcal {K}}, \widehat {\mathcal {W} _ {0} \mathbf {T} _ {\mathcal {T}}} (t) \Big),\tag{4}
+$$
+
+where $\widehat { \mathcal { W } _ { 0 } \mathbf { T } _ { T } } ( t )$ is a contact-consistent reconstruction ofthe pelvis pose in the same support frame (Sec. A.3). This term closes the inter-layer loop by aligning the IK solver’s floating-base state with the physically realized pelvis motion.
+
+Low-level RL controller (lower-body tracking).. The low-level controller executes the command $\mathbf { u } _ { \mathrm { l o w e r } } ( t )$ and outputs lower-body joint targets:
+
+$$
+\mathbf {q} _ {\text { lower }} ^ {\star} (t) = \pi_ {\text { lower }} \left(\mathbf {s} _ {\text { lower }} (t), \mathbf {u} _ {\text { lower }} (t)\right),\tag{5}
+$$
+
+where $\mathbf { s } _ { \mathrm { l o w e r } } ( t )$ is the proprioceptive observation (joint encoders, IMU, contact flags, etc.).
+
+Lower-body command interface.. In our standing manipulation experiments (double support, no stepping), we instantiate the general interface $\mathbf { u } _ { \mathrm { l o w e r } } = ( v _ { x } , v _ { y } , v _ { \mathrm { y a w } } , h )$ of Sec. 3.1 as a low-dimensional pelvis command, with planar velocities set to zero and yaw commanded as a heading $\psi$ rather than a rate, to reduce inter-layer coupling and improve robustness under rate mismatch and model error:
+
+$$
+\mathbf {u} _ {\text { lower }} (t) = \left[ h (t), \psi (t) \right].\tag{6}
+$$
+
+The same hierarchical formulation directly supports loco-manipulation by extending $\mathbf { u } _ { \mathrm { l o w e r } }$ to a more general locomotion interface (e.g., planar velocity and yaw-rate commands) while keeping Eqs. (4)–(5) unchanged.
+
+Commanded output.. The final motor command is the concatenation of the lower- and upper-body references:
+
+$$
+\mathbf {q} ^ {\star} (t) = \left[ \begin{array}{c} \mathbf {q} _ {\text {lower}} ^ {\star} (t) \\ \mathbf {q} _ {\text {upper}} ^ {\star} (t) \end{array} \right].\tag{7}
+$$
+
+In our deployed system, the low-level controller and the upper-body IK run synchronously at the same control rate (50 Hz), and the robot manager dispatches the fused command $\mathbf { q } ^ { \star } ( t )$ at each cycle.
+
+## A.3 Contact-Consistent Kinematic State Reconstruction
+
+A central challenge in hierarchical control is that the pelvis pose assumed by the reduced IK model can deviate from the pelvis pose realized by the low-level controller due to tracking error, compliance, and modeling mismatch. To close this gap, we compute a contact-consistent reconstruction of the pelvis pose in the support frame ${ \mathcal { W } } _ { 0 } ( t )$ using joint encoders under double-foot contact. Importantly, we use an instantaneous support frame definition (no integration): all quantities are expressed relative to the current mid-feet frame computed from FK.
+
+Foot/pelvis FK in the URDF reference frame.. Given measured joint positions $\mathbf { q } ( t )$ , we compute the forward kinematics in the full-body URDF:
+
+$$
+{ } ^ { \mathcal { O } } \mathbf { T } _ { \mathcal { F } _ { L } } ( t ) , { } ^ { \mathcal { O } } \mathbf { T } _ { \mathcal { F } _ { R } } ( t ) , { } ^ { \mathcal { O } } \mathbf { T } _ { \mathcal { T } } ( t ) = \operatorname{FK} \bigl ( \mathbf { q } ( t ) \bigr ) .\tag{8}
+$$
+
+Instantaneous mid-feet support frame.. We define ${ \mathcal { W } } _ { 0 } ( t )$ from the two contact feet:
+
+$$
+\mathcal {O} \mathbf {p} _ {\mathcal {W} _ {0}} (t) = \frac {1}{2} \left(\mathcal {O} \mathbf {p} _ {\mathcal {F} _ {L}} (t) + \mathcal {O} \mathbf {p} _ {\mathcal {F} _ {R}} (t)\right),\tag{9}
+$$
+
+$$
+\bar {\psi} (t) = \operatorname{avgYaw} \left(\mathcal {O} \mathbf {R} _ {\mathcal {F} _ {L}} (t), \mathcal {O} \mathbf {R} _ {\mathcal {F} _ {R}} (t)\right),\tag{10}
+$$
+
+$$
+\mathcal {O} \mathbf {R} _ {\mathcal {W} _ {0}} (t) = \mathbf {R} _ {z} (\bar {\psi} (t)),\tag{11}
+$$
+
+$$
+{ } ^ { \mathcal { O } } \mathbf { T } _ { \mathcal { W } _ { 0 } } ( t ) = \left[ \begin{array} { c c } { } ^ { \mathcal { O } } \mathbf { R } _ { \mathcal { W } _ { 0 } } ( t ) & { } ^ { \mathcal { O } } \mathbf { p } _ { \mathcal { W } _ { 0 } } ( t ) \\ \mathbf { 0 } ^ { \top } & 1 \end{array} \right] .
+$$
+
+(12)
+
+This matches the controller’s task frame: centered between the feet and aligned with the support yaw, while remaining gravity-aligned.
+
+Pelvis pose in the support frame.. The reconstructed pelvis pose used by IK is
+
+$$
+\widehat {\mathcal {W} _ {0} \mathbf {T} _ {\mathcal {T}}} (t) = \left(^ {\mathcal {O}} \mathbf {T} _ {\mathcal {W} _ {0}} (t)\right) ^ {- 1}   ^ {\mathcal {O}} \mathbf {T} _ {\mathcal {T}} (t).\tag{13}
+$$
+
+Remark (estimator modularity).. While we use a purely kinematic, contact-consistent reconstruction in double support for simplicity and low latency, the proposed interface only requires an estimate of the pelvis pose in the task frame, $\widehat { \mathcal { W } _ { 0 } \mathbf { T } _ { T } } ( t )$ . In general, $\widehat { \mathcal { W } _ { 0 } \mathbf { { T } } _ { T } } ( t )$ can be provided by any state estimator that is consistent with contact constraints, e.g., IMU–encoder fusion, visual–inertial odometry with contact updates, or factor-graph filtering, without changing the downstream compensation in Sec. A.4.
+
+## A.4 Closed-Loop Pelvis Consistency for Upper-Body IK
+
+Let ${ } ^ { \mathcal { W } _ { 0 } } \mathbf { T } _ { \mathcal { T } } ^ { \mathrm { I K } } ( t )$ denote the pelvis pose assumed by the IK model (i.e., the floating-base state inside the reduced IK solver), and let $\widehat { \mathcal { W } _ { 0 } \mathbf { T } _ { T } } ( t )$ be the contact-consistent reconstruction from Eq. (13). We compute the mismatch transform
+
+$$
+\Delta \mathbf {T} _ {\text { pelvis }} (t) = \widehat {\mathcal {W} _ {0} \mathbf {T} _ {\mathcal {T}}} (t) \left(\mathcal {W} _ {0} \mathbf {T} _ {\mathcal {T}} ^ {\mathrm{IK}} (t)\right) ^ {- 1}.\tag{14}
+$$
+
+Compensating task targets (equivalently, updating the tracking frame).. For any desired endefector target expressed in ${ \mathcal { W } } _ { 0 } ( t )$ , we compensate by the inverse mismatch:
+
+$$
+\mathcal {W} _ {0} \mathbf {T} _ {\mathcal {E} _ {k}} ^ {\mathrm{corr}} (t) = \left(\Delta \mathbf {T} _ {\mathrm{pelvis}} (t)\right) ^ {- 1} \mathcal {W} _ {0} \mathbf {T} _ {\mathcal {E} _ {k}} ^ {\mathrm{des}} (t),\tag{15}
+$$
+
+and we pass ${ \mathcal { W } } _ { 0 } \mathbf { \mathrm { { T } } } _ { { \mathcal { E } } _ { k } } ^ { \mathrm { c o r r } } ( t )$ to the IK solver. This can be interpreted either as correcting task targets or as updating an internal IK tracking frame; both are equivalent up to where the correction is applied.
+
+Filtering on $S E ( 3 )$ .. To reduce jitter from encoder noise and small contact deformation, we apply a low-pass filter on ��(3) (in the Lie algebra) before compensation:
+
+$$
+\overline {{\Delta \mathbf {T}}} _ {\mathrm{pelvis}} (t) = \mathrm{LPF} \big (\Delta \mathbf {T} _ {\mathrm{pelvis}} (t) \big),\tag{16}
+$$
+
+$$
+\mathcal {W} _ {0} \mathbf {T} _ {\mathcal {E} _ {k}} ^ {\mathrm{corr}} (t) = \left(\overline {{\Delta \mathbf {T}}} _ {\mathrm{pelvis}} (t)\right) ^ {- 1} \mathcal {W} _ {0} \mathbf {T} _ {\mathcal {E} _ {k}} ^ {\mathrm{des}} (t).\tag{17}
+$$
+
+## B Synthetic Data Generation: Kinodynamically Validated Trajectories
+
+Our goal is to generate large-scale grasp demonstrations that are not only kinematically valid (reachable and collision-free), but also dynamically executable under the same hierarchical whole-body control stack used at deployment. This controller-in-the-loop filtering is key to learning kinodynamic-aware afordances for floating-base humanoids, where many geometrically plausible grasps fail due to stability and tracking limitations.
+
+## B.1 Domain Randomization
+
+Object assets.. We draw object meshes from Objaverse [76] and YCB [89]; OOD evaluation objects are held out from the training set. To promote shape- and scale-level generalization, each object is isotropically re-scaled by a random factor within a bounded interval.
+
+Scene parameterization.. Each scene contains a single axis-aligned box table and one target object:
+
+$$
+\mathcal {S} = \{(\mathrm{T} _ {\text { table }}, \mathrm{s} _ {\text { table }}), (\mathrm{T} _ {\text { obj }}, m _ {\text { obj }}) \}.\tag{18}
+$$
+
+Table dimensions are sampled uniformly within predefined bounds. The table-top height is randomized relative to the workspace origin to induce diverse reach regimes:
+
+$$
+z _ {\mathrm{table}} \sim \mathcal {V} (z _ {\mathrm{min}}, z _ {\mathrm{max}}) + z _ {\mathrm{ws}}.\tag{19}
+$$
+
+Tabletop heights span 0.40–0.90 m, the training range referred to in Sec. 4. The object is placed uniformly over the table surface with an edge margin. Its vertical position is set such that the lowest point of the scaled mesh rests on the tabletop, its mass is sampled as $m _ { \mathrm { o b j } } \sim \mathcal { V } ( 0 . 1 , 0 . 5 ) \mathrm { k g }$ , and its yaw is randomized:
+
+$$
+\psi \sim \mathcal {V} (\psi_ {\mathrm{min}}, \psi_ {\mathrm{max}}).\tag{20}
+$$
+
+World-frame perturbations.. To avoid a single canonical base-to-object transform, we additionally perturb the table center in the world frame using a run-specific random seed, and apply the corresponding rigid transform to the object pose. This produces distinct scene files across parallel collection runs while preserving valid on-table placement.
+
+## B.2 Grasp Optimization and Motion Planning
+
+Given a randomized scene <sup></sup>, we generate grasp demonstrations in batches. For each scene, we sample up to $N _ { \mathrm { c a n d } }$ grasp candidates and retain only those that are (i) kinematically feasible (reachable and collision-free) and (ii) dynamically executable under simulation evaluation (Sec. B.3).
+
+## B.2.1 Energy-Based Grasp Optimization
+
+We optimize grasp configurations in joint space. Let $\mathbf { q } \in \mathbb { R } ^ { D }$ denote the robot configuration, comprising the pelvis pose, waist, arm, and hand joints, so that the hand and the posture carrying it are optimized jointly, and let $\{ { \bf p } _ { i } ^ { c } ( { \bf q } ) \} _ { i = 1 } ^ { N _ { c } }$ be the fingertip contact points computed by forward kinematics. We minimize an energy function
+
+$$
+\begin{array}{c} E (\mathbf {q}) = w _ {\mathrm{dis}} E _ {\mathrm{dis}} (\mathbf {q}) + w _ {\mathrm{pen}} E _ {\mathrm{pen}} (\mathbf {q}) \\ \quad + w _ {\mathrm{spen}} E _ {\mathrm{spen}} (\mathbf {q}) + w _ {\mathrm{jnt}} E _ {\mathrm{jnt}} (\mathbf {q}). \end{array}\tag{21}
+$$
+
+Contact distance.. We encourage designated fingertip points to lie near the object surface via the object signed distance field (SDF):
+
+$$
+E _ {\mathrm{dis}} (\mathbf {q}) = \sum_ {i = 1} ^ {N _ {c}} \left| \operatorname{SDF} _ {\mathrm{obj}} \left(\mathbf {p} _ {i} ^ {c} (\mathbf {q})\right) \right|.\tag{22}
+$$
+
+Scene collision.. We penalize penetration of robot collision spheres into the scene SDF:
+
+$$
+E _ {\text { pen }} (\mathbf {q}) = \sum_ {j = 1} ^ {N _ {s}} \max \left(0, d _ {\text { pad }} - \mathrm{SDF} _ {\text { scene }} (\mathbf {s} _ {j} (\mathbf {q}))\right),\tag{23}
+$$
+
+where ${ \bf s } _ { j } ( { \bf q } )$ is the center of collision sphere � and $d _ { \mathrm { p a d } }$ is a safety padding.
+
+Self-collision.. To avoid inter-finger collisions, we penalize close pairs:
+
+$$
+E _ {\text { spen }} (\mathbf {q}) = \sum_ {(j, k) \in \mathcal {P}} \max \left(0, d _ {\text { self }} - \| \mathbf {s} _ {j} (\mathbf {q}) - \mathbf {s} _ {k} (\mathbf {q}) \|\right) ^ {2}.\tag{24}
+$$
+
+Joint limits.. We apply a soft penalty for joint limit violation:
+
+$$
+E _ {\mathrm{jnt}} (\mathbf {q}) = \sum_ {i = 1} ^ {D} \Big [ \max (0, q _ {i} ^ {\min} - q _ {i}) ^ {2} + \max (0, q _ {i} - q _ {i} ^ {\max}) ^ {2} \Big ].\tag{25}
+$$
+
+Reachability and balance.. The joint limits include the pelvis range the locomotion controller can realize, so every optimized posture can be commanded. Balance is not an energy term: a static criterion does not predict the closed-loop RL policy under a reaching load. Dynamic feasibility is verified downstream (Sec. B.3).
+
+Optimization.. We solve Eq. (21) with a simulated-annealing-style optimizer that combines autodif gradients with stochastic acceptance [85]. At iteration �, a candidate $\mathbf { q } ^ { \prime }$ is proposed by an adaptive step,
+
+$$
+\mathbf {q} ^ {\prime} = \mathbf {q} - \eta (t) \cdot \frac {\nabla_ {\mathbf {q}} E (\mathbf {q})}{\sqrt {\mathbf {v} _ {t}} + \epsilon}, \quad \mathbf {v} _ {t} = \mu (\nabla_ {\mathbf {q}} E) ^ {2} + (1 - \mu) \mathbf {v} _ {t - 1},\tag{26}
+$$
+
+and accepted with probability
+
+$$
+P (\text { accept }) = \min \left(1, \exp \left(\frac {E (\mathbf {q}) - E \left(\mathbf {q} ^ {\prime}\right)}{T (t)}\right)\right).\tag{27}
+$$
+
+The step size $\eta ( t )$ and temperature $T ( t )$ follow exponential decay schedules (Tab. 1).
+
+## B.2.2 Motion Planning and Kinematic Filtering
+
+For each optimized grasp configuration $\mathbf { q } _ { \mathrm { g r a s p } }$ , we construct a multi-phase joint-space trajectory $\{ \mathbf { q } ( t ) \} _ { t = 0 } ^ { T _ { \mathrm { t o t } } }$ comprising: (i) retreat to a pre-grasp, (ii) approach to grasp, (iii) hold, (iv) post-grasp closure, and (v) lift. The pre-grasp and post-grasp configurations are generated by SDF-gradient updates that move the arm (retreat) or hand joints (closure) along $\nabla \mathrm { S D F } _ { \mathrm { s c e n e } }$ . The lift keyframe is obtained by raising the end-efector by $\delta _ { z }$ and solving $\operatorname { I K } ;$ a keyframe is reachable if this IK converges within joint limits, so kinematic validity is a property of the whole approach, grasp, and lift motion rather than of a static grasp pose. Intermediate segments are initialized by interpolation and refined by trajectory smoothing.
+
+Trajectory smoothing.. We optimize the full trajectory by minimizing a collision penalty and a smoothness term:
+
+$$
+\mathcal {L} _ {\text { traj }} = \mathcal {L} _ {\text { pen }} + \lambda_ {\text { smooth }} \mathcal {L} _ {\text { smooth }},\tag{28}
+$$
+
+where
+
+$$
+\mathcal {L} _ {\mathrm{pen}} = \frac {1}{T _ {\mathrm{tot}} N _ {s}} \sum_ {t, j} \left[ \max \bigl (0, d _ {\mathrm{pad}} - \mathrm{SDF} _ {\mathrm{scene}} (\mathbf {s} _ {j} (t)) \bigr) \right] ^ {2},\tag{29}
+$$
+
+and
+
+$$
+\mathcal {L} _ {\text { smooth }} = \sum_ {i = 1} ^ {D} w _ {i} \left(\operatorname{Std} \left(\Delta q _ {i}\right) + \alpha_ {\text { acc }} \operatorname{Std} \left(\Delta^ {2} q _ {i}\right)\right).\tag{30}
+$$
+
+Kinematic feasibility.. We treat a sample as kinematically feasible only if it passes both the grasp optimization stage and the motion planning stage. For a configuration �, define the scene penetration of collision sphere � as
+
+$$
+\mathrm{pen} _ {j} (\mathbf {q}) \triangleq \max \bigl (0, d _ {\mathrm{pad}} - \mathrm{SDF} _ {\mathrm{scene}} (\mathbf {s} _ {j} (\mathbf {q})) \bigr),
+$$
+
+(31)
+
+and the fingertip-to-object surface distance for contact point � as
+
+$$
+\operatorname{dis} _ {i} (\mathbf {q}) \triangleq \left| \operatorname{SDF} _ {\mathrm{obj}} \left(\mathbf {p} _ {i} ^ {c} (\mathbf {q})\right) \right|.\tag{32}
+$$
+
+Grasp optimization succeeds if every keyframe is reachable and the optimized grasp configuration $\mathbf { q } _ { \mathrm { g r a s p } }$ satisfies
+
+$$
+\text { opt\_success } = \left[ \begin{array}{l} \max _ {j} \text { pen } _ {j} (\mathbf {q} _ {\text { grasp }}) \leq \epsilon_ {\text { col }} \\ \wedge \max _ {i} \text { dis } _ {i} (\mathbf {q} _ {\text { grasp }}) \leq \epsilon_ {\text { dis }} \end{array} \right].\tag{33}
+$$
+
+Motion planning succeeds if the planned trajectory $\{ \mathbf { q } ( t ) \} _ { t = 0 } ^ { T _ { \mathrm { t o t } } }$ remains collision-free (with padding) along the entire execution: 1
+
+$$
+\mathsf {m p \_ s u c c e s s} = \left[ \max _ {t, j} \mathrm{pen} _ {j} (\mathbf {q} (t)) \leq \epsilon_ {\text { traj }} \right].\tag{34}
+$$
+
+A sample is kinematically valid if
+
+$$
+\text { kin\_success } = \text { opt\_success } \land \text { mp\_success }.\tag{35}
+$$
+
+Only trajectories with kin\_success = 1 are passed to the dynamics-aware feasibility filtering stage. Optimization and planning schedules are listed in Tab. 1.
+
+## B.3 Dynamics-Aware Feasibility Filtering
+
+Why dynamics filtering?. For floating-base humanoids, kinematic feasibility does not guarantee executability: trajectories can violate stability constraints, exceed controller tracking capability, or induce unstable whole-body transients. We therefore apply a controller-in-the-loop dynamics check to retain only trajectories that are feasible under the deployment control stack.
+
+Massively parallel controller replay.. We replay each kinematically feasible trajectory in ManiSkill3 [75], a GPU-parallel physics simulator built on SAPIEN [91], at the deployment control rate (50 Hz). Crucially, the same hierarchical whole-body control structure as real deployment is used during replay (whole-body IK producing upper-body targets and low-level locomotion control executing the commanded motion).
+
+Dynamic feasibility criteria.. A trajectory is marked sim\_success if it satisfies:
+
+1. Task success: the object is lifted by at least $\delta _ { \mathrm { l i f t } } = 0 . 0 5$ m and remains in hand.
+
+2. Stable execution: no fall/termination, and base attitude remains bounded, |roll|, |pitch| $\leq \theta _ { \mathrm { m a x } }$
+
+3. Trackability: tracking error of commanded end-efector keyframes stays below a threshold, max<sub>�</sub> $\| \mathbf { p } _ { \mathrm { e e } } ( t ) - \mathbf { p } _ { \mathrm { e e } } ^ { * } ( t ) \| \leq e _ { \mathrm { m a x } }$ , with no abrupt spikes in commanded motion.
+
+We treat $( \theta _ { \mathrm { m a x } } , e _ { \mathrm { m a x } } )$ as fixed thresholds chosen to match the tolerances of the deployment controller.
+
+Final acceptance mask.. We retain a sample only if it passes both kinematic and dynamics feasibility:
+
+$$
+\text { success } [ i ] = \text { kin\_success } [ i ] \land \text { sim\_success } [ i ].\tag{36}
+$$
+
+By construction, the resulting dataset is supported on actions that are executable under whole-body kinodynamic constraints, enabling the learned policy to internalize kinodynamic-aware afordances rather than purely geometric ones. Fig. 3c profiles an example collection run (508M candidates to 18K accepted grasps); its survival rates are representative of every run, and the full training set aggregates all parallel runs with distinct seeds into 600k trajectories.
+
+## B.4 Rendering and View Selection
+
+We render object-centric point cloud observations for each accepted sample using a GPU-parallel renderer (ManiSkill3 [75]). For each scene, we render $V = 1 6$ camera views with small RPY perturbations around a calibrated nominal extrinsic, and extract an object-only segmented point cloud of $N _ { \mathrm { p t s } } = 4 0 9 6 ~ \mathrm { p o i n t s } .$ randomly downsampled to $N = 2 0 4 8$ for the policy.
+
+View selection.. Among candidate views whose frustums contain the object 3D bounding box, we select the view maximizing the number of valid (nonzero) 3D points:
+
+$$
+v ^ {*} = \arg \max _ {v \in \mathcal {V} _ {\mathrm{visible}}} \sum_ {i = 1} ^ {N _ {\mathrm{pts}}} \left[ \| \mathbf {p} _ {i} ^ {(v)} \| > \epsilon \right].\tag{37}
+$$
+
+If no view passes the visibility check, the scene is discarded to avoid degenerate observations. At deployment, this ofline oracle view selection is replaced by the online active perception module in the main paper.
+
+## C Policy Architecture
+
+Overview.. We learn a conditional generative grasp policy that maps a segmented object point cloud $\mathcal { P } \in \mathbb { R } ^ { N \times 3 }$ to a distribution over multi-stage end-efector (EE) actions. Let $\mathbf { f } = \mathrm { P o i n t N e t } ( \mathcal { P } ) \in \mathbb { R } ^ { d _ { f } }$ be a global shape feature. Our policy is a conditional VAE (CVAE) with latent $\mathbf { z } \in \mathbb { R } ^ { D _ { z } }$ , defining
+
+$$
+p _ {\theta} (\mathbf {a} \mid \mathcal {P}) = \int p _ {\theta} (\mathbf {a} \mid \mathbf {z}, \mathbf {f})   p (\mathbf {z})   d \mathbf {z}, \qquad p (\mathbf {z}) = \mathcal {N} (\mathbf {0}, \mathbf {I}),\tag{38}
+$$
+
+where $\mathbf { a } \in \mathbb { R } ^ { T \times D _ { a } }$ is a � -stage grasp action (pre-grasp, grasp, post-grasp). All architectural and training hyperparameters are summarized in Sec. D.
+
+Action parameterization.. Each stage action $\mathbf { a } _ { t } \in \mathbb { R } ^ { D _ { a } }$ consists of EE translation, EE orientation as a unit quaternion, and hand joint targets:
+
+$$
+\mathbf {a} _ {t} \triangleq [ \mathbf {p} _ {t}; \mathbf {r} _ {t}; \mathbf {h} _ {t} ], \quad \mathbf {a} \triangleq [ \mathbf {a} _ {1}; \dots ; \mathbf {a} _ {T} ] \in \mathbb {R} ^ {T \times D _ {a}}.\tag{39}
+$$
+
+## C.1 Vision Encoder: PointNet
+
+We encode <sup></sup> using a PointNet-style [87] encoder:
+
+$$
+\mathbf {f} = \phi \left(\max _ {n} h (\mathcal {P})\right),\tag{40}
+$$
+
+where $h ( \cdot )$ is a shared-point MLP (implemented by stacked Conv1D+ReLU blocks), max<sub>�</sub> is channel-wise max-pooling over points, and $\phi ( \cdot )$ projects to dimension $d _ { f }$ . We omit BatchNorm in the encoder to avoid train/test mismatch under small-batch deployment.
+
+## C.2 Conditional VAE (CVAE)
+
+Let $\mathbf { a } ^ { \mathrm { f l a t } } \in \mathbb { R } ^ { T \cdot D _ { a } }$ be the flattened action. During training, the encoder models an approximate posterior $q _ { \varphi } ( \mathbf { z } \mid \mathbf { a } ^ { \mathrm { f l a t } } , \mathbf { f } ) = \mathcal { N } ( \pmb { \mu } , \mathrm { d i a g } ( \pmb { \sigma } ^ { 2 } ) )$ :
+
+$$
+[ \pmb {\mu}, \log \sigma^ {2} ] = \mathrm{MLP} _ {\mathrm{enc}} ([ \mathbf {a} ^ {\mathrm{flat}}; \mathbf {f} ]), \qquad \mathbf {z} = \pmb {\mu} + \pmb {\sigma} \odot \pmb {\epsilon}, \pmb {\epsilon} \sim \mathcal {N} (\mathbf {0}, \mathbf {I}),\tag{41}
+$$
+
+where log $\sigma ^ { 2 }$ is clamped to a fixed range (Sec. D) for numerical stability. The decoder predicts the action:
+
+$$
+\hat {\mathbf {a}} ^ {\text { flat }} = \operatorname{MLP} _ {\text { dec }} ([ \mathbf {z}; \mathbf {f} ]), \quad \hat {\mathbf {a}} = \operatorname{reshape} (\hat {\mathbf {a}} ^ {\text { flat }}) \in \mathbb {R} ^ {T \times D _ {a}}.\tag{42}
+$$
+
+## C.3 Training Objective and Inference
+
+We minimize the negative evidence lower bound (ELBO):
+
+$$
+\mathcal {L} = \underbrace {\mathbb {E} _ {q _ {\varphi} (\mathbf {z} | \mathbf {a} ^ {\text {flat}} , \mathbf {f})} [ \mathcal {L} _ {\text {rec}} (\hat {\mathbf {a}} , \mathbf {a}) ]} _ {\text {reconstruction}} + w _ {\text {KL}} \underbrace {D _ {\text {KL}} \left(q _ {\varphi} (\mathbf {z} \mid \mathbf {a} ^ {\text {flat}} , \mathbf {f}) \| \mathcal {N} (\mathbf {0} , \mathbf {I})\right)} _ {\text {regularization}}.\tag{43}
+$$
+
+We use an $\ell _ { 1 }$ reconstruction loss over translation, quaternion, and hand joints across stages. Quaternions are normalized and sign-canonicalized to resolve $\mathbf { r } \equiv - \mathbf { r } ;$
+
+$$
+\bar {\mathbf {r}} \leftarrow \mathbf {r} / \| \mathbf {r} \|, \quad \hat {\bar {\mathbf {r}}} \leftarrow \hat {\mathbf {r}} / \| \hat {\mathbf {r}} \|, \quad \hat {\bar {\mathbf {r}}} \leftarrow \mathrm{sign} (\langle \hat {\bar {\mathbf {r}}}, \bar {\mathbf {r}} \rangle) \cdot \hat {\bar {\mathbf {r}}}.\tag{44}
+$$
+
+Inference.. At test time, we discard the encoder and draw � latents $\mathbf { z } \sim \mathcal { N } ( \mathbf { 0 } , \mathbf { I } )$ for the alignment stage (Sec. 3.4), decoding each as $\hat { \mathbf { a } } = \mathrm { M L P } _ { \mathrm { d e c } } ( [ \mathbf { z } ; \mathrm { P o i n t N e t } ( \mathcal { P } ) ] )$ . The predicted EE targets are executed by the downstream whole-body stack (IK, collision-aware planning, and controller) as in the main paper.
+
+## D Hyperparameter Summary
+
+Table 1. Key hyperparameters for synthetic grasp generation (optimization and motion planning).
+
+<table><tr><td>Stage</td><td>Parameter</td><td>Symbol</td><td>Value</td></tr><tr><td colspan="4">Grasp Optimization (Simulated Annealing)</td></tr><tr><td>Iterations</td><td>Number of iterations</td><td> $N_{\text{iter}}$ </td><td>5,000</td></tr><tr><td>Batching</td><td>Grasp samples per scene</td><td> $N_{\text{cand}}$ </td><td>8,192</td></tr><tr><td>Contacts</td><td>Fingertip contact points</td><td> $N_c$ </td><td>4</td></tr><tr><td>Energy</td><td>Contact-distance weight</td><td> $w_{\text{dis}}$ </td><td>100</td></tr><tr><td>Energy</td><td>Scene-penetration weight</td><td> $w_{\text{pen}}$ </td><td>100</td></tr><tr><td>Energy</td><td>Self-penetration weight</td><td> $w_{\text{spen}}$ </td><td>50</td></tr><tr><td>Energy</td><td>Joint-limit weight</td><td> $w_{\text{jnt}}$ </td><td>1</td></tr><tr><td>Steps</td><td>Initial step size</td><td> $\eta_0$ </td><td>0.005</td></tr><tr><td>Steps</td><td>Step decay period</td><td> $\tau_\eta$ </td><td>50</td></tr><tr><td>Temp.</td><td>Initial temperature</td><td> $T_0$ </td><td>18</td></tr><tr><td>Temp.</td><td>Temperature decay rate</td><td> $\gamma_T$ </td><td>0.95</td></tr><tr><td>Temp.</td><td>Annealing period</td><td> $\tau_T$ </td><td>30</td></tr><tr><td>Init.</td><td>Front approach angle range</td><td> $\theta_{\text{front}}$ </td><td>[-π/2, -π/10]</td></tr><tr><td>Init.</td><td>Approach distance range</td><td>d</td><td>[0.02, 0.15] m</td></tr><tr><td>Init.</td><td>Hand template (6-DoF)</td><td> $\mu_{\text{hand}}$ </td><td>(0.8, 0.05, 0.6, 0.6, 0.6, 0.6)</td></tr><tr><td colspan="4">Motion Planning (Pre/Grasp/Post + Smoothing)</td></tr><tr><td>Phases</td><td>Init→Pre-grasp steps</td><td> $T_{\text{init}}$ </td><td>150</td></tr><tr><td>Phases</td><td>Pre-grasp→Grasp steps</td><td> $T_{\text{pg}}$ </td><td>80</td></tr><tr><td>Phases</td><td>Holding steps</td><td> $T_{\text{hold}}$ </td><td>15</td></tr><tr><td>Phases</td><td>Grasp→Post-grasp steps</td><td> $T_{\text{gp}}$ </td><td>50</td></tr><tr><td>Phases</td><td>Lift height</td><td> $\delta_z$ </td><td>0.05 m</td></tr><tr><td>Collision</td><td>Safety padding</td><td> $d_{\text{pad}}$ </td><td>0.025 m</td></tr><tr><td>Heuristic</td><td>Retreat step factor (arm)</td><td> $w_{\text{arm}}$ </td><td>0.001</td></tr><tr><td>Heuristic</td><td>Closure factor (hand)</td><td> $w_{\text{hand}}$ </td><td>0.8</td></tr><tr><td>Smoothing</td><td>Arm smoothness weight</td><td> $w_{\text{sm}}^{\text{arm}}$ </td><td>100</td></tr><tr><td>Smoothing</td><td>Hand smoothness weight</td><td> $w_{\text{sm}}^{\text{hand}}$ </td><td>10</td></tr><tr><td>Batching</td><td>Trajectories per batch</td><td> $B_{\text{traj}}$ </td><td>1,024</td></tr></table>
+
+Table 2. Hyperparameters for policy learning, evaluation, and rendering.
+
+<table><tr><td>Module</td><td>Parameter</td><td>Symbol</td><td>Value</td></tr><tr><td colspan="4">Policy (PointNet + CVAE)</td></tr><tr><td>Input</td><td>Policy input point cloud size</td><td>N</td><td>2,048</td></tr><tr><td>Action</td><td>Stages (pre/grasp/post)</td><td>T</td><td>3</td></tr><tr><td>Action</td><td>Action dimension</td><td> $D_a$ </td><td>13</td></tr><tr><td>Action</td><td>Hand DoF in action</td><td> $D_h$ </td><td>6</td></tr><tr><td>Encoder</td><td>PointNet feature dimension</td><td> $d_f$ </td><td>512</td></tr><tr><td>Latent</td><td>CVAE latent dimension</td><td> $D_z$ </td><td>256</td></tr><tr><td>MLP</td><td>Encoder/decoder hidden dims</td><td>-</td><td>[256, 256, 256]</td></tr><tr><td>MLP</td><td>Activation / normalization</td><td>-</td><td>SiLU / LayerNorm</td></tr><tr><td>Stability</td><td>log  $\sigma^2$  clamp range</td><td> $[\ell_{\text{min}}, \ell_{\text{max}}]$ </td><td>[-10, 10]</td></tr><tr><td>Loss</td><td>KL weight</td><td> $w_{\text{KL}}$ </td><td>0.1</td></tr><tr><td>Optim.</td><td>Optimizer</td><td>-</td><td>AdamW</td></tr><tr><td>Optim.</td><td>Learning rate</td><td> $\eta_{\text{lr}}$ </td><td> $10^{-4}$ </td></tr><tr><td>Optim.</td><td>Weight decay</td><td> $\lambda_{\text{wd}}$ </td><td> $10^{-4}$ </td></tr><tr><td>Batch</td><td>Batch size (scenes)</td><td>B</td><td>128</td></tr><tr><td>Sampling</td><td>Actions per scene</td><td> $N_a$ </td><td>12</td></tr><tr><td>Schedule</td><td>LR decay step (iter)</td><td> $t_{\text{decay}}$ </td><td>66,667</td></tr><tr><td>Schedule</td><td>LR decay factor</td><td> $\gamma_{\text{lr}}$ </td><td>0.1</td></tr><tr><td>Training</td><td>Total iterations</td><td> $T_{\text{iter}}$ </td><td>100,000</td></tr><tr><td>Split</td><td>Train/test split (scenes)</td><td>-</td><td>97% / 3%</td></tr><tr><td>Eval.</td><td>Evaluation frequency</td><td>-</td><td>every 10,000 iters</td></tr><tr><td colspan="4">Simulation Evaluation</td></tr><tr><td>Engine</td><td>Physics simulator</td><td>-</td><td>ManiSkill3 (SAPIEN)</td></tr><tr><td>Parallelism</td><td>Parallel environments</td><td> $N_{\text{env}}$ </td><td>512</td></tr><tr><td>Control</td><td>Control frequency</td><td> $f_{\text{ctrl}}$ </td><td>50 Hz</td></tr><tr><td>Object</td><td>Object mass</td><td> $m_{\text{obj}}$ </td><td> $\mathcal{U}^{(0.1, 0.5)} \text{kg}$ </td></tr><tr><td>Metric</td><td>Lift threshold</td><td> $\delta_{\text{lift}}$ </td><td>0.05 m</td></tr><tr><td>Contact</td><td>Friction (dyn/static)</td><td>-</td><td>2.0 / 2.0</td></tr><tr><td>Contact</td><td>Restitution</td><td>-</td><td>0.0</td></tr><tr><td colspan="4">Rendering / View Selection</td></tr><tr><td>Views</td><td>Views per scene</td><td>V</td><td>16</td></tr><tr><td>Points</td><td>Rendered point cloud size (before downsample)</td><td> $N_{\text{raw}}$ </td><td>4,096</td></tr><tr><td>Points</td><td>Policy input points (after downsample)</td><td>N</td><td>2,048</td></tr><tr><td>Jitter</td><td>Roll jitter</td><td> $\Delta \phi$ </td><td>±5°</td></tr><tr><td>Jitter</td><td>Pitch jitter</td><td> $\Delta \theta$ </td><td>±8°</td></tr><tr><td>Jitter</td><td>Yaw jitter</td><td> $\Delta \psi$ </td><td>±12°</td></tr><tr><td>Seg.</td><td>Segment extraction</td><td>-</td><td>object-only</td></tr></table>
+
+## E Extended Experimental Analysis
+
+This section collects supplementary figures and analyses referenced from Sec. 4 of the main paper: realworld qualitative rollouts, visual failure modes, scene generalization, the training-data scaling curve, and the full results of the large-scale simulation evaluation (spatial success-rate fields and per-object success rates).
+
+## E.1 Real-World Qualitative Rollouts
+
+![](images/9997ac905b46512509e127e07871cc52cb7abc48eb8095a62e2f8ad7702cd706.jpg)  
+(c)  
+Figure 6. Real-world rollouts, zero-shot from simulation. (a) Tabletop grasping of diverse objects; (b) long-reach grasping across a table; (c) deployment in varied unseen environments and heights (shelves, benches, tables).
+
+Fig. 6 shows representative successes across diverse objects, reaches, and scenes: tabletop manipulation (a), long-reach grasping (b), and zero-shot deployment in unseen environments at varied heights (c). Across all settings the policy coordinates active perception, whole-body motion, and dexterous manipulation with no scene-specific tuning.
+
+## E.2 Visual Failure Modes
+
+Fig. 7 visualizes the four representative failure modes that the Full pipeline eliminates relative to its ablations and to the gripper-based baseline. (a) and (b) are the kinematically valid but dynamically infeasible configurations that the dynamics filter rejects; (c) and (d) are the morphology-mismatched and collision-prone grasps produced when whole-body and hand DoFs are not jointly optimized.
+
+## E.3 Scene Generalization across Real-World Environments
+
+Beyond the per-height generalization reported in the main Analysis (Sec. 4.3.2), Fig. 8 shows the same policy operating across diferent real-world environments: kitchens, hallways with railings, multi-tier shelves, dining tables, and open lab benches at varying heights. The policy is trained purely on randomized tabletop scenes in simulation and uses only the egocentric RGB-D and active perception stack at deployment; no scene-specific fine-tuning, per-scene demonstrations, or environment annotation is required. Robustness to surface geometry and clutter follows from the diversity of the training distribution rather than any scene-aware module; lighting and background variation are absorbed by the open-vocabulary detection and segmentation front end, since the policy consumes only the segmented object point cloud.
+
+![](images/2d1e74b470daad4c057274925018620768e40fbb2d1a0bbe2331b64e1930d0b6.jpg)  
+(a)
+
+![](images/bb84716ab67dbf08ebbb520835f13c3ac0e7834c19a19108aeb3da271c934169.jpg)  
+(b)
+
+![](images/1454edab031fa0dab4640623c1c2007291ea5337ef35fb76c289696fc0a4fadc.jpg)  
+(c)
+
+![](images/411c9861a11699c25bde64b4acb7bddf22f7b5f434c67878f6cf70e1e0df53f8.jpg)  
+(d)
+
+Figure 7. Failure modes eliminated by our pipeline. (a) No dynamics filter: unstable jittering. (b) No WB cooptimization/alignment: twisted infeasible poses. (c) GraspNet: unnatural gripper-designed grasps. (d) No WB–hand co-optimization: hand–environment collisions  
+![](images/075cb5673173f9440bf1230444c521961825890d6e76a66e98d0c471e20cacca.jpg)  
+Figure 8. Our full pipeline in fourteen real-world environments.
+
+## E.4 Synthetic Data Scaling
+
+Fig. 9 reports real-world SR as a function of the synthetic training-data volume. Each data scale is evaluated with oracle perception on 120 trials (60 ID, 60 OOD), for 1,080 real-world trials over nine data scales; this protocol is separate from Task 2’s 150-trial height sweep, so absolute values are not directly comparable to Fig. 3b. SR rises monotonically from 9.2% at 5k trajectories to 89.2% at 400k and plateaus thereafter. OOD objects benefit most (5.0%→90.0%) while ID saturates earlier; the relative OOD degradation narrows from 62% at 5k to under 2% above 300k, indicating that data diversity progressively closes the generalization gap to novel objects.
+
+Computational cost.. Ofline generation: ∼700 GPU-hours for 600k trajectories (fully parallelizable); CVAE training: ∼1 h on a single GPU. At deployment (RTX 5090): perception (DINO + SAM) 148 ms, CVAE inference 0.4 ms, motion planning ∼200 ms, WB-IK ∼1 ms per batched solve over all � candidates.
+
+![](images/bd9098f1353eb7cc1e9ed5f0df9ab861351709b9e52cc4714652678f6e6c5405.jpg)  
+Figure 9. Data scaling (real world, oracle perception, 5 ID + 5 OOD objects; 120 trials per data scale, a separate protocol from Task 2). SR scales from 9.2% at 5k trajectories to ∼89% at 400k and plateaus thereafter, with OOD benefiting most.
+
+End-to-end grasp attempts take 15–40 s, dominated by physical robot motion.
+
+## E.5 Large-Scale Simulation Evaluation
+
+This section reports the full results of the Task 3 simulation evaluation (protocol in Sec. 4.1; band aggregates and SR-vs-height curves in Fig. 4): the spatial success-rate fields (side and top view) and per-object success rates.
+
+Protocol details.. The evaluation runs in ManiSkill3 [75] with the deployment whole-body controller in the loop. Each condition sweeps 17 table heights (0.10–0.90 m in 5 cm steps) with randomized planar object placement $( x \in \left[ 0 . 2 5 , 0 . 5 5 \right]$ m, $y \in \left[ - 0 . 1 7 5 , 0 . 1 2 5 \right]$ m) and randomized yaw, over the YCB (12 objects) and RoboCasa [90] (11 objects) catalogs. Scene sets are identical across the six variants, so all deltas are paired. Training tables span 0.40–0.90 m; heights 0.10–0.35 m evaluate extrapolation below the training range.
+
+Success criterion.. A trial succeeds only if it is held and upright: the object is lifted ≥ 0.05 m and remains lifted after a 2 s hold with $\leq 0 . 0 3$ m of in-hand slip, while the robot stays upright (pelvis $\mathrm { { h e i g h t } } \geq 0 . 2 0 \mathrm { { r } }$ m, base tilt $\leq 3 0 ^ { \circ }$ , and foot drift $\leq 0 . 0 5 \mathrm { m } )$ . Scoring is a pure function of the recorded telemetry, with no manual judgment. This criterion is stricter than the real-world one (lift ≥5 cm and stably held), since it additionally penalizes post-grasp slip and any loss of balance during the hold; simulation success rates are therefore conservative relative to the hardware tasks.
+
+Spatial envelope and object dificulty.. The success field over height × reach (Fig. 10) is dense throughout the $0 . 1 0 \mathrm { - } 0 . 9 0 \times 0 . 2 5 \mathrm { - } 0 . 5 5$ m envelope and thins mainly along the far-reach column $( x \ge 0 . 5 0 \mathrm { m } )$ , most severely when far reach is combined with deep squat, where extension and balance compete. Across objects (Fig. 12), the broader RoboCasa shape distribution costs ∼8 pts in-range (87.4 → 79.8%) and widens the per-object spread (51.5–93.4% vs. 67.7–94.1% for YCB); the hardest objects are thin or elongated (whisk, chicken drumstick, dish brush) and small near-spherical fruit (peach, apple), which demand centimeter-precise closure. The two degradations are close to additive: YCB in-range (87.4%) to RoboCasa extrapolation (71.4%) costs 16 pts, within ∼2 pts of the sum of the single-axis costs (6.3 + 7.6), so there is no catastrophic interaction.
+
+![](images/3b24e0e67282913167cff33944a5c79d403ec2dfbe4d4b13ee0f0c137ece63d3.jpg)
+
+![](images/54e96c4cc0ceefe3ef2289987a5f3e06c513c7c6bfb4494c40f9418ff975cfd7.jpg)  
+Figure 10. Side-view success-rate field (Full pipeline): table height vs. forward reach �, per catalog. The dashed line marks the 0.40 m training floor. Success stays high across the whole 0.10–0.90 × 0.25–0.55 m envelope and degrades only at the far-reach column and the deepest squat row; per-cell � varies with random placement (8–42), so the field should be read as a whole rather than cell-by-cell.
+
+![](images/0e32d9289c260c699b3533ef389e5fc30c9ff9d0cc16cd5a116b8bb597caf6a2.jpg)  
+Figure 11. Top-view success-rate fields (plan view; robot at the bottom, grasping-hand side to the right): Full vs. –Dyn. Filter vs. –Compensator on both catalogs, aggregated over all heights. The Full envelope is broad and dense; removing the dynamics filter keeps coverage but at uniformly lower success density; removing the compensator degrades the whole field, worst at far cells.
+
+![](images/1364daa5d356dde94e0b1e9f0263c5758e11785dae7297fa0d2f69fff1492138.jpg)
+
+![](images/291ced0358221b10cc19608864f7ddeee17993280c7702330008089498df2308.jpg)  
+Figure 12. Per-object success rate (Full pipeline, �=136 trials/object, 95% Wilson CIs). The RoboCasa catalog’s broader shape distribution widens the outcome spread (51.5–93.4% vs. 67.7–94.1% for YCB); the hardest objects are thin and elongated (whisk, chicken drumstick, dish brush), whose narrow graspable surfaces demand centimeterprecise hand placement.

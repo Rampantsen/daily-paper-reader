@@ -1,0 +1,432 @@
+# LocoMuJoCo: A Comprehensive Imitation Learning Benchmark for Whole-Body Control
+
+Firas Al-Hafez Davide Tateo Department of Computer Science Technische Universit¨at Darmstadt Darmstadt, Hesse, Germany
+
+Oleg Kaidanov Aditya Bhatt Artur Zelik German Research Center for Artificial Intelligence (DFKI) Darmstadt, Hesse, Germany
+
+Zhengyi Luo Carnegie Mellon University Pittsburgh, PA, USA
+
+Jan Peters
+
+German Research Center for Artificial Intelligence (DFKI) Centre for Cognitive Science, Hessian.AI Technische Universit¨at Darmstadt, Germany
+
+firas.al-hafez@tu-darmstadt.de davide.tateo@tu-darmstadt.de
+
+oleg.kaidanov@dfki.de aditya.bhatt@dfki.de artur.zelik@dfki.de
+
+zhengyiluo5@gmail.com
+
+peters@ias.tu-darmstadt.de
+
+## Abstract
+
+LocoMuJoCo is an open-source benchmark for imitation learning (IL) and reinforcement learning (RL) on whole-body control. The library couples MuJoCo (CPU) with MJX and the MjWarp backend (GPU) under a single API, exposes 9 humanoid, 3 (musculo-)skeletal, and 4 quadruped embodiments, and ships a curated native motion-capture dataset for every humanoid, to which it can also retarget AMASS and LAFAN1. A modular plug-in architecture makes observations, rewards, control modes, terrains, and domain randomization fully interchangeable, while compact JAX implementations of many RL and IL algorithms provide JIT-compiled end-to-end training, and the companion loco-mujoco-real repository provides sim-to-real deployment. We describe the design, the SMPL-to-robot and robot-to-robot retargeting pipeline, and a usage example. LocoMuJoCo is released under MIT at https://github.com/robfiras/loco-mujoco.
+
+Keywords: imitation learning, reinforcement learning, whole-body control, humanoid control, JAX, MuJoCo, benchmark
+
+## 1 Introduction
+
+Humanoid robots have advanced rapidly in recent years, and improvements in hardware have made the sim-to-real transfer of learned controllers increasingly practical. Because humans and humanoid robots share broadly similar embodiments, human motion data provide an abundant source of training demonstrations. Despite this progress, the imitation learning (IL)/reinforcement learning (RL) benchmarking landscape remains fragmented across single-robot codebases, manipulation-only suites, and toy locomotion tasks, forcing researchers to re-implement data pipelines, retargeting methods, simulators, and evaluation metrics whenever they change embodiments.
+
+<table><tr><td></td><td>Dual backend (NumPy + JAX)</td><td>Built-in retargeting</td><td>Biomechanics (muscles)</td><td>Trajectory metrics</td><td>Sim-to-real tooling</td></tr><tr><td>HumanoidBench</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td></tr><tr><td>MyoSuite</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td></tr><tr><td>mjlab</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td></tr><tr><td>ProtoMotions</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td></tr><tr><td>MimicKit</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td></tr><tr><td>LocoMuJoCo</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td><td>✕</td></tr></table>
+
+Table 1: Comparison with recent humanoid motion-imitation libraries. $\checkmark / \pmb { x }$ denote built-in support/absence, based on cited papers and public documentation (2026).
+
+The first version of LocoMuJoCo (Al-Hafez et al., 2023b) paired realistic humanoid models with motion-capture datasets and a common evaluation protocol, but ran on CPU MuJoCo only. Version 1.0 rebuilt the library around JAX, adding a GPU-parallel MJX backend, the retargeting pipeline, many new embodiments, and JAX implementations of RL and IL algorithms. The current version adds an optional MjWarp backend, further algorithms, and the companion loco-mujoco-real sim-to-real deployment pipeline.
+
+## 2 Related Work
+
+Recent humanoid IL/RL libraries each emphasize one strength: HumanoidBench (Sferrazza et al., 2024) (RL tasks), MyoSuite (Caggiano et al., 2022) (musculoskeletal models), mjlab (Zakka et al., 2026) (Isaac-Lab-style API on MuJoCo-Warp), ProtoMotions (Tessler et al., 2025) (GPU motion tracking with retargeting), and MimicKit (Peng, 2025) (motionimitation framework). None combines a single API spanning a serial NumPy and a paralle JAX backend, automated retargeting onto any registered robot, biomechanical models, trajectory-similarity metrics, and a sim-to-real pipeline (Table 1; Appendix A).
+
+## 3 The LocoMuJoCo Library
+
+## 3.1 Dual Environment Backends
+
+LocoMuJoCo executes each environment through either a serial NumPy/MuJoCo backend or a vectorized JAX/MJX backend. Environment components—including observations, rewards, controls, and termination conditions—are implemented once against a numericalbackend argument. Because jax.numpy closely mirrors NumPy, most code is shared verbatim and only backend-specific operations branch, avoiding duplicate environment logic. Loco-MuJoCo can additionally use MjWarp via use mjwarp=True, which reaches $4 . 9 \times 1 0 ^ { 5 }$ steps per second on one consumer GPU (Appendix G).
+
+![](images/2546c65f50e010bbe0bebe0de5d1d896e7707917e7ce5a65f7adec0225dcefae.jpg)  
+Figure 1: The 12 humanoid and (musculo-)skeletal embodiments replaying one walking trajectory; ghosted poses show time. All share one training, plug-in, and dataset interface.
+
+## 3.2 Modular Architecture
+
+The simulation core (loco mujoco/core) is decomposed into interchangeable plug-ins for observations, rewards, control functions (direct motor or muscle actuation, PD), domain randomization (gravity, friction, mass, joint dynamics, PD gains, observation noise), terrain (flat, rough heightfield), and initial/terminal state handlers. Plug-ins are stateless: each keeps its per-environment state in an explicit Flax dataclass that is passed through the step, so the entire environment step is JIT-compilable and nothing lives in hidden global state. The same training loop therefore runs across robots and across RL and IL (Appendix B).
+
+## 3.3 Embodiments, Datasets, and Retargeting
+
+LocoMuJoCo ships 9 humanoid robots (Unitree H1/H1v2/G1, Atlas, Talos, Apollo, Booster T1, ToddlerBot, Fourier GR1T2), 3 (musculo-)skeletal SMPL-derived human models (MyoSkeleton, SkeletonTorque, SkeletonMuscle), and 4 quadrupeds (Unitree A1/Go2, BD Spot, ANYmal C). Three dataset sources are integrated: a native, retargeted Loco-MuJoCo dataset hosted on the HuggingFace Hub, the LAFAN1 motion-capture collection, and the AMASS aggregate (the latter requires the user to accept the SMPL license). The companion loco-mujoco-real repository adds real-robot environments for the Unitree G1 and the AgiBot X2 Ultra, which also serve as worked examples of adding a new robot to LocoMuJoCo, including its SMPL retargeting configuration. The underlying SMPL-to-robot and robot-to-robot procedures are detailed in Appendix D; they map human motion to registered robots and transfer trajectories across embodiments without manual per-trajectory annotation.
+
+## 3.4 Algorithms, Training, and Evaluation
+
+We provide compact JAX/Flax implementations of PPO (Schulman et al., 2017), GAIL (Ho and Ermon, 2016), a DeepMimic-style motion-tracking algorithm (Peng et al., 2018), and the world-model-based SuperMimic (Liao et al., 2026), together with BPTT-PPO, a Transformer-based history-aware PPO, SAC (Haarnoja et al., 2018), TD3 (Fujimoto et al., 2018), S2PG (Al-Hafez et al., 2024), and a DAgger-style distillation pipeline for compressing specialist policies into a single multi-task student. Each training script fuses environment stepping and the policy/critic update into a single JIT-compiled loop, removing Python overhead between steps. For evaluation, the metrics module is backed by the JAX-native metrx library (Pompetzki et al., 2024) and supplies trajectory similarity measures (Euclidean, dynamic time warping, and the discrete Fr´echet distance) over 11 joint, body, and site quantities. Appendix H reports the 715-run evaluation across 11 embodiments, together with algorithm comparisons.
+
+![](images/ac9bafdf75a458abc2162de7971fb0a9a131823e87f8e8aeb04fc7218c8a017c.jpg)  
+Figure 2: Sim-to-real transfer on the AgiBot X2 Ultra: one motion-tracking policy trained in LocoMuJoCo, running on the real robot over a 43 s motion.
+
+Usage example. An environment is created with ImitationFactory.make and stepped with reset/step, or in parallel with mjx reset/mjx step under the Mjx prefix; Appendix C gives the complete example.
+
+## 3.5 Real-World Deployment
+
+Policies trained in LocoMuJoCo transfer to hardware through loco-mujoco-real, which provides sim-to-real tooling for two robots, the Unitree G1 and the AgiBot X2 Ultra: it adds the robot’s environments, exports the trained policy, and runs it in a sim-to-sim check and on the robot with the same observation and control code. Figure 2 shows a motiontracking policy for the AgiBot X2 Ultra, trained with domain randomization on the MjWarp backend, executing a 43 s whole-body motion at 50 Hz on the real robot.
+
+## 4 Availability
+
+LocoMuJoCo is released under MIT at https://github.com/robfiras/loco-mujoco, with the companion sim-to-real pipeline at https://github.com/robfiras/ loco-mujoco-real, documentation at https://loco-mujoco.readthedocs.io/, the robot models at https://github.com/robfiras/loco-mujoco-models, and datasets at https://huggingface.co/datasets/robfiras/loco-mujoco-datasets. The test suite covers 93 % of the code (Appendix F), and contributions are welcome through GitHub.
+
+## Acknowledgments and Disclosure of Funding
+
+This work was funded by the European Union’s Horizon Europe programme under grant agreement No. 101135959 (ARISE). It was also partially supported by the German Science Foundation (DFG) under grant number SE1042/41-1 and by the German Federal Ministry of Education and Research (BMBF) within the collaborative KIARA project (grant no. 13N16274). The authors declare no competing interests.
+
+## Appendix A. Detailed Comparison to Related Work
+
+This appendix expands the per-benchmark commentary that the main-text related work (Section 2) summarized in a single paragraph. We adopt the comparison axes of Table 1 and add context that the page-budget of the main text could not accommodate.
+
+HumanoidBench (Sferrazza et al., 2024). HumanoidBench is a CPU-MuJoCo benchmark of 27 whole-body manipulation and locomotion tasks designed around the Unitree H1 with dexterous hands and the Agility Digit lower body. Its primary contribution is a taskdesign suite covering long-horizon and contact-rich behavior; training is RL-only and no expert demonstrations are shipped, so the suite cannot be used for IL out-of-the-box. The simulator is the standard CPU MuJoCo binding, with no JAX backend and no built-in GPU parallelism, which limits throughput at the high seed counts our benchmark targets.
+
+MyoSuite (Caggiano et al., 2022). MyoSuite ships high-fidelity musculoskeletal models of the human body including a full muscle-actuated humanoid skeleton. It is a strong peer for the biomechanics axis of Table 1 — and indeed LocoMuJoCo’s MjxMyoSkeleton environment reuses the MyoSkeleton model under MyoSuite’s license — but the suite is RL-only, provides no expert IL data, no retargeting pipeline, and no GPU/JAX backend. It also does not address sim-to-real transfer.
+
+mjlab (Zakka et al., 2026). mjlab adopts the manager-based environment interface of Isaac Lab, trains with RSL-RL (Schwarke et al., 2025), and uses MuJoCo-Warp for GPUaccelerated simulation. The project ships reference velocity-tracking, motion-imitation, and manipulation tasks. Compared with LocoMuJoCo, mjlab is GPU-only (no serial NumPy backend at parity), does not provide a curated human-mocap dataset suite, does not include automated cross-robot retargeting, and has no biomechanical models. The environment design of our companion loco-mujoco-real repository closely follows mjlab’s G1 motiontracking setup, which is explicitly positioned for sim-to-real RL.
+
+ProtoMotions (Tessler et al., 2025). ProtoMotions is a GPU-accelerated motiontracking framework with built-in human-to-robot retargeting (PyRoki-based (Kim et al., 2025)) and supports multiple GPU simulators (IsaacGym, Isaac Lab, Genesis, NVIDIA Newton). It demonstrates zero-shot transfer of a single tracking policy onto the Unitree G1. The library is closer to a software toolkit than a benchmark — there is neither a curated, frozen dataset suite nor a shared evaluation protocol with explicit trajectory-similarity metrics.
+
+MimicKit (Peng, 2025). MimicKit unifies three tracking-style algorithms — Deep-Mimic, AMP, and ADD — into a single modular RL framework targeted at physics-based character animation. As a methods toolkit it is largely complementary to a benchmark such as LocoMuJoCo; the diferences relevant to Table 1 are that MimicKit ships no curated robot or dataset suite, no biomechanical models, no built-in trajectory metrics, and no sim-to-real instrumentation, and it is not designed for the parallel-JAX simulation regime that drives LocoMuJoCo’s training throughput.
+
+Summary. The picks above are the libraries researchers in humanoid IL/RL today benchmark against. They are individually strong on one or two of the five axes in Table 1, but none simultaneously covers the combination of dual-backend simulation, automated mocap retargeting onto any registered robot, biomechanical models, JAX-native trajectory metrics, and the companion loco-mujoco-real deployment pipeline that LocoMuJoCo provides.
+
+Retargeting pipelines. Our retargeting builds on the SMPL-fitting approach of PHC and H2O (Luo et al., 2023; He et al., 2024), which targets individual robots, and extends it into a general, configuration-driven pipeline: adding a robot only requires a configuration file and 15 mimic sites in its model, and trajectories transfer between robots. To the best of our knowledge, it was the first open-source pipeline of this generality, introduced in LocoMuJoCo v1.0.1;<sup>1</sup> earlier code, including ProtoMotions (Tessler et al., 2025), hardcoded the mappings for one or two robots. Later work builds on similar ideas: GMR (Ara´ujo et al., 2026) uses non-uniform scaling and diferential inverse kinematics instead of a shape fit, targeting real-time use and fewer artifacts, while OmniRetarget (Yang et al., 2026) preserves contacts with objects and terrain. LocoMuJoCo instead fits SMPL to each robot once, tracks the resulting SE(3) targets with soft MuJoCo constraints, and reuses the same mapping for robot-to-robot transfer.
+
+Foundational components. LocoMuJoCo builds on several open-source software and data assets without which the library could not exist. The simulation backbone is the MuJoCo physics engine (Todorov et al., 2012) and its JAX-vectorized counterpart MJX. The retargeting pipeline targets the SMPL parametric human body model (Loper et al., 2015), with human-mocap data drawn from the AMASS unified corpus (Mahmood et al., 2019) and the Ubisoft LaForge LAFAN1 animation dataset (Harvey et al., 2020). AMASS clips are retargeted on demand under the user’s accepted SMPL license. Trajectory-similarity metrics are provided by the JAX-native metrx library (Pompetzki et al., 2024).
+
+## Appendix B. Modular Architecture
+
+The headline architectural decision of LocoMuJoCo is that everything that varies across robots, tasks, and research questions is a plug-in. Section 3.2 lists the slots; this appendix explains why each one is a slot and how they compose into the two canonical use cases of the library — pure RL for legged locomotion and RL-based IL from mocap.
+
+Why plug-ins. Robots in LocoMuJoCo difer in degrees of freedom (Apollo’s hands alone add dozens of DoF over a stripped-down H1), in actuator type (torque vs. PD vs. muscle), and in the observation channels exposed to the policy (e.g. proprioception alone vs. proprioception with foot contacts). Hard-coding any of these would force one Env class per (robot, task) pair and would block the very cross-embodiment experiments that motivate the library. Instead, each environment is parameterized by a small set of orthogonal components:
+
+• Observations. A list of named observation specs is composed at construction time; each spec returns a fixed-shape vector slice (joint positions, joint velocities, base orientation, mimic-site positions, contact forces, . . .), and the environment concatenates them into the policy input. This is what makes the same training script work on every embodiment despite their diferent observation dimensionalities.
+
+• Rewards. The shipped reward classes range from NoReward (pure dynamics) and locomotion-style shaping (TargetXVelocityReward, TargetVelocityGoalReward, LocomotionReward, TargetVelocityTrajReward) to imitation-style MimicReward, which scores tracking of the relative-site quantities described in Appendix H. Switching from velocity tracking to motion imitation is a single argument change.
+
+• Domain randomization. The default randomizer has independent switches for gravity, per-geom friction / stifness / damping, link masses, the root center-of-mass ofset, per-DoF joint friction loss / damping / armature, PD gains, and observation noise. The sampled parameters are stored in a Flax dataclass, so they live in explicit JIT-visible state rather than mutable Python globals.
+
+• Initial-state distribution. Resetting can use the model’s default or a userspecified configuration, a uniform sample over a loaded mocap clip (state-of-the-art for DeepMimic-style training), or from a user-defined sampler. The same hook is what lets us reset to a particular phase of a clip during evaluation when computing trajectory-similarity metrics.
+
+• Termination conditions. The terminal-state handler is selected by name: no termination, a root-height range, a root height and orientation range derived from the dataset, or a bound on the root’s height and tilt error with respect to the current reference frame. Pure-RL setups typically terminate on a fall only; imitation setups also terminate when the policy strays too far from the reference pose, since this is what produces the truncated rollouts visible in the per-clip evaluation metrics.
+
+• Control mode. DefaultControl, which passes the action directly to the model’s actuators (motors or muscles), and PDControl define the action space exposed to the policy. The choice changes both the learning problem and the action dimensionality without touching the policy network or training loop. Torque control is highbandwidth and stif. PD control supplies lower-bandwidth reference targets and is commonly deployed in sim-to-real legged systems, whereas muscle actuation supports biomechanics studies on the SMPL-derived skeletal models. The training procedure for the muscle-actuated (musculo-)skeletal models follows Geiß et al. (2024).
+
+• Terrain. Terrain plug-ins (flat, or a rough heightfield regenerated at reset) modify the world geometry independently of every other slot. This decoupling matters because terrain curricula and rough-ground evaluation are routine in legged-robot research, and LocoMuJoCo lets the user keep everything else fixed — observations, rewards, datasets, randomization — while swapping the ground the robot walks on, so terrain efects are not confounded with changes to the training setup.
+
+Why this scales. Because every plug-in is stateless and keeps its per-environment state in a Flax dataclass, the entire environment step compiles cleanly under jax.jit and jax.vmap. A practitioner studying domain randomization on Booster T1, an IL researcher comparing GAIL and DeepMimic on Apollo, and a biomechanics-leaning user training muscle policies on MjxSkeletonMuscle all share the same training loop and metric pipeline. LocoMuJoCo’s task factories assemble each robot-task pair from the selected plug-ins, so these use cases difer only in configuration. The experiments in this paper (Appendix H) — covering algorithm and embodiment comparisons — are themselves an example of this scalability: every cell in every one of them is the same env core under diferent plug-in choices.
+
+Embodiment provenance and body scaling. The Atlas environment is adapted from Al-Hafez et al. (2023a). Beyond the rigid robots, the (musculo-)skeletal models (SkeletonTorque, SkeletonMuscle) support body scaling: the same skeleton can be instantiated at diferent anthropometric sizes without any change to the observation, reward, or training pipeline — something the fixed-geometry robot embodiments do not permit. This was implemented to support research on diferent human sizes, following Al-Hafez et al. (2024) and Badie et al. (2025).
+
+## Appendix C. Usage Example: Full Agent Loop
+
+Section 3.4 describes the interface in one sentence. Figure 3 shows the full agent loop in both flavours of the library: the CPU loop on top uses the gymnasium-style synchronous API and is what one would use during prototyping, debugging, or rendering; the MJX block below uses jax.jit and jax.vmap to step a batch of n envs environments in parallel on GPU and is what the algorithm implementations bundled with LocoMuJoCo use under the hood. The two share the same observation, reward, termination, and randomization plug-ins (Appendix B); only the step/reset call sites difer. The environment is constructed once and shared by both loops.
+
+## Appendix D. Retargeting Pipeline
+
+This appendix details the three-stage motion-retargeting pipeline sketched in Section 3.3. It builds on the SMPL-fitting approach of H2O (He et al., 2024) and generalizes it to any registered robot. The pipeline transfers human motion-capture data — represented in the SMPL parametric body model (Loper et al., 2015) — onto any registered humanoid robot, and additionally supports robot-to-robot motion transfer via the same SMPL intermediate. Figure 5 shows the data flow. Figure 4 complements it with rendered examples of the transformations performed at each stage.
+
+Notation. We treat SMPL forward kinematics as a map $\Phi : \mathbb { R } ^ { 3 N _ { J } } \times \mathbb { R } ^ { 1 6 } \times \mathbb { R } ^ { 3 } \to \mathbb { R } ^ { N _ { J } \times 3 } \times$ $\mathbb { R } ^ { N _ { J } \times 3 \times 3 }$ that takes a per-joint axis-angle pose $\pmb { \theta } = ( \theta _ { 0 } , \dots , \theta _ { N _ { J } - 1 } )$ , a body shape $\beta \in$ $\mathbb { R } ^ { 1 6 }$ and a root translation $\textbf { t } \in \ \mathbb { R } ^ { 3 }$ , and returns the global joint positions $\mathbf { J } ( \pmb \theta , \beta , \mathbf { t } ) \ \in$ $\mathbb { R } ^ { N _ { J } \times 3 }$ and joint rotation matrices $\mathbf { R } ( \theta , \beta ) \in \mathbb { R } ^ { N _ { J } \times 3 \times 3 }$ . We use SMPL-H $( N _ { J } { = } 5 2$ , including hand chains) to consume the AMASS corpus, but only the 15 body joints participate in retargeting. Each registered robot is annotated with 15 mimic sites, each mapped to one SMPL body joint (Table 2). We index the 15 SMPL body joints by $\pi : \{ 1 , \ldots , 1 5 \} $ $\{ 0 , \ldots , N _ { J } - 1 \}$ and the corresponding robot mimic sites by their MuJoCo site IDs.
+
+```python
+import numpy as np
+import jax
+from loco_mujoco import ImitationFactory
+
+# ---- Shared environment (constructed once) ----
+env, traj = ImitationFactory.make(
+    "MjxUnitreeH1", default_dataset_conf=dict(task="squat"))
+action_dim = env.info.action_space.shape[0]
+
+# ---- CPU agent loop ----
+obs = env.reset()
+for i in range(1000):
+    action = np.random.randn(action_dim)
+    obs, reward, absorbing, done, info = env.step(action)
+    env.render()
+    if absorbing or done:
+    obs = env.reset()
+
+# ---- MJX agent loop (JIT + vmap over n_envs) ----
+env.reset()
+n_envs = 1024
+key = jax.random.key(0)
+keys = jax.random.split(key, n_envs + 1)
+key, env_keys = keys[0], keys[1:]
+
+mjx_reset = jax.jit(jax.vmap(env.mjx_reset, in_axes=(0, None)))
+mjx_step = jax.jit(jax.vmap(env.mjx_step, in_axes=(0, 0, None)))
+sample = jax.jit(jax.vmap(env.sample_action_space))
+
+state = mjx_reset(env_keys, traj)
+for i in range(1000):
+    keys = jax.random.split(key, n_envs + 1)
+    key, action_keys = keys[0], keys[1:]
+    action = sample(action_keys)
+    state = mjx_step(state, action, traj)
+```  
+Figure 3: Full CPU and MJX (JIT + vmap) agent loops. The environment is constructed once at the top and shared by both execution paths; only the step/reset call sites difer.
+
+## D.1 Stage 1: per-robot SMPL shape fitting
+
+The robot is posed in a canonical T-pose using the per-joint ofsets of its configuration file, a forward simulation step yields the global mimic-site positions $\{ { \bf p } _ { i } ^ { \mathrm { r o b o t } } \} _ { i = 1 } ^ { 1 5 } ,$ and we fit an SMPL shape β together with an isotropic body scale $s \in \mathbb { R } _ { > 0 }$ that align the SMPL body in T-pose with the robot (the first column of Figure 4 shows the alignment before and after
+
+<table><tr><td>mimic site</td><td>SMPL joint</td><td>mimic site</td><td>SMPL joint</td></tr><tr><td>pelvis_mimic</td><td>Pelvis</td><td>left_shoulder_mimic</td><td>L_Shoulder</td></tr><tr><td>upper_body_mimic</td><td>Chest</td><td>left_elbow_mimic</td><td>L_Elbow</td></tr><tr><td>head_mimic</td><td>Head</td><td>left_hand_mimic</td><td>L_Wrist</td></tr><tr><td>left_hip_mimic</td><td>L_Hip</td><td>right_shoulder_mimic</td><td>R_Shoulder</td></tr><tr><td>left_knee_mimic</td><td>L_Knee</td><td>right_elbow_mimic</td><td>R_Elbow</td></tr><tr><td>left_foot_mimic</td><td>L_Ankle</td><td>right_hand_mimic</td><td>R_Wrist</td></tr><tr><td>right_hip_mimic</td><td>R_Hip</td><td>right_foot_mimic</td><td>R_Ankle</td></tr><tr><td>right_knee_mimic</td><td>R_Knee</td><td></td><td></td></tr></table>
+
+Table 2: The 15 mimic-site / SMPL-joint correspondences, defined once in loco mujoco/smpl/robot confs/defaults.yaml and reused unchanged across all registered humanoid robots; per-robot files set the T-pose joint ofsets and, where needed, per-site constraint parameters.
+
+optimization for the Unitree G1):
+
+$$
+\min _ {\boldsymbol {\beta}, s} \mathcal {L} _ {\mathrm{shape}} (\boldsymbol {\beta}, s) = \frac {1}{1 5} \sum_ {i = 1} ^ {1 5} \big \| \mathbf {p} _ {i} ^ {\mathrm{robot}} - \mathbf {p} _ {\pi (i)} ^ {\mathrm{smpl}} (\boldsymbol {\theta} _ {T}, \boldsymbol {\beta}, s) \big \| _ {2},\tag{1}
+$$
+
+where $\mathbf { p } _ { j } ^ { \mathrm { s m p l } } ( \pmb { \theta } _ { T } , \beta , s ) = s ( \mathbf { J } _ { j } ( \pmb { \theta } _ { T } , \beta , \mathbf { 0 } ) - \mathbf { J } _ { 0 } ) + \mathbf { p } _ { \mathrm { r o o t } }$ is the rescaled SMPL global joint position relative to the pelvis, $\pmb { \theta } _ { T }$ is the SMPL T-pose, and $\scriptstyle \mathbf { p } _ { \mathrm { r o o t } }$ is a fixed root ofset. We optimize with Adam for 1000 iterations at learning rate 0.05 (shape iterations, shape lr in defaults.yaml). After convergence, for each site i we also record a rigid ofset $( \mathbf { R } _ { i } ^ { \mathrm { s 2 r } } , \mathbf { t } _ { i } ^ { \mathrm { s 2 r } } ) \in S E ( 3 )$ aligning the SMPL joint frame to the robot site frame, a feetheight correction $\Delta z .$ and a head-to-feet height ratio. These are serialized together with $( \beta , s )$ to a per-robot shape optimized.pkl.
+
+## D.2 Stage 2: SMPL motion to robot trajectory
+
+The upper row of Figure 4 visualizes this forward path from an original SMPL motion, through the target-shaped SMPL skeleton and its 15 target frames, to the resulting robot motion. Given an SMPL motion sequence $\{ ( \pmb { \theta } _ { t } , \mathbf { t } _ { t } ) \} _ { t = 0 } ^ { T - 1 } -$ for example an AMASS clip — we evaluate forward kinematics with the fitted shape, $( \mathbf { J } _ { t } , \mathbf { R } _ { t } ) = \Phi ( \pmb { \theta } _ { t } , \beta , \mathbf { t } _ { t } )$ , and apply the per-site ofset to obtain the per-frame target pose of each mimic site in world coordinates:
+
+$$
+\pmb {\tau} _ {i, t} = \mathbf {J} _ {\pi (i), t} - \mathbf {R} _ {\pi (i), t} \mathbf {R} _ {i} ^ {\mathrm{s2r}} \mathbf {t} _ {i} ^ {\mathrm{s2r}},\tag{2}
+$$
+
+$$
+\mathbf {Q} _ {i, t} = \mathbf {R} _ {\pi (i), t} \mathbf {R} _ {i} ^ {\mathrm{s2r}}.\tag{3}
+$$
+
+Two design choices carry the pipeline. First, the per-site ofset $( \mathbf { R } _ { i } ^ { \mathrm { s 2 r } } , \mathbf { t } _ { i } ^ { \mathrm { s 2 r } } )$ — fitted once in Stage 1 and reused for every frame and every clip — absorbs the systematic mismatch between SMPL joint centers (which sit inside the body) and each robot’s mimic sites (typically anchored on the surface), so the per-frame targets are anatomically correct for the robot rather than for SMPL. Second, providing both a target translation $\tau _ { i , t }$ and a target rotation $\mathbf { Q } _ { i , t }$ lets us use MuJoCo’s full SE(3) mjEQ WELD constraint instead of the positiononly mjEQ CONNECT, which is necessary to track orientation-sensitive degrees of freedom (e.g. wrist twist, pelvis yaw) and admits the closed-form inverse that Stage 3 reuses.
+
+![](images/70179ecb8bd13fa63f5d88f1daba4373cf9ed29bfabcf905d25ddb324f0b5790.jpg)  
+Figure 4: Rendered examples of the three retargeting stages. Panels $^ { ( \mathrm { a , e } ) }$ show Stage 1 shape fitting for the Unitree G1 before and after optimization; the mean 15-site correspondence error decreases from 112.1 to 21.8 mm. Panels (b–d) show Stage 2 on a dance sequence: the original SMPL surface, the target-shaped SMPL skeleton (blue) and 15-site target skeleton (orange), and the resulting Fourier GR1T2 trajectory. Panels (f–h) show Stage 3 on a diferent walking sequence: the Unitree H1v2 source trajectory, its H1v2-shaped synthetic SMPL intermediate, and the resulting Booster T1 trajectory. Pale silhouettes show poses 0.5 s before and after the highlighted frame; border colors match the three stages in Figure 5.
+
+For each frame, $( \tau _ { i , t } , \mathbf { Q } _ { i , t } )$ is loaded into a MuJoCo mocap body and connected to the corresponding robot site by an mjEQ WELD equality constraint. Crucially the constraint is soft: MuJoCo’s solver uses parameters solref and solimp to express a damped spring-like impedance that admits finite constraint violation. Per-frame generalized coordinates are then obtained by warm-starting from the previous frame and integrating $N _ { \mathrm { s u b } }$ MuJoCo sub-steps,
+
+$$
+\mathbf {q} _ {t} = \operatorname{mj} _ {-} \operatorname{step} ^ {N _ {\mathrm{sub}}} \left(\mathbf {q} _ {t - 1}; \mathcal {M} _ {\text {robot}}, \{\boldsymbol {\tau} _ {i, t}, \mathbf {Q} _ {i, t} \} _ {i = 1} ^ {1 5}\right),\tag{4}
+$$
+
+with $N _ { \mathrm { s u b } } ~ = ~ 2 5$ by default (motion iterations). Because the same physics step also enforces collisions, joint limits, and (optionally) actuator-torque limits, the resulting trajectory is more likely to be physically feasible: the soft constraint allows the optimizer to favor kinematic plausibility over exact site matching when the two conflict (for instance, when the human reference would force the foot through the floor). This contrasts with rigid-IK retargeters, which can produce ground-penetrating or self-colliding poses.
+
+After processing every frame, if foot geoms are configured for the robot (none by default), a single per-trajectory floor ofset
+
+$$
+\Delta z _ {\mathrm{traj}} = \min \Big (\max \_ h e i g h t \_ a d j u s t m e n t, \min _ {t, g \in \mathcal {G} _ {\mathrm{feet}}} \operatorname{dist} (g, \text {floor}) \Big)\tag{5}
+$$
+
+is subtracted uniformly from the root height, where $\mathcal { G } _ { \mathrm { f e e t } }$ is a per-robot list of foot geoms. This makes the worst frame just barely contact the floor without altering the relative motion. Generalized velocities are recovered by central diferences, $\mathbf v _ { t } = ( 2 \Delta t ) ^ { - 1 } ( \mathbf q _ { t + 1 } - \mathbf q _ { t - 1 } )$
+
+## D.3 Stage 3: robot-to-robot retargeting
+
+To transfer a trajectory $\{ \mathbf { q } _ { t } ^ { \mathrm { s r c } } \} _ { t = 0 } ^ { T - 1 }$ from a source robot onto a target robot, we first invert the source motion back into SMPL coordinates and then route through Stage 2 with the target robot’s shape parameters. The lower row of Figure 4 visualizes this composition for an H1v2 walking trajectory and a Booster T1 target; the blue skeleton is the synthetic SMPL intermediate shared by the two procedures.
+
+Inverting source → SMPL. We run forward kinematics on the source robot to obtain world-frame mimic-site poses $\left( \mathbf { p } _ { i , t } ^ { \mathrm { s r c } } , \mathbf { R } _ { i , t } ^ { \mathrm { s r c } } \right)$ and remove the source robot’s per-site rigid ofset to express them in the SMPL frame:
+
+$$
+\hat {\mathbf {p}} _ {i, t} ^ {\mathrm{src}} = \mathbf {p} _ {i, t} ^ {\mathrm{src}} + \mathbf {R} _ {i, t} ^ {\mathrm{src}} \mathbf {t} _ {i} ^ {\mathrm{s2r,src}},\tag{6}
+$$
+
+$$
+\hat {\mathbf {R}} _ {i, t} ^ {\mathrm{src}} = \mathbf {R} _ {i, t} ^ {\mathrm{src}} (\mathbf {R} _ {i} ^ {\mathrm{s2r,src}}) ^ {- 1}.\tag{7}
+$$
+
+We then optimize an SMPL pose-and-translation trajectory $\{ ( \pmb { \theta } _ { t } , \mathbf { t } _ { t } ) \} _ { t = 0 } ^ { T - 1 }$ to fit these targets while holding the source robot’s shape $\beta ^ { \mathrm { s r c } }$ fixed:
+
+$$
+\mathcal {L} _ {\mathrm{r2r}} = \frac {\lambda_ {p}}{1 5 T} \sum_ {i, t} \| \hat {\mathbf {p}} _ {i, t} ^ {\mathrm{src}} - \mathbf {J} _ {\pi (i), t} (\pmb {\theta} _ {t}, \beta^ {\mathrm{src}}, \mathbf {t} _ {t}) \| _ {2} + \frac {\lambda_ {r}}{1 5 T} \sum_ {i, t} \arccos \Bigl (\frac {\mathrm{tr} \bigl (\mathbf {R} _ {\pi (i) , t} ^ {\top} \hat {\mathbf {R}} _ {i , t} ^ {\mathrm{src}} \bigr) - 1}{2} \Bigr),\tag{8}
+$$
+
+with default weights $\lambda _ { p } { = } 1 . 0$ and $\lambda _ { r } { = } 0 . 1$ . The position term uses Euclidean distance between SMPL global joints and source-frame targets; the rotation term is the geodesic angle between their orientations. We optimize with Adam for 400 iterations (pose iterations, pose lr=0.005), and apply a 1-D Gaussian smoothing kernel on the body-pose component of θ each step to suppress jitter (kernel size=3, σ=0.5).
+
+The output is a synthetic SMPL motion clip $\left\{ ( \pmb { \theta } _ { t } , \mathbf { t } _ { t } ) \right\}$ that is dynamically equivalent — at the level of the 15 correspondences — to the source robot’s motion. We then route it through Stage 2 using the target robot’s $\beta ^ { \mathrm { t g t } }$ to obtain the target trajectory $\{ \mathbf { q } _ { t } ^ { \mathrm { t g t } } \}$
+
+## Appendix E. Algorithms
+
+LocoMuJoCo ships a suite of compact JAX/Flax learning algorithms spanning pure RL and IL. Each algorithm is implemented in one module, <algo> jax.py, in the package loco mujoco/algorithms/ (the additional algorithms are in its experimental subpackage) on top of a small set of shared networks and base classes, with the training loop and policy update fused into a single JIT-compiled function built from lax.scan so that environment stepping, advantage computation, and gradient updates execute on-device without Python overhead. The following short summaries describe what each algorithm does and the role it plays in the benchmark.
+
+![](images/984b15fae50a4f7a2d1642ecc8e299673021dd1ff734df98c44730ec0b54d21a.jpg)  
+Figure 5: Three-stage retargeting pipeline. Stage 1 fits a per-robot SMPL shape $\beta ^ { \mathrm { t g t } }$ and per-site rigid ofsets in a canonical T-pose (run once per robot, equation (1)). Stage 2 turns any SMPL motion clip into a target-robot trajectory by stepping MuJoCo with soft mjEQ WELD equality constraints between mocap targets and mimic sites (equation (4)); SMPL forward kinematics here uses the target robot’s own $\beta ^ { \mathrm { t g t } }$ . Contacts and joint limits are enforced jointly with constraint satisfaction, which prevents the ground-penetrating poses that rigid-IK retargeters routinely produce. Stage 3 (optional) maps a source-robot trajectory back into SMPL coordinates via gradient descent on equation (8) using the source robot’s $\beta ^ { \mathrm { s r c } }$ ; the resulting synthetic SMPL clip is then fed into Stage 2 with the target robot’s $\beta ^ { \mathrm { t g t } }$
+
+## E.1 Core algorithms
+
+PPO (Schulman et al., 2017). Proximal Policy Optimization is an on-policy actorcritic policy-gradient method that improves the policy by maximizing a clipped surrogate objective, bounding how much the policy can shift per update. PPO is the default pure-RL backbone in LocoMuJoCo and is also reused inside the imitation algorithms below as the policy optimizer when they need an inner-loop policy update. It also trains data-parallel on several GPUs: each device steps an equal share of the environments and the gradients are averaged across devices, as in the training script of loco-mujoco-real.
+
+GAIL (Ho and Ermon, 2016). Generative Adversarial Imitation Learning trains a discriminator to distinguish expert state(-action) pairs from policy-generated ones and uses the log-discriminator output as the reward signal for the policy (optimized by PPO in our implementation). GAIL is useful in IL settings where expert demonstrations are available but a hand-crafted task reward is not, and where exact frame-by-frame tracking is unnecessary.
+
+AMP (Peng et al., 2021). Adversarial Motion Priors combines a GAIL-style discriminator on state transitions (encoding motion style) with an additive user-supplied task reward (e.g. velocity tracking). The agent learns to pursue the task while staying within the distribution of stylistic motion shown in the reference dataset. AMP is the recommended algorithm for stylized RL on LocoMuJoCo’s humanoid envs.
+
+DeepMimic (Peng et al., 2018). DeepMimic is a tracking-style IL method that rewards the policy, at every step, for staying close to a reference motion clip. LocoMuJoCo trains it with PPO and the MimicReward class, a DeepMimic-style reward over joint positions and velocities and the root-relative positions, orientations, and velocities of the mimic sites; it is the default IL training signal for the curated humanoid mocap clips.
+
+SuperMimic (Liao et al., 2026). A model-based motion-tracking method: a world model is fitted to simulator transitions, and the deterministic policy is improved by backpropagating through short imagined rollouts of that model, with a TD(λ) critic bootstrapping the tail. In our implementation an imagined step is an ordinary environment step in which the learned dynamics replace the simulator, so observations, rewards, and terminations are the environment’s own functions and the algorithm is independent of the robot, the observation, and the reward. Appendix H.4 reports results on the two real-robot environments.
+
+## E.2 Additional algorithms
+
+SAC (Haarnoja et al., 2018). Soft Actor-Critic is an of-policy maximum-entropy actor-critic that simultaneously maximizes expected return and policy entropy. It is typically more sample-eficient than PPO on continuous control and is ofered as an of-policy alternative for users with a tighter sample budget.
+
+TD3 (Fujimoto et al., 2018). Twin Delayed Deep Deterministic Policy Gradient is an of-policy deterministic actor-critic that mitigates value-function over-estimation via twin critics, target-policy smoothing, and delayed policy updates. Provided as a deterministicpolicy counterpoint to SAC.
+
+S2PG (Al-Hafez et al., 2024). Stochastic Stateful Policy Gradient splits a stateful policy into a stochastic policy-state transition kernel and a stateless policy, and trains both without backpropagation through time. This avoids the gradient instability of full BPTT while still letting the policy exploit memory. Useful for partially-observable variants of the locomotion tasks.
+
+BPTT-PPO. A PPO variant that backpropagates the policy-gradient signal through an unrolled time horizon, supporting fully recurrent (LSTM/GRU) policies. The training loop unrolls $T _ { \mathrm { b p t t } }$ steps in lax.scan per gradient step. Useful when the task genuinely requires long-range memory.
+
+History-aware PPO. A PPO variant whose observation is augmented with a fixedlength stack of past observations and actions, encoded either by an MLP or by a Transformer block (multi-head self-attention with layer norm). This exposes short-horizon context to the policy without the optimization cost of full recurrence and is a pragmatic middle ground between standard PPO and BPTT-PPO when memory needs are moderate.
+
+DAgger Distillation. Dataset Aggregation implements teacher–student distillation (Ross et al., 2011). At rollout time each parallel env independently picks the student or the teacher with probability β (sticky for a random number of steps), but every transition is labeled with the teacher’s action on the visited observation. The student is then trained supervised — minibatch NLL of the student Gaussian at the stored teacher action. This is LocoMuJoCo’s default distillation pipeline, used to compress per-clip or per-embodiment PPO specialists into a single multi-task generalist.
+
+## Appendix F. Testing and Continuous Integration
+
+LocoMuJoCo ships a pytest suite of more than 500 tests that covers the environments on both backends, the observation, reward, control, domain-randomization, and termination components, the trajectory and dataset pipeline, the retargeting pipeline, the rendering and export tools, and a short training run of every included algorithm. The suite reaches 93 % line coverage of the loco mujoco package, measured with coverage.py. The measurement excludes code that cannot run in an automated, ofline setting: the interactive OpenGL viewer, the environments that require the license-restricted MyoSkeleton model, the entry points that download datasets or read the license-restricted SMPL model files, and the package init files; the exclusions are listed with their rationale in pyproject.toml. Tests that would download motion data use synthetic trajectories instead, so the suite needs no network access.
+
+A GitHub Actions workflow installs the package with its optional extras and runs the suite with coverage on every push and pull request to the master and dev branches, except for the task-factory tests, which load the hosted datasets.
+
+## Appendix G. Simulation Throughput
+
+Table 3 reports the throughput of the three simulation backends of LocoMuJoCo on one robot model, the Unitree G1 of loco-mujoco-real, with mjlab (Zakka et al., 2026) as a reference. mjlab’s Unitree G1 has identical bodies, masses, actuators, and 34 collision geometries with self-collision. All configurations use MuJoCo 3.11 and run at 50 Hz with four physics substeps of 5 ms, the Euler integrator (mjlab’s default is implicitfast), and the same solver settings. We follow mjlab’s benchmark protocol: zero actions, 50 warmup and 200 timed environment steps (2,000 on the CPU). mjlab runs its flat-ground G1 velocity task with its domain randomization turned of, and LocoMuJoCo its velocity task with the same robot. The reduced-contact variant keeps only the contacts between the 14 foot spheres and the floor, set identically in both frameworks (mjlab’s FEET ONLY COLLISION). Each entry is the mean of five measurements in each of two passes run in opposite order, which agree within 2 % from 1,024 environments on and within 5 % otherwise. The CPU backend runs one environment per process. The measurements cover a single embodiment on a single GPU.
+
+<table><tr><td rowspan="2">framework</td><td rowspan="2">backend</td><td colspan="5">parallel environments</td></tr><tr><td>1</td><td>8</td><td>1,024</td><td>4,096</td><td>8,192</td></tr><tr><td colspan="7">full self-collision</td></tr><tr><td>mjlab</td><td>MjWarp</td><td>211</td><td>—</td><td>135,086</td><td>315,642</td><td>391,556</td></tr><tr><td>LocoMuJoCo</td><td>MuJoCo (CPU)</td><td>2,147</td><td>15,805</td><td>—</td><td>—</td><td>—</td></tr><tr><td>LocoMuJoCo</td><td>MJX</td><td>169</td><td>—</td><td>12,667</td><td>9,388</td><td>8,974</td></tr><tr><td>LocoMuJoCo</td><td>MjWarp</td><td>530</td><td>—</td><td>251,472</td><td>442,715</td><td>487,553</td></tr><tr><td colspan="7">reduced contacts (feet-floor only)</td></tr><tr><td>mjlab</td><td>MjWarp</td><td>212</td><td>—</td><td>136,799</td><td>319,886</td><td>401,512</td></tr><tr><td>LocoMuJoCo</td><td>MuJoCo (CPU)</td><td>2,209</td><td>16,169</td><td>—</td><td>—</td><td>—</td></tr><tr><td>LocoMuJoCo</td><td>MJX</td><td>183</td><td>—</td><td>61,097</td><td>79,935</td><td>83,899</td></tr><tr><td>LocoMuJoCo</td><td>MjWarp</td><td>533</td><td>—</td><td>252,548</td><td>447,007</td><td>493,827</td></tr><tr><td colspan="7">MJX-optimized settings (legacy G1 of LocoMuJoCo)</td></tr><tr><td>LocoMuJoCo</td><td>MJX</td><td>386</td><td>—</td><td>232,833</td><td>343,052</td><td>324,378</td></tr><tr><td>LocoMuJoCo</td><td>MjWarp</td><td>705</td><td>—</td><td>358,874</td><td>694,743</td><td>770,061</td></tr></table>
+
+Table 3: Environment steps per second on the Unitree G1 of loco-mujoco-real for the three backends of LocoMuJoCo 1.2.0 and for mjlab 1.6.1, by number of parallel environments, with full self-collision and with only the foot–floor contacts. The last two rows use LocoMuJoCo’s legacy G1 model instead. A dash marks a configuration that was not measured. Hardware: one NVIDIA RTX 4090 (24 GB) and an Intel Core i9-13900KF. mjlab uses MuJoCo Warp 3.11.0, Warp 1.19.0, and PyTorch 2.14.1; LocoMuJoCo uses MJX 3.11.0, which bundles its own copy of MuJoCo Warp, with Warp 1.14.0, JAX 0.10.1, and loco-mujoco-real 0.1.0. All GPU libraries are their CUDA 12 builds.
+
+With full self-collision, MjWarp reaches $4 . 9 \times 1 0 ^ { 5 }$ environment steps per second, 20 to 54× more than MJX. MJX evaluates all 502 candidate geometry pairs of this robot in every step, whereas MjWarp’s broad phase discards distant ones. Restricting the contacts to the feet, which leaves 14 pairs, makes MJX 4.8 to 9.3× faster, but changes MjWarp, mjlab, and the CPU backend by less than 3 %. With a single environment the GPU backends are latency-bound and the CPU backend is the fastest; with eight processes it scales 7.4×. MJX can be sped up considerably with MJX-specific settings and very simple collision models: the legacy G1 of LocoMuJoCo reaches $3 . 4 \times 1 0 ^ { 5 }$ environment steps per second with MJX.
+
+At the environment level, LocoMuJoCo’s MjWarp backend is 1.9× faster than mjlab at 1,024 environments, 1.4× at 4,096, and 1.25× at 8,192. Environment-level throughput includes each task’s own logic, which is heavier in mjlab’s velocity task. As shipped, with its domain randomization and implicitfast, mjlab reaches 98,000, 244,000, and 313,000 environment steps per second at 1,024, 4,096, and 8,192 environments.
+
+![](images/b3f5d37716d53d7cdf956bea978e0ae05f6e18652613590e8bb5f101281f04df.jpg)  
+Figure 6: PPO + DeepMimic on 11 embodiments, 13 clips, and 5 seeds. Top: aggregate training return and episode length per embodiment (mean ±std). Bottom: final joint-position Euclidean, DTW, and Fr´echet errors per embodiment (log scale; lower is better).
+
+## Appendix H. Experimental Details
+
+This appendix reports the experiments run with LocoMuJoCo. Experiments 1 to 3 are simulation benchmarks on the same 13 clips of the native LocoMuJoCo dataset: experiment 1 compares embodiments, experiments 2 and 3 compare algorithms on one humanoid. Experiment 4 trains one multi-clip policy per robot on the real-robot environments of loco-mujoco-real and shows the deployment on hardware.
+
+## H.1 Experiment 1: PPO + DeepMimic across all humanoids
+
+The headline experiment of Figure 6: per-clip specialists trained on every (env, dataset) cell, 11 embodiments, 13 clips, and 5 seeds each.
+
+Trajectory-similarity measures. Return and episode length say how long a policy survives, not how closely it follows the reference motion. LocoMuJoCo therefore compares each evaluation rollout with the reference clip it tracks, as two time series of one kinematic quantity, using three measures from the metrx library (Pompetzki et al., 2024). The Euclidean measure is the mean Euclidean distance between rollout and reference at the same time step, so it also penalizes a motion that is correct but early or late. Dynamic time warping (Sakoe and Chiba, 1978) first aligns the two series with a monotone time warp and sums the distances along the best alignment, which makes it insensitive to such timing ofsets. The discrete Fr´echet distance (Eiter and Mannila, 1994) uses the same kind of alignment but takes the largest distance along it instead of the sum, so it reports the worst deviation of the rollout rather than the average one. All three are JIT-compiled, evaluated in parallel over the evaluation environments, and averaged over rollouts; they are logged during training next to the return (Figure 8) and reported at the end of training (Figure 6, bottom).
+
+![](images/09cd39187942f7a9d723bff9a22db1ce78a0dc8be721b5d9fdc782b7fa934543.jpg)  
+Figure 7: Per-env distribution of final-step validation error on three further quantities (rows) under the three trajectory-similarity measures (columns), complementing the joint-position panel of Figure 6. Each box aggregates 5 seeds × 13 mocap clips for one env (whiskers at 1.5×IQR, log y).
+
+Validation quantities. The trajectory-similarity measures are evaluated here on five of the 11 supported per-step quantities. Joint positions (qpos, shown in Figure 6) and joint velocities (qvel) are the raw configuration-space states. The remaining three are computed at a small set of mimic sites — markers welded to body links (head, hands, feet, pelvis, etc.) that mirror the SMPL-joint correspondences used by the retargeting pipeline (Appendix D). Their world poses are expressed in the root frame of the robot, giving rootrelative site positions (site rpos), root-relative orientations (site rrotvec, in axis-angle), and root-relative linear velocities (site rvel). The relative-site quantities are the dominant signal in the DeepMimic reward used for training: by construction the policy is rewarded for matching end-efector trajectories relative to the body, which is what makes the imitation transfer across embodiments with diferent proportions. Figure 7 extends the validation panels of Figure 6 to qvel, site rpos, and site rvel; site rrotvec is shown over training in Figure 8.
+
+![](images/bc4f1db2f644c1b7e1876038acde1a0dd529755539617c80bfe382e1f2eb47a2.jpg)  
+Figure 8: Per-env validation error over training, with rows for joint positions (qpos, mostly radians), relative site positions (site rpos, meters), and relative site rotations (site rrotvec, axis-angle radians); columns are the three trajectory-similarity measures. Each line is the median across the 5 seeds and 13 mocap clips contributing to each (env, time) point; bands are the inter-quartile range.
+
+Final error per embodiment. In Figure 7, the relative-site rows are the quantities that drive the DeepMimic reward signal during training. Across all rows the per-env ordering is highly consistent with the joint-position panel of Figure 6, supporting the observation that the three measures rank converged PPO + DeepMimic policies similarly.
+
+Error over training. Figure 8 shows the validation error over training. We use median/IQR rather than mean/CI because a small number of failure-mode seeds has a final-step error 50–500× that of the typical seed, which would otherwise dominate the mean. The perenv ordering is highly consistent across measures and quantities, supporting the empirical observation that the three measures rank converged PPO + DeepMimic policies similarly at the (env, dataset) level.
+
+## H.2 Experiment 2: PPO vs. SAC vs. TD3 on UnitreeH1
+
+An algorithm-side ablation on a single humanoid, isolating the on-policy / of-policy / deterministic distinction from embodiment confounds. We trained the three algorithms on UnitreeH1 across all 13 native clips (walk, run, squat, stepinplace1–3, onestepleft, onestepright, onestepside1–2, onesteplong, onehopforward, highknee), 5 seeds per cell. Same hyper-parameter file, same DeepMimic reward, same 1000-step horizon. Figure 9 aggregates all 65 runs per algorithm into a single mean ± std curve over training. PPO reaches the highest return (∼1530), SAC follows at ∼1260, and TD3 trails at ∼1080; episode lengths converge to ∼900–925 for all three. This result is one reason LocoMuJoCo ships PPO + DeepMimic as the default training recipe.
+
+![](images/b2ae224d0e2f5a2f82a4cba1fbdd151b30d916052bf4220e2f9f49a3881809eb.jpg)  
+Figure 9: Algorithm comparison on UnitreeH1 (experiment 2): PPO vs. SAC vs. TD3 aggregated across all 13 native clips and 5 seeds (65 runs per algorithm). Left: training return. Right: training episode length. Lines are algorithm-level mean over (task, seed) at each binned step, bands are ± std.
+
+## H.3 Experiment 3: PPO vs. GAIL on UnitreeH1
+
+We compare on-policy DeepMimic (PPO) against adversarial imitation (GAIL) on the same UnitreeH1 environment. We use 12 of the 13 clips of experiment 2 (onestepside1 is dropped because the GAIL batch was one seed short on that clip), 5 seeds per cell. Same hyperparameter file, same 1000-step horizon; the only training-time diference is whether the reward is the DeepMimic mocap-tracking signal (PPO) or the discriminator output (GAIL). Figure 10 mirrors the layout of Figure 6, but the box plots compare the two algorithms instead of the 11 embodiments. PPO converges to a ∼2× higher training return and a ∼5–10× lower joint-position validation error across all three trajectory-similarity measures. The gap is consistent with the well-known dificulty of training a discriminator on highdimensional whole-body humanoid trajectories without an explicit per-step shaping signal; LocoMuJoCo ships GAIL primarily as a comparison baseline and a starting point for AMPstyle hybrids.
+
+## H.4 Experiment 4: SuperMimic on the real-robot environments
+
+Table 4 reports SuperMimic on the two real-robot environments of loco-mujoco-real, in simulation. For each robot, one policy is trained on all 40 LAFAN1 clips for $1 . 5 3 \times 1 0 ^ { 8 }$ environment steps with 4,096 parallel MjWarp environments, domain randomization, pushes, and self-collisions, which takes about 50 minutes on one RTX 6000 Ada. The trained policy then plays every clip once from its first frame, without noise or randomization; a clip counts as failed if the rollout terminates before its end.
+
+![](images/cbc1e468e401c8f4fd6fee73933cf9c2db2997306a50b490f873a1f9d236df4c.jpg)
+
+![](images/37051caf4182c143f466d9b06c6960b4ee7d4c782ab48ea4a9a2cd4565c813e4.jpg)
+
+![](images/7313e2a04e01f282f575bea8bb537bb90620c7e70487be709825e94116cd9cd0.jpg)
+
+![](images/7eb400e3cf786b2f6ca28b0c5f645658b3b9f15f277a390ebdc4f75869ed5ab7.jpg)
+
+![](images/4f23eba27a64667003bea9be5b3cf9f065811b5b96b4fb5c4f7735fff538ee2e.jpg)  
+Figure 10: PPO vs. GAIL on UnitreeH1 (experiment 3), aggregated across 12 native clips (onestepside1 excluded) and 5 seeds per algorithm. Top: training return and training episode length, mean ± std band over (task, seed) at each binned step (capped at $3 \times 1 0 ^ { 8 }$ steps). Bottom: per-algorithm distribution of the final-step validation error, one panel per trajectory-similarity measure (Euclidean / DTW / Fr´echet); within each panel, PPO and GAIL boxes are paired across three kinematic quantities — joint positions (qpos), site rotations (site rrotvec, axisangle), and site positions (site rpos). Each box aggregates 5 seeds × 12 clips for one algorithm (whiskers at $1 . 5 { \times } \mathrm { I Q R }$ , log y).
+
+Domain randomization for sim-to-real transfer. Because these policies are meant to run on hardware, training relies heavily on domain randomization, all of it built from LocoMuJoCo’s domain-randomization plug-in and identical for the two robots. It targets sensing and disturbances rather than the simulated plant: (i) random pushes, a velocity impulse on the root of up to $0 . 5 \mathrm { m } / \mathrm { s }$ horizontally and 0.78 rad/s in yaw every 1–3 s; (ii) a per-episode encoder bias of up to $\pm 0 . 0 2$ rad on the measured joint positions; (iii) uniform noise on the measured joint positions (±0.01 rad), joint velocities $( \pm 0 . 5 \mathrm { r a d / s } )$ , and base angular velocity (±0.2 rad/s); (iv) a friction coeficient drawn from [0.3, 1.2] for all colliding robot geometries; and (v) an ofset of the pelvis center of mass of up to 5 cm per axis. Noise and bias are applied only to the actor’s observations, while the critic receives the clean values. The evaluation in Table 4 switches all of this of, so it measures tracking quality rather than robustness.
+
+![](images/768a96c70e784b3de96cca2e5adf4baaf5ff3aee9b32cba9c210bf60ea3c9705.jpg)  
+Figure 11: Simulation and real robot for the motion of Figure 2. Each panel shows the simulation (left) and the real AgiBot X2 Ultra (right) at the same time of the motion.
+
+<table><tr><td>Robot</td><td>Normalized return</td><td>Failed clips (of 40)</td><td>Completed frames</td></tr><tr><td>AgiBot X2 Ultra</td><td> $0.776 \pm 0.004$ </td><td>1,0,0</td><td>99.7%</td></tr><tr><td>Unitree G1</td><td> $0.674 \pm 0.020$ </td><td>2,0,1</td><td>99.1%</td></tr></table>
+
+Table 4: SuperMimic on all 40 LAFAN1 clips with one policy per robot, trained for 1.53 × $1 0 ^ { 8 }$ environment steps. The normalized return is the undiscounted reward sum divided by the maximum attainable one, averaged over clips (mean ± standard deviation over three seeds); failed clips are listed per seed, and completed frames are averaged over seeds.
+
+From checkpoint to robot. loco-mujoco-real exports a checkpoint to a bundle: the network weights, the controller settings, and the reference motions, which run with NumPy and MuJoCo alone. Three checks precede hardware. A validation script confirms that the bundle reproduces the observations and actions of the training environment term by term, and a rollout in plain MuJoCo tests the export. In sim-to-sim, the controller and a simulated robot then run as separate processes over the robot’s own middleware (AgiBot’s AimDK on ROS 2, or the Unitree SDK), so the controller already acts on delayed state.
+
+Control loop. The policy runs at 50 Hz. Its observation uses onboard sensing only: joint positions and velocities from the encoders, projected gravity and angular velocity from the pelvis IMU, the previous action, and the reference frame to track. There is no base-state estimate and no external tracking. Actions are joint-position targets, tracked by the drives own PD loop with the stifness and damping of the simulated position servos. On the X2 Ultra, a policy step takes about 2 ms on state that is about 2 ms old; the controller runs on a laptop over Ethernet or on the robot’s own computer, and damps the robot on stale state, a joint past its limits, or a pelvis tilt beyond about 60<sup>◦</sup>.
+
+Hardware run. Figure 11 shows simulation and robot side by side for the motion of Figure 2, a 43 s routine of chained BONES-SEED (Bones Studio, 2026) dance clips. The policy is not one of Table 4: SuperMimic trained it in the same environment on all of BONES-SEED, where it completes 99.9 % of the clips in simulation after $4 . 5 6 \times 1 0 ^ { 8 }$ environment steps.
+
+## References
+
+Firas Al-Hafez, Davide Tateo, Oleg Arenz, Guoping Zhao, and Jan Peters. LS-IQ: Implicit reward regularization for inverse reinforcement learning. In International Conference on Learning Representations (ICLR), 2023a. URL https://arxiv.org/abs/2303.00599.
+
+Firas Al-Hafez, Guoping Zhao, Jan Peters, and Davide Tateo. LocoMuJoCo: A comprehensive imitation learning benchmark for locomotion. In 6th Robot Learning Workshop, NeurIPS, 2023b. URL https://arxiv.org/abs/2311.02496.
+
+Firas Al-Hafez, Guoping Zhao, Jan Peters, and Davide Tateo. Time-eficient reinforcement learning with stochastic stateful policies. In International Conference on Learning Representations (ICLR), 2024. URL https://arxiv.org/abs/2311.04082.
+
+Jo˜ao Pedro Ara´ujo, Yanjie Ze, Pei Xu, Jiajun Wu, and C. Karen Liu. Retargeting matters: General motion retargeting for humanoid motion tracking. In IEEE International Conference on Robotics and Automation (ICRA), pages 6097–6104, 2026. doi: 10.1109/ICRA57385.2026.11697263. URL https://arxiv.org/abs/2510.02252.
+
+Nadine Badie, Firas Al-Hafez, Pierre Schumacher, Daniel F. B. Haeufle, Jan Peters, and Syn Schmitt. Bioinspired morphology and task curricula for learning locomotion in bipedal muscle-actuated systems. Communications Engineering, 4(1):115, 2025. doi: 10.1038/ s44172-025-00443-0. URL https://www.nature.com/articles/s44172-025-00443-0.
+
+Bones Studio. BONES-SEED: Skeletal everyday embodiment dataset. https:// huggingface.co/datasets/bones-studio/seed, 2026.
+
+Vittorio Caggiano, Huawei Wang, Guillaume Durandau, Massimo Sartori, and Vikash Kumar. MyoSuite: A contact-rich simulation suite for musculoskeletal motor control. In Proceedings of the 4th Annual Learning for Dynamics and Control Conference (L4DC), volume 168 of Proceedings of Machine Learning Research, pages 492–507. PMLR, 2022. URL https://proceedings.mlr.press/v168/caggiano22a.html.
+
+Thomas Eiter and Heikki Mannila. Computing discrete Fr´echet distance. Technical Report CD-TR 94/64, Christian Doppler Laboratory for Expert Systems, TU Vienna, 1994.
+
+Scott Fujimoto, Herke van Hoof, and David Meger. Addressing function approximation error in actor-critic methods. In International Conference on Machine Learning (ICML), volume 80 of Proceedings of Machine Learning Research, pages 1587–1596. PMLR, 2018. URL https://proceedings.mlr.press/v80/fujimoto18a.html.
+
+Henri-Jacques Geiß, Firas Al-Hafez, Andre Seyfarth, Jan Peters, and Davide Tateo. Exciting action: Investigating eficient exploration for learning musculoskeletal humanoid locomotion. In 2024 IEEE-RAS 23rd International Conference on Humanoid Robots (Humanoids), pages 205–212. IEEE, 2024. doi: 10.1109/HUMANOIDS58906.2024.10769835. URL https://arxiv.org/abs/2407.11658.
+
+Tuomas Haarnoja, Aurick Zhou, Pieter Abbeel, and Sergey Levine. Soft actor-critic: Ofpolicy maximum entropy deep reinforcement learning with a stochastic actor. In International Conference on Machine Learning (ICML), volume 80 of Proceedings of Machine
+
+Learning Research, pages 1861–1870. PMLR, 2018. URL https://proceedings.mlr. press/v80/haarnoja18b.html.
+
+F´elix G. Harvey, Mike Yurick, Derek Nowrouzezahrai, and Christopher Pal. Robust motion in-betweening. ACM Transactions on Graphics, 39(4), 2020. doi: 10.1145/3386569. 3392480. URL https://doi.org/10.1145/3386569.3392480.
+
+Tairan He, Zhengyi Luo, Wenli Xiao, Chong Zhang, Kris Kitani, Changliu Liu, and Guanya Shi. Learning human-to-humanoid real-time whole-body teleoperation. In IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), pages 8944–8951, 2024. doi: 10.1109/IROS58592.2024.10801984.
+
+Jonathan Ho and Stefano Ermon. Generative adversarial imitation learning. In Advances in Neural Information Processing Systems (NeurIPS), volume 29, pages 4565–4573. Curran Associates, Inc., 2016. URL https://proceedings.neurips.cc/paper\_files/paper/ 2016/hash/cc7e2b878868cbae992d1fb743995d8f-Abstract.html.
+
+Chung Min Kim, Brent Yi, Hongsuk Choi, Yi Ma, Ken Goldberg, and Angjoo Kanazawa. PyRoki: A modular toolkit for robot kinematic optimization. In IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), pages 1312–1319, 2025. doi: 10. 1109/IROS60139.2025.11246651. URL https://arxiv.org/abs/2505.03728.
+
+Qiayuan Liao, Yiyang Shao, Junfeng Long, Kevin Zakka, Roberto Horowitz, Pieter Abbeel, and Koushil Sreenath. SuperMimic: Scaling humanoid whole-body control with one diferentiable world model. In Conference on Robot Learning (CoRL), 2026. URL https: //arxiv.org/abs/2610.28480.
+
+Matthew Loper, Naureen Mahmood, Javier Romero, Gerard Pons-Moll, and Michael J. Black. SMPL: A skinned multi-person linear model. ACM Transactions on Graphics, 34(6):248:1–248:16, 2015. doi: 10.1145/2816795.2818013. URL https://doi.org/10. 1145/2816795.2818013.
+
+Zhengyi Luo, Jinkun Cao, Alexander Winkler, Kris Kitani, and Weipeng Xu. Perpetual humanoid control for real-time simulated avatars. In IEEE/CVF International Conference on Computer Vision (ICCV), pages 10861–10870, 2023. doi: 10.1109/ICCV51070. 2023.01000.
+
+Naureen Mahmood, Nima Ghorbani, Nikolaus F. Troje, Gerard Pons-Moll, and Michael J. Black. AMASS: Archive of motion capture as surface shapes. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV), pages 5441–5450, 2019. doi: 10.1109/ICCV.2019.00554. URL https://doi.org/10.1109/ICCV.2019. 00554.
+
+Xue Bin Peng. MimicKit: A reinforcement learning framework for motion imitation and control. arXiv preprint arXiv:2510.13794, 2025. URL https://arxiv.org/abs/2510. 13794.
+
+Xue Bin Peng, Pieter Abbeel, Sergey Levine, and Michiel van de Panne. DeepMimic: Example-guided deep reinforcement learning of physics-based character skills. ACM
+
+Transactions on Graphics, 37(4):1–14, 2018. doi: 10.1145/3197517.3201311. URL https://doi.org/10.1145/3197517.3201311.
+
+Xue Bin Peng, Ze Ma, Pieter Abbeel, Sergey Levine, and Angjoo Kanazawa. AMP: Adversarial motion priors for stylized physics-based character control. ACM Transactions on Graphics, 40(4):1–20, 2021. doi: 10.1145/3450626.3459670. URL https: //doi.org/10.1145/3450626.3459670.
+
+Kay Pompetzki, Theo Gruner, Firas Al-Hafez, An T. Le, and Jan Peters. MetrX: A JAX-based collection of similarity and statistical measures for accelerated data analysis. https://github.com/pompetzki/metrx, 2024. Open-source software.
+
+St´ephane Ross, Geofrey J. Gordon, and J. Andrew Bagnell. A reduction of imitation learning and structured prediction to no-regret online learning. In International Conference on Artificial Intelligence and Statistics (AISTATS), volume 15 of Proceedings of Machine Learning Research, pages 627–635. PMLR, 2011. URL https://proceedings. mlr.press/v15/ross11a.html.
+
+Hiroaki Sakoe and Seibi Chiba. Dynamic programming algorithm optimization for spoken word recognition. IEEE Transactions on Acoustics, Speech, and Signal Processing, 26(1): 43–49, 1978.
+
+John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov. Proximal policy optimization algorithms. arXiv preprint arXiv:1707.06347, 2017. URL https: //arxiv.org/abs/1707.06347.
+
+Clemens Schwarke, Mayank Mittal, Nikita Rudin, David Hoeller, and Marco Hutter. RSL-RL: A learning library for robotics research. arXiv preprint arXiv:2509.10771, 2025. URL https://arxiv.org/abs/2509.10771.
+
+Carmelo Sferrazza, Dun-Ming Huang, Xingyu Lin, Youngwoon Lee, and Pieter Abbeel. HumanoidBench: Simulated humanoid benchmark for whole-body locomotion and manipulation. In Robotics: Science and Systems (RSS), 2024. doi: 10.15607/RSS.2024.XX.061. URL https://doi.org/10.15607/RSS.2024.XX.061.
+
+Chen Tessler, Yifeng Jiang, Xue Bin Peng, Erwin Coumans, Yi Shi, Haotian Zhang, Davis Rempe, Gal Chechik, and Sanja Fidler. ProtoMotions3: An open-source framework for humanoid simulation and control. https://github.com/NVlabs/ProtoMotions/, 2025. GitHub repository.
+
+Emanuel Todorov, Tom Erez, and Yuval Tassa. MuJoCo: A physics engine for modelbased control. In IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), pages 5026–5033, 2012. doi: 10.1109/IROS.2012.6386109. URL https://doi. org/10.1109/IROS.2012.6386109.
+
+Lujie Yang, Xiaoyu Huang, Zhen Wu, Angjoo Kanazawa, Pieter Abbeel, Carmelo Sferrazza, C. Karen Liu, Rocky Duan, and Guanya Shi. OmniRetarget: Interaction-preserving data generation for humanoid whole-body loco-manipulation and scene interaction. In IEEE
+
+International Conference on Robotics and Automation (ICRA), pages 11691–11698, 2026. doi: 10.1109/ICRA57385.2026.11696487. URL https://arxiv.org/abs/2509.26633.
+
+Kevin Zakka, Qiayuan Liao, Brent Yi, Louis Le Lay, Koushil Sreenath, and Pieter Abbeel. mjlab: A lightweight framework for GPU-accelerated robot learning. arXiv preprint arXiv:2601.22074, 2026. URL https://arxiv.org/abs/2601.22074.

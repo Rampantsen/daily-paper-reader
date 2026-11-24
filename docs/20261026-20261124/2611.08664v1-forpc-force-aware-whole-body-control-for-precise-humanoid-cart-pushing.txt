@@ -1,0 +1,468 @@
+# ForPC: Force-Aware Whole-Body Control for Precise Humanoid Cart Pushing
+
+ZhenYu Zou, Xing Liu, ShiChuang Wang, YunLong Dong, LiNan Deng, Feng Hua, Jun Wan, Cheng Cheng
+
+Project Website: https://roboforpc.github.io/
+
+## Abstract
+
+Humanoid robots are expected to take over strenuous material handling in manufacturing, logistics, and healthcare, where operating existing wheeled carts would let them move heavy loads without modifying the workplace. However, humanoid cart pushing remains challenging because the bimanual grasp closes a force-coupled loop in which the contact wrenches that drive the cart also disturb the robot’s balance, and payload changes alter the coupled dynamics. We propose ForPC, a force-aware whole-body control framework that regulates cart velocity through two-stage reinforcement learning. A locomotion prior is first trained under varied hand loads and0 upper-body postures to provide balance support. A force latent and a state latent are then inferred from onboard observations, without external force sensors, and fed to a residual policy that coordinates bounded arm, waist, and leg adjustments with base-velocity commands. Multi-objective rewards penalize bimanual internal opposition, grasp slip, and actuator saturation, encouraging the policyo to apply contact force on demand without human demonstrations. Sim-to-sim experiments show that ForPC reduces cart-velocityN RMSE by up to 68.2% relative to a locomotion-only baseline (Loco-only) and cross-track RMSE by up to 74.2% on the multi-bend route. Trained solely in simulation, the policy also transfers to a physical Unitree G1 without real-world training or fine-tuning and, with no payload-specific adjustment, pushes a cart carrying up to 30 kg at 0.5 m/s. These results suggest that humanoid robots could] eventually replace humans for eficient material handling in daily life.O
+
+Keywords: Humanoid robot, Cart pushing, Whole-body control, Dynamic coupling, Interaction-force estimation, Residual reinforcement learning<sup>s</sup>
+
+![](images/2c7579eec1a07caba7db9536074b57f7373153c416b89b7be9916b48198a73b7.jpg)  
+Figure 1: (a) Complete cart-pushing sequence performed by a Unitree G1 humanoid, comprising cart grasping, pushing, and release. (b) A Unitree G1 humanoid pushing the cart along a complex path.
+
+## 1. Introduction
+
+Humanoid robots possess an anthropomorphic morphology and whole-body dexterity, enabling them to directly operate human-centric equipment, including manual wheeled carts designed for human workers [1–3]. By autonomously taking over repetitive and strenuous hauling tasks, humanoid robots could enhance operational productivity and transport eficiency, and thus hold broad application prospects.
+
+Despite early progress in humanoid cart transport [4, 5], achieving precise and dependable pushing remains challenging. Sustained contact establishes a bilaterally coupled physical system, in which hand forces drive the cart while its motion inertia and rolling resistance transmit reaction loads back to the robot and disrupt its locomotion balance. Under payload variations, the robot must accurately regulate both the magnitude and the direction of its contact efort to maintain a steady heading and forward cruise. Grasping the same handle makes uncoordinated arms prone to working against each other. This mutual opposition produces internal forces that do not contribute to propulsion [6] and consumes the joint torque margin needed for heading corrections and steering maneuvers.
+
+Model-based formulations coordinate motion and force tasks with balance objectives but require explicit models of the contact and the object [7–9], whereas learning-based methods obtain whole-body coordination from simulated interaction, demonstrations, or motion tracking [10–13]. Recent controllers further accommodate manipulation loads [14–16] or infer contact forces and object motion from the robot’s own signals [17–21]. However, Portela et al. [17] and Zhi et al. [18] estimate contact forces without object motion, whereas HAIC [19] predicts object motion without an explicit hand-force estimate, so none of them closes the feedback loop on both the cart velocity and the bimanual hand wrenches. Without such feedback, a policy can neither assess the cart’s actual dynamic response nor detect whether the two arms are fighting against each other on the handle. Although wrist force/torque sensors could provide direct feedback, such sensing is not always available for control, so recent methods estimate these forces from proprioception [17, 22]. Precise cart pushing under varying payloads, which requires feedback on both the cart motion and the hand forces without external force sensors, therefore remains an unresolved challenge.
+
+Addressing this challenge requires treating the humanoid and the cart as a tightly coupled dynamic system rather than decoupled motion primitives. Efective payload transport depends on closing the feedback loop around the physical interaction, so the controller must perceive both the cart’s real-time motion response and the contact loads at the hands. Because everyday carts have no built-in motion sensors and the hands provide no direct force measurement, these quantities must be inferred from signals available on the robot itself.
+
+We propose ForPC, a force-aware whole-body control framework that uses two-stage reinforcement learning for dynamic cart pushing, as shown in Figure 3. In the first stage, an interactionresilient locomotion prior is pre-trained under severe, randomized external hand disturbances and bounded posture ofsets, and is then frozen so that the task policy can reuse its support response. In the second stage, a teacher–student estimator infers force and state latents from histories of joint kinematics, upperbody torques, and the visually observed relative cart heading, and the task policy uses these latents to output bounded waist– arm and leg joint residuals and modulate robot base velocity commands. Without relying on external force sensors or human demonstrations, our framework efectively coordinates bimanual efort and transfers zero-shot across varied payloads. We evaluate ForPC against a locomotion-only baseline (Loco-only) in Isaac Sim and MuJoCo on velocity tracking, force estimation, and route following, and then deploy the policy, trained solely in Isaac Sim, zero-shot on a physical Unitree G1 humanoid to accomplish the transport of parts and workpieces along complex paths (Figure 1).
+
+The main contributions of this paper are threefold.
+
+• We propose ForPC, a two-stage whole-body control framework for coupled humanoid cart pushing that combines a locomotion prior, interaction estimators, and a residual policy.
+
+• We design a force-guided interaction inference module that infers a force latent from onboard signals and uses it to guide the estimation of a state latent, allowing the policy to perceive contact loading and cart motion without external force sensors.
+
+• We transfer our policy zero-shot to a real Unitree G1 humanoid, which achieves precise cart-pushing control along complex paths under a 30 kg payload.
+
+## 2. Related Work
+
+## 2.1. Humanoid Pushing and Object Transport
+
+Early humanoid pushing relied on dual-arm force control [23], controllers designed for a rolling cart [4], and joint planning of centre-of-mass motion and manipulation forces [24], which require force measurements or explicit object models. Learningbased systems have since substantially increased the load that a humanoid can move. Xiao et al. [16] push and pull a cart with a total load of 112.8 kg under commanded velocities and forces, Li et al. [25] use MPC-guided rewards to push a cart payload of up to 290 kg without runtime object feedback, and HULK [26] performs cart pushing and pulling at 150 kg. HAIC [19] predicts object motion from proprioception and reference motions to push and pull a cart, WholeBodyVLA [27] pushes a 50 kg cart within composite tasks, and other systems address visual goal pushing [28] and compliant transport [29]. However, these policies rarely estimate the cart motion and the hand forces together, although precise pushing depends on both. Payload mass and distribution change between transport tasks, so the mapping from hand forces to cart motion varies and is dificult to capture with a fixed object model. A controller must therefore adjust the magnitude and direction of its hand forces from online feedback.
+
+## 2.2. Force Estimation and Force-Adaptive Control for Humanoid Robots
+
+Recent humanoid controllers increasingly treat contact force as part of the control objective. FACET [30], SoftMimic [31], and GentleHumanoid [32] obtain compliant responses through a virtual mass-spring-damper system, augmented motion data, and impedance-based motion tracking, respectively. For intense interaction, FALCON [15] trains upper- and lower-body agents with a force curriculum, HAFO [33] couples them through a constrained residual action space, and Thor [34] adds a forceadaptive torso-tilt objective. Much of the sensorless force control originates from other legged platforms, whose estimation principles also apply to humanoids. Portela et al. [17] track commanded end-efector forces from proprioception on a quadruped manipulator, Zhi et al. [18] unify position and force control on quadrupedal and humanoid platforms, Zeng et al. [22] supply a hybrid force estimate as an explicit policy observation on a wheeled-legged robot, and CompliantWBC [35] brings force latent estimation to a heavy humanoid. However, these controllers target a commanded force, a compliant response, or disturbance rejection, and they generally do not estimate how the manipulated object moves.
+
+## 2.3. Residual Reinforcement Learningfor Humanoid Control
+
+General motion-tracking and locomotion policies provide reusable whole-body skills [11, 13, 14, 36–38], but they lack the precision and object awareness that loco-manipulation requires. Residual learning addresses this gap by refining an existing controller instead of learning the task from scratch [39]. Residual actions compensate for the dynamics mismatch of retargeted references [40] and adapt general trackers to new interfaces [41]. ResMimic [12] refines a general motion-tracking policy with an object-aware residual policy, and HDMI [42] co-tracks robot and object states from human videos through a residual action space. SEEC [43] and SteadyTray [44] instead cancel locomotion-induced disturbances at the end efectors and the tray, respectively, and Xiao et al. [16] add a delta-command policy over separately trained upper- and lower-body policies. However, the object-aware residuals depend on per-task reference motions and often on motion-capture object states, whereas the stabilizing residuals keep the end efectors or payload steady rather than drive an object. Neither suits sustained interaction with a moving cart, whose route has no reference motion and whose velocity is not measured onboard.
+
+## 3. Problem Formulation
+
+A humanoid robot grasps the cart handle with both hands and drives the unactuated cart through its walking and hand forces, as illustrated in Figure 2. The robot must regulate the planar cart velocity $\pmb { \nu } _ { t } ^ { \mathrm { c a r t } }$ to track a commanded velocity $\pmb { \nu } _ { t } ^ { \mathrm { c a r t , c m d } }$ while maintaining its balance and its grasp throughout the motion.
+
+We split the state of the robot–cart system at control step t into an observable state $s _ { t } ^ { \mathrm { o b s } }$ and an unobservable state $s _ { t } ^ { \mathrm { u n o b s } }$ , so that the system $M$ evolves as
+
+$$
+\boldsymbol {s} _ {t + 1} = \mathcal {M} (\boldsymbol {s} _ {t} ^ {\mathrm{obs}}, \boldsymbol {s} _ {t} ^ {\mathrm{unobs}}, \boldsymbol {a} _ {t}),\tag{1}
+$$
+
+where $s _ { t } = ( s _ { t } ^ { \mathrm { o b s } } , \ : s _ { t } ^ { \mathrm { u n o b s } } )$ and $\mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf \Psi \mathbf { } \mathbf { } \mathbf { } \mathbf { } \mathbf \Psi \Psi \mathbf { } \mathbf { } \mathbf { } \mathbf \Psi \Psi \mathbf { } \mathbf { } \mathbf \Psi \Psi \mathbf { } \mathbf { } \mathbf \Psi \Psi \mathbf { } \mathbf { } \mathbf \Psi \Psi \mathbf { } \mathbf \Psi \Psi \mathbf { } \mathbf \Psi \Psi \Psi \mathbf { } \mathbf \Psi \Psi \mathbf { } \mathbf \Psi \Psi \mathbf { } \mathbf \Psi \Psi \Psi \mathbf \Psi \Psi \Psi \mathbf { } \mathbf \Psi \mathbf \Psi \Psi \Psi \Psi \mathbf \Psi \Psi \Psi \mathbf \Psi \Psi \mathbf \Psi \Psi \Psi \mathbf \Psi \Psi \mathbf \Psi \Psi \mathbf \Psi \Psi \mathbf \Psi \Psi \mathbf \Psi \Psi \mathbf \Psi \mathbf \Psi \Psi \mathbf \Psi \mathbf \Psi \Psi \mathbf \Psi \mathbf \Psi \mathbf \Psi \Psi \mathbf \Psi$ is the whole-body action. The observable state contains the signals available on the robot, namely proprioception, the relative cart heading $\theta _ { t } ^ { \mathrm { { c a r t } } }$ from the head camera, and the velocity command $\pmb { \nu } _ { t } ^ { \mathrm { c a r t , c m d } }$ . However, the hands carry no force sensors to measure the hand wrenches $F _ { t } ^ { \mathrm { h a n d } }$ , everyday carts carry no motion sensors to measure the cart velocity $\pmb { \nu } _ { t } ^ { \mathrm { c a r t } }$ , and the payload is unknown before the interaction begins, so the robot cannot directly perceive its interaction with the cart. This interaction information is critical because the four swivel casters impose no fixed-wheel constraint, which leaves the lateral and yaw motions of the cart primarily driven by the hand wrenches, while changes in the payload mass and distribution between transport tasks alter the mapping from hand wrenches to cart motion. Precise cart control thus depends on both ${ \pmb s } _ { t } ^ { \mathrm { o b s } }$ and $s _ { t } ^ { \mathrm { u n o b s } }$ <sup>s</sup>, and the latter must be inferred rather than measured.
+
+![](images/f5532d40a6b08492793e761601dad048a7e03c9ee78851b150c33ea587481237.jpg)  
+Figure 2: (a) A Unitree G1 grasps the cart handle with a fixed grasp posture, while the cart rolls on caster wheels and carries a variable payload. (b) Top view of the robot–cart system, indicating the bimanual grasp spacing, the cart dimensions, the robot base velocity $\nu ^ { \mathrm { b } }$ , and the cart velocity $\nu ^ { \mathrm { c a r t } }$ . (c) Contact interactions that govern the coupled robot–cart dynamics.
+
+In the system M, the hand wrenches drive the cart while their reactions disturb the balance of the robot, so locomotion and manipulation are dynamically coupled. Directly training a policy on the system M is dificult because a single policy must learn locomotion and manipulation at once, which leads to ineficient exploration [15], and it must do so under contact conditions that it cannot observe. We therefore decompose the system into two subsystems, $M _ { 1 }$ and $M _ { 2 } ,$ , that are trained separately, while the physical system itself remains coupled. Because the policies act on the observable state, we describe each subsystem by the evolution of this state. From the perspective of locomotion, the cart afects the balance of the robot mainly through the reaction wrenches at the hands, which allows locomotion training to replace the cart with a hand wrench disturbance $\pmb { F } _ { t } ^ { \mathrm { e x t } }$ representing these reactions. This yields the first subsystem, in which the robot learns to walk stably under the reactions of cart pushing, as
+
+$$
+\boldsymbol {s} _ {t + 1} ^ {\mathrm{obs,r}} = \mathcal {M} _ {1} (\boldsymbol {s} _ {t} ^ {\mathrm{obs,r}}, \boldsymbol {F} _ {t} ^ {\mathrm{ext}}, \boldsymbol {a} _ {t}),\tag{2}
+$$
+
+where $s _ { t } ^ { \mathrm { o b s , r } }$ is the robot part of $s _ { t } ^ { \mathrm { o b s } }$ , and $\pmb { a } _ { t }$ comprises the leg action $\pmb { a } _ { t } ^ { \mathrm { l o c o } }$ of the locomotion policy $\pi _ { \mathrm { b a s e } }$ and bounded upperbody posture ofsets. However, because $M _ { 1 }$ contains no cart, it can stabilize the walking of the robot but cannot make the cart track the commanded velocity, which calls for a second subsystem with the cart attached. In this subsystem, $\pi _ { \mathrm { b a s e } }$ is frozen because it has already learned to keep balance, and the task policy $\pi _ { \mathrm { t a s k } }$ only learns to control the cart through residual actions ${ \pmb a } _ { t } ^ { \mathrm { r e s } }$ that act on top of $\pi _ { \mathrm { b a s e } }$ , without relearning walking. Unlike in $M _ { 1 }$ , the hand wrenches in $\boldsymbol { { M } } _ { 2 }$ are no longer applied disturbances but arise from the contact between the robot and the cart, and they depend on the payload and the cart motion. Because these unobservable states are not available to the policy, $\boldsymbol { \mathcal { M } } _ { 2 }$ forms a partially observable Markov decision process. Since they shape how proprioception evolves, they can be estimated from the proprioceptive history $\pmb { H } _ { t }$ through an estimator $\varepsilon ,$ as
+
+$$
+\hat {\boldsymbol {s}} _ {t} ^ {\mathrm{unobs}} = \mathcal {E} (\boldsymbol {H} _ {t}).\tag{3}
+$$
+
+With this estimate in place of the unobservable states, the second subsystem as seen by the task policy becomes
+
+$$
+\boldsymbol {s} _ {t + 1} ^ {\mathrm{obs}} = \mathcal {M} _ {2} (\boldsymbol {s} _ {t} ^ {\mathrm{obs}}, \hat {\boldsymbol {s}} _ {t} ^ {\mathrm{unobs}}, \boldsymbol {a} _ {t} ^ {\mathrm{res}}).\tag{4}
+$$
+
+The task policy is then trained to maximize the expected discounted return
+
+$$
+J (\pi_ {\mathrm{task}}) = \mathbb {E} \left[ \sum_ {t = 0} ^ {T - 1} \gamma^ {t} r _ {t} ^ {\mathrm{task}} \right],\tag{5}
+$$
+
+where $\gamma \in ( 0 , 1 )$ is the discount factor, T is the episode horizon, and $r _ { t } ^ { \mathrm { t a s k } }$ is the task reward defined in Equation (14).
+
+## 4. Method
+
+For $M _ { 1 }$ , in which hand wrench disturbances stand in for the cart, we pre-train a locomotion prior under randomized hand wrenches and bounded upper-body posture ofsets in Section 4.1, so that the robot remains balanced under the reactions and postures that arise in cart pushing. For $\boldsymbol { \mathcal { M } } _ { 2 }$ , we realize the estimator E in Section 4.2 with a force-guided interaction inference module, which infers force and state latents from the history $\pmb { H } _ { t }$ to represent the unobservable states. Using these latents, the task policy in Section 4.3 adds base-velocity command adjustments and arm, waist, and leg joint residuals to the frozen prior, coordinating the whole body to track the commanded cart velocity.
+
+## 4.1. Locomotion Priorfor Interactive Cart Pushing
+
+The humanoid controls the cart’s motion through coordinated walking and force application at the hands. During this process, the robot adjusts its arm and waist configuration to regulate hand-contact wrenches while experiencing reaction forces and moments from the cart. As formulated in Section 3, $M _ { 1 }$ requires the robot to maintain balance and track base-velocity commands under these combined efects. We therefore pre-train the locomotion prior under simultaneous upper-body posture variations and hand loading to provide support for subsequent cart manipulation (Figure 3(a)).
+
+During pre-training, the robot tracks base-velocity commands without the cart attached. Three-axis external forces and moments are continuously applied at each palm, implementing the hand-wrench disturbances that replace the cart’s reactions in the locomotion subsystem. Meanwhile, the arm and waist joint targets vary around the nominal pushing posture within bounds matched to the upper-body residual range in the second stage. These training conditions expose the locomotion prior to both the reaction loads and the configuration changes associated with cart manipulation, allowing locomotion support to be learned before introducing cart-motion control.
+
+The locomotion prior is trained to track base-velocity commands while maintaining balance under the posture variations and hand loading described above. Its reward combines four groups of weighted terms as
+
+$$
+r _ {t} ^ {\mathrm{loco}} = r _ {t} ^ {\mathrm{track}} + r _ {t} ^ {\mathrm{balance}} + r _ {t} ^ {\mathrm{gait}} - c _ {t} ^ {\mathrm{reg}}.\tag{6}
+$$
+
+The principal velocity-tracking term, which rewards accurate forward and lateral base velocities and yaw rate, is
+
+$$
+r _ {t} ^ {\text { track }} = \sum_ {i \in \{x, y, \omega \}} w _ {i} \exp \left[ - \frac {\left([ \boldsymbol {v} _ {t} ^ {\mathrm{b}} ] _ {i} - [ \boldsymbol {v} _ {t} ^ {\mathrm{cmd}} ] _ {i}\right) ^ {2}}{\sigma_ {i}} \right],\tag{7}
+$$
+
+where $\pmb { \nu } _ { t } ^ { \mathrm { b } } = [ \nu _ { x , t } ^ { \mathrm { b } } , \nu _ { y , t } ^ { \mathrm { b } } , \omega _ { z , t } ^ { \mathrm { b } } ] ^ { \top }$ contains the measured base-motion components, $\pmb { \nu } _ { t } ^ { \mathrm { c m d } }$ denotes their commands, and $w _ { i } ~ > ~ 0$ and $\sigma _ { i } > 0$ specify the tracking weight and error width, respectively.
+
+The balance terms regulate base height and penalize excessive tilt and undesired base motion. The gait terms regulate foot contact and swing behavior, including clearance and slip. The nonnegative regularization cost penalizes abrupt action changes, excessive joint efort, and joint-limit violations. Together, these terms encourage the robot to maintain commanded motion under loading while regulating its supporting posture, foot behavior, and actuation. Episodes terminate upon excessive body tilt or designated non-foot contacts.
+
+After pre-training, the parameters of the locomotion prior are frozen. In $M _ { 2 } .$ , the task policy uses this prior to coordinate basevelocity commands and bounded joint residuals, learning cartmotion regulation on top of the acquired locomotion support.
+
+## 4.2. Latent Interaction Dynamics Inference under Partial Observability
+
+The humanoid transmits forces to the cart through its hand– handle contacts, driving the cart’s translation and rotation. Together with the cart’s inertia and wheel–ground interactions, these contact forces determine its acceleration and thereby influence the evolution of its velocity. Meanwhile, hand loading is reflected in the robot’s joint torques and joint motion, while the history of the relative cart heading provides partial information about the motion response. These onboard signals contain information linking contact loading to the resulting motion, providing a basis for inferring interaction states without external force sensors.
+
+![](images/5945dc33018579c8f65ac9f146322fb1b378b0c76126b81a14d3f7665759ae3e.jpg)  
+Figure 3: (a) The locomotion prior is pre-trained to track base-velocity commands under random palm wrenches and bounded arm and waist posture variations. (b) The teacher encodes privileged contact forces and states into force and state latents, whereas the student infers both latents from onboard observation histories and reconstructs the contact forces and the velocities and accelerations of the robot and the cart. (c) Using the inferred latents, the task policy outputs base-velocity command adjustments for the frozen prior together with arm, waist, and leg joint residuals, and it is trained under dynamics randomization and observation noise with rewards for cart-velocity tracking, cart-motion smoothness, and internal-force suppression.
+
+Building on this relationship, we construct a teacher–student inference architecture that uses contact-force information for both whole-body coordination and motion-state estimation (Figure 3(b)). During training, the teacher encodes the unobservable states into a force latent and a state latent from privileged simulation information, and the task policy learns to act on these latents. This privileged information is unavailable at deployment, so the student predicts both latents from the observation history $\pmb { H } _ { t }$ , thereby recovering the unobservable states from signals available on the robot. The student thus realizes the estimator E of Equation (3), and the predicted latents form the estimate $\hat { \pmb { s } } _ { t } ^ { \mathrm { u n o b s } } = ( \hat { \pmb { z } } _ { t } ^ { F } , \hat { \pmb { z } } _ { t } ^ { s } )$ . The student first infers a force latent from observation histories containing joint motion, joint torques, and the relative cart heading. This latent is fed directly to the task policy to provide contact-loading information; it is also fused with the observation history to estimate the motion states of the robot and the cart and produce a state latent for the task policy.
+
+During training, the teacher constructs separate force and state latents from privileged simulation information. The force encoder maps the reference contact forces $\boldsymbol { F } _ { t } ^ { \star }$ to a force latent $\boldsymbol { z } _ { t } ^ { F }$ while the state encoder maps true velocities and other privileged information $\scriptstyle { e _ { t } }$ to a state latent $\boldsymbol { z } _ { t } ^ { s }$ . Explicit contact-force channels are excluded from $\scriptstyle { e _ { t } }$ . Both latents enter the task policy and provide supervision targets for the student, as
+
+$$
+\boldsymbol {z} _ {t} ^ {F} = E _ {F} ^ {T} (\boldsymbol {F} _ {t} ^ {\star}), \qquad \boldsymbol {z} _ {t} ^ {s} = E _ {s} ^ {T} (\boldsymbol {e} _ {t}).\tag{8}
+$$
+
+To recover these representations from onboard signals, the student first processes the observation history $\pmb { H } _ { t }$ through a causal temporal encoder, producing a sequence of force latents $\hat { \pmb { Z } } _ { t } ^ { F }$ . The current force latent $\hat { z } _ { t } ^ { F }$ is aligned with the teacher’s $z _ { t } ^ { F }$ and decoded through a shared decoder $D _ { F }$ to reconstruct the reference contact forces. These two objectives train the student to recover the teacher’s force representation while retaining contact-loading information. The resulting force latent is supplied directly to the task policy and also used in subsequent motion-state inference.
+
+To relate contact loading to the motion response, the student fuses the force-latent sequence with the corresponding observation frames. A temporal convolutional branch processes the full 32-frame history, while a second branch processes the most recent six frames to retain recent observation details. The fused features $\mathbf { } h _ { t }$ produce the state latent and auxiliary velocity and acceleration estimates, as
+
+$$
+\hat {\mathbf {Z}} _ {t} ^ {F} = E _ {F} ^ {S} (\mathbf {H} _ {t}), \quad \hat {\mathbf {F}} _ {t} = D _ {F} (\hat {\mathbf {z}} _ {t} ^ {F}), \quad \mathbf {h} _ {t} = G (\mathbf {H} _ {t}, \hat {\mathbf {Z}} _ {t} ^ {F}),\tag{9}
+$$
+
+$$
+(\hat {\boldsymbol {z}} _ {t} ^ {s}, \hat {\boldsymbol {v}} _ {t}, \hat {\boldsymbol {a}} _ {t}) = D _ {s} (\boldsymbol {h} _ {t}),\tag{10}
+$$
+
+where $D _ { s }$ is the state decoder, whose output is partitioned into the estimated state latent $\hat { \boldsymbol { z } } _ { t } ^ { s }$ , the velocity estimate $\hat { \nu } _ { t }$ , which stacks the estimated planar linear velocity and yaw rate of the cart and the planar base linear velocity of the robot, and the acceleration estimate $\widehat { \pmb { a } } _ { t }$ , which contains the corresponding accelerations.
+
+The state latent $\hat { \boldsymbol { z } } _ { t } ^ { s }$ is aligned with the teacher’s $z _ { t } ^ { s } .$ , allowing it to replace the privileged representation used by the task policy during deployment. In parallel, the velocity and acceleration estimates are supervised by simulation reference values, requiring the shared features to explain explicit motion states. Latent alignment therefore trains the student to recover the policy’s interaction representation, while motion supervision constrains the information retained in the shared features. Because these features depend on the force-latent sequence, motion-estimation errors also propagate through the force encoder. The force representation is thus trained both to reconstruct contact loading and to support motion-state inference. The task policy receives the force and state latents, while the velocity and acceleration estimates serve as auxiliary supervised outputs.
+
+The student is optimized with the joint objective
+
+$$
+\mathcal {L} _ {\text { student }} = \mathcal {L} _ {\text { align }} + \lambda_ {F} \mathcal {L} _ {F} + \lambda_ {v} \mathcal {L} _ {v} + \lambda_ {a} \mathcal {L} _ {a},\tag{11}
+$$
+
+$$
+\mathcal {L} _ {\mathrm{align}} = \left\| \hat {\boldsymbol {z}} _ {t} ^ {F} - \mathrm{sg} (\boldsymbol {z} _ {t} ^ {F}) \right\| _ {2} + \left\| \hat {\boldsymbol {z}} _ {t} ^ {s} - \mathrm{sg} (\boldsymbol {z} _ {t} ^ {s}) \right\| _ {2}.\tag{12}
+$$
+
+Here, sg denotes the stop-gradient operator, keeping the teacher targets fixed during each student update. The force, velocity, and acceleration losses are mean-squared errors between normalized estimates and their simulation references, and $\lambda _ { F } , \lambda _ { \nu } , \lambda _ { a }$ are positive weights. During teacher optimization, force reconstruction and variance regularization constrain the force latent, while a regularization term draws the state latent toward the student estimate to encourage recoverability from onboard observations. Training periodically uses student-estimated latents to collect rollouts, exposing the inference network to states encountered under its own estimation errors.
+
+During training, the direct upper-body joint-torque channels in the task-policy observations are progressively suppressed, while these measurements remain available to the student inference network. Contact-force information therefore reaches the task policy through the force latent rather than through the raw torques, which makes the policy explicitly force-aware. At deployment, the privileged encoders are removed, and the shared task policy uses recent observations together with the estimated force and state latents for whole-body residual coordination.
+
+## 4.3. Force-Aware Whole-Body Residual Coordination
+
+The task policy uses recent onboard observations and the force and state latents inferred in Section 4.2 to coordinate the humanoid’s motion for cart-velocity tracking (Figure 3(c)). The locomotion prior provides the underlying walking response, with its parameters frozen during task training. The task policy learns to adjust this response and the upper-body configuration according to the inferred interaction, so that locomotion and manipulation jointly serve the commanded cart motion. Whereas $\pi _ { \mathrm { b a s e } }$ tracks robot base-velocity commands in $M _ { 1 } , \pi _ { \mathrm { t a s k } }$ is optimized in $\boldsymbol { { M } } _ { 2 }$ for the cart’s forward and lateral velocities and yaw rate.
+
+The task policy maps the recent observations and the inferred latents to the residual action
+
+$$
+\pmb {a} _ {t} ^ {\mathrm{res}} = \pi_ {\mathrm{task}} (\pmb {O} _ {t}, \hat {\pmb {z}} _ {t} ^ {F}, \hat {\pmb {z}} _ {t} ^ {s}), \quad \pmb {a} _ {t} ^ {\mathrm{res}} = [ \pmb {a} _ {t} ^ {\mathrm{base}}, \pmb {a} _ {t} ^ {\mathrm{arm}}, \pmb {a} _ {t} ^ {\mathrm{leg}} ].\tag{13}
+$$
+
+The policy produces 30 coordinated action components, namely three base-velocity command adjustments, 15 arm and waist joint residuals, and 12 leg joint residuals. The base-command adjustments modify the motion requested from the locomotion prior, allowing the robot’s walking response to be adapted to the desired cart motion. The arm and waist residuals adjust the nominal pushing posture and thereby regulate hand-contact forces through joint control while maintaining the grasp. The leg residuals modify the prior’s leg targets to accommodate task-specific support adjustments under contact loading. All three outputs are generated jointly, allowing base motion, force application, and leg support to be coordinated toward the same cart-motion objective.
+
+The task reward encourages accurate and smooth cart motion while maintaining robot balance and hand contact, and it explicitly penalizes the internal load between the two hands. Its weighted terms are grouped as
+
+$$
+r _ {t} ^ {\mathrm{task}} = r _ {t} ^ {\mathrm{cart}} - c _ {t} ^ {\mathrm{smooth}} - w _ {\mathrm{int}} J _ {t} ^ {\mathrm{int}} - c _ {t} ^ {\mathrm{grasp}} + r _ {t} ^ {\mathrm{support}} - c _ {t} ^ {\mathrm{reg}}.\tag{14}
+$$
+
+The tracking reward encourages the cart’s forward and lateral velocities and yaw rate to follow their references, and the smoothness costs suppress cart-velocity fluctuations and abrupt changes in contact forces. Because both hands hold the same handle, only part of the bimanual hand wrench moves the cart. We separate this driving part through $d _ { t } ^ { \mathrm { d r } } = U F _ { t } ^ { \mathrm { h a n d } }$ , where the constant matrix $\pmb { U } \in \mathbb { R } ^ { 4 \times 1 2 }$ maps the bimanual hand wrench to the push force of each hand, the sum of the lateral forces, and the sum of the yaw moments. The remaining internal wrench produces no cart motion and only consumes joint torque margin,
+
+$$
+\boldsymbol {F} _ {t} ^ {\text { int }} = \boldsymbol {F} _ {t} ^ {\text { hand }} - \boldsymbol {\Sigma} \boldsymbol {U} ^ {\top} (\boldsymbol {U} \boldsymbol {\Sigma} \boldsymbol {U} ^ {\top}) ^ {- 1} \boldsymbol {U} \boldsymbol {F} _ {t} ^ {\text { hand }},\tag{15}
+$$
+
+and the internal-load cost penalizes it in proportion to the load capacity of each grasp direction,
+
+$$
+J _ {t} ^ {\mathrm{int}} = \left\| \pmb {\Sigma} ^ {- 1 / 2} \pmb {F} _ {t} ^ {\mathrm{int}} \right\| _ {2} ^ {2},\tag{16}
+$$
+
+where Σ is a diagonal matrix of squared grasp capacities. The hand wrench is low-pass filtered before this decomposition, and the vertical load needed for frictional grip is not counted as internal. The grasp cost penalizes grasp slip, abrupt force changes, and wrist saturation, while the support and regularization terms promote balanced locomotion and smooth, moderate control actions.
+
+## 5. Experiments
+
+We evaluate the cart-pushing performance of ForPC in simulation and on a physical Unitree G1 from three aspects. First, we assess whether ForPC tracks cart-velocity commands accurately with low velocity fluctuations in forward, lateral, and turning motions and maintains this accuracy over complete routes under diferent payloads (Section 5.2). Second, we analyze whether the inferred latents retain contact-loading and cart-motion information and whether force awareness directs the bimanual forces toward driving the cart rather than toward mutual opposition between the hands (Section 5.3). Third, we test whether the simulation-trained policy transfers to the physical robot and accomplishes real-world cart transport without real-world training or fine-tuning (Section 5.4).
+
+## 5.1. Experimental Setup
+
+The robot is a Unitree G1 humanoid with 12 leg joints, one waist yaw joint, and 14 arm joints, and the cart is a four-caster platform trolley with an empty mass of 12 kg. The robot carries three-fingered Dex3-1 hands held at a fixed grasp configuration, the waist roll and pitch joints are held at zero, and a RealSense camera in the head detects an AprilTag fixed to the cart to measure the relative cart heading. The payload is the mass that is added to the cart. The policies are trained in Isaac Sim with the Isaac Lab framework [45] and are evaluated with fixed weights in Isaac Sim and in MuJoCo [46]. The MuJoCo evaluation is therefore a sim-to-sim test in which the contact model, the solver, and the actuator integration difer from those of training. Both the policy and the simulators run at 50 Hz control rate, and the cart velocities are sampled at 50 Hz.
+
+We compare ForPC with three configurations to evaluate the roles of task-level coordination, locomotion-prior training, and force awareness. The first, locomotion-only, uses the Stage I policy alone, taking the commanded cart velocity as its basevelocity command and maintaining the nominal bimanual contact posture without task-level corrections. The second retains force-aware whole-body residual coordination but uses a locomotion prior trained without hand-wrench disturbances or upperbody posture randomization. The third uses the same priortraining conditions as the second but additionally removes explicit force awareness from the residual coordination framework. Full ForPC combines the locomotion prior trained under hand loading and upper-body posture variations with force-aware coordination of base-velocity command adjustments and arm, waist, and leg joint residuals. All configurations are evaluated using the same commands, cart, and environmental conditions.
+
+## 5.2. Humanoid Cart-Pushing Control
+
+We evaluate humanoid cart-pushing control through velocity tracking and complete-route tracking.
+
+## 5.2.1. Cart-Velocity Tracking
+
+To evaluate tracking accuracy and velocity fluctuations during humanoid cart pushing, we compare full ForPC with the three configurations introduced in Section 5.1 through forward, lateral, and turning velocity-tracking tests at payloads of 15 kg and 25 kg. At each payload, all configurations use identical velocity commands and resistance settings. We apply sequences of constant commands separately for forward translation (0 3, 0 5, and 0.8 m/s), lateral translation (0 15 and 0.3 m/s), and rotation about the vertical axis (0 15 and 0.3 rad/s), holding each command for 8 s. Tracking errors and fluctuations in the cart’s forward velocity, lateral velocity, and yaw rate are compared to assess the control performance of each configuration and its variation with payload.
+
+Evaluation metrics. We use the root-mean-square error (RMSE) to evaluate velocity-tracking accuracy and RMS velocity fluctuation (RMSF) to quantify velocity variations within constant-command plateaus. Let T denote the number of samples used to compute the metrics. For each evaluated component, let $\nu _ { t }$ and $\nu _ { t } ^ { \mathrm { c m d } }$ denote the actual and commanded velocities in the same coordinate frame, and let $e _ { t } = \nu _ { t } - \nu _ { t } ^ { \mathrm { c m d } }$ denote their diference; actual velocities are unfiltered, and uncommanded components have a zero reference. The following scalar formulas are applied separately to forward velocity, lateral velocity, and yaw rate.
+
+(1) RMSE. For a scalar error $e _ { t }$ over $T$ samples, the RMSE is
+
+$$
+\mathrm{RMSE} = \sqrt {\frac {1}{T} \sum_ {t = 1} ^ {T} e _ {t} ^ {2}},\tag{17}
+$$
+
+which we use for all tracking and estimation errors in this section; for velocity tracking, $e _ { t }$ is the velocity error defined above.
+
+(2) RMSF. RMSF measures the root-mean-square deviation of velocity from its own command-plateau mean, excluding the plateau mean tracking error and changes between plateau means. With the plateau k(t) that contains sample t and the mean velocity $\mu _ { k }$ over the evaluated samples of plateau $k ,$ it is
+
+$$
+\mathrm{RMSF} = \sqrt {\frac {1}{T} \sum_ {t = 1} ^ {T} \left(v _ {t} - \mu_ {k (t)}\right) ^ {2}}.\tag{18}
+$$
+
+For every plateau, the squared RMSE equals the squared RMSF plus the squared mean error, and this metric includes the slow drift within a plateau because no frequency separation is applied. All configurations use identical plateaus, and lower values indicate smaller tracking errors or weaker fluctuations. Results.
+
+Figure 4 shows that ForPC responds to forward, lateral, and yaw commands in both simulators. Once the forward motion is established, Loco-only follows the straight-line speed changes, but its lateral and turning responses remain weak in Isaac Sim and are nearly absent in MuJoCo. These responses show that
+
+Turning motion
+
+Lateral motion  
+![](images/9559a7ed7cc8f86aa51dd5a890461761342dbd3938bb867e59309bc42ab3e263.jpg)
+
+![](images/d0d5fe1711091bfc8a67068b09405372bf41dd5005fa62a66b2bffc52de37095.jpg)
+
+![](images/9eaf1092c27bfc66faeba3d2c9b1ae149947e7d86bb6c2ba47e035fd4533b3ed.jpg)
+
+![](images/3dde62aa9cb2c35a8fbbcb29e4b686438246a056638df787b01bafc668d41d1f.jpg)
+
+![](images/74e289b8e59e93eecff6feb443a0cb470f7ca7c60f0cf2a4bec2c965a6ea2067.jpg)
+
+![](images/2009005f9d0d9b74bde37c4ce7046e1030b981e145f8f15cace587ad8fe62377.jpg)  
+Time (s)
+
+![](images/228c1f500ac243cc4bceccd67e5f9b11b14ab7952fe1c1fdd53cbd1c6463e27a.jpg)  
+Figure 4: Cart-velocity tracking by ForPC and Loco-only in Isaac Sim and MuJoCo. Loco-only uses the Stage I policy without task-leve corrections. Both policies are trained only in Isaac Sim, so the MuJoCo results serve as a sim-to-sim test; shaded bands denote standard deviations.
+
+locomotion capability alone is insuficient for efective lateral and turning control of the dynamically coupled cart. These maneuvers require precise regulation of the hand-contact forces and moments to drive the cart against the resistance while the robot maintains its balance under the resulting reactions. By coordinating this interaction with whole-body support, ForPC follows the lateral and yaw commands more closely and extends the efective cart control beyond forward pushing.
+
+Table 1 shows that force-aware whole-body coordination enables precise and smooth cart control that locomotion alone cannot provide. ForPC attains the lowest RMSE in all twelve combinations of simulator, payload, and motion, reducing RMSE by up to 68.2% and RMSF by up to 65.4% relative to Loco-only. The gap is largest in turning, where the cart must be rotated by a bimanual yaw moment that walking alone cannot generate.
+
+Force awareness allows the policy to apply the hand forces that the cart actually requires. With the same standard prior, adding force awareness lowers RMSE by up to 36.1%, most strongly in lateral motion, which is driven mainly by lateral hand forces. Perceiving the contact loading lets the policy correct the steady tracking ofset caused by unmeasured resistance.
+
+Training the locomotion prior under hand loading and posture variations further lowers RMSE by up to 13.5%. Because this prior already keeps the robot balanced under hand reactions, the residual policy can concentrate on cart control, and the benefit grows at 25 kg and in MuJoCo, where the reactions are larger and the dynamics difer from training. Overall, these results demonstrate that ForPC achieves accurate cart-velocity tracking under diferent payloads.
+
+## 5.2.2. Route Tracking
+
+To evaluate how velocity control supports continuous cart transport, we test route tracking through changes in curvature and a final stop. The route comprises an S-bend, a straight connector, and a rounded rectangular detour, ending at a target stopping pose (Figure 5). We compare full ForPC with the three configurations in Section 5.1 at payloads of 15 kg and 25 kg, using cross-track RMSE, heading RMSE, completion time, and success rate. Completion requires reaching the target within the time limit and the prescribed pose tolerances while the robot maintains its balance and the hand contact. All configurations use the same reference route, route tracker, and speed limits.
+
+Table 1: Cart-velocity tracking RMSE and RMSF in Isaac Sim and MuJoCo at two payloads. Units are m/s for forward and lateral motion and rad/s for turning; ↓ indicates that lower is better, and bold marks the best value per simulator and payload.
+
+<table><tr><td rowspan="2">Simulator</td><td rowspan="2">Payload (kg)</td><td rowspan="2">Method</td><td colspan="2">Forward</td><td colspan="2">Lateral</td><td colspan="2">Turning</td></tr><tr><td>RMSE ↓</td><td>RMSF ↓</td><td>RMSE ↓</td><td>RMSF ↓</td><td>RMSE ↓</td><td>RMSF ↓</td></tr><tr><td rowspan="8">Isaac Sim</td><td rowspan="4">15</td><td>Loco-only</td><td>0.1768</td><td>0.1487</td><td>0.1564</td><td>0.1387</td><td>0.2989</td><td>0.2611</td></tr><tr><td>Standard prior w Force-aware</td><td>0.0816</td><td>0.0612</td><td>0.0908</td><td>0.0613</td><td>0.1067</td><td>0.1103</td></tr><tr><td>Standard prior w/o Force-aware</td><td>0.0984</td><td>0.0758</td><td>0.1421</td><td>0.0612</td><td>0.1311</td><td>0.1221</td></tr><tr><td>ForPC</td><td>0.0801</td><td>0.0590</td><td>0.0892</td><td>0.0591</td><td>0.1010</td><td>0.1203</td></tr><tr><td rowspan="4">25</td><td>Loco-only</td><td>0.2003</td><td>0.1449</td><td>0.1612</td><td>0.1320</td><td>0.2958</td><td>0.2453</td></tr><tr><td>Standard prior w Force-aware</td><td>0.0856</td><td>0.0546</td><td>0.1064</td><td>0.0523</td><td>0.1048</td><td>0.1031</td></tr><tr><td>Standard prior w/o Force-aware</td><td>0.1026</td><td>0.0680</td><td>0.1548</td><td>0.0516</td><td>0.1305</td><td>0.1061</td></tr><tr><td>ForPC</td><td>0.0851</td><td>0.0501</td><td>0.1022</td><td>0.0515</td><td>0.0941</td><td>0.0959</td></tr><tr><td rowspan="8">MuJoCo</td><td rowspan="4">15</td><td>Loco-only</td><td>0.1393</td><td>0.1417</td><td>0.1494</td><td>0.1281</td><td>0.2830</td><td>0.2162</td></tr><tr><td>Standard prior w Force-aware</td><td>0.0736</td><td>0.0606</td><td>0.0799</td><td>0.0691</td><td>0.1149</td><td>0.1059</td></tr><tr><td>Standard prior w/o Force-aware</td><td>0.0882</td><td>0.0683</td><td>0.1159</td><td>0.0573</td><td>0.1286</td><td>0.1240</td></tr><tr><td>ForPC</td><td>0.0707</td><td>0.0573</td><td>0.0739</td><td>0.0551</td><td>0.1087</td><td>0.1109</td></tr><tr><td rowspan="4">25</td><td>Loco-only</td><td>0.1578</td><td>0.1383</td><td>0.1541</td><td>0.1206</td><td>0.2805</td><td>0.2046</td></tr><tr><td>Standard prior w Force-aware</td><td>0.0773</td><td>0.0539</td><td>0.0964</td><td>0.0526</td><td>0.1164</td><td>0.0958</td></tr><tr><td>Standard prior w/o Force-aware</td><td>0.0928</td><td>0.0632</td><td>0.1246</td><td>0.0596</td><td>0.1365</td><td>0.1074</td></tr><tr><td>ForPC</td><td>0.0731</td><td>0.0498</td><td>0.0834</td><td>0.0502</td><td>0.1032</td><td>0.0986</td></tr></table>
+
+Table 2: Route-tracking results of four configurations at two payloads under matched speed limits. ↓ and ↑ indicate that lower and higher are better, respectively; bold marks the best value per payload.
+
+<table><tr><td rowspan="2">Payload (kg)</td><td rowspan="2">Method</td><td colspan="2">RMSE ↓</td><td rowspan="2">Completion time (s) ↓</td><td rowspan="2">Success rate (%) ↑</td></tr><tr><td>Cross-track (m)</td><td>Heading (deg)</td></tr><tr><td rowspan="4">15</td><td>Loco-only</td><td>0.2153</td><td>23.83</td><td>62.00</td><td>89.1</td></tr><tr><td>Standard prior w Force-aware</td><td>0.0658</td><td>5.70</td><td>42.49</td><td>93.8</td></tr><tr><td>Standard prior w/o Force-aware</td><td>0.1494</td><td>14.22</td><td>45.81</td><td>90.6</td></tr><tr><td>ForPC</td><td>0.0648</td><td>5.63</td><td>41.49</td><td>100</td></tr><tr><td rowspan="4">25</td><td>Loco-only</td><td>0.2652</td><td>25.70</td><td>71.07</td><td>76.6</td></tr><tr><td>Standard prior w Force-aware</td><td>0.0735</td><td>6.36</td><td>43.47</td><td>95.3</td></tr><tr><td>Standard prior w/o Force-aware</td><td>0.1641</td><td>16.55</td><td>47.98</td><td>89.1</td></tr><tr><td>ForPC</td><td>0.0685</td><td>5.98</td><td>42.45</td><td>100</td></tr></table>
+
+Evaluation metrics. We evaluate route tracking using crosstrack RMSE, heading RMSE, completion time, and success rate, with T denoting the number of samples in the route-tracking interval.
+
+(1) Cross-track RMSE. The cross-track RMSE, reported in metres, applies Equation (17) to the signed lateral distance $\varepsilon _ { t }$ from the cart to the reference route at sample t.
+
+(2) Heading RMSE. The heading RMSE applies Equation (17) to the heading error wrap( $\psi _ { t } ^ { \mathrm { { c a r t } } } - \psi _ { t } ^ { \mathrm { { r e f } } } )$ , where $\psi _ { t } ^ { \mathrm { { c a r t } } }$ is the cart heading in the world frame, $\psi _ { t } ^ { \mathrm { r e f } }$ is the reference route heading at the nearest route point in the same frame, and wrap(·) maps each angular diference to $( - \pi , \pi ]$ . The error is computed in radians, and the resulting RMSE is converted to degrees for reporting.
+
+(3) Completion time. Completion time is the elapsed time, in seconds, from the start of route tracking until the cart first satisfies the endpoint completion criterion defined above. Lower cross-track and heading RMSE indicate more accurate position and orientation tracking, respectively, whereas a shorter completion time indicates faster route completion under the matched speed limits.
+
+(4) Success rate. The success rate is the percentage of trials that satisfy the completion criterion defined above, computed over 640 trials for each configuration and payload, so a trial fails if the robot loses its balance or the hand contact, or does not reach the target pose within the time limit.
+
+Results. Figure 5 shows that ForPC follows the planned bends more closely, whereas Loco-only deviates from the route, particularly around the rounded rectangular detour. This comparison illustrates how the ability to control lateral and turning motion supports tracking through changes in path curvature.
+
+![](images/93c926080e1b16ee0537cd974f1a24b7a64d9d23188bc8bfb6d2362f3f201e6f.jpg)  
+Figure 5: Route tracking by ForPC and Loco-only in simulation. Cart trajectories are overlaid on robot–cart snapshots.
+
+Table 2 shows that the velocity-tracking advantage of ForPC carries over to complete routes. ForPC achieves the best value in every metric at both payloads; relative to Loco-only, it reduces the cross-track RMSE by up to 74.2% and the heading RMSE by up to 76.7%, shortens the completion time by up to 40.3%, and succeeds in every trial. Accurate lateral and yaw control keeps the cart close to the route through successive bends, so the robot spends less time correcting deviations and completes the route sooner.
+
+Force awareness remains the main contributor. With the same standard prior, it reduces the cross-track RMSE by up to 56.0% and the heading RMSE by up to 61.6%, showing that the precise cart control enabled by force awareness allows ForPC to handle the lateral and heading errors that arise along curved routes.
+
+Training the locomotion prior under hand loading further lowers the cross-track RMSE by up to 6.8% and raises the success rate from 93.8% and 95.3% to 100%, indicating that its balance support keeps the robot from failing over long transports.
+
+As the payload increases from 15 kg to 25 kg, the cross-track RMSE of Loco-only rises by 23.2% and its success rate drops from 89.1% to 76.6%, whereas the cross-track RMSE of ForPC changes only slightly and its success rate remains 100%. These results demonstrate that ForPC achieves accurate and reliable route transport under diferent payloads.
+
+## 5.3. Force-Latent Analysis and Bimanual Coordination
+
+Section 5.2 shows that ForPC tracks cart velocities and routes more precisely than the compared configurations. This subsection examines how fusing the force latent contributes to this precision. We first decode the inferred latents into hand forces and cart velocities to test whether they retain contact-loading and cart-motion information, and then examine whether force awareness directs the bimanual forces toward driving the car rather than toward mutual opposition between the hands.
+
+Table 3: ForPC estimation accuracy in Isaac Sim, with force components expressed in the cart-heading frame.
+
+<table><tr><td>Quantity</td><td>RMSE (N) ↓</td><td> $R^2 \uparrow$ </td></tr><tr><td>Left-hand forward force</td><td>7.54</td><td>0.97</td></tr><tr><td>Left-hand lateral force</td><td>4.32</td><td>0.78</td></tr><tr><td>Left-hand vertical force</td><td>4.32</td><td>0.95</td></tr><tr><td>Right-hand forward force</td><td>7.36</td><td>0.97</td></tr><tr><td>Right-hand lateral force</td><td>4.28</td><td>0.78</td></tr><tr><td>Right-hand vertical force</td><td>4.28</td><td>0.95</td></tr><tr><td>Quantity</td><td colspan="2">RMSE (m/s, rad/s) ↓</td></tr><tr><td>Cart forward velocity</td><td colspan="2">0.035</td></tr><tr><td>Cart lateral velocity</td><td colspan="2">0.035</td></tr><tr><td>Cart yaw rate</td><td colspan="2">0.050</td></tr></table>
+
+## 5.3.1. Information Encoded in the Inferred Latents
+
+We test whether the student’s latents retain contact-loading and cart-motion information during cart pushing in Isaac Sim, evaluating the force estimates over cart-pushing runs under various operating conditions and the cart-velocity estimates at a payload of 25 kg. The evaluated outputs are the three contactforce components of each hand and the cart’s forward velocity, lateral velocity, and yaw rate. Predictions and simulation references use matching coordinate frames, signs, and timestamps. Hand forces are decoded from the force latent through $D _ { F }$ in Equation (9), and cart velocities are taken from the state decoder $D _ { s }$ in Equation (10), whose input features depend on the force-latent sequence.
+
+Evaluation metrics. For each force or velocity component, the estimation RMSE applies Equation (17) to the error $\hat { y } _ { t } - y _ { t }$ between the predicted value $\hat { y } _ { t }$ and its simulation reference $y _ { t }$ at sample t. This metric compares an estimate with its actual reference, whereas the velocity-tracking RMSE in Section 5.2.1 compares actual motion with the commanded motion. For the force components, we also report the coeficient of determination
+
+$$
+R ^ {2} = 1 - \frac {\sum_ {t = 1} ^ {T} (y _ {t} - \hat {y} _ {t}) ^ {2}}{\sum_ {t = 1} ^ {T} (y _ {t} - \bar {y}) ^ {2}},\tag{19}
+$$
+
+where $\bar { y }$ is the mean of the reference over the $T$ samples; $R ^ { 2 }$ measures the fraction of the reference variation explained by the estimate, and values closer to one indicate closer agreement.
+
+Results. Table 3 reports the decoding accuracy. The componentwise force RMSE ranges from 4.32 N to 7.54 N for the left hand and from 4.28 N to 7.36 N for the right hand, with $R ^ { 2 }$ values of 0.97 for the forward forces, 0.95 for the vertical forces, and 0.78 for the lateral forces, indicating that the force latent encodes the contact loading of each hand. At a payload of 25 kg, the cart-velocity RMSE is 0.035 m/s for both linear components and 0.050 rad/s for the yaw rate, indicating that the fused features also capture the cart’s motion response.
+
+## 5.3.2. Bimanual Force Utilization
+
+We compare the four configurations in Section 5.1 in matched Isaac Sim pushing trials at payloads of 15 kg and 25 kg. All configurations use the same cart-velocity command sequences, initial conditions, and evaluation duration for each motion type in
+
+Table 4: Internal-force ratio $\rho ^ { \mathrm { i n t } }$ in Isaac Sim; lower is better.
+
+<table><tr><td>Payload (kg)</td><td>Method</td><td>Forward (%)</td><td>Lateral (%)</td><td>Turning (%)</td></tr><tr><td rowspan="4">15</td><td>Loco-only</td><td>83.6</td><td>83.7</td><td>78.2</td></tr><tr><td>Standard prior w Force-aware</td><td>84.7</td><td>61.5</td><td>57.3</td></tr><tr><td>Standard prior w/o Force-aware</td><td>96.9</td><td>85.3</td><td>89.2</td></tr><tr><td>ForPC</td><td>81.8</td><td>61.3</td><td>55.6</td></tr><tr><td rowspan="4">25</td><td>Loco-only</td><td>81.7</td><td>81.5</td><td>75.2</td></tr><tr><td>Standard prior w Force-aware</td><td>78.7</td><td>57.0</td><td>53.3</td></tr><tr><td>Standard prior w/o Force-aware</td><td>96.1</td><td>82.9</td><td>87.9</td></tr><tr><td>ForPC</td><td>78.4</td><td>56.9</td><td>51.9</td></tr></table>
+
+Section 5.2.1. For every configuration, including those without a force estimator, the hand loads are taken from the simulationreference hand wrenches.
+
+Evaluation metrics. Only the forward force, lateral force, and yaw moment of each hand act in the plane of cart motion. The vertical forces and the remaining moments mainly sustain the grasp and are transmitted to the ground through the cart wheels; they are therefore excluded from this evaluation. Let $\pmb { P } \in \mathbb { R } ^ { 6 \times 1 2 }$ select these six components from $F _ { t } ^ { \mathrm { h a n d } }$ . Because Σ is diagonal and U acts only on these components, Equation (15) splits the capacity-normalized horizontal load into two orthogonal parts: a driving part that moves the cart and an internal part that cancels between the hands. The internal-force ratio over T samples is
+
+$$
+\rho^ {\mathrm{int}} = \frac {\sum_ {t = 1} ^ {T} \left\| \boldsymbol {P} \boldsymbol {\Sigma} ^ {- 1 / 2} \boldsymbol {F} _ {t} ^ {\mathrm{int}} \right\| _ {2} ^ {2}}{\sum_ {t = 1} ^ {T} \left\| \boldsymbol {P} \boldsymbol {\Sigma} ^ {- 1 / 2} \boldsymbol {F} _ {t} ^ {\mathrm{hand}} \right\| _ {2} ^ {2}},\tag{20}
+$$
+
+where identical filtering and grasp capacities are applied to all configurations. This ratio lies in [0 1], and $1 - \rho ^ { \mathrm { i n t } }$ is the fraction of the applied horizontal hand load that drives the cart. A lower value indicates that less bimanual efort is lost to mutual opposition between the hands. The ratio is computed separately for forward, lateral, and turning trials and is interpreted together with the tracking errors in Table 1 to verify that the cart remains accurately controlled.
+
+Results. Table 4 shows that force awareness determines whether the bimanual efort drives the cart or is lost to mutual opposition between the hands. Without force awareness, the standard prior yields the highest internal-force ratio in every case, up to 14.4 percentage points above Loco-only, because its upper-body residuals act without perceiving the opposition they create. Adding force awareness lowers the ratio by up to 34.6 percentage points and, in lateral and turning motion, increases the fraction of the horizontal hand load that drives the cart by up to 4.0 times. The efort lost to opposition without force awareness is consistent with the larger lateral RMSE of this configuration in Table 1.
+
+ForPC remains within 3.0 percentage points of the standard prior with force awareness, indicating that the force distribution is set mainly by force awareness, whereas the trained prior contributes through the tracking accuracy and success rate reported in Section 5.2.
+
+In forward motion, all configurations show high ratios with small diferences. A plausible explanation is that steady forward pushing requires only a small driving force against rolling resistance, so the inward grip forces that cancel between the hands dominate the horizontal load. For every configuration, the ratio also decreases from 15 kg to 25 kg, because the heavier cart requires larger driving forces.
+
+These results demonstrate that force awareness enables ForPC to direct its bimanual efort toward driving the cart.
+
+## 5.4. Real-World Deployment
+
+We deploy ForPC on a physical Unitree G1 to examine whether the simulation-trained controller transfers to hardware. The deployed networks, comprising the normalizers, the student inference network, and the task policy, are taken directly from simulation training without real-world training or fine-tuning. On hardware, the policy relies only on proprioception, joint torques, and the relative cart heading obtained from the April-Tag; neither the hand forces nor the cart velocity is measured, and no payload information is provided.
+
+![](images/ccc9815b6459e3ea647e69a2c685b98d4ce21d0dc24a9de13e761ea37cd1aabb.jpg)  
+Figure 6: (a) ForPC deployed on a physical Unitree G1 pushes the cart forward along a straight line. (b) The deployed policy moves the cart laterally. (c) The deployed policy rotates the cart.
+
+Figure 6 shows three basic motions on a flat indoor floor. In forward motion, the robot walks behind the cart and pushes it along an approximately straight line through a long corridor. In lateral motion, the robot steps sideways with the cart, which translates across the floor while both hands remain on the handle.
+
+![](images/ae7beb7ea98cb32378511341f1036324d6c2a6bab72c8e81f2b0fdd3f9ad27d2.jpg)  
+Figure 7: A physical Unitree G1 running ForPC within a navigation system transports materials. The map shows Trajectory 1 (red) and Trajectory 2 (green), and the numbered markers indicate where the corresponding snapshots were taken. (1) The robot turns into a narrow passage. (2) The robot moves straight through the narrow passage. (3) The robot turns onto a straight segment. (4) A worker removes materials from the cart, a worker places materials onto the cart, and the robot turns in place. (5) Under the same policy, the robot pushes the cart with a diferent payload to complete the material transport. (6) A worker removes the materials from the cart.
+
+In rotational motion, the robot walks around the cart while the cart turns about a nearly fixed point. In lateral and rotational motion, the cart is driven mainly by lateral hand forces or a yaw moment rather than by forward pushing, while the legs reposition the body around the cart. These motions therefore require the coordinated arm, waist, and leg adjustments described in Section 4.3.
+
+We further integrate ForPC into a navigation system for material transport, a common logistics task, as shown in Figure 7. The navigation system plans the route on a prebuilt map and issues cart-velocity commands, which ForPC executes through whole-body motion. Along Trajectory 1, the robot pushes the cart into a narrow passage, moves straight through it, turns onto a long straight segment, and reaches the transfer station. At this station, a worker unloads the transported materials and places a diferent payload on the cart, after which the robot turns the cart in place. The robot then pushes the reloaded cart along Trajectory 2 to the destination, where the materials are unloaded. The same policy executes both trajectories consecutively, without resetting the controller or adjusting any parameter after the payload change.
+
+These experiments show that the simulation-trained policy transfers to the physical robot without fine-tuning, sustains coordinated pushing in forward, lateral, and rotational motion, and, in a real transport task with payload changes, pushes a cart carrying up to 30 kg at 0.5 m/s.
+
+## 6. Conclusion
+
+This paper presented ForPC, a force-aware whole-body control framework for precise humanoid cart pushing. A locomotion prior trained under hand loading and upper-body posture variations provides balance support, a force-guided interaction inference module infers force and state latents from onboard signals without external force sensors, and a residual policy uses these latents to coordinate the arms, waist, and legs. Sim-to-sim experiments show that ForPC reduces cart-velocity RMSE by up to 68.2% and cross-track RMSE by up to 74.2% relative to Loco-only, succeeds in every route trial, and directs more of the bimanual efort toward driving the cart. Trained solely in simulation, the policy transfers to a physical Unitree G1 and pushes a cart carrying up to 30 kg at 0.5 m/s. Future work will extend ForPC to other wheeled objects and contact modes and incorporate richer exteroception for transport in cluttered environments.
+
+## References
+
+[1] Y. Tong, H. Liu, Z. Zhang, Advancements in humanoid robots: A comprehensive review and future prospects, IEEE/CAA Journal of Automatica Sinica 11 (2) (2024) 301–328. doi:10.1109/jas.2023.124140.
+
+[2] Z. Gu, J. Li, W. Shen, W. Yu, Z. Xie, S. McCrory, X. Cheng, A. Shamsah, R. Grifin, C. K. Liu, A. Kheddar, X. B. Peng, Y. Zhu, G. Shi, Q. Nguyen, G. Cheng, H. Gao, Y. Zhao, Humanoid locomotion and manipulation: Current progress and challenges in control, planning, and learning, IEEE/ASME Transactions on Mechatronics 31 (2) (2026) 2300–2330. doi:10.1109/tmech.2025.3579247.
+
+[3] A. Kheddar, M. A. Roa, P.-B. Wieber, F. Chaumette, F. Spindler, G. Oriolo, L. Lanari, A. Escande, K. Chappellet, F. Kanehiro, P. Rabate, S. Caron, P. Gergondet, A. Comport, A. Tanguy, C. Ott, B. Henze, G. Mesesan, J. Englsberger, Humanoid robots in aircraft manufacturing: The Airbus use cases, IEEE Robotics & Automation Magazine 26 (4) (2019) 30–45. doi:10.1109/mra.2019.2943395.
+
+[4] L. Hawley, W. Suleiman, Control strategy and implementation for a humanoid robot pushing a heavy load on a rolling cart, in: 2017 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2017, pp. 4997–5002. doi:10.1109/iros.2017.8206382.
+
+[5] A. Rioux, W. Suleiman, Autonomous SLAM based humanoid navigation in a cluttered environment while transporting a heavy load, Robotics and
+
+URL https://proceedings.mlr.press/v270/fu25a.html
+
+Autonomous Systems 99 (2018) 50–62. doi:10.1016/j.robot.2017. 10.001.
+
+[6] T. Yoshikawa, K. Nagai, Manipulating and grasping forces in manipulation by multifingered robot hands, IEEE Transactions on Robotics and Automation 7 (1) (1991) 67–77. doi:10.1109/70.68071.
+
+[7] L. Sentis, O. Khatib, Synthesis of whole-body behaviors through hierarchical control of behavioral primitives, International Journal of Humanoid Robotics 2 (4) (2005) 505–518. doi:10.1142/s0219843605000594.
+
+[8] P. M. Wensing, M. Posa, Y. Hu, A. Escande, N. Mansard, A. D. Prete, Optimization-based control for dynamic legged robots, IEEE Transactions on Robotics 40 (2024) 43–63. doi:10.1109/tro.2023.3324580.
+
+[9] J.-P. Sleiman, F. Farshidian, M. V. Minniti, M. Hutter, A unified MPC framework for whole-body dynamic locomotion and manipulation, IEEE Robotics and Automation Letters 6 (3) (2021) 4688–4695. doi:10.1109/ lra.2021.3068908.
+
+[10] J. Dao, H. Duan, A. Fern, Sim-to-real learning for humanoid box locomanipulation, in: 2024 IEEE International Conference on Robotics and Automation (ICRA), 2024, pp. 16930–16936. doi:10.1109/icra57147. 2024.10610977
+
+[11] Y. Ze, Z. Chen, J. P. Araújo, Z.-a. Cao, X. B. Peng, J. Wu, C. K. Liu, TWIST: Teleoperated whole-body imitation system, in: Proceedings of The 9th Conference on Robot Learning, Vol. 305 of Proceedings of Machine Learning Research, PMLR, 2025, pp. 2143–2154. URL https://proceedings.mlr.press/v305/ze25a.html
+
+[12] S. Zhao, Y. Ze, Y. Wang, C. K. Liu, P. Abbeel, G. Shi, R. Duan, ResMimic: From general motion tracking to humanoid whole-body loco-manipulation via residual learning, arXiv preprint arXiv:2510.05070 (2025). doi:10. 48550/arXiv.2510.05070
+
+[13] Q. Liao, T. E. Truong, X. Huang, Y. Gao, G. Tevet, K. Sreenath, C. K. Liu, BeyondMimic: From motion tracking to versatile humanoid control via guided difusion, Science Robotics 11 (117) (2026). doi:10.1126/ scirobotics.adx8924.
+
+[14] Q. Ben, F. Jia, J. Zeng, J. Dong, D. Lin, J. Pang, HOMIE: Humanoid locomanipulation with isomorphic exoskeleton cockpit, in: Robotics: Science and Systems XXI, 2025. doi:10.15607/rss.2025.xxi.070.
+
+[15] Y. Zhang, Y. Yuan, P. Gurunath, I. Gupta, S. Omidshafiei, A.-a. Aghamohammadi, M. Vazquez-Chanlatte, L. Pedersen, T. He, G. Shi, FALCON: Learning force-adaptive humanoid loco-manipulation, in: Proceedings of The 8th Annual Learning for Dynamics and Control Conference, Vol. 331 of Proceedings of Machine Learning Research, PMLR, 2026, pp. 265–281. URL https://proceedings.mlr.press/v331/zhang26a.html
+
+[16] K. Xiao, Z. Xu, C. Zhe, C. Liu, Q. Chen, Kinematics-aware multi-policy reinforcement learning for force-capable humanoid loco-manipulation, arXiv preprint arXiv:2511.21169 (2025). URL https://arxiv.org/abs/2511.21169
+
+[17] T. Portela, G. B. Margolis, Y. Ji, P. Agrawal, Learning force control for legged manipulation, in: 2024 IEEE International Conference on Robotics and Automation (ICRA), 2024, pp. 15366–15372. doi:10. 1109/icra57147.2024.10611066.
+
+[18] P. Zhi, P. Li, J. Yin, B. Jia, S. Huang, Learning a unified policy for position and force control in legged loco-manipulation, in: Proceedings of The 9th Conference on Robot Learning, Vol. 305 of Proceedings of Machine Learning Research, PMLR, 2025, pp. 652–669. URL.https://proceedings.mlr.press/y305/zhi25a.html
+
+[19] D. Li, X. Chen, Q. Wu, B. Chen, S. Wu, H. Wu, G. Zhang, L. Li, M. Zhou, D. Xiang, J. Ma, Q. Zhang, R. Xu, HAIC: Humanoid agile object interaction control via dynamics-aware world model, in: Robotics: Science and Systems XXII, 2026. / .
+
+[20] X. Liu, Y. Dong, J. Wan, L. Deng, F. Hua, Y. Shen, M. Yu, G. Ma, C. Cheng, H. Song, H. Ding, Y. Yuan, DexAnyTwist: Learning general dexterous twisting with hybrid manipulation system identification, National Science Review (2026) nwag351 / / .
+
+[21] J. Wan, X. Liu, Y. Dong, DexReMoE: In-hand reorientation of general object via mixtures of experts, arXiv preprint arXiv:2508.01695 (2025). doi:10.48550/arXiv.2508.01695.
+
+[22] X. Zeng, J. Wang, T. Zhang, L. Zhang, B. Xu, W. Xia, Z. Li, Y.- H. Liu, Force-aware reinforcement learning with hybrid sensorless force estimation for wheeled-legged loco-manipulation, arXiv preprint arXiv:2609.13779 (2026).
+
+[23] S. Nozawa, Y. Kakiuchi, K. Okada, M. Inaba, Controlling the planar
+
+motion of a heavy object by pushing with a humanoid robot using dualarm force control, in: 2012 IEEE International Conference on Robotics and Automation (ICRA), 2012, pp. 1428–1435. doi:10.1109/ICRA. 2012.6224884.
+
+[24] M. Murooka, K. Chappellet, A. Tanguy, M. Benallegue, I. Kumagai, M. Morisawa, F. Kanehiro, A. Kheddar, Humanoid loco-manipulations pattern generation and stabilization control, IEEE Robotics and Automation Letters 6 (3) (2021) 5597–5604. doi:10.1109/LRA.2021.3077858.
+
+[25] J. Li, L. Wu, S. A. Esteban, L. Yang, J. Drgona, A. D. Ames, Acceleratingˇ and scaling MPC-guided reinforcement learning for humanoid locomotion and manipulation, arXiv preprint arXiv:2606.05687 (2026). doi:10. 48 0/ 2606 0 687.
+
+[26] A. Dang, A. Flores Alvarez, Y.-M. Chen, C. Mc Gartoll, H. Sun, A. Ames, N. Fazeli, M. Nambi, HULK: Learning whole-body forceful loco-manipulation for humanoids, arXiv preprint arXiv:2610.08970 (2026) doi:10.48550/arXiv.2610.08970.
+
+[27] H. Jiang, J. Chen, Q. Bu, L. Chen, M. Shi, Y. Zhang, D. Li, C. Suo, C. Wang, Z. Peng, H. Li, WholeBodyVLA: Towards unified latent VLA for whole-body loco-manipulation control, in: The Fourteenth International Conference on Learning Representations, 2026. URL // / / 47
+
+[28] Z. Hu, Z. Xu, D. Chang, H. Yin, L. Tran, R. Martín-Martín, P. Stone, J. Qiao, J. Biswas, VOFA: Visual object goal pushing with force-adaptive control for humanoids, in: 2026 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2026. URL https://www.cs.utexas.edu/\~AustinVilla/papers/ zichao\_hu\_iros\_2026.pdf
+
+[29] H. Zhang, Y. Tseng, D. Zhao, H. E. Tseng, Interaction-aware whole-body control for compliant object transport, arXiv preprint arXiv:2603.03751 (2026). doi:10.48550/arXiv.2603.03751.
+
+[30] B. Xu, H. Weng, Q. Lu, Y. Gao, H. Xu, FACET: Force-adaptive control via impedance reference tracking for legged robots, arXiv preprint arXiv:2505.06883 (2025). doi:10.48550/arXiv.2505.06883.
+
+[31] G. B. Margolis, M. Wang, N. Fey, P. Agrawal, SoftMimic: Learning compliant whole-body control from examples, arXiv preprint arXiv:2510.17792 (2025). doi:10.48550/arXiv.2510.17792.
+
+[32] Q. Lu, Y. Feng, B. Shi, M. Piseno, Z. Bao, C. K. Liu, GentleHumanoid: Learning upper-body compliance for contact-rich human and object interaction, IEEE Robotics and Automation Letters (2026) 1– 8doi:10.1109/lra.2026.3747618.
+
+[33] C. Dong, H. Xu, W. Feng, Z. Wang, Y. Zhou, Y. Zhao, B. He, HAFO: A force-adaptive control framework for humanoid robots in intense interaction environments, arXiv preprint arXiv:2511.20275 (2025). doi: 10.48550/arXiv.2511.20275.
+
+[34] G. Li, H. Shi, Q. Shi, Y. Hu, C. Ma, Z. Wang, X. Wang, S. Luo, Thor: Towards human-inspired whole-body reactions for intense contact-rich environments, arXiv preprint arXiv:2510.26280 (2025). doi:10.48550/ arXiv.2510.26280.
+
+[35] T.-D. Do, C. T. Trinh, T. D. Phuong, C. Le, T. Ly, V. A. Ngo, A. T. Le, CompliantWBC: Whole-body compliance for heavy humanoids via force latent estimation and residual impedance targets, arXiv preprint arXiv:2609.33310 (2026). doi:10.48550/arXiv.2609.33310.
+
+[36] T. He, Z. Luo, W. Xiao, C. Zhang, K. Kitani, C. Liu, G. Shi, Learning human-to-humanoid real-time whole-body teleoperation, in: 2024 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2024, pp. 8944–8951. doi:10.1109/iros58592.2024. 10801984.
+
+[37] T. He, Z. Luo, X. He, W. Xiao, C. Zhang, W. Zhang, K. M. Kitani, C. Liu, G. Shi, OmniH2O: Universal and dexterous human-to-humanoid wholebody teleoperation and learning, in: Proceedings of The 8th Conference on Robot Learning, Vol. 270 of Proceedings of Machine Learning Research, PMLR, 2025, pp. 1516–1540.
+
+URL https://proceedings.mlr.press/v270/he25b.html
+
+[38] Z. Fu, Q. Zhao, Q. Wu, G. Wetzstein, C. Finn, HumanPlus: Humanoid shadowing and imitation from humans, in: Proceedings of The 8th Conference on Robot Learning, Vol. 270 of Proceedings of Machine Learning Research, PMLR, 2025, pp. 2828–2844.
+
+[39] T. Johannink, S. Bahl, A. Nair, J. Luo, A. Kumar, M. Loskyll, J. A. Ojea, E. Solowjow, S. Levine, Residual reinforcement learning for robot control, in: 2019 International Conference on Robotics and Automation (ICRA),
+
+2019, pp. 6023–6029. doi:10.1109/icra.2019.8794127.
+
+[40] Z. Sun, Y. Peng, Y. Meng, X. Li, B.-S. Huang, Z. Bing, X. Wang, A. Knoll, RobotDancing: Residual-action reinforcement learning enables robust long-horizon humanoid motion tracking, IEEE Robotics and Automation Letters 11 (10) (2026) 11267–11274. doi:10.1109/lra.2026. 3723309.
+
+[41] Z. Sun, B.-S. Huang, Y. Peng, X. Li, J. Ma, Y. Sun, Z. Li, H. Jiang, B. Gao, Z. Bing, X. Wang, A. Knoll, MOSAIC: Bridging the sim-toreal gap in generalist humanoid motion tracking and teleoperation with rapid residual adaptation, arXiv preprint arXiv:2602.08594 (2026). doi: 10.48550/arXix.2602.08594.
+
+[42] H. Weng, Y. Li, N. Sobanbabu, Z. Wang, Z. Luo, T. He, D. Ramanan, G. Shi, HDMI: Learning interactive humanoid whole-body control from human videos, arXiv preprint arXiv:2509.16757 (2025). doi:10.48550/ arXiy.2509.16757
+
+[43] J. Jang, Z. Wang, Z. Zhou, F. Wu, Y. Zhao, SEEC: Stable endefector control with model-enhanced residual learning for humanoid locomanipulation, arXiv preprint arXiv:2509.21231 (2025). URL https://arxiv.org/abs/2509.21231
+
+[44] A. Huang, Z. Wu, S. Atar, Y. Zhi, M. Yip, SteadyTray: Learning object balancing tasks in humanoid tray transport via residual reinforcement learning, arXiv preprint arXiv:2603.10306 (2026). doi:10.48550/arXiv.2603. 10306.
+
+[45] M. Mittal, C. Yu, Q. Yu, J. Liu, N. Rudin, D. Hoeller, J. L. Yuan, R. Singh, Y. Guo, H. Mazhar, A. Mandlekar, B. Babich, G. State, M. Hutter, A. Garg, Orbit: A unified simulation framework for interactive robot learning environments, IEEE Robotics and Automation Letters 8 (6) (2023) 3740–3747. doi:10.1109/lra.2023.3270034.
+
+[46] E. Todorov, T. Erez, Y. Tassa, Mujoco: A physics engine for modelbased control, in: 2012 IEEE/RSJ International Conference on Intelligent Robots and Systems, 2012, pp. 5026–5033. doi:10.1109/iros.2012. 6386109.

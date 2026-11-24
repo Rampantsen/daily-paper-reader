@@ -51,14 +51,14 @@
       <span class="dpr-home-dashboard-kicker">2026-10-26 ~ 2026-11-24</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 0 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 52 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
-    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>0</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>2 次</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>41</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>11</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-11-24 01:50:39 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-11-24 17:40:12 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日无新推荐，系统未产出可展示论文。</p>
+<p>本期（2026-10-26~11-24）共筛选52篇论文，其中精读41篇、速读11篇，重点关注人形机器人的反应式物体交互与感知运动。最值得看的两篇满分精读是《ReGATE》的循环门控视觉融合方案和《STEP》的显式预测时空训练框架；速读论文中，《Zero-HLM》则展示了无真机数据也能泛化的移动操作。普通读者可优先从这两篇精读入手，理解“感知-预测-动作”闭环，再按需查阅速读中的轻量化部署案例。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -78,12 +78,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">0 篇</strong>
+    <strong class="dpr-home-dashboard-count">41 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p class="dpr-home-dashboard-empty">今日暂无推荐。</p>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="ReGATE: Recurrent Gated Visual Fusion for Reactive Humanoid-Object Interaction">ReGATE: Recurrent Gated Visual Fusion for Reactive Humanoid-Object Interaction</span></li><li><span class="dpr-home-dashboard-paper-title" title="STEP: Spatiotemporal Training with Explicit Prediction for Perceptive Humanoid Locomotion">STEP: Spatiotemporal Training with Explicit Prediction for Perceptive Humanoid Locomotion</span></li><li><span class="dpr-home-dashboard-paper-title" title="LocoMuJoCo: A Comprehensive Imitation Learning Benchmark for Whole-Body Control">LocoMuJoCo: A Comprehensive Imitation Learning Benchmark for Whole-Body Control</span></li></ul>
   </div>
-
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">humanoid <strong>41</strong></span></div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -91,12 +91,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">0 篇</strong>
+    <strong class="dpr-home-dashboard-count">11 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p class="dpr-home-dashboard-empty">今日暂无推荐。</p>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Zero-HLM: Generalizable Humanoid Loco-Manipulation without Real Robot Data">Zero-HLM: Generalizable Humanoid Loco-Manipulation without Real Robot Data</span></li><li><span class="dpr-home-dashboard-paper-title" title="Learning Multi-Phase Robot Loco-Manipulation via Phase-Conditioned Policy Optimization">Learning Multi-Phase Robot Loco-Manipulation via Phase-Conditioned Policy Optimization</span></li><li><span class="dpr-home-dashboard-paper-title" title="SONIC-K1: Porting a Universal Humanoid Motion Tracker to a Small Humanoid on a Single GPU">SONIC-K1: Porting a Universal Humanoid Motion Tracker to a Small Humanoid on a Single GPU</span></li></ul>
   </div>
-
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">humanoid <strong>11</strong></span></div>
 </section>
 </div>
 

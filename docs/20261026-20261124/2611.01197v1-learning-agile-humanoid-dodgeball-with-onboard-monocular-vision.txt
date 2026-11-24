@@ -1,0 +1,286 @@
+# Learning Agile Humanoid Dodgeball with Onboard Monocular Vision
+
+Feng Tian<sup>1,∗</sup>, Yulin An<sup>1,2,∗</sup>, Chenhao Li<sup>3</sup>, Matthias Heyrman<sup>3</sup>, Marco Hutter<sup>3</sup>
+
+![](images/06cbdfe646e201ac8bb3c62c42449da75b33c60ac297724f5bf36b8045d42c2a.jpg)  
+Fig. 1: Our end-to-end visuomotor system combines temporal visual encoding and threat-flag prediction with learned whole body skills to enable agile evasion and a repeated search–track–dodge loop on a physical Unitree G1.
+
+Abstract— Humanoid robots operating in shared, dynamic environments must respond to rapidly approaching objects while maintaining balance. We study dodgeball as a controlled test of this capability, coupling visual threat assessment with whole-body evasion, recovery, and target reacquisition. We develop a system that integrates onboard monocular perception, temporal ball-state and threat-flag estimation, and learned whole-body control. A ball detector supplies bounding-box histories, and a temporal estimator predicts relative ball position and a binary threat flag. Separate dodge/recovery and search/track policies share this interface and are composed to support repeated encounters. A three-stage curriculum first trains control with privileged ball states, then starts estimator supervision from stable policy rollouts, and finally replaces the actor’s privileged inputs with estimator outputs. Analytic projection and perception randomization provide detectorlike training observations without image rendering. Across approach-angle bins in controlled simulation, dodge success ranges from 97.8–100.0% for 5.0 m launches at 6 m/s to 33.2– 40.8% for 2.5 m launches at 10 m/s, with 1000 throws per speed–distance condition. On a physical Unitree G1, controlled single-throw success exceeds 85% over more than 15 trials. A hardware sequence demonstrates full-azimuth target reacquisition followed by another dodge. These results demonstrate an integrated onboard-monocular-vision system under highly dynamic motions.
+
+## I. INTRODUCTION
+
+Humanoid robots are intended to operate in environments where people and objects move unpredictably. An accidentally thrown or falling object can enter the robot’s immediate workspace before a nominal task controller has time to respond. Avoiding such an object requires the robot to alter its whole-body motion while preserving balance, then recover a posture from which it can continue operating. For a biped, an evasive action that avoids contact but causes a fall is not a successful response. Fast-object avoidance therefore provides a concrete setting for studying reactive whole-body behavior under simultaneous sensing and balance constraints.
+
+We study humanoid dodgeball as a controlled experimental task for this capability. Ball launches make approach speed, distance, and direction explicit, enabling repeatable tests of the time available for perception and movement. The task extends beyond an isolated dodge: the robot must find the ball, assess its approach, evade it, recover, and reacquire a target for the next encounter. A torso-mounted camera makes these requirements interdependent. Turning the body changes visibility, but rapid turning can also degrade the images needed to guide subsequent motion. The tested ball and launch conditions define the scope of our evaluation; they do not establish avoidance of arbitrary projectiles.
+
+Fast-object avoidance has been demonstrated on aerial robots with frame and event cameras [1]–[4], and quadruped systems combine learned evasion with active sensing [5], [6].
+
+Humanoid ball-interaction systems demonstrate agile wholebody skills [7]–[12]. Closely related, PAC-MAN combines perception-aware control-barrier-function guidance and reinforcement learning for humanoid dodgeball [13]. These advances motivate examining the complete sensing-to-action loop, including recovery and target reacquisition with a moving onboard camera.
+
+Our system integrates three components: monocular ball perception, temporal ball-state and threat-flag estimation, and whole-body policy learning. At deployment, an RGB detector supplies ball bounding boxes; a temporal estimator converts their history into relative position and a binary threat flag; and separate dodge/recovery and search/track policies execute the required whole-body behaviors. Their composition supports a search–track–dodge sequence without external ball tracking. The control policies also receive proprioception, so visual task information is coupled to the robot’s physical state.
+
+The training design addresses the coupling between these components. Analytic sphere projection generates detectorlike observations in parallel simulation, and observation randomization exposes the estimator and policies to noise, missed detections, and delay. A three-stage curriculum separates control acquisition from estimator learning before closing the perception–control loop: the actor first learns from ground-truth ball states, estimator supervision begins after stable rollouts emerge, and the actor then switches to estimated states. The bounding-box interface supports this transition while matching the output available from the deployed detector.
+
+The main contributions are:
+
+• We combine analytic 2D bounding-box projection and perception randomization with temporal estimation of relative ball position and a binary threat flag.
+
+• We develop a humanoid dodgeball system using onboard monocular vision, separate dodge/recovery and search/track policies, and a three-stage curriculum.
+
+• We validate perception, estimation, and avoidance in simulation and on a physical Unitree G1 across controlled launch speeds, distances, and directions.
+
+## II. RELATED WORK
+
+## A. Dynamic Obstacle Avoidance
+
+Agile aerial navigation systems learn vision-based control or combine perception, prediction, and kinodynamic planning [1], [2]. Event cameras are attractive for projectiles because their high temporal resolution reduces latency and motion blur [3], [4]. Event-based catching has also been transferred to a quadruped [14]. These systems demonstrate rapid sensing, but specialized event sensors are less ubiquitous than commodity RGB cameras, and free-flight or quadrupedal avoidance has different balance constraints from humanoid whole-body evasion.
+
+REBot learns reflexive quadruped evasion, while APRE-Bot adds omnidirectional sensing and active camera focusing [5], [6]. They share the need to coordinate sensing and evasive motion. Our system studies this coordination on a biped, where search, avoidance, and recovery must all preserve balance with a moving torso camera.
+
+## B. Humanoid Ball Interaction
+
+Humanoid Goalkeeper learns agile reactions from taskmotion constraints and motion priors [7]. Recent badminton, table-tennis, and tennis systems combine trajectory prediction, planning, reinforcement learning, and motion priors to achieve dynamic interaction [8]–[12], [15]. These works primarily intercept or strike the object and commonly rely on external tracking or structured localization. SMASH uses egocentric stereo vision, but also uses fiducials in a constrained table-tennis scene [11]. In contrast, our robot avoids a fast ball across a broad workspace using one onboard monocular RGB camera and no external object tracking.
+
+PAC-MAN directly studies humanoid dodgeball using CBF-guided reinforcement learning, an adversarial motion prior, and segmentation-masked onboard depth [13]. Its analysis relates useful safety structure to perceptual observability. Our system uses monocular RGB and temporal estimation, and composes learned evasion/recovery with full-azimuth search and tracking. We evaluate the resulting perception– estimation–control pipeline; differing hardware protocols preclude a direct success-rate comparison.
+
+## III. METHODS
+
+## A. System and Task Formulation
+
+Figure 2 summarizes the deployment loop and its training interfaces. The robot is a Unitree G1 with 29 actuated joints and a torso-mounted monocular camera. At time t, perception produces a normalized box
+
+$$
+\mathbf {b} _ {t} = [ c _ {t} ^ {u}, c _ {t} ^ {v}, w _ {t}, h _ {t}, m _ {t} ],\tag{1}
+$$
+
+where center and size are normalized by image width and height, and $m _ { t } ~ \in ~ \{ 0 , 1 \}$ indicates a valid detection. The estimator maps a history $\mathbf { b } _ { t - H + 1 : t }$ to relative ball position $\hat { \mathbf { p } } _ { b , t } ^ { r }$ in the robot frame and a predicted binary threat flag χˆ<sub>t</sub>. The ground-truth flag $\chi _ { t } = 1$ denotes an approaching ball with nonzero closing speed; $\chi _ { t } = 0$ denotes a staged, receding, or absent ball. The threat flag indicates whether the ball is approaching rather than whether contact is inevitable. The policy combines estimated task state with proprioception and emits 29 joint-position targets. During training, an asymmetric critic additionally receives privileged ball trajectory, target, phase, time-to-target, and base linear velocity.
+
+1) Training environment: The training environment presents repeated encounters rather than a single fixed throw. Each episode contains five throws separated by randomized 2–4 s intervals, preventing the policy from exploiting a periodic launch schedule. As shown in Fig. 3(i), each ball is initialized in front of the robot within the camera field of view. Launch distance is sampled from 2.5 to 5.0 m, speed from 6 to 10 m/s, yaw over a 60<sup>◦</sup> sector, and height from 0.3 to 1.2 m. The target is sampled around the torso with horizontal offsets of up to 0.25 m and a vertical offset in [−0.5, 0.5] m. The resulting trajectory diversity discourages convergence to a single fixed evasive motion.
+
+![](images/ca749a528f18932a6c7ff70f0fadec1b68692bfee7ad04714412603eee00b17c.jpg)  
+Fig. 2: Perception-in-the-loop system. Simulation uses analytic projection and perception randomization to produce bounding box histories; hardware uses onboard RGB and a fine-tuned detector. The temporal estimator predicts relative ball position and a binary threat flag. The policy block denotes the active whole-body policy: separate dodge/recovery and search/track policies share the estimated-state, proprioceptive, and action interfaces. Ground-truth (GT) states drive the actor in Stages 1–2 and supervise the estimator from Stage 2; the actor uses estimator outputs from Stage 3.
+
+Within each throw, the ball progresses through rest, launched, and absent phases. The rest phase provides visible but non-threatening observations; the launched phase requires the robot to distinguish an approaching ball and evade it; and the absent phase removes the visual target after the encounter. These phases provide both threat and nonthreat observations and require the dodge/recovery policy to respond to ball state rather than visibility alone. This cyclic design reflects realistic throwing scenarios, in which the ball is entirely out of view during the reset interval between the robot completing its dodge and the next throw preparing.
+
+## B. Monocular Ball Perception
+
+Rendering thousands of camera streams during reinforcement learning is expensive. Instead, we analytically project the known spherical ball in simulation. For ball center $\mathbf { p } _ { b , t } ^ { w }$ camera position $\mathbf { p } _ { c , t } ^ { w }$ , and world-to-camera rotation $\mathbf { R } _ { c w }$
+
+$$
+\mathbf {p} _ {b, t} ^ {c} = \mathbf {R} _ {c w} (\mathbf {p} _ {b, t} ^ {w} - \mathbf {p} _ {c, t} ^ {w}) = [ x, y, z ] ^ {\top}.
+$$
+
+For a sphere fully in front of the camera $( z > r _ { b } )$ and either image-plane coordinate $a \in \{ x , y \}$ and ball radius $r _ { b } .$ , the two tangent-ray slopes are
+
+$$
+m _ {a} ^ {\pm} = \frac {a z \pm r _ {b} \sqrt {a ^ {2} + z ^ {2} - r _ {b} ^ {2}}}{z ^ {2} - r _ {b} ^ {2}}.
+$$
+
+Camera intrinsics map $m _ { x } ^ { \pm }$ and $m _ { y } ^ { \pm }$ to pixel extrema. We clip the extrema to the image, convert them to the centersize representation in (1), and return a blank box when the sphere is behind the camera or outside its field of view.
+
+At deployment, a fine-tuned YOLOv8 detector [16] supplies the same representation. We collect about two minutes of onboard video, label 830 frames, and expand the training set to 3050 images with cropping, rotation, and illumination augmentation. Detector validation uses 313 images; its measured performance is reported in Section IV-B.
+
+Clean analytic boxes do not reproduce hardware errors. During training we therefore (i) randomly drop visible detections, (ii) add Gaussian center noise in pixels, (iii) apply multiplicative log-normal width and height noise, and (iv) delay observations by 30–50 ms. This interface exposes the downstream estimator and policy to missing, shifted, scaled, and stale measurements without rendering RGB images.
+
+## C. Temporal Ball-State and Threat-Flag Estimation
+
+A single-step monocular bounding box provides no information about the ball’s motion and may be unavailable when the detector misses the ball. We therefore estimate the ball state from a sequence of recent detections using a three-layer multilayer perceptron $f _ { \phi } \colon$
+
+$$
+(\hat {\mathbf {p}} _ {b, t} ^ {r}, \hat {\chi} _ {t}) = f _ {\phi} (\mathbf {b} _ {t - H + 1: t}).
+$$
+
+The center trajectory provides motion cues, while the box size is used to infer depth under the assumption that the ball radius is approximately known. Consequently, deviation from the assumed radius can reduce depth estimation accuracy. Simulation provides relative-position labels $\mathbf { p } _ { b , t } ^ { r }$ and binary ground-truth threat flags $\chi _ { t }$ . We train with
+
+$$
+\mathcal {L} _ {\mathrm{est}} = \lambda_ {p} \| \hat {\mathbf {p}} _ {b, t} ^ {r} - \mathbf {p} _ {b, t} ^ {r} \| _ {2} ^ {2} + \lambda_ {y} \mathcal {L} _ {\mathrm{BCE}} (\hat {\chi} _ {t}, \chi_ {t}).
+$$
+
+The estimator’s outputs—relative ball position and a binary threat flag—are used by both control policies. The estimator is not trained to explicitly estimate ball velocity. Instead, the policy can infer the velocity from changes across consecutive estimated ball positions.
+
+Because the ball is in flight for only a small fraction of each episode, non-threat steps substantially outnumber threat steps. To prevent the estimator from learning a trivial nonthreat bias, we sample windows around the start, middle, and end of visible flight segments. Window length is randomized from 2 to 20 steps, stride from 1 to 3 steps, and each retained window contains at least two visible frames. We also synthesize non-threatening stationary and low-speed trajectories inside the camera frustum. Depth is log-uniform on 0.2–7.0 m; velocity is either near-static in [−0.05, 0.05] m/s with probability 0.6 or sampled in [−2, 2] m/s. Normal rollout, flight-window, and synthetic samples are mixed approximately 1 : 1 : 2.
+
+![](images/5f14b57c431dbc2ff32cc64fd360065bb4e604048e4bacf45813f8c396932306.jpg)  
+Fig. 3: Simulation environment and three-stage curriculum. (i) Each episode samples launch distance, speed, yaw, height, and torso target from the shown ranges, and the ball alternates among rest, launched, and absent phases. (ii) Stage 1 trains the policy with ground-truth (GT) ball position and threat flag. Stage 2 starts supervised estimator training after the episode length exceeds 900 steps while the actor retains these GT inputs. Stage 3 feeds the estimated ball position and threat flag to the actor after dodge success exceeds 0.9; the critic retains privileged training inputs.
+
+TABLE I: Control objectives and their roles in the two skills.
+
+<table><tr><td>Component</td><td>Objective and intended behavior</td></tr><tr><td>Dodge</td><td>Avoid ball contact and increase minimum body-to-ball clearance.</td></tr><tr><td>Recovery</td><td>Reduce planar motion, yaw rate, and deviation from the ready pose after evasion.</td></tr><tr><td>Search/track</td><td>Align horizontal facing direction with the ball to acquire and maintain visibility.</td></tr><tr><td>Regularization</td><td>Discourage unstable or unnecessarily aggressive whole-body motion.</td></tr></table>
+
+## D. Whole-Body Policy Learning and Skill Composition
+
+1) Shared observation and action interfaces: The system uses two separately learned policies, π<sub>dodge</sub> for dodge/recovery and $\pi _ { \mathrm { s e a r c h } }$ for search/track. Both observe estimated ball-state history, base angular velocity, projected gravity, joint states, and the previous action. Both output joint-position targets for the same 29-joint robot. Each uses an asymmetric actor–critic architecture: the actor is trained toward deployment-available observations, whereas the critic can use privileged task and robot states.
+
+2) Learning dodge and recovery: The dodge/recovery objective combines collision avoidance and body-to-ball clearance with a return to a stable ready posture after the threat passes. Let $C _ { t }$ indicate contact with the ball, $\mathbf { p } _ { j , t } ^ { r }$ denote the position of robot body $j ,$ and ${ \bf q } ^ { 0 }$ denote the ready
+
+pose. The task terms are
+
+$$
+\begin{array}{r} r _ {t} ^ {\mathrm{dodge}} = w _ {\mathrm{nc}} (1 - C _ {t}) - w _ {\mathrm{c}} C _ {t} + w _ {\mathrm{d}} \min _ {j} \| \mathbf {p} _ {b, t} ^ {r} - \mathbf {p} _ {j, t} ^ {r} \| _ {2}, \\ r _ {t} ^ {\mathrm{rec}} = - w _ {v} \| \mathbf {v} _ {t} ^ {x y} \| _ {2} ^ {2} - w _ {\omega} \omega_ {z, t} ^ {2} - w _ {q} \sum_ {j} | q _ {j, t} - q _ {j} ^ {0} |. \end{array}
+$$
+
+The first line rewards a collision-free response with clearance; the second discourages residual planar motion, yaw, and posture error during recovery. Regularization terms penalize unstable or unnecessarily aggressive actions. Thus, an avoidance that ends in a fall or leaves the robot unable to face the next throw is not rewarded as a complete response. Table I summarizes the roles of the policy objectives.
+
+3) Learning search and tracking: The search/track policy aligns the robot’s horizontal facing direction with the ball. With unit vectors $\mathbf { f } _ { t }$ along the robot’s horizontal facing direction and $\mathbf { d } _ { t }$ from the robot to the ball, the principal task reward is
+
+$$
+r _ {t} ^ {\mathrm{face}} = 3 \exp \left[ - \frac {(1 - \mathbf {f} _ {t} ^ {\top} \mathbf {d} _ {t}) ^ {2}}{0 . 5 ^ {2}} \right].
+$$
+
+The camera is fixed to the torso, so changing its viewing direction requires whole-body turning and stepping. This skill must acquire the target and stabilize the view rather than produce a short avoidance reflex. The two skills remain separate to retain these different temporal behaviors. Hardware observations expose a practical trade-off: faster turning increases angular coverage but can blur the image and interrupt detections.
+
+4) Skill composition: Let $F _ { t }$ denote a hysteretic ballfound state derived from consecutive valid or invalid detections, and let $D _ { t }$ denote the predicted threat flag obtained from $\hat { \chi } _ { t } .$ These variables organize the behavior sequence:
+
+Validation set: 313 images. Precision and recall at confidence = 0.50.
+
+![](images/98587783591ec1de00881b468dec68977014ce15230d394a17e45a63423392fb.jpg)
+
+![](images/caf62782aa01356b92e44b6f34ed910f23106262c5d26d6a9bef5d300dfe89dd.jpg)
+
+![](images/c15a3e4e11174691bb571f10d009b735bb4da3c8e9be5f205491eae39d0b7b48.jpg)  
+Fig. 4: Perception interface. (i) The simulated ball is transformed into the camera frame and projected analytically from tangent rays. (ii) Hardware data are collected from the onboard camera and labeled for a single ball class. (iii) Validation performance of the fine-tuned detector.
+
+search/reacquire when the ball is not found, track or recover when it is visible but non-threatening, and evade when it is visible and threatening. The dodge/recovery skill returns the robot toward a ready posture after an avoidance response, while the search/track skill supports subsequent reacquisition. Hysteresis reduces changes in the found state caused by intermittent detections. This is a system-level composition of two policies; it does not imply simultaneous mixing of their joint targets or a single phase-gated policy.
+
+5) Three-stage curriculum: Training the perceptionconditioned dodge/recovery policy from the first update would require the robot to learn balance and whole-body evasion while simultaneously relying on an immature estimator. Early falls and unstructured body motion also produce unstable camera trajectories, which are poor supervision for learning the estimator. The curriculum in Fig. 3(ii) separates these coupled learning problems and introduces estimated observations only after the underlying control behavior and visual trajectories become sufficiently stable.
+
+Stage 1: ground-truth control warm-up. The dodge/recovery actor receives ground-truth relative ball position and threat flag. Removing estimation errors at this stage allows it to first acquire balance-preserving evasion and recovery behavior. The asymmetric critic uses the privileged task and robot states described above.
+
+Stage 2: estimator learning. Estimator supervision starts when the episode length exceeds 900 steps, while the actor continues to receive ground-truth ball states. Delaying estimator training until this trigger avoids collecting most of its initial data from short, failure-dominated rollouts. The estimator is trained from the policy-generated boundingbox histories together with the flight-window and synthetic samples described in Section III-C. Keeping ground-truth inputs at the actor also prevents early estimator errors from destabilizing the control policy.
+
+Stage 3: estimator-conditioned control. When dodge success exceeds 0.9, the actor’s ground-truth ball inputs are replaced by the estimated relative position and threat flag. Estimator supervision remains active as the policy adapts to missed detections, box perturbations, and the 30–50 m observation delay. The critic retains privileged ball state, target, time-to-target, phase, and base linear velocity, whereas the actor now uses the deployment-available perception interface. This final stage closes the perception–estimation– control loop evaluated in Section IV-D.
+
+## IV. EXPERIMENTS
+
+## A. Experimental Setup and Metrics
+
+We train and evalute policies in Isaac Lab [17] with Unitree G1. Evaluation uses estimated ball states and proprioception; ground-truth states are used only to compute evaluation metrics. A dodge succeeds only if the ball contacts no body link and the robot does not fall. Search succeeds when an initially invisible ball enters the field of view and a valid detection is maintained. Single-throw success and complete-sequence success are reported separately.
+
+Detector recall is defined as TP/(TP + FN), where TP and FN denote the numbers of true-positive and falsenegative detections, respectively. Recall therefore measures the proportion of ground-truth objects successfully detected by the model. Average precision (AP) summarizes the precision–recall trade-off across detection confidence thresholds and corresponds to the area under the precision–recall curve; with a single object class, mean average precision (mAP) is equivalent to AP. We report mAP@0.5, which evaluates detections using an intersection-over-union (IoU) threshold of 0.5 and thus captures the model’s ability to identify objects with reasonably accurate localization, and mAP@0.5:0.95, which averages AP over IoU thresholds from 0.5 to 0.95 in increments of 0.05, providing a more stringent measure of both detection and bounding-box localization accuracy.
+
+Controlled simulation tests use speeds of 6 and 10 m/s and distances of 5.0 and 2.5 m. Approach yaw is divided into left $[ - 3 0 ^ { \circ } , - 1 0 ^ { \circ } ]$ , center $[ - 1 0 ^ { \circ } , 1 0 ^ { \circ } ]$ , and right $[ 1 0 ^ { \circ } , 3 0 ^ { \circ } ]$ bins. Each speed–distance condition uses 200 parallel environments and five throws per environment, giving 1000 throws in total across the three bins. The nominal distanceto-speed ratio ranges from approximately 0.83 s to 0.25 s; it describes the launch time scale rather than measured time to body contact.
+
+![](images/40aa4ff33cf4d29f9c01cfc4bc829666e85769d0f1d6dcd57f4c264f3b7732ea.jpg)
+
+![](images/747e86fd2cc98aabcf537c27dab32b020882e98d177da05045ed84863c0bb141.jpg)
+
+![](images/8f0fae119197b6d2b2fa395ad23915838089e8792f0420a293c689cded3baf5e.jpg)
+
+Estimator Evaluation at 6 m/s  
+![](images/6a273b8c7acdbdd1fb775a8e4e330237287704dadecde5824d766239acd46112.jpg)
+
+![](images/4d54452edb03308d50b8509f2be9808a3cb3f7848ae885d6dde37edb165a3a7f.jpg)
+
+![](images/ba92baafdd7d395fae51401c7700a264d92ada3432627f4510d9d29cc162fadc.jpg)
+
+Estimator Evaluation at 10 m/s  
+![](images/5042c428af697502a6c432ccd3a29b8321c03f43cb39464d2e30fb4df18ec910.jpg)
+
+![](images/5aeb7ba622674f788b23302307fbd06837ad9068f2aeb5d8325717d6868a3dcb.jpg)  
+Ball approach angle (deg)
+
+![](images/1941c8a76887499a95883831bf1ac70446b4e465ed64d2ad8fcd518d5cdba357.jpg)
+
+![](images/176d1464c26ff2ba265a2394d60b62d44dd0f17318ef48a3da4cea0b42567a13.jpg)  
+Fig. 5: Controlled policy and estimator evaluation at 6 and 10 m/s. Columns denote left, center, and right approach-yaw bins; rows denote launch distances of 5.0 and 2.5 m. Across the displayed conditions, dodge success ranges from 33.2% to 100.0%, relative-position error from 0.162 to 0.478 m, and threat recall from 0.636 to 0.867.
+
+## B. Perception Accuracy and Efficiency
+
+As shown in Fig. 4 (iii), the fine-tuned detector demonstrates reliable ball detection, attaining high scores for all the metrics on the 313-image validation split. Note that these image-level metrics characterize prediction on a static camera, thus decoupling closed-loop measurement during rapid body rotation.
+
+To evaluate the efficiency, we compare analytic projection with Isaac Lab rendering-based 2D bounding-box computation on an NVIDIA RTX 3070 Ti with 8 GB memory (Fig. 6). Analytic projection stays near 0.5 ms from 1 to 64 camera environments. Rendering grows from 4.99 ms at one environment to 123.67 ms at 32 and fails at 64. The measured observation-generation speedup ranges from 10.2× to 259.7×, with a 1.8–2.9-fold reduction in peak memory. These measurements concern bounding-box generation, not total reinforcement-learning training time.
+
+Across a $3 \times 3$ image grid, the mean center error is below one pixel, the mean size error is approximately 2.4– 3.2 pixels, and the mean IoU is 0.912–0.933. Thus, the analytic interface closely approximates the tested rendered boxes while avoiding image rendering during policy training.
+
+![](images/f608b082a425f2f7c2c350e84e4cd48bd47b26160e922691eb77d546934d5d2d.jpg)
+
+![](images/76bfcd3a89a657d8acf35ecb7cb73814ed0ff32d447a4088874d3a41b03548d5.jpg)  
+Fig. 6: Analytic projection compared with Isaac Lab rendering-based 2D bounding boxes. Left: computation time and peak GPU memory as the number of camera environments increases. Right: center, size, and IoU agreement over a $3 \times 3$ image grid. The measured speedup applies to observation generation rather than complete policy training.
+
+## C. Ball-State and Threat-Flag Estimation
+
+We denote ball position estimation error in robot frame by $\| \hat { \mathbf { p } } _ { b , t } ^ { r } - \mathbf { p } _ { b , t } ^ { r } \| _ { 2 }$ <sub>2</sub>. Threat-flag accuracy is defined as the fraction of correct binary predictions. Threat recall is recall for $\chi _ { t } =$
+
+TABLE II: Robustness to injected 2D bounding-box noise.
+
+<table><tr><td>Noise</td><td>Dodge (%)</td><td>Error (m)</td><td>Threat acc. (%)</td><td>Non-threat rec. (%)</td><td>Threat rec. (%)</td></tr><tr><td>Clean</td><td>83.53</td><td>0.1854</td><td>95.37</td><td>99.41</td><td>87.84</td></tr><tr><td>Small</td><td>84.40</td><td>0.2130</td><td>94.55</td><td>98.30</td><td>87.50</td></tr><tr><td>Medium</td><td>73.00</td><td>0.2496</td><td>91.75</td><td>94.10</td><td>87.42</td></tr><tr><td>Large</td><td>26.90</td><td>0.3424</td><td>87.55</td><td>89.24</td><td>84.47</td></tr></table>
+
+## 1, whereas non-threat recall is recall for $\chi _ { t } = 0 .$
+
+Across the controlled estimator evaluation tests in Fig. 5 (lower two), the mean position error ranges from 0.162 to 0.478 m and threat-flag accuracy from 0.891 to 0.934. At 6 m/s, reducing the launch distance from 5.0 to 2.5 m lowers threat recall; at 10 m/s, it falls further. Non-threat recall remains between 0.967 and 0.993. The 2.5 m, 10 m/s condition therefore has the lowest threat recall and the widest position-error range, identifying high difficulty at setups with high ball speed and short distance.
+
+To evaluate the ball-state estimator performance in both simulation and real-world conditions, we use the iteration-10k simulation policy with injected bounding box noise and calibrate the real-world noise level on a test held-out dataset. While the clean setting applies no perturbation, small, medium, and large noise use pixel-center standard deviations of 2, 16, and 32 pixels, relative-center standard deviations of 0.05, 0.40, and 0.80, and log-size standard deviations of 0.10, 0.80, and 1.60, respectively. Each setting aggregates 3 seeds and 3000 throws. Table II reports success rate, position error, and threat-flag metrics.
+
+As the noise grows, the estimation position error increases monotonically, while threat accuracy decreases. Small noise has little effect on dodge success, whereas medium and large noise reduce it to 73.00% and 26.90%, respectively. Calibration of YOLO outputs on the validation set shows that real-image bounding-box noise is close to the small setting and falls below it when the scene and illumination match the training distribution. During deployment, environmental shifts can increase the observed noise to between the small and medium settings. Policy success in this regime is close to the hardware result, suggesting that this range captures the relevant real-world operating conditions. The policy therefore tolerates nominal perturbations but is sensitive to larger box corruption. Since throws are randomized rather than paired, these results describe distribution-level robustness without establishing pairwise statistical significance.
+
+## D. Policy Curriculum Ablation
+
+We ablate the transitions during policy training detailed in Section III-D.5 and show results in Table III. Full Stages is the complete curriculum. Direct Training uses supervision, perturbations, and estimated actor inputs from the first update. No Bootstrap trains the estimator from the outset but retains ground-truth actor inputs until the success threshold. No Estimator Warmup activates estimator training, perturbations, and estimated actor inputs together at the episode-length threshold. The evaluation fixes the target at the torso origin, samples speed from [6, 10] m/s, and retains nominal randomization. Each result aggregates 1000 throws and reports strict success and mean position error over valid frames.
+
+The full curriculum attains 90.8% success, demonstrating a strong performance above the ablations. No Bootstrap has the lowest position error but lower success. No Estimator Warmup has both the lowest success and the largest error.
+
+TABLE III: Curriculum ablation.
+
+<table><tr><td>Training variant</td><td>Dodge (%)</td><td>Error (m)</td></tr><tr><td>Full Stages</td><td>90.8</td><td>0.2614</td></tr><tr><td>Direct Training</td><td>74.1</td><td>0.2742</td></tr><tr><td>No Bootstrap</td><td>80.6</td><td>0.2152</td></tr><tr><td>No Estimator Warmup</td><td>67.6</td><td>0.5572</td></tr></table>
+
+## E. Integrated System and Hardware Evaluation
+
+1) Controlled simulation performance: Figure 5 shows a clear dependence of policy performance on the available response time. At 6 m/s, reducing launch distance from 5.0 to 2.5 m lowers success across approach-angle bins. At 10 m/s, success decreases further. The hardest condition has a nominal distance-to-speed ratio of 0.25 s, together with the lowest threat recall and the widest position-error range. The degradation therefore reflects a combined sensing-andcontrol challenge rather than a single estimator metric.
+
+The dodge/recovery policy avoids ten consecutive throws in a simulation sequence. Separately, the search/track policy finds balls initialized across [−180<sup>◦</sup>, 180<sup>◦</sup>] in ten of ten resets. These are small behavior demonstrations, distinct from the 1000-throw controlled evaluations. Table IV summarizes these simulation demonstrations alongside the available realrobot evaluation results.
+
+2) Real-robot deployment: We deploy the trained policy to a real Unitree G1 robot and refer the hardware results to our supplementary videos. The physical G1 uses no external object tracking: the RGB detector supplies box histories, and the active policy executes joint targets at 50 Hz. This rate does not measure detector throughput or end-to-end latency. Strict no-contact/no-fall success exceeds 85% over more than 15 controlled single throws; exact counts and conditions will replace this aggregate after record consolidation.
+
+A hardware sequence in Fig. 1 demonstrates track–dodge– search–dodge: The robot first tracks the ball held by a moving thrower to maintain visual observation and evades it once it is thrown; It then performs a full-azimuth search, reacquires the ball outside the camera view, stabilizes tracking, and dodges again. Policies use only onboard monocular RGB-derived state and proprioception. In our test, we find search behavior remains sensitive to motion blur. Rapid torso rotation expands angular coverage but produces intermittent detections; slower turning improves visibility while delaying reacquisition. These observations link search motion quality to the sensing conditions required for the next dodge.
+
+TABLE IV: System evaluation.
+
+<table><tr><td>Domain</td><td>Task</td><td>Result</td></tr><tr><td>Simulation</td><td>Consecutive dodge</td><td>10/10</td></tr><tr><td>Simulation</td><td>Full-azimuth search</td><td>10/10</td></tr><tr><td>Hardware</td><td>Single throws</td><td> $>85\%$ ,  $N >15$ </td></tr><tr><td>Hardware</td><td>Reacquisition + dodge</td><td>Suppl. Video</td></tr></table>
+
+## F. Limitations
+
+Despite the effectiveness of the perception pipeline in our experiments, several limitations remain. The estimator assumes that the ball’s approximate physical size are known in advance. This prior knowledge provides a useful monocular depth cue, but estimation accuracy may decrease when the target differs from the assumed size. Although the hardware experiments demonstrate the feasibility of the integrated system, experiments involving consecutive throws are needed to evaluate its robustness across repeated perception, dodge, recovery and search cycles. Future work could provide a more precise assessment by comparing its ballposition estimates with ground-truth measurements obtained from a motion-capture system. Finally, the learned policy often favors a single dodge direction, even when other effective motions may be available. Future work could train complementary dodge policies and distill them into a unified policy, enabling a broader range of dodge motions and more adaptive responses to different incoming trajectories.
+
+## V. CONCLUSION
+
+This work presents an integrated humanoid dodgeball system combining onboard monocular perception, temporal ball-state and threat estimation, and learned whole-body control. To support efficient large-scale training, boundingbox observations are generated through analytic geometric projection rather than image rendering, enabling parallel simulation while preserving the visual information required by the temporal estimator. Using a history of monocular bounding boxes, the estimator infers the ball position and determines whether it poses an immediate threat. A threestage curriculum then gradually replaces privileged ball states with estimated states, allowing the dodge/recovery policy to adapt to perception errors before deployment. A separate search/track policy further enables the robot to reacquire and track balls outside its current field of view. Together, these components form an extended behavior loop comprising ball detection, dodging, posture recovery, and target reacquisition. Experiments in simulation and on a physical Unitree G1 demonstrate the effectiveness of the designed system. In simulation, dodge success ranges from 97.8–100.0% across approach-angle bins for 5.0 m launches at 6 m/s. On the physical robot, in controlled single-throw trials, the system achieves a no-contact/no-fall success rate above 85% over repeated throws. The hardware experiments also include sequences in which the robot reacquires the ball and successfully responds to a subsequent throw. While close-range and high-speed launches remain challenging, the results demonstrate the feasibility of an onboard sensing-to-action loop that integrates ball estimation, whole-body avoidance, recovery, and target reacquisition, providing a foundation for humanoid robots to respond robustly to fast-moving objects under realistic sensing and balance constraints.
+
+## ACKNOWLEDGMENTS
+
+The authors thank Junzhe He, Zhihao Cao, and Hanyu Wu at ETH Zurich for their valuable suggestions and assistance with the hardware experiments. The authors used generative AI to assist with drafting and editing the manuscript. All content was reviewed by the authors, who take full responsibility for it.
+
+## REFERENCES
+
+[1] E. Kaufmann, A. Loquercio, R. Ranftl, A. Dosovitskiy, V. Koltun, and D. Scaramuzza, “Deep Drone Racing: Learning Agile Flight in Dynamic Environments,” in Proceedings of The 2nd Conference on Robot Learning, vol. 87 of Proceedings of Machine Learning Research, pp. 133–145, PMLR, 2018.
+
+[2] Y. Wang, J. Ji, Q. Wang, C. Xu, and F. Gao, “Autonomous Flights in Dynamic Environments with Onboard Vision,” in IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), pp. 1966– 1973, 2021.
+
+[3] D. Falanga, K. Kleber, and D. Scaramuzza, “Dynamic obstacle avoidance for quadrotors with event cameras,” Science Robotics, vol. 5, no. 40, p. eaaz9712, 2020.
+
+[4] A. Bhattacharya, M. Cannici, N. Rao, Y. Tao, V. Kumar, N. Matni, and D. Scaramuzza, “Monocular Event-Based Vision for Obstacle Avoidance with a Quadrotor,” in Conference on Robot Learning (CoRL), 2024.
+
+[5] Z. Xu, C. Hao, C. Wang, K. Sima, F. Shi, and J. S. Dong, “REBot: Reflexive Evasion Robot for Instantaneous Dynamic Obstacle Avoidance,” arXiv preprint arXiv:2508.06229, 2025.
+
+[6] Z. Xu, K. Sima, J. Deng, Z. Zhuang, C. Wang, C. Hao, and J. S. Dong, “APREBot: Active Perception System for Reflexive Evasion Robot,” arXiv preprint arXiv:2509.24733, 2025.
+
+[7] J. Ren, J. Long, T. Huang, H. Wang, Z. Wang, F. Jia, W. Zhang, J. Wang, P. Luo, and J. Pang, “Humanoid goalkeeper: Learning from position conditioned task-motion constraints,” arXiv preprint arXiv:2510.18002, 2025.
+
+[8] C. Liu, L. Jiang, Y. Wang, K. Yao, J. Fu, and X. Ren, “Humanoid Whole-Body Badminton via Multi-Stage Reinforcement Learning,” arXiv preprint arXiv:2511.11218, 2025.
+
+[9] Z. Su, B. Zhang, N. Rahmanian, Y. Gao, Q. Liao, C. Regan, K. Sreenath, and S. S. Sastry, “Hitter: A humanoid table tennis robot via hierarchical planning and learning,” arXiv preprint arXiv:2508.21043, 2025.
+
+[10] M. Hu, W. Chen, W. Li, F. Mandali, Z. He, R. Zhang, P. Krisna, K. Christian, L. Benaharon, D. Ma, K. Ramani, and Y. Gu, “Pace: Physics augmentation for coordinated end-to-end reinforcement learning toward versatile humanoid table tennis,” arXiv preprint arXiv:2509.21690, 2025.
+
+[11] J. Ren, Y. Li, K. Zhang, P. Fu, H. Jiang, Y. Pan, G. Zeng, T. Huang, W. Guo, P. Lu, T. Li, J. Wang, L. Chen, H. Li, and P. Luo, “Smash: Mastering scalable whole-body skills for humanoid ping-pong with egocentric vision,” arXiv preprint arXiv:2604.01158, 2026.
+
+[12] Z. Zhang, H. Lu, Y. Lian, Z. Chen, Y. Liu, C. Lin, H. Xue, Z. Zeng, Z. Qi, S. Zheng, Q. Luan, J. Wang, J. Xing, H. Wang, and L. Yi, “Learning athletic humanoid tennis skills from imperfect human motion data,” arXiv preprint arXiv:2603.12686, 2026.
+
+[13] L. Yang, J. Li, and A. D. Ames, “PAC-MAN: Perception-Aware CBF-RL for Whole-Body Safety in Humanoid Dodgeball,” arXiv preprint arXiv:2607.28623, 2026.
+
+[14] B. Forrai, T. Miki, D. Gehrig, M. Hutter, and D. Scaramuzza, “Eventbased agile object catching with a quadrupedal robot,” in IEEE International Conference on Robotics and Automation (ICRA), 2023.
+
+[15] Y. Chen, S. Dong, X. Ji, J. Sun, Z. Luo, L. Zhao, J. Zhang, W. Li, J. Ma, B. Xu, et al., “Learning human-like badminton skills for humanoid robots,” arXiv preprint arXiv:2602.08370, 2026.
+
+[16] G. Jocher, A. Chaurasia, and J. Qiu, “Ultralytics YOLOv8,” 2023.
+
+[17] M. Mittal, P. Roth, J. Tigue, A. Richard, O. Zhang, P. Du, A. Serrano-Muñoz, X. Yao, R. Zurbrügg, N. Rudin, et al., “Isaac Lab: A GPU-Accelerated Simulation Framework for Multi-Modal Robot Learning,” arXiv preprint arXiv:2511.04831, 2025.

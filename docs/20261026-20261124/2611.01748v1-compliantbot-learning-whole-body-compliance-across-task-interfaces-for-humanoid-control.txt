@@ -1,0 +1,413 @@
+Locomotion | Torso
+
+Imitation | Right wrist  
+![](images/4237109bda81e9e2f7e8acd0e4830fde8875d16cc869149ad9403c67f690fee6.jpg)
+
+# CompliantBot: Learning Whole-Body Compliance across Task Interfaces for Humanoid Control
+
+Haoyang Li<sup>1,4</sup>, Keqi Zhu<sup>4</sup>, Zhanxiang Cao<sup>2,4</sup>, Yang Zhang<sup>1</sup>, Yizhi Chen<sup>4</sup>, Xuekang Yang<sup>2</sup>, Yue Gao<sup>3,4,\*</sup>
+
+<sup>1</sup>Department of Automation, Shanghai Jiao Tong University, Shanghai, China <sup>2</sup>Department of Computer Science, Shanghai Jiao Tong University, Shanghai, China <sup>3</sup>MoE Key Lab of Artificial Intelligence and AI Institute, Shanghai Jiao Tong University, Shanghai, China <sup>4</sup>Shanghai Innovation Institute, Shanghai, China
+
+## Abstract
+
+Humanoid controllers need the ability to yield to external forces while retaining the capacity to resume their original tasks. However, tracking objectives penalize the deviations needed for yielding, while relaxing tracking goals persistently can make task recovery harder. Existing approaches often rely on task-specific interaction command interfaces or constructed compliant motion data and reference trajectories, limiting the direct reuse of their compliance-training mechanisms across diferent task interfaces. We introduce CompliantBot, a compliance-training framework for motion tracking and velocity-command locomotion. It preserves the original task inputs and require no preconstructed compliant data or target trajectories. A state-dependent interaction force field couples applied loads to the robot’s mo tion, enabling local articulation and whole-body movement to change the forces experienced. A complementary force-magnitude reward encourages lower interaction loads, while task rewards are downweighted during loading and restored after release to coordinate yielding and task resumption. The trained policies use task inputs and proprioceptive history without explicit external-force measurements. Across both task interfaces, CompliantBot yields farther under constant pulls and experiences lower spring interaction loads than matched baselines, while resuming task tracking after force removal. CompliantBot achieves the highest task completion among the compared methods under stronger pulls. Power evaluations further show that CompliantBot has the lowest mean joint mechanical power among the compared methods. Real-robot demonstrations further illustrate compliant responses through arm motion, stepping, and body reorientation.
+
+Keywords: Humanoids; Compliance; Reinforcement learning; Motion tracking; Physical interaction.
+
+## Simulation: Spring Interaction
+
+Locomotion | Right wrist
+
+## Real world: Elastic-band Interaction
+
+![](images/d1796a838b12dfdd91eeffe91d840597fb775f37ada3f303297c3a7afbbb491b.jpg)
+
+![](images/2a9efc80e1314dead005ce24c6b03326925512d4805ba42fcbd8390a67d894b4.jpg)
+
+![](images/0df2806bd36cf302b05f406e8286956fbd970bfc07327b9b8e9681d6a6b79284.jpg)  
+CompliantBot |F| = 1.37 N  
+Baseline |F| = 5.17 N  
+Baseline |F| = 17.74 N
+
+![](images/c9b607cbd61b65fdd4427cf4efe8d4c863e14c3b2b12af1f8b6367ffeead51aa.jpg)  
+CompliantBot |F| = 11.54 N
+
+![](images/5b30e8e965f8d96aad6c4e5606e257872d824337191567a88a4f447f5bafaff2.jpg)  
+Baseline |F| = 9.81 N  
+CompliantBot |F| = 4.87 N  
+Imitation | Torso
+
+![](images/f52113d5b4da791de3697b16ca6906b40a65babfbc0ef8b9b184b659a2f9cbdc.jpg)  
+Baseline |F| = 10.00 N
+
+![](images/bc7ce8de6c1d4f59763651bf4966d730ce57f836f9f6f4643b1f4b67a2cbb021.jpg)  
+CompliantBot |F| = 5.18 N
+
+Baseline  
+![](images/29846e05a178e0c7d4eed2b77f92bc4c4c7309603510139692d5e36187a2faa3.jpg)
+
+CompliantBot  
+![](images/8cb61d8a924377f8930549706255e98a1a7ae49857931e6b2cf8ae6da2076a8e.jpg)  
+Fig. 1. Compliant interaction in simulation and on hardware. Left: Baseline and CompliantBot responses to fixed-anchor springs at the right wrist and torso during locomotion and motion imitation. Red lines indicate springs, and labels show instantaneous force magnitudes. Right: Elastic-band wrist interaction on hardware. These snapshots illustrate compliant responses to external forces through local and whole-body motion.
+
+## 1. Introduction
+
+Learning-based humanoid whole-body control now spans locomotion, whole-body motion tracking, and locomanipulation [1–6]. Motion tracking lets a robot reproduce rich whole-body behaviors from reference motions [1, 3, 4], while velocity-command controllers provide a complementary interface for robust walking and real-time response [2]. Recent systems combine such modes into unified poli cies [5, 6]. These advances largely prioritize accurate task execution and treat external efects as disturbances to reject. When these controllers move from the laboratory into spaces shared with people, however, they must also handle physical interaction: a person may guide the robot by its wrist, steady its torso, or redirect its motion through a gentle pull. Such interactions require the controller to balance task execution with responsiveness to external forces. Rejecting every displacement preserves task tracking but can sustain interaction forces; following a pull without restraint can compromise balance or lead the policy to abandon the task. A useful controller should therefore follow its motion reference or velocity command under nominal conditions, allow temporary deviations during interaction without losing balance, and resume the task after the external force is removed.
+
+Prior work has shown that robots can learn compliant behavior from constructed compliant motion targets [7, 8] or from changes in task priorities during interaction or bal ance recovery [9]. These advances suggest that compliance depends not only on the forces encountered during training, but also on how motion under those forces is evaluated. During nominal execution, deviations from a motion ref erence or velocity command are errors to correct; during sustained physical interaction, temporary deviations can instead be necessary for yielding. Continually prioritizing task accuracy may discourage yielding to external forces, whereas persistently relaxing task tracking may compromise nominal performance and hinder task recovery after the ex ternal force is removed. For humanoids, this trade-of also involves coordination across the body: a pull at the wrist or torso may call for local joint motion, whole-body displace ment, or both. Beyond this trade-of, diferent controllers expose diferent task interfaces, from whole-body motion references to velocity commands. A compliance-training approach applicable across diferent interfaces should there fore enable robots to yield to external forces and resume their tasks once the forces are removed. It should preserve the original motion reference or velocity command without requiring interface-specific compliant trajectories.
+
+To this end, we introduce CompliantBot, a compliancetraining framework for humanoid motion tracking and velocity-command locomotion that preserves the original task interface. Its central idea is to co-design a state dependent interaction force field and learning objectives tailored to each interaction stage. During training, the field acts on sampled body links, allowing the robot to change the interaction forces through its own motion without a prescribed compliant trajectory. When external forces are applied, a force-magnitude objective encourages yielding, with the original task rewards downweighted to allow temporary task deviations. After the forces are removed, the original task weights are restored to encourage task recovery. The trained policy uses task inputs and proprioceptive history without requiring explicit external-force measurements.
+
+Experiments show that CompliantBot achieves greater yielding to external forces than matched baselines while retaining the ability to resume the task after force removal. Results on both whole-body motion tracking and velocitycommand locomotion demonstrate improved compliance, supporting the applicability of our approach across diferent task interfaces.
+
+We make the following three contributions:
+
+1. Compliance training across task interfaces. We introduce CompliantBot, which enables compliant behavior in humanoid motion tracking and velocity-command locomotion while retaining the original task inputs, without requiring additional compliant target trajectories.
+
+2. A state-dependent interaction force field. We apply the interaction force field at sampled body sites, allowing the robot to regulate interaction forces through local articulation or whole-body motion.
+
+3. Reward allocation for yielding and task recovery. During training, a force-magnitude objective encourages yielding while the original task rewards are downweighted; their weights are restored after force removal to encourage task recovery. Regularization weights remain unchanged.
+
+## 2. Related Work
+
+## 2.1. Humanoid whole-body control
+
+Reinforcement learning (RL) supports multiple interfaces for humanoid control, including velocity-command locomotion, whole-body reference tracking, and loco-manipulation with separate upper- and lower-body commands. These interfaces specify complementary aspects of a task: desired movement through the environment, coordinated body motion, or manipulation combined with walking. Work on velocity-command locomotion addresses history-based adaptation [2], terrain-aware walking [10], and smooth policy execution [11]. Li et al. [12] further study dynamic bipedal skills using a dual-history policy architecture and task randomization, demonstrating adaptation to changes in dynamics and external disturbances. HuB [13] addresses balance-intensive humanoid motions through reference refinement, balance-aware learning, and sim-to-real robustness training. These developments establish motion execution and balance as important foundations for physical interaction.
+
+Whole-body reference tracking enables rich motion execution [1, 3] and teleoperated imitation [4]. Related work extends expressive control, simulation-to-reality alignment, and motion coverage [14–16]. OmniH2O uses kinematic poses as a common interface for teleoperation and learned autonomy [17], while TWIST2 supports portable wholebody teleoperation and demonstration collection [18]. AMO combines RL with trajectory optimization to improve stability and expand the executable motion range [19]. For loco-manipulation, HOMIE [5] combines lower-body control with exoskeleton-mediated upper-body commands.
+
+HOVER [6] supports multiple control interfaces through policy distillation. Together, these systems provide a range of ways to specify desired humanoid behavior. Compliant Bot studies how compliance training can be integrated with such task formulations while preserving the original motion reference or velocity command, so that external interaction can change the executed motion without replacing the task input.
+
+## 2.2. Compliant interaction and control
+
+Classical interaction control specifies a relationship between force and motion. Impedance control regulates mechanical response around a desired motion [20], whereas admittance control converts an external force into a motion response; Ott et al. [21] analyze their complementary properties within a common control framework.
+
+Model predictive control provides another component fo coordinating whole-body motion. It repeatedly predicts the consequences of candidate actuator commands over a finite horizon, applies the first control action, and replans from the updated state. Howell et al. [22] introduce predictive sampling in MuJoCo as a general framework for real-time behavior synthesis. An admittance layer can act upstream of such a controller: the measured force changes a motion reference, and the predictive controller computes the actuation needed to follow it. The nominal task objective and the force-to-motion mapping therefore remain distinct design components. This arrangement contrasts with learning the interaction response directly through training rewards. In the latter case, the policy must learn how to coordinate body motion with task execution, rather than receiving the desired displacement from a separate admittance model.
+
+Learning-based manipulation also builds on explicit force–motion control. Martín-Martín et al. [23] study an end-efector action space with variable impedance, and Beltran-Hernandez et al. [24] combine RL with paral lel position/force control or admittance control for rigid position-controlled manipulators. These approaches embed the desired interaction dynamics in the control structure or action representation. For a humanoid, the resulting motion must additionally be coordinated with balance and ground contact, motivating the study of interaction responses involving both local articulation and whole-body movement.
+
+A related line of work trains legged robots to execute tasks under substantial external loads. FALCON [25] uses a force curriculum to maintain manipulation accuracy and locomotion stability. Thor [26] coordinates lower-body, waist, and upper-body policies and uses a force-adaptive torso objective to improve whole-body behavior during forceful loco-manipulation. Their emphasis on completing tasks while sustaining interaction forces difers from yield ing to reduce a guiding pull. Learned compliant control also has precedents beyond disturbance rejection: Lee et al. [27] use a two-level architecture for simulated humanoids that combines motion imitation with reduced interaction forces and control torques. For legged robots, Hartmann et al. [9] relax velocity-tracking incentives during a dedicated push-recovery stage and restore them afterward. These studies show that the interaction response depends on the learning objective as well as the force exposure. The issue is how to coordinate yielding with the task that the controller is already trained to perform.
+
+Other approaches express interaction goals through explicit commands or compliant target motions. Portela et al. [28] use spring–damper interactions to train end-efector force control policies, adopting separate position and force modes and disabling end-efector position tracking in force mode. Unified force–position control [29] learns responses to both command types for legged loco-manipulation. In reference-based control, SoftMimic [7] augments wholebody motions using inverse kinematics: the policy observes the original reference but is rewarded for matching a compliant target. GentleHumanoid [8] and FACET [30] generate compliant references from impedance dynamics, using multi-link impedance and virtual mass–spring–damper models, respectively. In these formulations, explicit interaction commands or modified reference trajectories specify the desired response before the policy executes it.
+
+CompliantBot takes the original task rewards as the integration point for compliance training. Its state-dependent interaction force field makes the realized load depend on the robot’s motion, while a force-magnitude objective evaluates the resulting interaction. Interaction-stage weighting permits temporary task deviations during force application and restores task emphasis after removal. This combination retains the controller’s motion reference or velocity command and learns the coordinated response without constructing an additional compliant target trajectory. It provides a common training mechanism for the two task interfaces considered here, with separately trained policies retaining their original inputs and action representations.
+
+## 3. Method
+
+## 3.1. Problem formulation
+
+The humanoid control task is specified by a command $\mathbf { } _ { \mathbf { } ^ { c _ { t } } }$ which is either a whole-body motion reference ${ \pmb m } _ { t }$ or a velocity command $( \nu _ { x } ^ { \mathrm { c m d } } , \nu _ { \mathrm { v } } ^ { \mathrm { c m d } } , \omega _ { z } ^ { \mathrm { c m d } } )$ . The objective is to preserve nominal task execution, allow temporary deviations during physical interaction, and resume task tracking after the external force is removed.
+
+Let $s _ { t }$ denote the simulator state and $o _ { t }$ the actor observation containing task inputs and robot observations. For each task interface, we train a separate policy conditioned on a finite history $h _ { t } = \left( o _ { t - H + 1 } , \ldots , o _ { t } \right)$ of length �. The policy samples joint-position actions $\mathbf { \sigma } _ { \mathbf { \alpha } _ { t } } \sim \pi _ { \theta } ( \cdot \mathbf { \sigma } | \ h _ { t } )$ , which are executed by the host’s native PD actuators with fixed gains. The simulator evolves under these actions and the external interaction force, returning a scalar reward $R _ { t }$ at each control step. The policy parameters � are optimized using PPO [31] to maximize the expected discounted return,
+
+$$
+J (\theta) = \mathbb {E} _ {\pi_ {\theta}, \mathcal {D}} \left[ \sum_ {t = 0} ^ {T - 1} \gamma^ {t} R _ {t} \right], \qquad \gamma = 0. 9 9,\tag{1}
+$$
+
+where � is the episode horizon, $\gamma$ is the discount factor, and D denotes the distribution over task and state initialization, native domain randomization, and the sampled interaction process.
+
+![](images/0dc3d321c682ae145b70b60984a67dd9b82b651c3905f33e34ada9131031a0ed.jpg)  
+Fig. 2. CompliantBot framework. (a) The actor generates joint-position targets for a PD controller. (b) A state-dependent interaction force field acts on a sampled body link. (c) The force objective and task rewards are weighted according to the interaction stage. (d) Torso and wrist responses; orange arrows indicate external forces.
+
+## 3.2. State-dependent interaction force field
+
+To train coordinated responses to forces at diferent body sites, we construct a state-dependent interaction force field acting on a sampled body link. The field couples the interaction load to the link position, allowing the robot’s motion to change the realized force. This motion–load feedback supports learning responses through local articulation, whole body displacement, or both, without prescribing a compliant target pose or trajectory.
+
+We implement the interaction force field as a virtual spring. Let $\mathcal { B } _ { F }$ be a set of candidate interaction links spanning the torso and upper and lower limbs. At each interaction onset, we sample one link $b \in { \mathcal { B } } _ { F }$ and place a spring center $\scriptstyle x _ { \mathrm { c } }$ near its current position. The link selection is unchanged and the center is fixed in world coordinates throughout the interaction. Let ${ \boldsymbol { x } } _ { b , t }$ denote the link’s world position and $\chi _ { t } \in \{ 0 , 1 \}$ indicate whether the external force is active (the loading stage). The applied force is
+
+$$
+\boldsymbol {F} _ {t} = \chi_ {t} \frac {k F _ {\max} (\boldsymbol {x} _ {\mathrm{c}} - \boldsymbol {x} _ {b , t})}{\max (F _ {\max} , k \| \boldsymbol {x} _ {\mathrm{c}} - \boldsymbol {x} _ {b , t} \| _ {2})},\tag{2}
+$$
+
+where $k > 0$ is the external spring stifness and $F _ { \mathrm { m a x } } > 0$ is the applied-force magnitude cap.
+
+During loading, the force points toward the spring cen ter. When the force magnitude is below $F _ { \mathrm { m a x } }$ , moving to ward the center reduces the force, while moving away increases it. The cap limits the training load at larger position ofsets. This state-dependent relationship allows the force magnitude objective in the next subsection to evaluate the in teraction response without specifying which joint or whole body motions should produce yielding.
+
+During training, the interaction site, initial pull direction, and force magnitude are randomized. In episodes with ex ternal forces, the robot first executes its task without interference, then experiences a sustained pull, and continues the task after force removal. Some episodes remain unforced throughout to maintain training on the original task.
+
+## 3.3. Interaction-stage reward allocation
+
+The original task objective rewards reducing motion reference or velocity-command tracking errors, whereas yielding to an external force often requires temporary deviations from these targets. We therefore combine an interaction-response objective with the original task objective and adjust their relative weights according to the interaction stage, coordinating task execution, yielding, and task recovery after the external force is removed.
+
+The force-magnitude objective encourages the robot to regulate the interaction load through its own motion, with out prescribing a target pose or trajectory. Let $f ^ { \star } \in \mathbb R _ { > 0 } ^ { 3 }$ specify the desired magnitudes of the external force along the three coordinate axes. Setting $\boldsymbol { f } ^ { \star } = \boldsymbol { \mathbf { 0 } }$ encourages yielding to reduce the interaction load; nonzero entries specify desired force magnitudes along the corresponding axes. The interaction reward increases as the applied force magnitudes approach these targets:
+
+$$
+r _ {c} (t) = \chi_ {t} \exp \left[ - \frac {\sum_ {j \in \{x , y , z \}} \left| | F _ {t , j} | - f _ {j} ^ {\star} \right|}{\beta_ {c}} \right],\tag{3}
+$$
+
+where $F _ { t , j }$ is the component of the applied external force $\boldsymbol { F } _ { t }$ along world axis $j \in \{ x , y , z \}$ at time �. The parameter $\beta _ { c } > 0$ sets sensitivity to force-magnitude discrepancies, and $\chi _ { t }$ indicates the loading stage. The motion–load relationship thus connects the policy’s response to the force-magnitude objective.
+
+To coordinate task execution and yielding, we combine the interaction reward with the original task rewards. We denote the task reward group by $r _ { m }$ and collect the remaining reward terms, with their original weights, in $r _ { \mathrm { r e g } }$ . The total reward is
+
+$$
+r _ {t} = w _ {m} (t) r _ {m} (t) + \lambda_ {c} w _ {c} (t) r _ {c} (t) + r _ {\mathrm{reg}} (t),\tag{4}
+$$
+
+where $\lambda _ { c }$ is the base interaction-reward coeficient.
+
+![](images/c436889d0d018a7f18f5fc8165da753044122a2056b8b50a2c37bcbf7e307c66.jpg)  
+Fig. 3. Interaction-stage reward allocation. Solid curves show the task and interaction weights under external force; the dotted line show the task weight during unforced execution.
+
+The interaction and task weights are
+
+$$
+w _ {c} (t) = \chi_ {t} \left\langle \exp (- f _ {j} ^ {\star} / F _ {s}) \right\rangle_ {j \in \{x, y, z \}},\tag{5}
+$$
+
+$$
+w _ {m} (t) = 1 - w _ {c} (t).\tag{6}
+$$
+
+Here $\langle \cdot \rangle _ { j \in \{ x , y , z \} }$ denotes averaging over the three coordinate axes, and $F _ { s }$ sets the force scale of the weighting rule. Lower force targets assign more weight to interaction and less to the task group, allowing the policy to deviate more from the task while reducing the load; higher targets retain more task weight (Fig. 3).
+
+During force application, the weighting shifts emphasis from task execution toward the interaction objective. After force removal, the original task weight is restored to encour age the policy to resume its task.
+
+## 3.4. Integration across task interfaces
+
+For each controller, CompliantBot applies the interactionstage weighting to its task reward group $r _ { m }$ and adds the force-magnitude reward. Motion tracking and velocity command locomotion use separately trained policies with the same interaction force field and reward-allocation mech anism, while retaining their original task inputs and action representations.
+
+The policy receives its original motion reference or veloc ity command throughout interaction. Under external forces, the interaction objective encourages yielding while reward terms outside the task group retain their original weights. Once the forces are removed, the original task weight is re stored to encourage tracking of the current reference or com mand. For motion tracking, the reference continues to ad vance during interaction, so task resumption follows its cur rent phase.
+
+Training uses an actor–critic architecture: the actor receives task inputs and proprioceptive history, while the critic can additionally access privileged simulation state. The applied force and interaction-stage indicator are provided by the simulator for reward computation, not as explicit actor inputs (Fig. 2).
+
+## 4. Experiments
+
+## 4.1. Experimental setup
+
+All tasks use a 29-DoF Unitree G1 with 50 Hz joint-position targets executed by PD controllers. Policies are trained in
+
+Table 1. Network and PPO settings for the motion-tracking comparison.
+
+<table><tr><td>Parameter</td><td>Value</td></tr><tr><td>Actor/critic hidden widths</td><td>512, 256, 128</td></tr><tr><td>Activation</td><td>ELU</td></tr><tr><td>Observation history length H</td><td>10</td></tr><tr><td>Parallel environments</td><td>4,096</td></tr><tr><td>Rollout steps per environment</td><td>24</td></tr><tr><td>PPO updates</td><td>10,000</td></tr><tr><td>Random seeds per method</td><td>2</td></tr><tr><td>Initial learning rate</td><td> $10^{-3}$ </td></tr><tr><td>Learning-rate schedule</td><td>Adaptive KL</td></tr><tr><td>Discount factor γ</td><td>0.99</td></tr><tr><td>GAE parameter λ</td><td>0.95</td></tr><tr><td>PPO clipping ratio</td><td>0.2</td></tr><tr><td>Optimization epochs per update</td><td>5</td></tr><tr><td>Minibatches per epoch</td><td>4</td></tr><tr><td>Target KL divergence</td><td>0.01</td></tr><tr><td>Gradient-norm limit</td><td>1.0</td></tr><tr><td>Entropy coefficient</td><td>0.005 → 0.001</td></tr><tr><td>Entropy-decay update interval</td><td>2,000–6,000</td></tr></table>
+
+NVIDIA Isaac Sim with 200 Hz physics, giving four simulation steps per control step.
+
+The actor receives a history of observations $o _ { t }$ containing local proprioceptive inputs and task commands $\mathbf { } _ { c _ { t } }$ . For both task interfaces, the local proprioceptive inputs include projected gravity ${ \pmb g } _ { t }$ , base angular velocity $\omega _ { t } ,$ joint-position and velocity ofsets from their default values $\pmb q _ { t }$ and $\dot { \pmb q } _ { t }$ , and the previous action $\pmb { a } _ { t - 1 }$
+
+For motion tracking, $\pmb { c } _ { t } = \pmb { m }$ <sub>�</sub> provides reference joint positions ${ \pmb q } _ { t } ^ { \mathrm { r e f } }$ and velocities ${ \dot { \pmb q } } _ { t } ^ { \mathrm { r e f } }$ . The actor also receives the reference pelvis position and orientation expressed in the robot’s pelvis frame, together with base linear velocity ${ \nu } _ { t }$ and joint eforts $\tau _ { t }$ . The orientation feature consists of the first two columns of the relative rotation matrix. The observation history length is $H = 1 0$ . For velocity-command locomotion, $\pmb { c } _ { t } \ = \ ( \nu _ { x } ^ { \mathrm { c m d } } , \nu _ { y } ^ { \mathrm { c m d } } , \omega _ { z } ^ { \mathrm { c m d } } )$ and $H = 5$ . This interface requires no reference joint states or reference pelvis pose.
+
+The actor and critic use multilayer perceptrons. Table 1 summarizes the network architecture and PPO settings for motion tracking. During training, the motion-tracking critic receives privileged body poses and interaction information, including the spring center and force magnitude; the locomotion critic receives base linear velocity as an additional state input. Motion-tracking observation normalizers are learned during training and frozen for evaluation; locomotion retains the oficial observation scaling without learned normalization. The training process, including periodic validation, takes approximately 5.4–6.0 hours per motion-tracking policy on an RTX 4090.
+
+Tables 2 and 3 list the rewards and base coeficients for motion tracking and velocity-command locomotion, respectively. Both use three reward groups: task rewards encourage tracking of the motion reference or velocity command, the compliance reward encourages the desired interaction load, and regularization rewards support stable and smooth movement. During interaction, task and compliance rewards use the interaction-stage weighting, while regularization weights remain unchanged. After force removal, the original task weights are restored.
+
+We compare CompliantBot with internal control variants, learned compliance methods, and classical controllers. The internal comparisons use the following variants for both motion tracking and velocity-command locomotion:
+
+Table 2. Reward functions for motion tracking.
+
+<table><tr><td>Group</td><td>Reward</td><td>Expression</td><td>Weight</td></tr><tr><td>Compliance</td><td>Force target</td><td> $\chi_t e^{-\|\boldsymbol{F}_t - \boldsymbol{f}^\star\|_1/\beta_c}$ </td><td>2.0</td></tr><tr><td rowspan="6">Task</td><td>Anchor pos.</td><td> $e^{-\|\Delta \boldsymbol{p}_a\|_2^2/s_{ap}^2}$ </td><td>0.5</td></tr><tr><td>Anchor ori.</td><td> $e^{-\theta_a^2/s_{aR}^2}$ </td><td>0.5</td></tr><tr><td>Rel. body pos.</td><td> $e^{-\langle\|\Delta \boldsymbol{p}_b\|_2^2\rangle_b/s_P^2}$ </td><td>1.0</td></tr><tr><td>Rel. body ori.</td><td> $e^{-\langle \theta_b^2\rangle_b/s_R^2}$ </td><td>1.0</td></tr><tr><td>Body lin. vel.</td><td> $e^{-\langle\|\Delta \boldsymbol{v}_b\|_2^2\rangle_b/s_V^2}$ </td><td>1.0</td></tr><tr><td>Body ang. vel.</td><td> $e^{-\langle\|\Delta \omega_b\|_2^2\rangle_b/s_\omega^2}$ </td><td>1.0</td></tr><tr><td rowspan="3">Regularization</td><td>Contacts</td><td> $\sum_{b \in C} \mathbb{I}[C_{b,t} > F_{\text{thr}}]$ </td><td>-0.1</td></tr><tr><td>Joint limits</td><td> $\sum_j \ell_j(q_j)$ </td><td>-10.0</td></tr><tr><td>Action change</td><td> $\| \boldsymbol{a}_t - \boldsymbol{a}_{t-1}\|_2^2$ </td><td>-0.1</td></tr></table>
+
+• Baseline (BS): The original task controller, trained without the added interaction force field or compliance reward. Motion tracking uses a BeyondMimic-based controller [1]; locomotion uses the oficial Unitree RL Lab controller. Each retains its original task rewards and domain randomization.
+
+• Disturbance randomization (DR): A force-trained baseline using the same interaction force field distribu tion as CB while retaining the original task rewards.
+
+• CompliantBot (CB): The corresponding controller trained with the interaction force field, force-magnitude objective, and interaction-stage reward allocation.
+
+Within each task, the internal variants share the actor–critic architecture and action representation. The external comparisons use the following learned and classical baselines:
+
+• SoftMimic [7]: A released whole-body policy trained with compliant targets constructed through inverse kinematics.
+
+• GentleHumanoid [8]: A released policy that uses multi-link impedance to generate compliant motion references.
+
+• Model predictive control (MPC): A full-body controller adapted to G1 using the iLQG solver in MuJoCo MPC [22], serving as a classical task-tracking baseline. It controls all 29 actuated joints without a learned policy.
+
+• MPC with admittance (MPC+Adm): The same MPC controller augmented with a mass–damper–spring admittance model [21] that adjusts body and wrist refer ences according to the applied force.
+
+SoftMimic and GentleHumanoid are compared with Com pliantBot in the motion-imitation experiments, while MPC and MPC+Adm are compared with CompliantBot in the velocity-command locomotion experiments.
+
+## 4.2. Whole-body motion-tracking performance
+
+This section evaluates CompliantBot on whole-body motion-tracking tasks, focusing on yielding to external forces, task resumption after force removal, nominal track ing accuracy, and stability. We compare CB with BS, DR, and released SoftMimic and GentleHumanoid policies using the same references.
+
+The evaluation panel contains 224 scenarios per policy:
+
+Table 3. Reward functions for velocity-command locomotion.
+
+<table><tr><td>Group</td><td>Reward</td><td>Expression</td><td>Weight</td></tr><tr><td>Compliance</td><td>Force target</td><td> $\chi_t e^{-\|\boldsymbol{F}_t\|_1/\beta_c}$ </td><td>2.0</td></tr><tr><td rowspan="2">Task</td><td>Linear vel.</td><td> $e^{-\|\boldsymbol{v}_{xy}^{\text{yaw}} - \boldsymbol{v}_{xy}^{\text{cmd}}\|_2^2/\sigma_v^2}$ </td><td>1.0</td></tr><tr><td>Angular vel.</td><td> $e^{-(\omega_z^b - \omega_z^{\text{cmd}})^2/\sigma_\omega^2}$ </td><td>0.5</td></tr><tr><td rowspan="17">Regularization</td><td>Alive</td><td> $\mathbb{I}[\text{not terminated}]$ </td><td>0.15</td></tr><tr><td>Vertical vel.</td><td> $(v_z^b)^2$ </td><td>-2.0</td></tr><tr><td>Roll/pitch vel.</td><td> $\|\omega_{xy}^b\|_2^2$ </td><td>-0.05</td></tr><tr><td>Joint vel.</td><td> $\|\dot{\boldsymbol{q}}\|_2^2$ </td><td>-0.001</td></tr><tr><td>Joint accel.</td><td> $\|\ddot{\boldsymbol{q}}\|_2^2$ </td><td> $-2.5\times 10^{-7}$ </td></tr><tr><td>Action change</td><td> $\|\boldsymbol{a}_t - \boldsymbol{a}_{t-1}\|_2^2$ </td><td>-0.05</td></tr><tr><td>Joint limits</td><td> $\sum_j \ell_j(q_j)$ </td><td>-5.0</td></tr><tr><td>Joint power</td><td> $\sum_j |\tau_j \dot{q}_j|$ </td><td> $-2\times 10^{-5}$ </td></tr><tr><td>Arm posture</td><td> $\sum_{j \in \mathcal{J}_A} |q_j - q_j^0|$ </td><td>-0.1</td></tr><tr><td>Waist posture</td><td> $\sum_{j \in \mathcal{J}_W} |q_j - q_j^0|$ </td><td>-1.0</td></tr><tr><td>Hip posture</td><td> $\sum_{j \in \mathcal{J}_H} |q_j - q_j^0|$ </td><td>-1.0</td></tr><tr><td>Upright posture</td><td> $\|\boldsymbol{g}_{xy}^b\|_2^2$ </td><td>-5.0</td></tr><tr><td>Base height</td><td> $(h - h_0)^2$ </td><td>-10.0</td></tr><tr><td>Gait contact</td><td> $\eta_t \sum_f \mathbb{I}[c_f = s_f]$ </td><td>0.5</td></tr><tr><td>Foot sliding</td><td> $\sum_f \mathbb{I}[C_f > 1\text{N}]\|\boldsymbol{v}_{f,xy}^w\|_2$ </td><td>-0.2</td></tr><tr><td>Foot clearance</td><td> $e^{-\sum_f e_{f,h}^2 u_f/\beta_h}$ </td><td>1.0</td></tr><tr><td>Contacts</td><td> $\sum_{b \in C} \mathbb{I}[C_b,t > 1\text{N}]$ </td><td>-1.0</td></tr></table>
+
+two start-frame repetitions, seven sites, eight horizontal directions, and two force magnitudes (5 and 10 N). Each roll out lasts 10 s, with the external force applied continuously from 2 to 5 s. Yielding is averaged over the final second of force application (4–5 s), while tracking error after force removal is evaluated over 5–10 s. We evaluate a no-force control, prescribed constant forces, and capped virtual springs with stifnesses of � = 20 and 50 N/m. CB uses a zero force-magnitude target. Policy parameters and observation normalizers remain frozen during evaluation.
+
+We evaluate stable execution, yielding, tracking after force removal, and the actual interaction load. Survival measures whether a policy completes the trial. World-frame yielding $( Y _ { w } )$ measures the extent of the response to external force and is defined as the mean displacement of the pulled body link along the applied force relative to the same policy’s unforced rollout. Δ� denotes the additional tracking error following an external-force perturbation. It is the mean body-position tracking error over 5–10 s in the forced rollout minus that in the same policy’s unforced counterpart. For spring trials, �<sup>¯</sup> is the mean actual force magnitude during force application (2–5 s), used to compare the interaction loads experienced by diferent policies. Survival is calculated over all test scenarios; the remaining metrics use paired forced and unforced rollouts that both complete the trial.
+
+Table 4 shows that CB yields more than BS and DR under all three force conditions, whereas DR yields less than BS. This indicates that exposure to external forces alone is insuficient to produce compliant responses. CB also maintains higher survival and smaller additional tracking error after force removal, while reducing the actual interaction load under both spring stifnesses. Together, these results demonstrate the efectiveness of combining the interaction force field with the compliance reward and interaction-stage reward allocation: the combined mechanism promotes yielding while preserving stable task execution and task recovery.
+
+Compared with the external methods, CB achieves higher survival and smaller additional tracking error after force removal under all three conditions, together with the lowest actual interaction load under both spring stifnesses. Although SoftMimic yields farther under constant forces and the lower-stifness spring, its greater displacement under the latter does not translate into a lower interaction load than CB’s. Thus, greater yielding displacement does not necessarily imply greater load reduction. CB also yields farther than SoftMimic under the higher-stifness spring and farther than GentleHumanoid under all three conditions. These results show that CB combines substantial yielding with more efective spring-load reduction, achieving a better overall balance among compliant response, stability, and task recovery.
+
+Table 4. Motion-tracking performance under external forces. Bold and underlined means indicate the best and second-best values within each condition, respectively.
+
+<table><tr><td rowspan="2">Method</td><td colspan="3">Constant force</td><td colspan="4">Spring (k = 20 N/m)</td><td colspan="4">Spring (k = 50 N/m)</td></tr><tr><td>Survival (%)↑</td><td> $Y_w$ (cm)↑</td><td>ΔE (mm)↓</td><td>Survival (%)↑</td><td> $Y_w$ (cm)↑</td><td>ΔE (mm)↓</td><td> $\bar{F}$ (N)↓</td><td>Survival (%)↑</td><td> $Y_w$ (cm)↑</td><td>ΔE (mm)↓</td><td> $\bar{F}$ (N)↓</td></tr><tr><td>BS</td><td>97.54±0.32</td><td>9.96±0.30</td><td>0.58±0.10</td><td>97.54±0.32</td><td>2.54±0.07</td><td>0.63±0.03</td><td>7.04±0.02</td><td>97.54±0.32</td><td>0.86±0.04</td><td>0.64±0.06</td><td>7.27±0.02</td></tr><tr><td>DR</td><td>97.32±0.63</td><td>6.80±0.12</td><td>0.24±0.03</td><td>97.32±0.63</td><td>1.57±0.04</td><td>0.35±0.02</td><td>7.06±0.01</td><td>97.32±0.63</td><td>0.39±0.13</td><td>0.34±0.03</td><td>7.29±0.02</td></tr><tr><td>CB</td><td>99.78±0.32</td><td>18.75±0.29</td><td>0.19±0.03</td><td>99.78±0.32</td><td>10.25±0.35</td><td>-0.10±0.50</td><td>6.56±0.07</td><td>99.78±0.32</td><td>9.48±0.46</td><td>0.00±0.49</td><td>6.75±0.03</td></tr><tr><td>SoftMimic</td><td>90.89±0.40</td><td>21.69±1.42</td><td>0.38±0.44</td><td>91.43±2.01</td><td>11.48±0.87</td><td>0.40±0.42</td><td>6.95±0.06</td><td>90.62±2.07</td><td>6.73±2.05</td><td>0.41±0.33</td><td>7.27±0.04</td></tr><tr><td>GentleHumanoid</td><td>95.27±1.16</td><td>13.42±0.52</td><td>0.22±0.04</td><td>95.18±0.97</td><td>6.52±0.24</td><td>0.14±0.02</td><td>6.89±0.03</td><td>95.36±1.08</td><td>3.74±0.31</td><td>0.16±0.03</td><td>7.24±0.02</td></tr></table>
+
+![](images/cd86d384d1487a5d1cc052ac4edac3052d24e7dff998f8830518bcd0e159f264.jpg)  
+Fig. 4. Yielding across body sites. Bars and error bars show means and sample standard deviations across training seeds, respectively. Yielding is the displacement of the loaded link relative to the same policy’s unforced rollout, projected onto the force direction.
+
+Figure 4 compares the yielding responses to 10 N constant forces applied at diferent body sites. CB achieves greater mean yielding than BS and DR at every tested site, with larger gains at the torso and wrists; improvements are also observed at the knees and ankles. These results show that the compliance-training approach promotes yielding not only at the upper limbs but also at the torso and lower limbs.
+
+The learning curves in Figure 5 examine how stable exe cution and compliant responses develop during training. We use the saved validation results at every 1,000 iterations from 1,000 to 10,000 for BS, DR, and CB. Every checkpoint is evaluated on the same scenario grid used in Table 4, with the same reference starts, body sites, pull directions, and force levels. The three panels show task survival and $Y _ { w }$ under prescribed constant forces, followed by �<sup>¯</sup> under the � = 20 N/m spring. Lines and bands indicate the mean and sample standard deviation across training seeds.
+
+Task survival increases overall for BS and CB. DR al ready achieves high survival at the first evaluation. In the later checkpoints, all methods complete most scenarios, with CB maintaining the highest mean survival over the final four evaluations. These results indicate that compliance training does not compromise the policy’s ability to learn reliable task execution.
+
+The yielding curves reveal a diferent evolution of interaction behavior. BS and DR show progressively smaller forcealigned displacements overall, with DR becoming the least yielding method in the later part of training. CB instead retains a larger response and shows an overall increase toward the end of training, although individual checkpoints fluctuate. From the second evaluated checkpoint onward, its mean yielding exceeds both controls. The joint evolution of survival and yielding indicates that reliable task execution does not require all three methods to learn the same response to an external pull. Retaining the original task objective produces increasingly small deviations, whereas the compliance objective and interaction-stage reward allocation allow substantial yielding to remain part of the learned behavior.
+
+The spring-load curves provide a complementary view. CB has a lower mean actual interaction force than BS and DR at every evaluated checkpoint. This separation is present early and persists through the later checkpoints, while the two controls settle at similar force levels. CB’s load fluctuates rather than decreasing monotonically, even as its constant-force yielding increases overall. The two measurements capture diferent responses: one records displacement under a prescribed force, and the other records the load generated by a state-dependent spring. These results show that CB learns to reduce interaction loads and maintains this ability as training progresses.
+
+To illustrate how compliant responses help the robot remain stable and continue its task under external forces, we compare the interaction force and torso height of CB and BS during whole-body dance tracking. Figure 6 shows their responses to a sustained spring pull at the wrist.
+
+As shown in Figure 6, BS continues to resist the spring pull, causing the interaction force to increase. When the force becomes too large, the robot loses stability and falls, as indicated by the drop in torso height. CB yields to the pull, reducing the interaction force while maintaining its torso height. This case illustrates how compliance can help the robot remain stable and continue a dynamic task by reducing the interaction load.
+
+## 4.3. Extension to velocity-command locomotion
+
+To test whether the compliance-training mechanism extends from motion tracking to velocity-command locomotion, we evaluate yielding, interaction loads, and speed-tracking recovery after force removal while keeping the original velocity-command interface unchanged. We compare BS, DR, and CB using the Unitree RL Lab locomotion controller, with MPC and MPC+Adm as classical references, to examine how these methods balance compliant responses with walking-task execution.
+
+![](images/90e7a0534abce465252841f91d68fc9d9cbc4a91fdb3ebacf94584488135358d.jpg)
+
+![](images/be59207661458a0cb51178181fa5565be00223ed1a896c473bf3cfbf8e259dab.jpg)
+
+![](images/aaa1cf5efbf33f1fed0eabf164b1e85bf80cfa30e8f42a73eb9667b0451cb1a4.jpg)  
+Fig. 5. Learning curves of task survival and compliance. (a) Task survival and (b) yielding under constant forces; (c) mean interaction forc under a spring. Lines and shaded bands show means and sample standard deviations across training seeds, respectively. CB achieves high task survival while retaining substantial yielding and lower spring interaction loads.
+
+![](images/c02e5d756774d0d94bde39553d830e84333549506faf139eecaec641aa8af1df.jpg)  
+Fig. 6. Interaction force and torso height during dance imitation. Under a sustained wrist spring pull, the baseline’s resistance increases the interaction force and leads to a fall, while CompliantBot yields to reduce the load and maintain stability.
+
+Each rollout uses a body-frame forward-velocity command of 0.5 m/s and lasts 20 s, with force applied to the right wrist during 2–5 s. Loading conditions comprise constant forces of 5 and 10 N along world +<sub>�</sub> and a spring with a world-fixed anchor, an initially lateral pull, and stifness $k = 2 0 \mathrm { N } / \mathrm { m }$ . Each forced rollout is paired with an unforced rollout of the same policy. We retain the yielding, mean actual force, and survival metrics from Section 4.2, with survival requiring completion of the 20 s episode. Yielding $Y _ { w }$ is the mean wrist displacement over 4–5 s relative to the unforced rollout, projected on the initial force direction; �<sup>¯</sup> averages the actual force magnitude over 2–5 s. Recovery is measured by $\Delta E _ { \nu }$ , the mean absolute forward-speed tracking error over 5–10 s in the forced rollout minus that in its unforced counterpart.
+
+BS, DR, and CB are evaluated with three evaluation seeds and 64 paired trials per loading condition and seed, retaining native randomization and matched initial states across meth ods. Table 5 reports the mean and sample standard deviation across the three per-seed results for each fixed policy.
+
+MPC and MPC+Adm are evaluated on the same scale as
+
+BS, DR, and CB, using the same velocity command, loading conditions, and measurement windows. Their closedloop evaluations use MuJoCo. In MPC+Adm, the external force drives a Cartesian reference ofset �� through the mass–damper–spring model [21]
+
+$$
+M _ {a} \delta \ddot {\pmb {x}} + D _ {a} \delta \dot {\pmb {x}} + K _ {a} \delta \pmb {x} = \pmb {F} _ {t}.\tag{7}
+$$
+
+Here $M _ { a } \ = \ 4 \mathrm { k g } , D _ { a } \ = \ 3 0 \mathrm { N s / m }$ , and $K _ { a } \ = \ 5 0 \mathrm { N / m }$ set the reference dynamics. For the wrist interaction, the reference adjustment combines horizontal whole-body translation with arm inverse kinematics. The adjusted positions and velocities are passed to the same full-body MPC, which determines the actuator commands. Once the applied force is removed, the damped ofset returns toward zero, restoring the nominal reference. The force input is the current applied simulation force; neither classical baseline uses a learned policy. This construction separates the predictive task controller from the explicit force-to-motion mapping added by admittance.
+
+Table 5 shows that CB yields farther than BS and DR under both constant-force conditions, while DR yields less than BS. Under the spring, CB also achieves greater mean yielding and a lower actual interaction load than these controls. All three policies complete every trial. After force removal, CB’s additional speed-tracking error is close to zero under constant forces and smaller than BS and DR under the spring. These internal comparisons show that force exposure alone is insuficient to promote yielding. Combining the state-dependent interaction force field, compliance reward, and interaction-stage reward allocation promotes yielding and load reduction during velocity-command locomotion while preserving task completion and speed-tracking recovery after release.
+
+Compared with MPC and MPC+Adm, CB achieves greater mean yielding and higher survival under all tested loading conditions, together with a lower actual load and a smaller post-release speed-tracking error under the spring. Within the classical pair, adding admittance increases yielding and reduces the spring load, but is accompanied by lower survival under the 10 N pull and the spring, revealing a trade-of between compliant response and stability in this configuration. CB achieves more substantial yielding and more efective unloading while completing every trial, demonstrating a better overall balance among compliant response, stability, and task recovery.
+
+Table 5. Velocity-command locomotion under external forces. Bold and underlined means indicate the best and second-best values among all five methods within each condition, respectively. Fully tied columns are unmarked.
+
+<table><tr><td rowspan="2">Method</td><td colspan="4">Constant force (5 N)</td><td colspan="4">Constant force (10 N)</td><td colspan="4">Spring (k = 20 N/m)</td></tr><tr><td> $Y_w$  (cm) $\uparrow$ </td><td> $\Delta E_v$  (mm/s) $\downarrow$ </td><td> $\bar{F}$  (N) $\downarrow$ </td><td>Survival (\%)  $\uparrow$ </td><td> $Y_w$  (cm) $\uparrow$ </td><td> $\Delta E_v$  (mm/s) $\downarrow$ </td><td> $\bar{F}$  (N) $\downarrow$ </td><td>Survival (\%)  $\uparrow$ </td><td> $Y_w$  (cm) $\uparrow$ </td><td> $\Delta E_v$  (mm/s) $\downarrow$ </td><td> $\bar{F}$  (N) $\downarrow$ </td><td>Survival (\%) $\uparrow$ </td></tr><tr><td>BS</td><td>13.75±0.04</td><td>2.85±0.39</td><td>5.000±0.000</td><td>100</td><td>27.10±0.06</td><td>1.82±0.28</td><td>10.000±0.000</td><td>100</td><td>14.82±0.12</td><td>21.33±0.29</td><td>13.485±0.006</td><td>100</td></tr><tr><td>DR</td><td>9.85±0.08</td><td>-0.02±0.10</td><td>5.000±0.000</td><td>100</td><td>20.03±0.06</td><td>-0.27±0.09</td><td>10.000±0.000</td><td>100</td><td>16.90±0.05</td><td>10.30±0.15</td><td>14.366±0.001</td><td>100</td></tr><tr><td>CB</td><td>17.62±0.08</td><td>-0.06±0.04</td><td>5.000±0.000</td><td>100</td><td>39.38±0.50</td><td>1.64±0.49</td><td>10.000±0.000</td><td>100</td><td>19.78±0.18</td><td>9.55±1.10</td><td>10.283±0.010</td><td>100</td></tr><tr><td>MPC</td><td>1.49±2.26</td><td>1.40±4.32</td><td>5.000±0.000</td><td>75</td><td>2.26±2.25</td><td>12.77±8.37</td><td>10.000±0.000</td><td>75</td><td>2.22±2.35</td><td>15.15±8.87</td><td>15.714±0.082</td><td>75</td></tr><tr><td>MPC+Adm</td><td>11.52±2.18</td><td>-0.82±4.44</td><td>5.000±0.000</td><td>75</td><td>18.92±1.79</td><td>31.80±67.75</td><td>10.000±0.000</td><td>50</td><td>15.62±2.00</td><td>39.80±48.68</td><td>13.964±0.074</td><td>50</td></tr></table>
+
+Together with the preceding motion-tracking experiments, these results show that CompliantBot’s compliance-training mechanism applies to both motion-reference and velocity command interfaces. It preserves the original task inputs while enabling the robot to yield to external forces, reduce interaction loads, and resume task tracking after release.
+
+## 4.4. Task completion and mechanical power under stronger forces
+
+To examine task continuation and mechanical efort under stronger external forces, we evaluate BS, DR, CB, SoftMimic, and GentleHumanoid on the same walking reference under prescribed pulls. For the versions evaluated here, BS, DR, CB, and GentleHumanoid use a training force-magnitude cap of 50 N. The 50 N test therefore examines performance at this magnitude boundary, whereas the 70 N test evaluates out-of-distribution generalization in force magnitude. SoftMimic retains the 140 N peak-force limit used in its compliant motion data generation, so neither test magnitude exceeds that limit.
+
+Each trial lasts 10 s, with force applied from 2 to 4 s to one body site: the torso, right wrist, or right ankle. Each site is tested in eight horizontal directions with two refer ence starts per site–direction pair, giving 48 trials per force level and checkpoint. Figure 7(a,b) shows the fraction of tri als that have not reached a task-termination condition; the final value is the task completion rate. Figure 7(c) compares mean mechanical power during unforced execution and un der 10–50 N pulls in increments of 10 N. Mechanical power is the sum of the absolute joint torque–velocity products, averaged over the force-application interval; unforced trials use the same time window. At each force level and evaluation re set, power is compared across all five methods on common valid case–time samples from their first episodes. All three panels report means and sample standard deviations over five evaluation resets with fixed policies. Within each reset, the two internal checkpoint results are averaged for each method; each external method uses one checkpoint.
+
+CB achieves the highest final completion rate at both force levels, and its advantage persists after force removal, indicating better continuation of the tracking task following interaction. Although completion decreases when the force exceeds the training magnitude cap, CB remains above the other methods, supporting generalization to larger force magnitudes. SoftMimic’s training data permit higher peak forces, yet its completion rate remains below CB in this evaluation, indicating that force-magnitude coverage alone does not determine task continuation.
+
+For mechanical power, CB has the lowest mean at every tested force magnitude, including unforced execution, although its margin over each method varies with force magnitude. Together with the completion results, CB maintains both higher task completion and lower mechanical power at 50 N, while retaining higher task continuation in the 70 N out-of-distribution test. These experiments show that CB can balance task execution and mechanical efort under stronger interaction loads while extending task retention beyond the training force-magnitude range.
+
+## 4.5. Real-world experiments
+
+Real-robot demonstrations examine how the robot coordinates local joint motion and whole-body movement in response to physical interaction. The supplementary video presents the method, simulation comparisons, and recordings of these real-robot demonstrations.
+
+During forward walking, a modest wrist pull causes the robot to raise its arm in the direction of the pull. With a stronger pull, the response also includes lateral stepping, allowing the whole body to follow the interaction rather than relying on arm motion alone (Figure 8a). A backward torso pull produces stepping in place and backward stepping as the pull increases (Figure 8b). The robot thus adapts its walking to pulls at diferent body sites. The real-robot experiments also compare interaction responses under diferent force-magnitude targets $f ^ { \star }$ . A higher target requires a stronger pull to stop the robot from walking forward, leaving it stepping in place (Figure 8c).
+
+Sustained wrist constraint produces a diferent response. When the wrist is held near a fixed location, the robot turns and changes its walking direction around the constrained hand (Figure 8d). Alongside the wrist and torso pulls, this sequence shows how compliant behavior can involve arm articulation, stepping, and body reorientation during an ongoing walking task.
+
+An elastic-band interaction further examines the response during upper-body dance imitation. One end of the band is attached to the wrist while the other is held at a fixed location. Compared with the baseline, CompliantBot moves closer to the fixed end and reduces the amplitude of its arm motion, shortening the band’s extension. The real-robot comparison in Figure 1 illustrates the corresponding posture adjustment under the elastic pull.
+
+![](images/8d79202e66104acbc71f3c435a3a2d854bbadca707c445cd34cac32077e83798.jpg)
+
+![](images/db73c7e3dd32b5f7297f0d9468fe1d99fb04576ade7fc74039f8d577f93e61cc.jpg)
+
+![](images/7bf5f2fa9eb3eddcc5dda8855e8f06d33d598f6d23fa1ec6281d40daaeaf029c.jpg)  
+Fig. 7. Task completion and mechanical power under external forces. (a,b) Task survival rates over time; final values indicate task completion rates. (c) Mean joint mechanical power across force magnitudes. Gray shading marks force application; colored bands and error bars show sampl standard deviations across evaluation resets. CB achieves the highest final task completion and the lowest mean mechanical power among th compared methods.
+
+These real-robot results show that CompliantBot coordinates local and whole-body compliant responses through arm articulation, stepping, and body reorientation, and reduces the elastic band’s extension through posture adjust ments. This demonstrates its ability to integrate yielding into ongoing walking and motion execution, combining compliant responses with continued task execution during real physical interaction.
+
+## 5. Discussion and Conclusion
+
+The internal comparisons with BS and DR show that force exposure alone is insuficient to promote yielding and load reduction. CompliantBot combines the state dependent interaction force field, compliance reward, and interaction-stage reward allocation to allow temporary task deviations during force application and reward the robot for motion that brings the actual force magnitude toward its target. The robot can achieve this through local articulation, whole-body displacement, or their coordination, without a prescribed compliant motion trajectory. Greater yielding, lower spring loads, and task recovery after release show that this combined design supports compliant responses alongside continued task execution.
+
+The comparisons with SoftMimic and GentleHumanoid show that greater yielding displacement does not necessarily produce more efective unloading. Although SoftMimic yields farther under the lower-stifness spring, CB experi ences a lower actual load while maintaining higher survival and a smaller post-release tracking error. In velocity command locomotion, CB achieves greater mean yielding and higher survival than MPC and MPC+Adm across the tested loading conditions, together with a lower interaction load and a smaller post-release speed-tracking error under the spring. These external comparisons show that Compli antBot achieves a better overall balance among compliant response, efective unloading, stability, and task recovery.
+
+The motion-tracking and velocity-command locomotion experiments further demonstrate the applicability of this mechanism across diferent task interfaces. The former specifies the task through motion references, while the latter uses desired linear and angular velocities. CompliantBot retains the original task inputs in both interfaces, allowing temporary deviations during loading and resuming task tracking after release. These results show that the compliance-training mechanism can be integrated into diferent task objectives without separately constructing compliant data or target trajectories for each command interface.
+
+The current approach remains limited by its lack of scene perception. Policies respond to external forces through task inputs and proprioceptive history, without explicit information about surrounding obstacles, object geometry, or the purpose of an interaction. The present experiments do not examine how the robot should use scene context to decide when to yield, where to move, and which contacts to resist. Future work could incorporate visual or depth observations to guide compliant motion using environmental constraints and interaction context.
+
+The current evaluations also focus on motion tracking and velocity-command locomotion under external pulls, without complex object manipulation. Carrying, coordinated bimanual handling, and contact-rich assembly require maintaining useful contact forces while satisfying grasp and objectmotion constraints; reducing interaction loads alone is insuficient to complete these tasks. Future extensions should combine object-state information with task-dependent contact objectives and evaluate manipulation accuracy, contactforce regulation, and task completion.
+
+CompliantBot combines a state-dependent interaction force field, a force-magnitude objective, and interactionstage reward allocation to learn yielding and task resumption while preserving the original task inputs, without preconstructed compliant data or target trajectories. Motiontracking and velocity-command locomotion experiments demonstrate the efectiveness of the combined training mechanism, while external comparisons show a better overall balance among compliant response, stability, and task recovery. Under stronger pulls, CB achieves the highest task completion among the compared methods, retaining this advantage beyond its training force-magnitude range. Power evaluations also show the lowest mean joint mechanical power among the compared methods. Real-robot results further demonstrate coordinated local and whole-body responses that combine compliance with continued task execution during physical interaction.
+
+![](images/ab53d47b3f40c5b35371007659acc68083bdb948f4fef90f9f5b282e910690f9.jpg)
+
+![](images/c65b25e0c97db49db4c771c305557f9e1cceebce268762add4173d4a8bdfd1ba.jpg)
+
+![](images/f77bd7637312d2ebdc27397896c55a59d1489bc9edb12907c80220a2b34bcdb3.jpg)
+
+![](images/acac5002526b32eeae6a48f99c6319e106388a4010712fb9165ea138452980c0.jpg)  
+Fig. 8. Real-robot compliant responses during walking. (a) Arm yielding and lateral stepping under wrist pulls. (b) Stepping in place and backward stepping under torso pulls. (c) Higher force-magnitude targets �<sup>★</sup> require stronger pulls to stop forward motion. (d) A sustained wrist pull turns the robot around the fixed hand. These demonstrations show that CompliantBot coordinates local and whole-body motion to yield while continuing the task.
+
+## References
+
+[1] Q. Liao, T. E. Truong, X. Huang, Y. Gao, G. Tevet, K. Sreenath, C. K. Liu, BeyondMimic: From motion tracking to versatile humanoid control via guided difusion, arXiv preprint arXiv:2508.08241 (2025).
+
+[2] I. Radosavovic, T. Xiao, B. Zhang, T. Darrell, J. Malik, K. Sreenath, Real-world humanoid locomotion with reinforce ment learning, Science Robotics 9 (89) (2024) eadi9579.
+
+[3] Z. Chen, M. Ji, X. Cheng, X. Peng, X. B. Peng, X. Wang, GMT: General motion tracking for humanoid whole-body control, arXiv preprint arXiv:2506.14770 (2025).
+
+[4] Y. Ze, Z. Chen, J. P. Araújo, Z.-a. Cao, X. B. Peng, J. Wu, C. K. Liu, TWIST: Teleoperated whole-body imitation system, arXiv preprint arXiv:2505.02833 (2025).
+
+[5] Q. Ben, F. Jia, J. Zeng, J. Dong, D. Lin, J. Pang, HOMIE: Hu manoid loco-manipulation with isomorphic exoskeleton cockpit, arXiv preprint arXiv:2502.13013 (2025).
+
+[6] T. He, W. Xiao, T. Lin, Z. Luo, Z. Xu, Z. Jiang, J. Kautz, C. Liu, G. Shi, X. Wang, L. Fan, Y. Zhu, HOVER: Versatile neural whole body controller for humanoid robots, in: 2025 IEEE International Conference on Robotics and Automation (ICRA), IEEE, 2025, pp. 9989–9996.
+
+[7] G. B. Margolis, M. Wang, N. Fey, P. Agrawal, SoftMimic: Learning compliant whole-body control from examples, arXiv preprint arXiv:2510.17792 (2025).
+
+[8] Q. Lu, Y. Feng, B. Shi, M. Piseno, Z. Bao, C. K. Liu, GentleHumanoid: Learning upper-body compliance for contact-rich human and object interaction, arXiv preprint arXiv:2511.04679 (2025).
+
+[9] A. Hartmann, D. Kang, F. Zargarbashi, M. Zamora, S. Coros,
+
+Deep compliant control for legged robots, in: 2024 IEEE International Conference on Robotics and Automation (ICRA), IEEE, 2024, pp. 11421–11427.
+
+[10] J. Long, J. Ren, M. Shi, Z. Wang, T. Huang, P. Luo, J. Pang, Learning humanoid locomotion with perceptive internal model, in: 2025 IEEE International Conference on Robotics and Automation (ICRA), IEEE, 2025, pp. 9997–10003.
+
+[11] Z. Chen, X. He, Y.-J. Wang, Q. Liao, Y. Ze, Z. Li, S. S. Sastry, J. Wu, K. Sreenath, S. Gupta, X. B. Peng, Learning smooth humanoid locomotion through Lipschitz-constrained policies, in: 2025 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), IEEE, 2025, pp. 4743–4750.
+
+[12] Z. Li, X. B. Peng, P. Abbeel, S. Levine, G. Berseth, K. Sreenath, Reinforcement learning for versatile, dynamic, and robust bipedal locomotion control, The International Journal of Robotics Research 44 (5) (2025) 840–888. doi:10.1177/ 02783649241285161.
+
+[13] T. Zhang, B. Zheng, R. Nai, Y. Hu, Y.-J. Wang, G. Chen, F. Lin, J. Li, C. Hong, K. Sreenath, Y. Gao, HuB: Learning extreme hu manoid balance, arXiv preprint arXiv:2505.07294 (2025).
+
+[14] M. Ji, X. Peng, F. Liu, J. Li, G. Yang, X. Cheng, X. Wang, ExBody2: Advanced expressive humanoid whole-body control, arXiv preprint arXiv:2412.13196 (2024).
+
+[15] T. He, J. Gao, W. Xiao, Y. Zhang, Z. Wang, J. Wang, Z. Luo, G. He, N. Sobanbabu, C. Pan, Z. Yi, G. Qu, K. Kitani, J. Hodgins, L. Fan, Y. Zhu, C. Liu, G. Shi, ASAP: Aligning simulation and real-world physics for learning agile humanoid whole-body skills, arXiv preprint arXiv:2502.01143 (2025).
+
+[16] K. Yin, W. Zeng, K. Fan, M. Dai, Z. Wang, Q. Zhang, Z. Tian, J. Wang, J. Pang, W. Zhang, UniTracker: Learning universal whole-body motion tracker for humanoid robots, arXiv preprint arXiv:2507.07356 (2025).
+
+[17] T. He, Z. Luo, X. He, W. Xiao, C. Zhang, W. Zhang, K. Kitani, C. Liu, G. Shi, OmniH2O: Universal and dexterous human-tohumanoid whole-body teleoperation and learning, arXiv preprint arXiv:2406.08858 (2024).
+
+[18] Y. Ze, S. Zhao, W. Wang, A. Kanazawa, R. Duan, P. Abbeel, G. Shi, J. Wu, C. K. Liu, TWIST2: Scalable, portable, and holistic humanoid data collection system, arXiv preprint arXiv:2511.02832 (2025).
+
+[19] J. Li, X. Cheng, T. Huang, S. Yang, R.-Z. Qiu, X. Wang, AMO: Adaptive motion optimization for hyper-dexterous humanoid whole-body control, arXiv preprint arXiv:2505.03738 (2025).
+
+[20] N. Hogan, Impedance control: An approach to manipulation: Part I—theory, Journal of Dynamic Systems, Measurement, and Con trol 107 (1) (1985) 1–7.
+
+[21] C. Ott, R. Mukherjee, Y. Nakamura, A hybrid system framework for unified impedance and admittance control, Journal of Intelligent & Robotic Systems 78 (2015) 359–375. doi:10.1007/ s10846-014-0082-1.
+
+[22] T. Howell, N. Gileadi, S. Tunyasuvunakool, K. Zakka, T. Erez, Y. Tassa, Predictive Sampling: Real-time Behaviour Synthesis with MuJoCo, arXiv preprint arXiv:2212.00541 (2022). doi: 10.48550/arXiv.2212.00541.
+
+[23] R. Martín-Martín, M. A. Lee, R. Gardner, S. Savarese, J. Bohg, A. Garg, Variable impedance control in end-efector space: An action space for reinforcement learning in contact-rich tasks, in: 2019 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), IEEE, 2019, pp. 1010–1017.
+
+[24] C. C. Beltran-Hernandez, D. Petit, I. G. Ramirez-Alpizar, T. Nishi, S. Kikuchi, T. Matsubara, K. Harada, Learning force control for contact-rich manipulation tasks with rigid position controlled robots, IEEE Robotics and Automation Letters 5 (4) (2020) 5709–5716.
+
+[25] Y. Zhang, Y. Yuan, P. Gurunath, I. Gupta, S. Omidshafiei,
+
+A.-a. Agha-mohammadi, M. Vazquez-Chanlatte, L. Pedersen, T. He, G. Shi, FALCON: Learning force-adaptive humanoid loco-manipulation, arXiv preprint arXiv:2505.06776 (2025).
+
+[26] G. Li, H. Shi, Q. Shi, Y. Hu, C. Ma, Z. Wang, X. Wang, S. Luo, Thor: Towards human-inspired whole-body reactions for intense contact-rich environments, arXiv preprint arXiv:2510.26280 (2025).
+
+[27] S. Lee, P. S. Chang, J. Lee, Deep compliant control, in: ACM SIGGRAPH 2022 Conference Proceedings, 2022, pp. 1–9. doi: 10.1145/3528233.3530719.
+
+[28] T. Portela, G. B. Margolis, Y. Ji, P. Agrawal, Learning force control for legged manipulation, in: IEEE International Conference on Robotics and Automation (ICRA), 2024, pp. 15366–15372.
+
+[29] P. Zhi, P. Li, J. Yin, B. Jia, S. Huang, Learning a unified policy for position and force control in legged loco-manipulation, arXiv preprint arXiv:2505.20829 (2025).
+
+[30] B. Xu, H. Weng, Q. Lu, Y. Gao, H. Xu, FACET: Force-adaptive control via impedance reference tracking for legged robots, arXiv preprint arXiv:2505.06883 (2025).
+
+[31] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, O. Klimov, Proximal policy optimization algorithms, arXiv preprint arXiv:1707.06347 (2017).

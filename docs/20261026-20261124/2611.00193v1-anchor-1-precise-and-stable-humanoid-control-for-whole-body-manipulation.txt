@@ -1,0 +1,647 @@
+# Anchor 1: Precise and Stable Humanoid Control for Whole-Body Manipulation
+
+Archon Robotics
+
+For detailed authorship, see Contributions section.
+
+https://archon.tech/research/anchor1
+
+## Abstract
+
+Humanoid controllers have acquired increasingly diverse motor skills, yet translating these capabilities into precise and stable whole-body manipulation remains challenging. Manipulation tasks are sensitive to execution deviations – even small errors or unintended steps can cause failure. Introducing Anchor 1, a whole-body controller for precise and stable whole-body manipulation, together with a benchmark spanning diverse coordination demands. Anchor 1 adopts calibrated sparse motion references to preserve task-relevant human motion structure without online joint-space retargeting, leaving kinematic freedom for precise control. To guide this freedom towards stable, physically plausible whole-body coordination, we shape the training distribution through ofline curation of robot motions paired with these calibrated sparse references. We further introduce explicit error feedback decoupled from motion encoding, improving control precision while supporting flexible command interfaces. To achieve a systematic evaluation of these capabilities, a benchmark is proposed to assess precision, sustained execution stability, and reachability across diverse whole-body coordination demands. Evaluations in simulation and on hardware show stronger precision and stability across all evaluation tracks. Under the most strict real-world global scoring setting, Anchor 1 achieves a 30% to 80% decrease in tracking error with fewer look-ahead inputs, and without retargeting compared to all existing controllers. Downstream experiments demonstrate more eficient teleoperated data collection and higher task success using the same deployment pipeline as well. We believe Anchor 1 supports precise and stable whole-body control as a practical basis for humanoid task execution.
+
+## 1 Introduction
+
+Humanoid robots ofer the prospect of performing everyday tasks in environments designed around the human body [1]. Realizing this prospect requires accurate coordination of the hands, trunk, and feet as the robot moves and interacts with its surroundings. Reaching into a low shelf couples hand placement with changes in posture and balance; carrying a tray requires its pose to be maintained while the feet reposition. In both cases, small deviations at the end efectors can disrupt the task even when the robot remains upright, and an unintended step can shift the body and displace the hands from their targets. A controller for whole-body manipulation must therefore be precise, bringing the hands and feet to their intended targets, and stable, sustaining this accuracy throughout execution without falls, slips, or unintended steps. These capabilities underpin predictable teleoperation, successful demonstration collection [2, 3, 4], and reliable execution by autonomous policies [5].
+
+Learning from human motion have enabled substantial progress in whole-body control [6, 7, 8]. Recent work demonstrates agile, natural movement and transfer across motion sources and embodiments [9, 10, 11], alongside general-purpose interfaces for interactive and autonomous control [12, 13, 14]. Task-oriented systems further demonstrate coordinated whole-body control for dynamic interactions [15, 16, 17]. In parallel, other approaches transfer egocentric human demonstrations to humanoid loco-manipulation through visual and action alignment [18, 19]. Bringing these advances to whole-body manipulation raises two fundamental requirements: task intent must be faithfully expressed in a control command, and this command must be realized through precise, stable execution. In teleoperation, the command must adapt the operator’s motion to the robot’s morphology while preserving task-relevant cues and a predictable correspondence. A common approach constructs the command as a robot-space reference through online retargeting [20, 21]; errors in this conversion can disrupt the intended correspondence or introduce discontinuities. Encoding human motion directly avoids this conversion [12], but a parametric body representation [22] that disregards the operator’s body proportions can distort task-relevant trajectory structure.
+
+Even with a faithful command, close reproduction of the overall motion does not ensure sustained accuracy at task-relevant targets. The controller needs to correct deviations as posture and support change, without introducing unintended movements that disrupt the task. Existing controllers obtain the signal for this correction in diferent ways. Token-conditioned controllers [12] receive the intended motion as a learned token together with proprioception. This compact, structured representation can facilitate learning by higher-level policies. However, tracking-error feedback is implicit in this formulation: the policy must infer deviations from the token and proprioception, while compression obscures fine-grained target information and makes small residual errors harder to correct. By contrast, explicit tracking-error feedback provides a direct correction signal [2, 13, 23], but encoding it in the motion token would entangle intended behavior with transient execution errors, complicating token prediction and reuse by higher-level policies.
+
+Progress toward such controllers also depends on evaluations that can verify these capabilities. Such evaluations must distinguish overall motion reproduction from sustained accuracy under manipulation-relevant conditions. Humanoid benchmarks now span whole-body task learning and the interplay between high-level policies and low-level trackers [24, 25]. Motion-tracking benchmarks have also broadened motion coverage and begun to assess contact quality and alignment with human preferences [26, 27]. Yet task success in task-level benchmarks also reflects perception and planning, whereas sequence-averaged tracking errors can obscure brief deviations. Complementary, controller-level evaluations are therefore needed to characterize how precisely targets can be reached, how consistently they can be maintained, and under which whole-body conditions execution becomes unreliable.
+
+Here, we present Anchor 1, a humanoid controller for precise and stable whole-body manipulation. Anchor 1 constructs its commands through a structure-preserving calibration of human motion to robot scale, which retains task-relevant motion cues and a predictable correspondence without online joint-space retargeting. To focus control on the body parts that most directly shape manipulation and support, we restrict these commands to sparse motion references [13, 28, 29] that specify target poses only for the pelvis, both wrists, and both ankles. With only these poses specified, the policy can use the remaining kinematic redundancy to track them precisely. This freedom, however, also admits multiple whole-body realizations, leaving the training distribution to determine how it is used. We shape this distribution by pairing each human motion with an ofline-retargeted robot reference and curating these pairs through quality screening. The resulting data bias the learned coordination toward stable, physically plausible behavior.
+
+To retain explicit error feedback for precise tracking while supporting flexible commands from higher-level policies, Anchor 1 accepts either sparse motion references or motion tokens [12] and decouples this feedback from motion encoding. Execution errors thus guide control without entering the motion tokens. When commands arrive as tokens, targets reconstructed from them provide the reference for this feedback. The reconstruction objective also ties each token to the intended motion, keeping the token space consistent for higher-level policies to learn.
+
+To fairly assess these control capabilities of current whole-body controllers, we also introduce a benchmark across three complementary tracks, especially highlighting out-of-distribution whole-body manipulationrelated motions. The In-house track uses task-structured motion-capture sequences that combine upper-body actions with varied lower-body support and movement, probing coordination during reaching and hand stabilization. The Public track broadens the evaluation to diverse motion sources and behaviors, including dynamic whole-body movements. The Reachability track tests whether prescribed wrist targets can be reached and held across body configurations without foot slips or extra steps. Together, these tracks characterize sustained tracking accuracy, reachability, and stability under varied whole-body coordination demands.
+
+![](images/5bcbad0c8c6391338cd8594d04ea50e1d762dcf520988c9f6453cefb789a7c72.jpg)  
+Figure 1. Anchor 1– Precise, responsive, and stable whole-body manipulation. (A) Precision. A.1 navigating a narrow passage; A.2 carrying a plate through a narrow passage; A.3 pressing a rice cooker button; and A.4 tracing characters with the end efector. (B) Low-latency response. B.1 accurately striking a fast-moving volleyball; and B.2 rapidly and precisely intercepting a narrow-profile tire. (C) Postural stability. C.1 holding a wooden stool and place it on the floor. C.2 bending to retrieve an orange in a narrow space; and C.3 picking up a water bottle while stably kneeling on one knee. (D) Whole-body coordination. D.1 lifting a bicycle upright; D.2 pulling a grocery cart while placing groceries at designated shelf locations; D.3 bending to arrange bedding; and D.4 steadying a basket with one hand while stacking goods with the other during locomotion.
+
+Our contributions are threefold. First, we present Anchor 1, a whole-body controller that integrates structure-preserving sparse references, stability-oriented distribution curation, and decoupled error feedback for precise and stable whole-body manipulation. Second, we introduce a controller-level benchmark for diagnosing precision and stability under diverse conditions relevant to whole-body manipulation. Third, through simulation and hardware evaluations, we show that Anchor 1 improves tracking precision and execution stability over the evaluated baselines and yields more eficient teleoperated data collection and higher autonomous task success. Hardware demonstrations further cover fine end-efector contact and fas interception, as well as whole-body manipulation while kneeling, bending, or walking (Fig. 1).
+
+## 2 Results
+
+Anchor 1 supports accurate reaching, object-pose maintenance during body motion, and coordinated whole-body manipulation, as illustrated by the real-world demonstrations in Fig. 1.
+
+A structured benchmark measures tracking precision, stability, and reachability through comparisons in simulation and on hardware (Secs. 2.1 to 2.3). Ablation studies and supporting experiments examine the reference representation and controller architecture (Sec. 2.4), followed by evaluations of teleoperated data collection and autonomous task execution (Sec. 2.5).
+
+## 2.1 Benchmarking manipulation-centric whole-body control
+
+Benchmarking whole-body manipulation requires evaluating positioning accuracy and support stability alongside general motion-tracking performance. The benchmark therefore comprises three tracks: In-house, Public, and Reachability. The In-house track systematically varies the coordination demands placed on the controller through structured motion-capture tasks. The Public track extends evaluation to external motion sources and behaviors beyond those emphasized by the in-house tasks. The Reachability track adds prescribed spatial targets and holding phases, allowing positioning performance to be examined alongside support stability. Together, these tracks assess controller performance across both diverse motion sequences and explicitly specified reaching conditions.
+
+## 2.1.1 Benchmark composition and motion diversity
+
+The In-house track contains 15,342 motion-capture sequences across 3,247 tasks designed to probe manipulation-related whole-body coordination. We specify torso configuration and arm-and-hand behavior separately from lower-body support and movement, then combine compatible action descriptions into motion-capture instructions. These tasks include unilateral and bimanual reaching from diferent postures, coordinated hand–foot motion, and hand stabilization during body movement. The task structure makes the intended body behavior and its lower-body context explicit, allowing related manipulation demands to be examined under diferent postural and locomotor conditions. The associated tags also allow results to be grouped by coordination demand. Tag coverage, action-tag distributions, and details of the spatial analysis are provided in Sec. S1.
+
+The Public track contains 2,230 motion sequences selected from BONES-SEED [30], CIRCLE [31], OMOMO [32], and AMASS [33]. We select BONES-SEED and CIRCLE sequences by actor or subject identity, use the existing OMOMO test partition, and include a predefined AMASS test subset. These sequences introduce motion patterns from external datasets, including running and jumping, which are absent from the In-house track. The Public track therefore complements the manipulation-focused task composition of the In-house track by testing whether tracking capability extends to a wider range of motion sources and dynamic behaviors.
+
+The Reachability track complements these motion-sequence evaluations with explicitly specified Cartesian wrist targets. We define fixed right-wrist targets in a world coordinate frame across five postures: standing, shallow squat, deep squat, staggered stance, and half kneeling. Each case pairs a target location with a posture. We generate base motions for each posture using Kimodo [34], then adapt them to the targets through constrained inverse kinematics subject to joint limits and prescribed support contacts. The resulting references include preparation, reaching, target holding, and return phases. Accepted references maintain a maximum wrist-position error below 1 cm relative to the prescribed target during the holding interval. After quality control and left–right mirroring, the track contains 3,210 reference motions covering reaching with either wrist. This construction provides target-conditioned references for evaluating sustained tracking across body configurations. Tracking success, foot-slip and extra-step events are recorded over the reach–hold–return task window, testing whether the controller can execute the motion while maintaining the intended support.
+
+The coverage analyses further illustrate the complementary composition of the tracks. Joint projections of semantic and pose features provide a qualitative view of overlapping and distinct motion regions across all three tracks (Fig. 2B). Under the coordinate transformations used for the spatial analysis, the In-house references exhibit broader wrist-position coverage, particularly in the stationary subset, whereas the Public references span a larger region of pelvis displacement after initial alignment (Fig. 2C). These distributions characterize the spatial occupancy of the reference motions; the Reachability track separately specifies target locations across postures for controller assessment.
+
+Feature-space distributions and spatial coverage of the three tracks are visualized in Fig. 2B and C. All benchmark sequences are held out from training.
+
+![](images/1737763a456ca6fba2575d1caa609a62b805f6abd6f17067e7ad457d204e8562.jpg)
+
+![](images/47e448426c8945813fcff9794dbe71cc0fb524e32743b7bdec185ebb22cbccd4.jpg)
+
+![](images/a379ec6626316c2e62f85bd4f22f4b2bd8b56320b0f8454b7eeb009f8877f4c5.jpg)
+
+![](images/10af86aa19a6ecc66fbc132b440a6a8418b178b3e7db61dff570fc0c7e259f61.jpg)
+
+![](images/5d79735fef56376d393eb74ee9d908794d1256b230d6e2d57ef214a5cb4014b6.jpg)
+
+![](images/e8ec21d60ec233e8487cb2fcd0b1d3f1716e85e924ef51f33137440b44a87422.jpg)
+
+![](images/a841c8971bbf22bacb4d7a268ffe75fb309a5dc15a1f9212f646761380d0929a.jpg)
+
+![](images/76ee7cbd78d122b3e49ba64aed9ccb692009b0e422b1b94b3a31d36087f31e6c.jpg)
+
+![](images/4d782c90af34d766749aedd4e616401892527177a0223112c70d2c07fe9543a7.jpg)  
+Figure 2. Benchmark construction and motion coverage. (A) Construction of the In-house, Public, and Reachability tracks, with representative reference sequences and timestamps in seconds; purple markers indicate wrist targets. (B) Joint t-SNE projections of all three tracks, providing a qualitative view of their extensive semantic and pose diversity. (C) Spatial distributions of wrist and ankle positions and pelvis trajectories for the In-house and Public tracks, showing upper and lower-body workspaces, stationary manipulation, and locomotion coverage. The two tracks provide complementary coverage of manipulation-related body configurations and global mobility.
+
+## 2.1.2 Evaluation criteria
+
+Benchmarking whole-body manipulation requires evaluation criteria that capture both tracking precision and the ability to sustain it throughout execution. Tracking precision is quantified by mean position errors, and sustained tracking by motion-level success rates (SR). Global scoring compares executed and reference trajectories after a fixed initial alignment of horizontal pelvis position and heading. Local scoring additionally removes each trajectory’s instantaneous horizontal pelvis translation while preserving height and heading diferences. Both scoring frames are independent of the controller’s input mode.
+
+For the In-house and Public tracks, a motion is successful only if wrist and ankle position errors remain within 10 cm, their orientation errors within 1 rad, and all other tracked body-point position errors within 25 cm throughout the sequence. All motions, including failures, contribute equally to SR. Mean position errors are averaged within each motion and then across motions, using frames preceding the first position error exceeding 25 cm at any tracked body point. The resulting observation windows may difer across controllers.
+
+For the Reachability track, task success requires global tracking without foot slips or extra steps throughout the reach–hold–return task window. Mean slip and extra-step counts per motion further characterize support stability. Full definitions, failure handling, and aggregation rules are provided in Sec. 4.4.1.
+
+## 2.2 Tracking precision, stability, and reachability in simulation
+
+Simulation experiments compare Anchor 1 with ScaleBFM XL [13], SONIC v1.1 [12], and MimicLite v1.1 [35] to assess tracking precision, sustained tracking success, and reachability across the three benchmark tracks (Fig. 3). Within each track, all configurations are tested on the same reference motions using the criteria in Sec. 2.1.2 and a common simulation and domain-randomization protocol (Sec. 4.4.2). References are precomputed for all tracks, with sparse robot-space references supplied to Anchor 1 on the Reachability track. The comparisons assess complete controller configurations. Controller look-ahead and online retargeting requirements are summarized in Table 1. Corresponding results in Isaac Sim are provided in Sec. S3.
+
+On the In-house track, Anchor 1 in global mode achieves the highest local and global success rates (SR), at 88.4% and 88.7%, respectively, and the lowest mean horizontal root position error among the compared configurations, alongside low wrist and ankle position errors (Fig. 3A,B). The category-wise comparisons also show higher tracking success on household motions requiring whole-body coordination, including low-reaching and half-kneeling reaches (Fig. 3C). This advantage extends to manipulation during locomotion: during walking with asymmetric bimanual reaches, its local SR is 91.2%, compared with 57.0% for ScaleBFM in global mode, the strongest baseline in this setting.
+
+The Public track extends evaluation to highly dynamic behaviors, including running and jumping, that are absent from the In-house track and less represented in training. The three baseline methods may have been exposed to portions of the public datasets during training. Although absolute success rates are lower on this track, Anchor 1 in global mode retains the highest local and global SR among the compared configurations (Fig. 3D). It also has the lowest horizontal root position error and lower ankle position error than all baselines (Fig. 3E). Success rates are particularly low across controllers on the AMASS test subset, indicating that its motions remain challenging under the sustained-tracking criterion (Fig. 3F). These results support whole-body tracking capability beyond the behaviors emphasized by the In-house track.
+
+Across the In-house and Public tracks, Anchor 1 in re-locate mode retains local tracking performance close to that of global mode, with similar pelvis-relative wrist and ankle position errors (Fig. 3A,B,D,E). The preservation of local tracking accuracy supports its use in teleoperation, where re-locating references to the robot’s current root accommodates diferences between the operator’s and robot’s global trajectories.
+
+On the Reachability track, Anchor 1 in global mode achieves the highest global task SR in most posture groups, including standing, squatting, and staggered stance (Fig. 3G). Mean foot-event counts are low, at 0.06 slips and 0.53 extra steps per motion (Fig. 3H).
+
+Inhouse-track
+
+A SR (%) ↑
+
+![](images/ca6fe76888256a00ecc3126a57b4d5ca9f9ebf788e5d88d8359f32a89ebf178b.jpg)  
+B Tracking error (mm) ↓
+
+C SR by household task (%) ↑  
+![](images/e910abb6961814d3df1b54a48ebe8962c9c389e252124076fffa54b142b5ed26.jpg)
+
+![](images/dcd01085586ea3dbdd0c2090c59b0e90090a7be2640423ad594bad06887be68a.jpg)
+
+![](images/b5fd6769102cc00e4b0f9991a4f7da3db6c60efac5b1985ad7705adc9c5fd898.jpg)
+
+![](images/22836240c2a89afa7b1a5431dc6d0afc8f3fb51a6d5ff09c19635ce7540ab349.jpg)  
+For/BackwardStep+ Reach  
+Public-track
+
+![](images/a68d237b529ebe0c34980b7f6641ff4f5cb304c03849c995a3066aa8371d54fb.jpg)  
+2,230 motions  
+D SR (%) ↑
+
+![](images/2eb76235aa36f4a26ccdbc42973a81ab93f76fa7f919bfd01e12f50b29e69367.jpg)  
+E Tracking error (mm) ↓
+
+![](images/172d49e761544f9037818c18a547b583c8ad9f0622c64ff5274ff13324d9de9c.jpg)
+
+F SR by data source (%) ↑  
+![](images/9bdbb0f9f61c1bc8ac6cc525cd3c9cf1044804a0ac6bcacdfaf6688f3282974d.jpg)  
+Reachability-track  
+G SR by posture (%) ↑  
+3,210 motions
+
+![](images/9e6de5d10752cdfda2710c562969e1659a635893ad1611f023dbbc96077c0164.jpg)  
+H Foot events (per motion) ↓
+
+![](images/fd471d8ae1cbedc5c8c859cd9f02cc237ee3d32f587b00f1b7a5f7c899a5b9f3.jpg)  
+Figure 3. Tracking accuracy and reachability across three tracks. All results are evaluated in MuJoCo. (A, D) Local and global success rates (SR) on Inhouse-track (15,342 motions) and Public-track (2,230 motions). (B, E) Mean position errors in millimeters for horizontal root position (global), wrists, and ankles (local). (C) Global (top) and local (bottom) SR across quasi-static and mobile household task categories in Inhouse-track. Categories include complete motions containing the indicated phases and may overlap. (F) Global (top) and local (bottom) SR by data source in Public-track. (G) Global task SR on 3,210 Reachability-track references, grouped by posture. Left and right variants are pooled for posture-wise SR. (H) Mean slips (left axis) and extra steps (right axis) per Reachability-track motion. Reachability metrics use the evaluation window defined in Sec. 4.3.3. Superscript � denotes global mode for both Anchor 1 and ScaleBFM. Superscript � denotes re-locate mode for Anchor 1 and reference-forcing mode for ScaleBFM. These mode labels are independent of the local and global scoring frames. SONIC’s G1 superscript identifies its robot encoder; Asym. denotes asymmetric. Metric definitions and aggregation are given in Sec. 4.4.1.
+
+Table 1. Real-world tracking errors and reference requirements across subsets of two tracks. Reachability comprises 51 standing reaches selected to broadly cover the workspace; In-house comprises 72 tag-selected whole-body manipulation motions. Both subsets report global and local wrist and ankle position and orientation errors. Reachability uses the right wrist and bilateral ankle means; in-house uses bilateral means for both wrists and ankles. $p$ and � denote mean position error (mm) and mean orientation error (degrees), respectively. Subscripts � and � identify wrists and ankles; superscripts � and � denote global and local scoring frames, respectively. � denotes the target motion count for each subset. Look-ahead is the maximum future-reference horizon in seconds, excluding historical inputs. Input identifies the reference format (�, �, or $H _ { 5 } ^ { \prime } )$ ). The control requirements apply to both subsets. $\checkmark$ indicates that online retargeting is not required; ✗ indicates that it is required. Lower errors are better; bold values indicate the lowest error in each metric within each subset.
+
+<table><tr><td rowspan="2">Method</td><td colspan="3">Control requirements</td><td colspan="4">Wrist</td><td colspan="4">Ankle</td></tr><tr><td>Look-ahead (s)</td><td>No retargeting</td><td>Input</td><td> $p_{w}^{G}$ (mm)</td><td> $r_{w}^{G}$ (°)</td><td> $p_{w}^{L}$ (mm)</td><td> $r_{w}^{L}$ (°)</td><td> $p_{a}^{G}$ (mm)</td><td> $r_{a}^{G}$ (°)</td><td> $p_{a}^{L}$ (mm)</td><td> $r_{a}^{L}$ (°)</td></tr><tr><td colspan="12">(a) Reachability (N=51)</td></tr><tr><td>MimicLite [35]</td><td>0.08</td><td>X</td><td>R</td><td>53.59</td><td>5.56</td><td>27.87</td><td>8.22</td><td>50.40</td><td>6.58</td><td>46.15</td><td>6.58</td></tr><tr><td>ScaleBFM-14 [13]</td><td>0.10</td><td>X</td><td>R</td><td>64.18</td><td>6.40</td><td>46.15</td><td>8.26</td><td>66.05</td><td>8.34</td><td>65.75</td><td>8.34</td></tr><tr><td>ScaleBFM-5 [13]</td><td>0.10</td><td>X</td><td>R</td><td>72.69</td><td>8.34</td><td>51.22</td><td>8.25</td><td>77.13</td><td>9.68</td><td>74.64</td><td>9.68</td></tr><tr><td>SONIC-G1 [12]</td><td>0.90</td><td>X</td><td>R</td><td>98.15</td><td>10.19</td><td>42.38</td><td>9.42</td><td>92.46</td><td>9.45</td><td>69.49</td><td>9.45</td></tr><tr><td>SONIC-SMPL [12]</td><td>0.18</td><td>√</td><td>H</td><td>166.70</td><td>19.20</td><td>85.87</td><td>18.75</td><td>134.30</td><td>12.48</td><td>71.93</td><td>12.48</td></tr><tr><td>Anchor 1</td><td>0.06</td><td>√</td><td> $H_5'$ </td><td>44.58</td><td>4.67</td><td>24.72</td><td>5.12</td><td>35.70</td><td>5.76</td><td>35.13</td><td>5.76</td></tr><tr><td colspan="12">(b) In-house (N=72)</td></tr><tr><td>MimicLite [35]</td><td>0.08</td><td>X</td><td>R</td><td>105.74</td><td>5.16</td><td>25.63</td><td>5.16</td><td>115.03</td><td>5.96</td><td>52.06</td><td>5.96</td></tr><tr><td>ScaleBFM-14 [13]</td><td>0.10</td><td>X</td><td>R</td><td>218.62</td><td>7.82</td><td>67.71</td><td>7.82</td><td>213.34</td><td>6.43</td><td>68.98</td><td>6.43</td></tr><tr><td>ScaleBFM-5 [13]</td><td>0.10</td><td>X</td><td>R</td><td>209.15</td><td>6.97</td><td>63.85</td><td>6.97</td><td>213.21</td><td>6.43</td><td>76.23</td><td>6.43</td></tr><tr><td>SONIC-G1 [12]</td><td>0.90</td><td>X</td><td>R</td><td>234.37</td><td>9.34</td><td>59.36</td><td>9.34</td><td>245.01</td><td>8.53</td><td>83.16</td><td>8.53</td></tr><tr><td>SONIC-SMPL [12]</td><td>0.18</td><td>√</td><td>H</td><td>314.00</td><td>24.89</td><td>114.04</td><td>24.89</td><td>297.91</td><td>11.01</td><td>97.70</td><td>11.01</td></tr><tr><td>Anchor 1</td><td>0.06</td><td>√</td><td> $H_5'$ </td><td>75.69</td><td>4.47</td><td>29.43</td><td>4.47</td><td>70.52</td><td>4.91</td><td>27.96</td><td>4.91</td></tr></table>
+
+## 2.3 Tracking accuracy and task success on the real robot
+
+Real-world evaluation covers two complementary motion subsets drawn from the benchmark tracks (Sec. 2.1.1) The Reachability subset comprises standing reaches selected to broadly cover the workspace and assess end-efector tracking precision. The In-house subset contains motions selected using predefined action tags to examine performance across structured task categories.
+
+Anchor 1 is compared with MimicLite v1.1 [35], the 5-point and 14-point configurations of ScaleBFM [13], and SONIC v1.1 [12] with G1 and human-body inputs. Both subsets report mean wrist and ankle position and orientation errors in global and local scoring frames. Body-point poses are reconstructed through forward kinematics from recorded joint configurations and motion-capture measurements of the pelvis pose. The error statistics include all valid recorded samples, without the 25 cm position-error truncation applied in simulation.
+
+Global tracking error measures world-space deviations from the reference trajectories after a fixed initial alignment of horizontal pelvis position and heading. Local position error reduces the contribution of pelvis translation, providing a complementary assessment of limb tracking. Low local error alone does not establish accurate global execution, because some body-displacement errors are removed by the local scoring frame. Reporting both therefore distinguishes local tracking precision from accuracy along the world-space trajectory.
+
+The In-house subset additionally reports motion-level success rate (SR), following the simulation success criteria. A motion succeeds only if the prescribed body-point position and end-efector orientation thresholds are satisfied throughout its valid recorded segment. SR is calculated within each task category as the fraction of successful motions among those with valid recordings.
+
+![](images/0f5cf909f92d3f4df39d99f0fdaa3bf91d60347fd4de02447be1135c9fee54f6.jpg)  
+Figure 4. Real-world task success across position thresholds on a curated subset of the In-house track. Radar plots show local success rates across seven task categories for 72 motions selected by predefined action tags for real-robot testing. Panels A–F vary the wrist and ankle position tolerance from 10 to 25 cm, with all other success thresholds matching simulation (Eq. (2)). Relaxing the tolerance narrows several category-wise diferences, while Anchor 1 maintains the highest overall success rate.
+
+## 2.3.1 Tracking precision on the Reachability subset
+
+The Reachability subset comprises 51 standing-reach motions selected to broadly cover the wrist-target workspace and this evaluation focuses on reaching precision under stationary support.
+
+Anchor 1 achieves the lowest global and local position and orientation errors for the right wrist and both ankles.(Table 1) Its global wrist and ankle position errors are 44.58 mm and 35.70 mm, respectively, compared with 53.59 mm and 50.40 mm for the strongest baseline, MimicLite v1.1. This improvement comes with a shorter reference look-ahead (0.06 s versus 0.08 s) and a diferent input requirement: Anchor 1 accepts calibrated sparse human references $H _ { 5 } ^ { \prime }$ directly, whereas MimicLite consumes robot motion references �, requiring online retargeting for live human input.
+
+The comparison with SONIC-SMPL further highlights the tracking precision achievable without online retargeting. Although both controllers accept human-motion inputs without this conversion, Anchor 1 reduces global wrist and ankle position errors by 73.3% and 73.4%, respectively, while using one-third of SONIC-SMPL’s reference look-ahead. The low global errors at both the wrist and ankles are consistent with accurate reaching while maintaining stable foot placement, supporting the stable and precise whole-body coordination required for whole-body manipulation.
+
+## 2.3.2 Task-structured evaluation on the In-house subset
+
+The In-house subset comprises 72 motions selected using predefined action tags to represent seven task categories. These motions cover reaching, locomotion, balance, and coordinated whole-body behaviors. Starting from the simulation-matched success criterion, the evaluation varies wrist and ankle position tolerances from 10 to 25 cm while keeping all other thresholds fixed.
+
+Anchor 1 achieves the highest overall success rate across all six position thresholds (Fig. 4), leading the strongest baseline by 41.2 percentage points at the strictest tolerance. Its success profile extends across reaching, locomotion, balance perturbation, and coordinated hand–foot motions, and the overall lead persists as the tolerance increases. These all demonstrate broad task capability across a range of precision requirements.
+
+A  
+B  
+![](images/6f32a32721f9ae9ba53c59aa75a6c8c220a7c7c2b7a83c17cc18465a27492465.jpg)
+
+C  
+![](images/c0852dc12dfe24f3dbfe238bb00a8066b97644dc503a451d6e1a349ee96bba40.jpg)  
+Figure 5. Wrist reference fidelity before motion encoding. (A) Right-wrist trajectories for a circular motion with a 16-cm human radius. Gray dashed, green, and orange curves denote the human reference, $H _ { 5 } ^ { \prime }$ targets, and SMPL forward-kinematics (FK) targets, respectively. Shoulder-relative positions are expressed in common human chest axes and normalized by each representation’s fixed arm length. The $H _ { 5 } ^ { \prime }$ trajectory more closely follows the circular shape of the human reference than the SMPL FK trajectory. (B) Unit-PDV scores over time for the circular motion in (A); $H _ { 5 } ^ { \prime }$ yields an 80.2% lower mean score than the SMPL encoder input, indicating better preservation of human wrist motion directions. (C) Schematic illustration of the unit-PDV calculation using time-matched displacement vectors to compare the human reference with $H _ { 5 } ^ { \prime }$ (left) and the SMPL encoder input (right). Calculation details are provided in Sec. S2.
+
+The tracking errors further show that this task-level advantage is accompanied by accurate coordination of multiple end efectors (Table 1). Anchor 1 achieves the lowest errors in seven of the eight In-house metrics, including a 46.3% reduction in local ankle position error relative to the strongest baseline. MimicLite v1.1 attains a lower local wrist position error, but Anchor 1 provides more accurate ankle tracking in both scoring frames. This broader tracking accuracy complements its higher motion-level success, which requires all four end efectors to remain within the prescribed tolerances throughout each motion.
+
+## 2.4 Validation of sparse references and architecture design
+
+## 2.4.1 Reference fidelity of sparse inputs
+
+To preserve human motion cues before control, we evaluate the fidelity of the wrist trajectories supplied to the motion encoder. In Anchor 1, these trajectories are taken from $H _ { 5 } ^ { \prime }$ , a structure-preserving representation that maps human motion to robot scale through a fixed geometric calibration rather than online joint-space retargeting (Sec. 4.5.1). Using the same circular human motion, we compare $H _ { 5 } ^ { \prime }$ with the input representation used by SONIC’s SMPL encoder [12] (Fig. 5). Diferences in displacement directions over matched time intervals are quantified using unit-normalized pairwise displacement-vector discrepancy (unit-PDV), with lower values indicating better preservation of directional structure (Sec. S2).
+
+For this motion, $H _ { 5 } ^ { \prime }$ achieves an 80.2% lower mean unit-PDV than the SMPL encoder input $( 1 . 4 0 \times 1 0 ^ { - 3 }$ versus $7 . 1 0 \times 1 0 ^ { - 3 } )$ . This comparison indicates that $H _ { 5 } ^ { \prime }$ better preserves the directional structure of the human wrist trajectory.
+
+## 2.4.2 Control stability under retargeting failure
+
+Human-to-robot retargeting converts human motion into robot motion references before they are passed to the controller. Errors in this conversion can produce references that deviate from the intended motion, potentially leading to unexpected behavior during execution. This issue can arise with both inverse-kinematics (IK)
+
+![](images/21e5bfb9e4578e44ee9ddeb96008541b514c7823b36eccefbdad244c46ef8f04.jpg)  
+Figure 6. Motion intent preservation and control stability under retargeting failure. All configurations use the same ofline human motion trajectory recorded with Pico, with time progressing from left to right. (A) Human reference motion visualized in SMPL-X format. (B) Anchor 1 with direct sparse $H _ { 5 } ^ { \prime }$ conditioning. (C) SONIC in G1 encoder mode with robot references generated by GMR, an inverse-kinematics (IK) retargeter. (D) SONIC in G1 encoder mode with robot references generated by UMR, a learned point-cloud-matching retargeter. During upper-limb extension, the retargeting-dependent configurations exhibit deviations from the intended arm motion and abrupt changes, whereas Anchor 1 retains the reference motion with stable behavior. Green and red outlines highlight motion preservation and retargeting-related failures, respectively.
+
+solvers and learned retargeting models. Anchor 1 bypasses this online reference conversion by conditioning directly on $H _ { 5 } ^ { \prime } ,$ , which is computed from the human reference to retain task-relevant spatial relationships and end-efector motion cues (Sec. 4.5.1). This design aims to preserve the human motion intent without requiring a full robot joint-space reference at deployment.
+
+In this section, we qualitatively examine this distinction by replaying the same ofline human motion trajectory recorded with PICO to Anchor 1 and SONIC [12] (Fig. 6). For Anchor 1, the human trajectory is converted directly into $H _ { 5 } ^ { \prime }$ and supplied to the motion encoder. For SONIC, we use the G1 encoder to accept robot motion references produced by either General Motion Retargeting (GMR) [20], an IK-based retargeter, or Unified Motion Retargeting (UMR) [21], a learned retargeter based on point-cloud matching.
+
+During the illustrated upper-limb extension sequence, both retargeting-dependent SONIC configurations deviate from the intended human arm motion, whereas Anchor 1 more faithfully preserves the reference motion cues. The retargeted references also exhibit abrupt changes during execution, introducing discontinuous commands that can interfere with task completion and place undesirable mechanical stress on the robot joints. These qualitative observations illustrate how retargeting errors can propagate to the controller, direct $H _ { 5 } ^ { \prime }$ conditioning avoids this intermediate source of error and maintains stable behavior while preserving the intended motion.
+
+## 2.4.3 Ablation of architecture components
+
+Table 2 examines explicit tracking-error feedback, inference mode, and feedback target source on the In-house track in MuJoCo. All variants retain proprioceptive observations. Explicit feedback additionally supplies wrist and ankle position and orientation errors to the encoder or decoder. Ref. uses supplied reference poses to compute these errors, whereas Recon. uses near-term poses reconstructed from motion tokens (Sec. 4.5.2). Global mode preserves the reference root trajectory after initial alignment, whereas Re-locate translates the reference window to align the previous reference root position with the robot’s current root position (Sec. 4.5.4). These inference modes are distinct from the global and local scoring frames.
+
+Table 2. Efects of explicit feedback, inference mode, and target reconstruction. All variants use $H _ { 5 } ^ { \prime }$ as input and are evaluated in MuJoCo on the In-house track. Anchor 1<sup>∗</sup> supplies explicit errors to the encoder; Anchor 1 supplies them to the decoder. Ref. and Recon. denote supplied and reconstructed feedback targets. SR and Pos. err. denote success rate and mean position error over 14 body points. Global and local scoring frames are independent of inference mode.
+
+<table><tr><td>Variant</td><td>Feedback location</td><td>Inference mode</td><td>Feedback source</td><td>SR (%) ↑</td><td>Global Pos. err. (mm) ↓</td><td>SR (%) ↑</td><td>Local Pos. err. (mm) ↓</td></tr><tr><td>w/o explicit error feedback</td><td>None</td><td>Global</td><td>—</td><td>70.9</td><td>28.4</td><td>61.7</td><td>24.5</td></tr><tr><td>Anchor 1*</td><td>Encoder</td><td>Global</td><td>Ref.</td><td>62.7</td><td>35.6</td><td>86.0</td><td>20.2</td></tr><tr><td>Anchor 1</td><td>Decoder</td><td>Global</td><td>Ref.</td><td>88.7</td><td>25.5</td><td>88.4</td><td>21.9</td></tr><tr><td>Anchor 1</td><td>Decoder</td><td>Global</td><td>Recon.</td><td>76.0</td><td>27.7</td><td>77.5</td><td>22.4</td></tr><tr><td>Anchor 1</td><td>Decoder</td><td>Re-locate</td><td>Ref.</td><td>35.5</td><td>57.9</td><td>85.0</td><td>22.3</td></tr><tr><td>Anchor 1</td><td>Decoder</td><td>Re-locate</td><td>Recon.</td><td>24.3</td><td>61.5</td><td>72.4</td><td>23.3</td></tr></table>
+
+With Global inference and Ref. targets, decoder feedback improves global success from 70.9% to 88.7% and local success from 61.7% to 88.4% relative to the variant without explicit feedback, while reducing position errors in both scoring frames. Encoder feedback also increases local success from 61.7% to 86.0% and reduces mean local position error from 24.5 to 20.2 mm, although its global metrics are worse than those of the variant without explicit feedback. Thus, the benefit depends on feedback placement, with decoder feedback improving both global trajectory tracking and local pose accuracy.
+
+Re-locate retains tracking-error feedback for the translated targets but does not explicitly correct accumulated root-position drift relative to the original global trajectory. The larger mean global position error with Ref. targets (57.9 versus 25.5 mm) is consistent with this weaker constraint on global trajectory tracking. Local control accuracy is largely maintained, with 85.0% success and 22.3 mm mean position error, close to the 88.4% and 21.9 mm achieved in Global mode.
+
+Recon. enables motion-token control without accompanying sparse references, but incurs a loss of tracking accuracy, with higher position error and lower success in both inference modes and scoring frames. Mean local position error increases from 21.9 to 22.4 mm in Global mode and from 22.3 to 23.3 mm in Re-locate mode. These results favor Ref. targets for precision-demanding demonstration collection when sparse references are available. Computing feedback directly against the supplied poses allows small execution errors to be corrected without the additional approximation introduced by target reconstruction.
+
+## 2.4.4 Motion token interpolation with decoupled feedback
+
+Beyond accurate tracking, a motion-token interface should support coherent robot behavior when its commands are modified or combined. Interpolation between motion tokens provides a test of how coupling explicit tracking-error feedback with motion encoding afects this property. We compare feedback-coupled and feedback-decoupled variants by interpolating between representations of the same two endpoint poses, spanning 0.4–2.0 s of the reference motion (Fig. 7). The reference transitions from a crouched posture toward an upright posture. The analysis includes the resulting motion snapshots and the root mean square error (RMSE) of the 29 joint angles relative to the reference.
+
+The feedback-coupled variant remains in a more deeply flexed posture as the reference rises, whereas the feedback-decoupled variant more closely reproduces the transition toward the upright endpoint. The error curves are similar early in the interpolation interval but diverge later, with lower reference-relative joint error for the feedback-decoupled variant toward the endpoint. It clearly supports separating explicit execution-error correction from motion encoding to retain useful motion structure when token commands are interpolated.
+
+![](images/0c9ef8837d386c9ce6492261e9e0288609cb30d1e93d027b0594f4b392b39f51.jpg)  
+Figure 7. Motion token interpolation with coupled and decoupled feedback. Top: reference poses (gray) and robot motion under feedback-coupled (orange) and feedback-decoupled (blue) token interpolation at matching times. Endpoints A and B correspond to 0.4 and 2.0 s, respectively. The feedback-decoupled variant more closely follows the transition from a crouched posture toward the upright endpoint. Bottom: root mean square error (RMSE) across 29 joint angles relative to the reference, in degrees. The shaded region marks the interpolation interval; the feedback-decoupled variant has lower error in its later portion.
+
+## 2.5 Teleoperation and autonomous whole-body manipulation
+
+## 2.5.1 Teleoperation and demonstration collection
+
+Efective teleoperation requires a whole-body controller to track the human reference accurately while maintaining stable robot behavior. Imprecise tracking forces the operator to make repeated corrective movements, which can reduce collection eficiency, task success, and demonstration trajectory quality. Fig. 8A qualitatively compares Anchor 1 with the baseline across four motions that probe tracking precision, stability, and preservation of human intent: small-amplitude lateral translation, ankle rotation, bending forward to reach the ground, and lateral reaching toward the ankle. During small-amplitude movements, Anchor 1 produces the corresponding robot motion, whereas the baseline does not clearly reproduce these subtle changes. During standing ankle rotation, Anchor 1 lifts the foot as intended, whereas the baseline does not, highlighting the importance of precise end-efector tracking. When the operator bends forward to reach the ground, Anchor 1 exhibits few unintended steps, while the baseline begins to sway and lose stability. During the lateral reach toward the same-side leg, the posture produced by Anchor 1 closely matches the human reference, whereas the baseline deviates, illustrating better preservation of the intended whole-body motion.
+
+The examples in Fig. 8B further show that Anchor 1 accommodates operators with heights ranging from 165 to 188 cm and body weight ranging from 50 to 80 kg while maintaining stable behavior and preserving their motion intent. We demonstrate compatibility with four motion-capture input systems: Xsens inertial motion capture, CHINGMU optical motion capture, Noitom Perception Neuron Link wired inertial motion capture (PN-LINK), and PICO virtual reality (VR) tracking (Fig. 8C). Although these sources difer in skeleton representation and motion-capture quality, their measurements are converted into $H _ { 5 } ^ { \prime }$ and supplied directly to the policy without human-to-robot retargeting. Across the illustrated input domains, Anchor 1 exhibits stable and precise behavior during large-amplitude motions.
+
+A  
+![](images/dec4c28ab92e5fc872b74d5497266306f542c66cfcf9649f18066c369097917f.jpg)  
+Figure 8. Precise and stable teleoperation across operators and input devices. (A) Comparison with the baseline during lateral reaching toward the ankle, small-amplitude lateral translation, ankle rotation, and bending forward to reach the ground. (B) Adaptation to operators with heights of 165–188 cm and body masses of 50–80 kg while maintaining stable control and preserving human motion intent. Labels show height (cm) / body mass (kg). (C) Support for diferent motion-capture devices by computing $H _ { 5 } ^ { \prime }$ directly, without retargeting. From left to right: Xsens (inertial motion capture), CHINGMU (optical motion capture), Noitom Perception Neuron (PN) Link (wired inertial motion capture), and PICO (virtual reality, VR).
+
+Table 3. Teleoperation data collection eficiency. Successful demonstrations collected per hour and collection success rates for each task. Anchor 1<sup>∗</sup> denotes the variant with error feedback supplied to the encoder. Higher values are better.
+
+<table><tr><td>Controller</td><td>Task</td><td>Successful demos/h ↑</td><td>Collection SR (%) ↑</td></tr><tr><td rowspan="2">SONIC v1.1 (SMPL)</td><td>Kick cardboard box</td><td>9</td><td>37.50</td></tr><tr><td>Pick up slippers</td><td>41</td><td>68.33</td></tr><tr><td rowspan="2">Anchor 1*</td><td>Kick cardboard box</td><td>45</td><td>94.74</td></tr><tr><td>Pick up slippers</td><td>67</td><td>93.10</td></tr><tr><td rowspan="2">Anchor 1</td><td>Kick cardboard box</td><td>43</td><td>98.03</td></tr><tr><td>Pick up slippers</td><td>62</td><td>97.37</td></tr></table>
+
+To quantify demonstration collection performance, we evaluate two tasks: kicking a cardboard box into a marked target area and retrieving slippers from a low shelf before carrying and placing them at a designated location (Fig. 9). These tasks require accurate foot placement and low-reaching grasping, respectively, together with coordinated locomotion and balance across changes in whole-body posture. Anchor 1 yields 43 successful demonstrations per hour for kicking a cardboard box and 62 for picking up slippers, compared with 9 and 41 for SONIC v1.1 (SMPL), respectively (Table 3). Collection success rates also increase from 37.50% to 98.03% for kicking and from 68.33% to 97.37% for slipper retrieval.
+
+## 2.5.2 Autonomous task execution with sparse and motion-token interfaces
+
+We next evaluate vision-based autonomous execution using policies trained on teleoperated data (Fig. 9).
+
+Table 4. Downstream task performance by inference controller and policy interface. SR denotes success rate. Score is weighted by the number of kicks for Kick box and averaged over evaluation steps for Pick up slippers. Both metrics range from 0 to 1. Anchor 1<sup>∗</sup> uses encoder error feedback. Best results are bolded, including ties.
+
+<table><tr><td rowspan="2">Controller (mode)</td><td rowspan="2">Interface</td><td colspan="2">Kick box</td><td colspan="2">Pick up slippers</td></tr><tr><td>SR</td><td>Score</td><td>SR</td><td>Score</td></tr><tr><td>SONIC v1.1 (SMPL)</td><td>Motion token</td><td>0.70 ± 0.14</td><td>0.63 ± 0.08</td><td>0.10 ± 0.00</td><td>0.44 ± 0.05</td></tr><tr><td>Anchor 1* (re-locate)</td><td>Sparse</td><td>0.85 ± 0.07</td><td>0.79 ± 0.05</td><td>0.45 ± 0.07</td><td>0.74 ± 0.05</td></tr><tr><td>Anchor 1* (re-locate)</td><td>Motion token</td><td>0.00 ± 0.00</td><td>0.00 ± 0.00</td><td>0.00 ± 0.00</td><td>0.00 ± 0.00</td></tr><tr><td>Anchor 1 (re-locate + Recon. feedback)</td><td>Sparse</td><td>0.75 ± 0.07</td><td>0.56 ± 0.03</td><td>0.20 ± 0.14</td><td>0.68 ± 0.04</td></tr><tr><td>Anchor 1 (re-locate + Recon. feedback)</td><td>Motion token</td><td>0.90 ± 0.00</td><td>0.81 ± 0.02</td><td>0.45 ± 0.07</td><td>0.64 ± 0.05</td></tr></table>
+
+![](images/8aa801aa3759087fb24118dff1dc283b89a733a85d8634f54436062d2adab5da.jpg)  
+Figure 9. Autonomous execution of downstream whole-body manipulation tasks. The robot autonomously performs two tasks: (A) kicking a cardboard box into a marked target area and (B) retrieving slippers from a low shelf and placing them at a designated location. Each row shows the progression from approach through object interaction to task completion, with time advancing from left to right.
+
+For high-level policy, we fine-tune GR00T N1.7 [36] on teleoperated demonstrations using flow matching, conditioned on language instructions, three RGB views, and proprioception. The sparse-interface policy predicts 50-step action chunks containing five target poses and 12-dimensional hand commands, totaling 57 dimensions per step with 6D rotation representations. Pelvis trajectories use a fixed chunk-anchor heading frame, while limb poses use each target frame’s pelvis heading. At deployment, these predictions form rolling four-frame reference windows dispatched at 50 Hz with 60 ms look-ahead. The frozen tracker converts the references into whole-body joint commands, while hand commands are transmitted separately. Real-time chunking accommodates asynchronous policy inference.
+
+The comparison is made between SONIC v1.1 using motion tokens and Anchor 1 in re-locate mode using either sparse references or motion tokens. For Anchor 1, we evaluate encoder error feedback, denoted by Anchor 1<sup>∗</sup>, and feedback computed from reconstructed near-term targets, denoted by Recon. feedback. The latter separates motion encoding from execution-dependent tracking errors: the VLA can predict motion tokens directly, bypassing the encoder, while reconstructed targets provide tracking-error feedback to the shared control decoder. This enables motion-token execution without accompanying sparse references.
+
+Success rate and a task-specific Score in Table 4 are reported over 20 trials. With sparse references, Anchor 1<sup>∗</sup> substantially improves autonomous task performance over the SONIC v1.1 motion-token baseline, highlighting the efectiveness of Anchor 1 control for downstream manipulation. Recon. feedback further enables motion tokens as a direct policy interface while achieving success rates comparable to the encoderfeedback sparse configuration. In contrast, directly commanding motion tokens with the encoder-feedback variant yields no successful trials on either task. These results show that Recon. feedback extends the controller to a learned motion-token interface without requiring accompanying sparse references or compromising the observed task success of sparse-reference control.
+
+## 3 Discussion
+
+## 3.1 Implications for humanoid whole-body manipulation
+
+Precise and stable whole-body manipulation requires commands that preserve the intended motion and controllers that maintain accuracy as posture and support change. The reference comparisons and hardware experiments show how errors at either stage can disrupt execution. Sparse commands specify task-relevant body poses while leaving the remaining joints free to coordinate. This freedom makes the training distribution consequential: the same commanded poses can admit diferent whole-body configurations. In Anchor 1, calibrated sparse references preserve task-relevant human motion cues, while curated robot references guide whole-body coordination during training. This division retains a sparse deployment interface without requiring a complete robot joint trajectory.
+
+The hardware comparisons show that conclusions about controller reliability depend on the precision demanded by the evaluation. Tighter position tolerances reveal diferences that permissive success criteria can obscure. Mean tracking error summarizes average accuracy but can obscure brief deviations; SR reports the fraction of motions that satisfy the prescribed criteria throughout the evaluated window. The three-track benchmark translates manipulation demands into explicit tests of precision and stability. Its task structure and prescribed spatial targets help identify the coordination conditions under which accuracy can be sustained, while the Public track tests a broader range of motion behaviors.
+
+Feedback placement has consequences beyond tracking. Supplying explicit execution errors directly to the decoder, with feedback targets provided by sparse references or reconstructed from motion tokens, allows the same controller to correct deviations under both command interfaces. In the autonomous tasks, token commands with reconstructed-target feedback support successful execution, whereas the tested encoderfeedback variant fails when commanded through tokens. These results support separating motion commands from the explicit error signals used to execute them. These VLA-driven tasks demonstrate the use of this interface for object interaction involving locomotion and changes in posture. Precise and stable whole-body control can thus provide a common execution layer for human motion input and learned task commands.
+
+## 3.2 Limitations
+
+The present evaluation covers a single humanoid embodiment, leaving transfer across robot morphologies untested. Sparse kinematic targets do not explicitly describe object geometry, contact forces, or grasp stability, so accurate motion tracking alone does not ensure successful object interaction. The reconstruction branch also remains a source of tracking error, and further improvements are needed to narrow the precision gap between reconstructed and supplied feedback targets.
+
+## 3.3 Future directions
+
+Future work should focus on connecting whole-body tracking more directly to object interaction through object-relative targets and contact-aware control and evaluation. Testing across robot embodiments, payloads, and contact conditions would help establish the limits of transfer. For motion-token control, further work should examine how target-reconstruction errors and high-level prediction errors afect closed-loop execution, and how their impact on precision can be reduced, particularly during longer tasks with changing contacts.
+
+![](images/f306024a083be2fba0b3a539b16f32ef39b83fd74ff0b5320668352917bbaefc.jpg)  
+Figure 10. Overview of Anchor 1. (A) Human motion � is calibrated to obtain �<sup>′</sup> and retargeted ofline to obtain robot references �; quality control retains matched pairs and shapes the training distribution. (B) The motion encoder produces tokens for control and target reconstruction. A target selector chooses supplied or reconstructed poses for explicit error feedback, which enters the control decoder alongside robot state. Future prediction is used for training only. (C) Teleoperation supplies sparse motion references; higher-level policies can supply sparse references (Mode 1) or motion tokens (Mode 2). The corresponding feedback targets are supplied references $( H ^ { \prime } )$ or reconstructed poses (�<sup>∗</sup>).
+
+## 4 Materials and methods
+
+## 4.1 Overview of distribution curation and control
+
+Anchor 1 combines curated motion references with a controller that separates motion encoding from explicit tracking-error feedback (Fig. 10). Human motion is geometrically calibrated to form $H ^ { \prime } .$ , from which five target poses $H _ { 5 } ^ { \prime }$ are extracted, and paired with an ofline-retargeted robot reference �. Quality screening retains corresponding pairs, shaping the robot behaviors available for learning while preserving sparse human references as the command interface.
+
+The controller encodes the sparse references into motion tokens and combines these tokens with proprioception and tracking errors to generate joint actions. A reconstruction head supplies feedback targets when explicit pose references are unavailable, enabling a higher-level policy to command the same controller through motion tokens.
+
+## 4.2 Training data and quality control
+
+## 4.2.1 Training dataset
+
+The training dataset combines in-house motion-capture data with motions from public datasets (Table 5). After augmentation with left–right mirrored motions, it contains 406,222 sequences totaling approximately 116.8 million frames and 1,081.4 hours. In-house and public data contribute 835.7 hours (77.3%) and 245.7 hours (22.7%), respectively. Frame counts reflect the stored sampling rates, and durations are calculated using
+
+Table 5. Composition of the training dataset. Sequence counts include original and mirrored sequences. Duration percentages are calculated relative to the total duration after mirroring. Totals are computed before rounding.
+
+<table><tr><td>Source</td><td>Sequences</td><td>Original duration (h)</td><td>Mirrored duration (h)</td><td>Total duration (h)</td><td>Duration share (%)</td></tr><tr><td>In-house</td><td>288,215</td><td>496.04</td><td>339.62</td><td>835.67</td><td>77.28</td></tr><tr><td>Chingmu</td><td>222,400</td><td>227.97</td><td>217.19</td><td>445.16</td><td>41.17</td></tr><tr><td>Nokov</td><td>7,149</td><td>13.67</td><td>15.61</td><td>29.27</td><td>2.71</td></tr><tr><td>PN-LINK (locomotion)</td><td>58,666</td><td>254.41</td><td>106.83</td><td>361.24</td><td>33.41</td></tr><tr><td>Public</td><td>118,007</td><td>192.33</td><td>53.37</td><td>245.70</td><td>22.72</td></tr><tr><td>BONES-SEED</td><td>74,371</td><td>138.29</td><td>0.00</td><td>138.29</td><td>12.79</td></tr><tr><td>CIRCLE</td><td>10,497</td><td>6.84</td><td>6.74</td><td>13.57</td><td>1.26</td></tr><tr><td>OMOMO</td><td>7,859</td><td>6.51</td><td>6.43</td><td>12.94</td><td>1.20</td></tr><tr><td>AMASS</td><td>25,126</td><td>36.09</td><td>35.61</td><td>71.70</td><td>6.63</td></tr><tr><td>LAFAN</td><td>154</td><td>4.60</td><td>4.60</td><td>9.20</td><td>0.85</td></tr><tr><td>Total</td><td>406,222</td><td>688.37</td><td>392.99</td><td>1,081.37</td><td>100.00</td></tr></table>
+
+each sequence’s frame rate.
+
+Chingmu and Nokov recordings are collected using the tag-based task composition procedure described in Sec. 4.3.1, whereas PN-LINK (locomotion) recordings were collected for tasks intended for VLA learning using a separate protocol.
+
+We use left–right mirroring to expand the training dataset and mitigate potential bias associated with handedness and preferred movement directions. Mirroring contributes 142,342 retained sequences, comprising approximately 42.4 million frames and 393.0 hours. Original and mirrored sequences are counted separately.
+
+## 4.2.2 Quality control
+
+All training motion sequences undergo automated quality control during data conversion, with original and left–right mirrored sequences screened individually. Checks on retargeted robot motions assess prolonged floating, joint discontinuities, self-collision, periodic joint jitter, and ground penetration using kinematics and collision information from the robot model. Temporal criteria account for each sequence’s sampling rate.
+
+All in-house sequences additionally undergo human review of retargeted motion playback, with source human-skeleton animations consulted to assess motion quality and correspondence. In-house sequences are retained only if they pass both automated checks and human review; public sequences are retained if they pass automated checks.
+
+## 4.3 Benchmark construction
+
+## 4.3.1 In-house track
+
+We construct the In-house track from in-house motion-capture tasks with separate descriptions of upperand lower-body actions. U1 and U2 describe torso configuration and arm-and-hand behavior, respectively. L1 and L2 describe support and movement modes and specific stance and movement patterns, respectively. This separation makes the intended hand behavior and its whole-body context explicit, allowing similar manipulation demands to be specified under diferent postural and locomotor conditions.
+
+The first-level and second-level tags describe complementary action dimensions. Meanwhile, we note that they do not form a strict parent–child taxonomy. Their combinations follow predefined compatibility relations, allowing a second-level tag to occur with multiple compatible first-level tags. The vocabulary covers upright, bent, and rotated torso configurations; unilateral and bilateral reaching, arm swinging, and end-efector holding; and stationary support, stepping, squatting, and kneeling.
+
+Coverage analysis uses a reference set of 43 first-level and second-level tags derived from previously defined valid motion-capture tasks (Table 6). Sit–stand descriptors remain in this reference set despite being
+
+Table 6. First-level and second-level reference tags for coverage analysis. U and L denote upper-body and lower-body descriptors, respectively; 1 and 2 indicate levels of description.
+
+<table><tr><td colspan="2">Upper body</td><td colspan="2">Lower body</td></tr><tr><td colspan="2">U1: Torso configuration</td><td colspan="2">L1: Support and movement modes</td></tr><tr><td>U1-1</td><td>Upright torso</td><td>L1-1</td><td>Stationary standing</td></tr><tr><td>U1-2</td><td>Forward bending</td><td>L1-2</td><td>Omnidirectional locomotion</td></tr><tr><td>U1-3</td><td>Lateral bending</td><td>L1-3</td><td>Squatting</td></tr><tr><td>U1-4</td><td>Torso rotation</td><td>L1-4</td><td>Half kneeling</td></tr><tr><td>U1-5</td><td>Forward bending with rotation</td><td>L1-5</td><td>Lower-body manipulation</td></tr><tr><td>U1-6</td><td>Lateral bending with rotation</td><td>L1-6</td><td>Sit-stand transitions</td></tr><tr><td>U1-7</td><td>Combined forward and lateral bending</td><td colspan="2">L2: Specific stances and movement patterns</td></tr><tr><td rowspan="2">U1-8</td><td rowspan="2">Torso coordination during sit-stand transitions</td><td>L2-1</td><td>Side-by-side stance</td></tr><tr><td>L2-2</td><td>Staggered stance</td></tr><tr><td colspan="2">U2: Arm and hand behavior</td><td>L2-3</td><td>Turning</td></tr><tr><td>U2-1</td><td>Arms resting at the sides</td><td>L2-4</td><td>Small forward steps</td></tr><tr><td>U2-2</td><td>Unilateral reaching</td><td>L2-5</td><td>Small lateral steps</td></tr><tr><td>U2-3</td><td>Symmetric bimanual reaching</td><td>L2-6</td><td>Straight-line forward walking</td></tr><tr><td>U2-4</td><td>Asymmetric bimanual reaching</td><td>L2-7</td><td>Lateral walking</td></tr><tr><td>U2-5</td><td>Elbow flexion</td><td>L2-8</td><td>Backward walking</td></tr><tr><td>U2-6</td><td>Unilateral arm swinging / sweeping</td><td>L2-9</td><td>Diagonal walking</td></tr><tr><td>U2-7</td><td>Same-direction bilateral arm swinging</td><td>L2-10</td><td>Circular walking</td></tr><tr><td>U2-8</td><td>Opposite-direction bilateral arm swinging</td><td>L2-11</td><td>Shallow squat</td></tr><tr><td>U2-9</td><td>Alternating arm swinging</td><td>L2-12</td><td>Deep squat</td></tr><tr><td>U2-10</td><td>World-fixed single-hand hold</td><td>L2-13</td><td>Foot reaching</td></tr><tr><td></td><td></td><td>L2-14</td><td>Stepping over obstacles</td></tr><tr><td></td><td></td><td>L2-15</td><td>Side-on passage through narrow spaces</td></tr><tr><td></td><td></td><td>L2-16</td><td>Lateral stepping</td></tr><tr><td></td><td></td><td>L2-17</td><td>Forward stepping</td></tr><tr><td></td><td></td><td>L2-18</td><td>Floor sit-stand transitions</td></tr><tr><td></td><td></td><td>L2-19</td><td>Chair sit-stand transitions</td></tr></table>
+
+Table 7. Sources and selection protocols for the Public track.
+
+<table><tr><td>Source</td><td>Selection protocol</td><td>Sequences</td></tr><tr><td>BONES-SEED [30]</td><td>Held-out set of 18 actors</td><td>1,214</td></tr><tr><td>CIRCLE [31]</td><td>Held-out subject s5</td><td>442</td></tr><tr><td>OMOMO [32]</td><td>Existing test partition</td><td>474</td></tr><tr><td>AMASS [33]</td><td>Predefined local test subset</td><td>100</td></tr><tr><td>Total</td><td></td><td>2,230</td></tr></table>
+
+absent from the current In-house track.
+
+Task construction follows predefined compatibility relations that determine admissible refinements within each action description and allowable combinations of upper-body and lower-body actions. Combinations that violate these relations are excluded, yielding a constrained task library rather than the unrestricted Cartesian product of the tag sets. Task attributes specify target locations, movement events, and tempo where applicable. Third- and fourth-level descriptors are included according to the task requirements; they do not form a mandatory sequential refinement chain and thus are omitted.
+
+The selected action descriptions and attributes are translated into motion-capture collection instructions. Fig. 11 illustrates this process for Mobile-151. The upper-body description specifies an upright torso, flexed elbows, a hand position in front of the chest, and a slow arm tempo; the lower-body description specifies lateral walking at a slow tempo. The resulting instruction is to walk sideways slowly while keeping a tray level in front of the chest.
+
+![](images/a138c1d9dcfb3546fdf90f2af37e51a328246c4fe6ecbdf2cbc0144fd1c531b9.jpg)  
+Figure 11. Task construction and reference motion for Mobile-151. (A) upper-body and lower-body action descriptions and task attributes define the task. (B) Representative reference poses, with timestamps in seconds.
+
+## 4.3.2 Public track
+
+We assemble the Public track from the public datasets BONES-SEED [30], CIRCLE [31], OMOMO [32], AMASS [33] and LAFAN [37] using source-specific selection protocols, as depicted in Table 7. For identity-based selection, we retain all available sequences from the designated actors or subject in the dataset version used. The resulting track contains 2,230 motion sequences totaling 3.59 hours.
+
+Selected sequences are removed from the training pool. Their mirrored counterparts from CIRCLE [31], OMOMO [32], and AMASS [33] are also excluded from training.
+
+## 4.3.3 Reachability track
+
+We construct the Reachability track from fixed Cartesian wrist targets and corresponding whole-body reference motions across five postures: standing, shallow squat, deep squat, staggered stance, and half kneeling. Targets are specified in meters in a world coordinate frame with � forward, � leftward, and � upward. We first generate right-wrist references on a coarse 20-cm Cartesian grid and add 10-cm samples to extend spatial coverage. Each case pairs a target with a posture, so the same spatial target can occur in multiple posture groups.
+
+We first generate base motions for each posture using Kimodo [34], then adapt these motions to the wrist targets using constrained inverse kinematics (IK), subject to joint limits and prescribed support contacts. The six wrist roll, pitch, and yaw joint angles are fixed at zero in the reference. Each reference contains 464 samples at 50 Hz and spans 0–9.26 s. The sequence includes posture preparation, a reach from 2.75 to 5 s, target holding from 5 to 7 s, and a return from 7 to 9.26 s. We require the maximum right-wrist position error relative to the target to remain below 1 cm over [5, 7) s. Tracking and foot-event evaluation use the broader task window [2.76, 9.26] s (Sec. 4.4.1).
+
+All generated reference motions additionally undergo manual quality control (Sec. 4.2.2). We mirror the accepted references across the sagittal plane, exchanging left and right limbs and reflecting the targets to include reaching with either wrist. The final track contains 3,210 references, comprising 1,605 original motions and 1,605 mirrored counterparts.
+
+## 4.4 Evaluation metrics and simulation settings
+
+## 4.4.1 Metric definitions and aggregation
+
+For the simulation tracks in Sec. 2.2, we report success rate (SR), mean position errors, and reachability foot-event counts. The global and local scoring rules, indexed by $f \in \{ \mathrm { g } , 1 \}$ , are independent of the controller’s input mode.
+
+For one motion, let ${ \bf p } _ { b } ( t )$ be the executed position after fixed initial pelvis XY/yaw alignment and $\bar { \mathbf { p } } _ { b } ( t )$ the corresponding reference position. Here � denotes the pelvis and $t = 1 , \dots , T$ indexes control frames at $\Delta t = 0 . 0 2 \mathrm { ~ s ~ }$ . Both scores use the same reference trajectory; local error subtracts each trajectory’s current pelvis XY position when computing the diference. With $\Pi _ { x y } = \mathrm { d i a g } ( 1 , 1 , 0 )$ , the errors are
+
+$$
+\begin{array}{l} e _ {b} ^ {\mathrm{g}} (t) = \left\| \mathbf {p} _ {b} (t) - \bar {\mathbf {p}} _ {b} (t) \right\| _ {2}, \\ e _ {b} ^ {1} (t) = \left\| \left[ \mathbf {p} _ {b} (t) - \Pi_ {x y} \mathbf {p} _ {r} (t) \right] - \left[ \bar {\mathbf {p}} _ {b} (t) - \Pi_ {x y} \bar {\mathbf {p}} _ {r} (t) \right] \right\| _ {2}, \\ \theta_ {b} (t) = \arccos \left(\frac {\operatorname{tr} \left[ \bar {\mathbf {R}} _ {b} (t) ^ {\top} \mathbf {R} _ {b} (t) \right] - 1}{2}\right). \end{array}\tag{1}
+$$
+
+Here $\mathbf { R } _ { b }$ is the executed orientation after the same fixed yaw alignment and $\bar { \mathbf { R } } _ { b }$ the reference orientation; both scores use the same orientation error. Errors compare the robot state after each control step with the reference at the same time, preserving height and heading diferences.
+
+Let B denote the tracked body points and $\varepsilon$ the two wrists and two ankles. For a set of control frames $\mathcal { U } .$ success requires all three threshold conditions:
+
+$$
+s ^ {f} (\mathcal {U}) = \mathbf {1} \left[ \begin{array}{c} \max _ {t \in \mathcal {U}, b \in \mathcal {E}} e _ {b} ^ {f} (t) \leq 0. 1 0 \mathrm{m}, \\ \max _ {t \in \mathcal {U}, b \in \mathcal {E}} \theta_ {b} (t) \leq 1 \mathrm{rad}, \\ \max _ {t \in \mathcal {U}, b \in \mathcal {B} \backslash \mathcal {E}} e _ {b} ^ {f} (t) \leq 0. 2 5 \mathrm{m} \end{array} \right],\tag{2}
+$$
+
+$$
+\mathbf {S R} ^ {f} = \frac {1 0 0}{N} \sum_ {i = 1} ^ {N} s _ {i} ^ {f} (\{1, \ldots , T _ {i} \})\tag{%) .}
+$$
+
+The indicator 1[·] is one when all enclosed conditions hold and zero otherwise; subscript � identifies a motion when aggregating over the dataset. Each of the � motions contributes equally, and failed motions remain in the denominator.
+
+Mean position errors use a separate failure rule: any of the 14 tracked body points exceeding 25 cm ends the observation window, independently of the SR conditions. This more permissive criterion reduces premature truncation under the stricter SR conditions, retaining more frames to characterize tracking errors and improving temporal coverage for comparisons across controllers. For each motion and scoring frame, we average position errors over the selected body points and all frames preceding the first threshold violation, excluding the violating frame. The full motion is used if no violation occurs. These per-motion means are then averaged with equal weight across motions and reported in millimeters; motions without retained frames are excluded. Whole-body error averages all 14 tracked points, while wrist and ankle errors average the corresponding left and right points in the local scoring frame. Root error averages the Euclidean distance between the executed and reference pelvis positions in the horizontal plane, using the global scoring frame and its corresponding observation window. It uses the same equal-motion aggregation as the other position errors.
+
+For the Reachability track, we measure Slip and Extra step over the task window defined in Sec. 4.3.3. Slip counts sustained sliding of a supporting foot, with at most one event per continuous contact phase. Extra step counts foot-lift events that begin within the task window while the reference requires continuous ground contact throughout the event. Both metrics sum events from the two feet and are averaged equally across the 3,210 references. Foot-event counts use the complete task window even when tracking fails. Reachability task SR requires global tracking success throughout the task window under Eq. (2), with no slips or extra steps.
+
+Table 8. Domain randomization and sampling settings for simulation evaluation. DR denotes domain randomization and CoM denotes center of mass. U[�, �] denotes uniform sampling on [�, �]. Randomized physical parameters are applied before each motion and remain fixed throughout its rollout.
+
+<table><tr><td>Parameter</td><td>Evaluation setting</td></tr><tr><td>Random seed</td><td>0; deterministic sampling by motion and parameter</td></tr><tr><td>Robot static friction</td><td> $\mathcal{U}[0.3, 1.6]$ </td></tr><tr><td>Robot dynamic friction</td><td> $\mathcal{U}[0.3, 1.2]$ </td></tr><tr><td>Robot restitution</td><td> $\mathcal{U}[0, 0.5]$ </td></tr><tr><td>Contact-material assignment</td><td>64 shared material buckets, assigned per collision shape</td></tr><tr><td>Ground material</td><td>Friction 1; restitution 0; fixed</td></tr><tr><td>Body mass and inertia</td><td>Independent  $\mathcal{U}[0.8, 2.5]$  scale for the torso and each wrist; inertia scaled with mass</td></tr><tr><td>Torso CoM offset</td><td> $x : \mathcal{U}[-0.025, 0.025]$  m;  $y, z : \mathcal{U}[-0.05, 0.05]$  m</td></tr><tr><td>Default joint-position offset</td><td> $\mathcal{U}[-0.01, 0.01]$  rad per joint, applied to nominal motor targets</td></tr><tr><td>External pushes</td><td>Disabled</td></tr><tr><td>Observation noise</td><td>Disabled</td></tr></table>
+
+## 4.4.2 Domain randomization
+
+We use the common domain-randomization (DR) protocol in Table 8, pairing corresponding body and joint perturbations across methods.
+
+## 4.5 Sparse human references and decoupled error feedback
+
+## 4.5.1 Sparse motion references and offline distribution curation
+
+Human and robot skeletons difer in body proportions and local coordinate conventions. We account for these diferences by calibrating human motion against the robot’s T-pose to construct a structure-preserving skeletal representation $H ^ { \prime }$ at robot scale. The calibration uses human and robot T-pose references to determine segment- and body-specific scale factors, rotational alignments, and positional ofsets, without solving for robot joint configurations. These parameters remain fixed for each calibrated skeleton and are applied frame by frame to obtain the positions and orientations of the corresponding links.
+
+From $H ^ { \prime }$ , we extract the positions and orientations of the pelvis, both wrists, and both ankles to form the five-pose sparse motion references $H _ { 5 } ^ { \prime }$ . This interface is designed to focus control on end-efector precision and sustained pose tracking, which are central to many whole-body manipulation tasks, while retaining flexibility in whole-body coordination. Leaving the remaining joint configuration unspecified preserves kinematic redundancy, allowing the policy to adjust the trunk and limbs to meet the commanded poses. Execution therefore requires learned whole-body motion completion: the policy must infer coordinated behavior from the five-pose references. Because these references admit multiple realizations, the behavior distribution used for training is an essential part of this design. We strictly curate the paired $H ^ { \prime }$ and robot references � to favor stable, physically plausible motions, introducing a deliberate bias toward the whole-body behaviors preferred for whole-body manipulation. This data selection guides how the policy uses the freedom aforded by sparse commands.
+
+For training, each $H ^ { \prime }$ sequence is paired with a temporally aligned robot reference � obtained through ofline retargeting of the same human motion [38]. The sparse references $H _ { 5 } ^ { \prime }$ provide the motion input, whereas � provides robot motion targets for training supervision and reward computation. We curate the paired sequences through automated quality checks and additional manual review of in-house data, as described in Sec. 4.2.2, to favor stable and coherent whole-body behavior. At deployment, the controller uses $H _ { 5 } ^ { \prime }$ directly without requiring online retargeting to �, avoiding exposure to the solver failures illustrated in Fig. 6. This also removes the computational overhead and latency associated with online retargeting.
+
+## 4.5.2 Motion encoding, target prediction, and error feedback
+
+Explicit tracking-error feedback helps the controller correct deviations during execution [2, 13, 23]. However, the same motion reference can produce diferent tracking errors depending on the robot’s current state. Encoding these errors into the motion token couples the representation of the command to its ongoing execution, potentially complicating token interpolation and prediction by higher-level policies. We therefore separate explicit tracking-error feedback from motion encoding within an encoder–quantizer–decoder architecture (Fig. 10B), building on the motion-token formulation of SONIC [12]. At control time �, we construct the encoder input $x _ { t }$ from the global references $H _ { 5 } ^ { \prime }$ at ofsets of 0, 20, 40, and 60 ms, expressing the target poses in the current robot-root frame. The motion encoder � compresses this window, and a finite scalar quantizer � produces the motion token $z _ { t } = Q ( E ( x _ { t } ) )$ ). Explicit wrist and ankle tracking errors are excluded from the encoder input and supplied separately to the control decoder alongside proprioception.
+
+A trajectory head � decodes $z _ { t }$ into near-term pose reconstructions and longer-horizon motion predictions. The near-term output reconstructs the five target poses at the four input times, whereas the future output predicts changes relative to the first target pose at longer horizons. A target selector uses either the supplied near-term references or their reconstructions to form the control feedback. The future predictions serve only as an auxiliary training objective and are not passed to the control decoder.
+
+We compute current wrist and ankle poses by forward kinematics from measured joint positions. For each near-term target, we compute the position error in the current robot-root frame and the relative orientation error between the target and measured poses to form the feedback $e _ { t }$ . The control decoder � combines this feedback with the token and proprioceptive observations $o _ { t }$ :
+
+$$
+a _ {t} = D (z _ {t}, o _ {t}, e _ {t}).\tag{3}
+$$
+
+Here $a _ { t }$ denotes the joint action and $o _ { t }$ includes robot state history. The token therefore reaches the decoder directly, while explicit execution-error correction enters through a separate path. When commands are supplied as motion tokens, reconstructed targets provide the feedback needed for closed-loop execution without an accompanying pose-reference sequence.
+
+## 4.5.3 Policy training and auxiliary objectives
+
+We train the controller in simulation using proximal policy optimization (PPO) [39] on the curated motion pairs. The actor is conditioned on $H _ { 5 } ^ { \prime } .$ , and reference-tracking rewards are evaluated against the paired robot motion �. To support feedback from both supplied references and token reconstructions, we train the shared control decoder with both sources of near-term targets. In the reconstructed-target branch, policy gradients propagate through the tracking-error computation to the reconstruction head, allowing its outputs to be optimized for control as well as pose reconstruction. Measured poses and supplied reference targets are treated as constants in this computation.
+
+The motion representation is trained with near-term reconstruction, future prediction, and cycle-consistency objectives in addition to PPO:
+
+$$
+\mathcal {L} = \mathcal {L} _ {\mathrm{PPO}} + \lambda_ {\text {near}} \mathcal {L} _ {\text {near}} + \lambda_ {\text {future}} \mathcal {L} _ {\text {future}} + \lambda_ {\text {cycle}} \mathcal {L} _ {\text {cycle}}.\tag{4}
+$$
+
+Near-term and future supervision comes from the calibrated sparse human references $H _ { 5 } ^ { \prime } .$ , rather than the robot reference �. The near-term objective penalizes pose-reconstruction errors, and the future objective predicts positional and rotational changes beyond the input window. Following [12], we re-encode the reconstructed near-term sparse poses with explicit tracking-error channels masked and align their bounded continuous latent with a stop-gradient latent from the original reference window to enforce cycle consistency. These auxiliary objectives use a clean reference encoding with shared encoder, quantizer, and trajectory-head parameters.
+
+## 4.5.4 Controller deployment
+
+At deployment, Anchor 1 exposes two command interfaces that share the same trained control decoder (Fig. 10C). The sparse-reference interface accepts five target poses, which are encoded into motion tokens. For teleoperation, these poses are obtained from motion data from motion-capture systems or virtual reality (VR) tracking devices through skeletal calibration and five-pose extraction. Higher-level policies can use either interface, generating five-pose sparse motion references for the encoder or supplying motion tokens directly to bypass it. In the latter case, the trajectory head reconstructs the near-term targets needed to compute tracking errors. In both cases, the decoder combines motion tokens with proprioception and explicit tracking-error feedback to generate joint actions, without requiring the paired robot training reference �.
+
+During training, the reference motion retains its global trajectory. At inference time, global mode preserves this trajectory after an initial position and heading alignment and requires robot-root localization. Alternatively, we apply re-locate, which treats the robot’s current root position as having reached the previous reference frame’s root position. We align these two positions by translating the entire reference window:
+
+$$
+\widetilde {\mathbf {p}} _ {i} (t + \tau) = \mathbf {p} _ {i} ^ {\mathrm{ref}} (t + \tau) + \left[ \mathbf {p} _ {\mathrm{root}} ^ {\mathrm{robot}} (t) - \mathbf {p} _ {\mathrm{root}} ^ {\mathrm{ref}} (t - \Delta t) \right].\tag{5}
+$$
+
+Here � indexes the five target bodies, � is the current reference time, and $\tau \in \{ 0 , \Delta t , 2 \Delta t , 3 \Delta t \}$ indexes the time ofsets in the reference window, with $\Delta t = 2 0 \mathrm { m s }$ . The root denotes the pelvis, and the first reference frame serves as the anchor at the start of a sequence. The same translation is applied to all five targets and all times in the window, preserving their relative geometry and the reference displacement from the previous frame to the current frame. Target orientations remain unchanged. This alignment is applied before motion encoding and is separate from the T-pose calibration of skeletal dimensions. Both inference modes use the same trained controller without additional optimization.
+
+## Acknowledgements
+
+We thank the data collection team at Archon Robotics for dedicated data collection, quality checks, and help with the teleoperation tests; the hardware team for hardware development and repairs; the infrastructure team for data platform and robot infrastructure support; and the operations team for project management.
+
+## Contributions
+
+Core contributors: Yixuan Pan, Caojun Wang, Penglin Fu, Guangjun Zeng, Ziyan Li
+
+Model and experiments: Yixuan Pan, Penglin Fu, Guangjun Zeng, Caojun Wang, Ziyan Li, Yu Zhang
+
+Data construction and quality control: Caojun Wang, Guangjun Zeng, Shijia Peng
+
+Benchmark design: Caojun Wang, Penglin Fu, Ziyan Li, Yixuan Pan
+
+Vision-language-action (VLA) integration: Modi Shi, Jialong Zeng, Checheng Yu, Lirui Zhao
+
+Robot infrastructure: Jialong Zeng, Haoran Jiang, Yu Zhang, Wencong Zhang
+
+Software platform and tooling: Huibin Yan, Liang Chen, Yong Zhang
+
+Hardware: Kai Cheng, Shijia Peng
+
+Data acquisition and logistics: Jin Yang, Xuechong Lv, Gangcheng Jiang, Huijie Wang
+
+Project leads: Li Chen (first point of contact), Tianyu Li, Yu Qiao, Hongyang Li
+
+## References
+
+[1] Zhaoyuan Gu, Junheng Li, Wenlan Shen, Wenhao Yu, Zhaoming Xie, Stephen McCrory, Xianyi Cheng, Abdulaziz Shamsah, Robert Grifin, C. Karen Liu, Abderrahmane Kheddar, Xue Bin Peng, Yuke Zhu, Guanya Shi, Quan Nguyen, Gordon Cheng, Huijun Gao, and Ye Zhao. Humanoid locomotion and manipulation: Current progress and challenges in control, planning, and learning. IEEE/ASME Trans. on Mechatronics (TMECH), 2026.
+
+[2] Tairan He, Zhengyi Luo, Xialin He, Wenli Xiao, Chong Zhang, Weinan Zhang, Kris Kitani, Changliu Liu, and Guanya Shi. OmniH2O: Universal and dexterous human-to-humanoid whole-body teleoperation and learning. In Proc. Conf. on Robot Learning (CoRL), 2024.
+
+[3] Zipeng Fu, Qingqing Zhao, Qi Wu, Gordon Wetzstein, and Chelsea Finn. HumanPlus: Humanoid shadowing and imitation from humans. In Proc. Conf. on Robot Learning (CoRL), 2024.
+
+[4] Yanjie Ze, Siheng Zhao, Weizhuo Wang, Angjoo Kanazawa, Rocky Duan, Pieter Abbeel, Guanya Shi, Jiajun Wu, and C. Karen Liu. TWIST2: Scalable, portable, and holistic humanoid data collection system. In Proc. IEEE International Conf. on Robotics and Automation (ICRA), 2026.
+
+[5] Haoran Jiang, Jin Chen, Qingwen Bu, et al. Wholebodyvla: Towards unified latent vla for whole-body loco-manipulation control. In Proc. of the International Conf. on Learning Representations (ICLR), 2025.
+
+[6] Xuxin Cheng, Yandong Ji, Junming Chen, Ruihan Yang, Ge Yang, and Xiaolong Wang. Expressive whole-body control for humanoid robots. In Proc. Robotics: Science and Systems (RSS), 2024.
+
+[7] Zixuan Chen, Mazeyu Ji, Xuxin Cheng, Xuanbin Peng, Xue Bin Peng, and Xiaolong Wang. GMT: General motion tracking for humanoid whole-body control. arXiv preprint arXiv:2506.14770, 2025.
+
+[8] Zekun Qi, Xuchuan Chen, Jilong Wang, Chenghuai Lin, Yunrui Lian, Wenyao Zhang, Xinqiang Yu, He Wang, and Li Yi. Humanoid generative pre-training for zero-shot motion tracking. In Proc. IEEE Conf. on Computer Vision and Pattern Recognition (CVPR), 2026.
+
+[9] Qiayuan Liao, Takara E Truong, Xiaoyu Huang, Yuman Gao, Guy Tevet, Koushil Sreenath, and C Karen Liu. BeyondMimic: From motion tracking to versatile humanoid control via guided difusion. Science Robotics, 11(117), 2026.
+
+[10] Jean Pierre Sleiman, He Li, Alphonsus Adu-Bredu, Robin Deits, Arun Kumar, Kevin Bergamin, Mohak Bhardwaj, Scott Biddlestone, Nicola Burger, Matthew A. Estrada, Francesco Iacobelli, Twan Koolen, Alexander Lambert, Erica Lin, M. Eva Mungai, Zach Nobles, Shane Rozen-Levy, Yuyao Shi, Jiashun Wang, Jakob Welner, Fangzhou Yu, Mike Zhang, Alfred Rizzi, Jessica Hodgins, Sylvain Bertrand, Yeuhi Abe, Scott Kuindersma, and Farbod Farshidian. ZEST: Zero-shot embodied skill transfer for athletic robot control. Science Robotics, 11(117), 2026.
+
+[11] Qiayuan Liao, Yiyang Shao, Junfeng Long, Kevin Zakka, Roberto Horowitz, Pieter Abbeel, and Koushil Sreenath. SuperMimic: Scaling humanoid whole-body control with one diferentiable world model. In Proc. Conf. on Robot Learning (CoRL), 2026.
+
+[12] Zhengyi Luo, Ye Yuan, Tingwu Wang, Chenran Li, Fernando Castaneda, Sirui Chen, Zi-Ang Cao,˜ Jiefeng Li, David Minor, Qingwei Ben, Jinhyung Park, David Sami, Zi Wang, Xingye Da, Runyu Ding, Cyrus Hogg, Lina Song, Edy Lim, Eugene Jeong, Tairan He, Haoru Xue, Wenli Xiao, Simon Yuen, Jan Kautz, Yan Chang, Umar Iqbal, Linxi “Jim” Fan, and Yuke Zhu. SONIC: Supersizing motion tracking for natural humanoid whole-body control. Science Robotics, 11(117), 2026.
+
+[13] Weishuai Zeng, Kangning Yin, Xiaojie Niu, Shunlin Lu, Weixiang Zhong, Jiahe Chen, Feiyu Jia, Xiao Chen, Zirui Wang, Furui Xu, Ming Zhou, Kailin Li, Weinan Zhang, He Wang, Li Yi, Dahua Lin, Jiangmiao Pang, and Jingbo Wang. Scaling behavior foundation model for humanoid robots. arXiv preprint arXiv:2607.15163, 2026.
+
+[14] Yitang Li, Zhengyi Luo, Tonghe Zhang, Cunxi Dai, Anssi Kanervisto, Andrea Tirinzoni, Haoyang Weng, Kris Kitani, Mateusz Guzek, Ahmed Touati, Alessandro Lazaric, Matteo Pirotta, and Guanya Shi. BFM-Zero: A promptable behavioral foundation model for humanoid control using unsupervised reinforcement learning. In Proc. ofthe International Conf. on Learning Representations (ICLR), 2026.
+
+[15] Haoran Jiang, Yichao Zhong, Kai Zhang, Cheng Liu, Yixuan Pan, Zhenjie Yang, Jingbo Wang, Tianyu Li, and Li Chen. PingpongDuo: Agile humanoid table tennis doubles with safe team coordination. arXiv preprint arXiv:2610.20579, 2026.
+
+[16] Junli Ren, Yinghui Li, Kai Zhang, Penglin Fu, Haoran Jiang, Yixuan Pan, Guangjun Zeng, Tao Huang, Weizhong Guo, Peng Lu, Tianyu Li, Jingbo Wang, Li Chen, Hongyang Li, and Ping Luo. SMASH: Mastering scalable whole-body skills for humanoid ping-pong with egocentric vision. IEEE Transactions on Robotics (TRO), 2026.
+
+[17] Yichao Zhong, Yidan Lu, Yuhang Lu, Tianyang Tang, Haoguang Mai, Yixuan Pan, Tianyu Li, Li Chen, Jingbo Wang, Zhongyu Li, Peng Lu, and Hongyang Li. RoboNaldo: Accurate, stable and powerful humanoid soccer shooting via motion-guided curriculum reinforcement learning. In Proc. Conf. on Robot Learning (CoRL), 2026.
+
+[18] Modi Shi, Shijia Peng, Jin Chen, Haoran Jiang, Tianyu Li, Di Huang, Ping Luo, Hongyang Li, and Li Chen. EgoHumanoid: Unlocking in-the-wild loco-manipulation with robot-free egocentric demonstration. In Proc. Robotics: Science and Systems (RSS), 2026.
+
+[19] Jin Chen, Yiming Jiang, Chongyang Xu, Modi Shi, Shijia Peng, Li Chen, Tianyu Li, Mu Xu, Yilun Chen, Steven Hoi, and Hongyang Li. EgoHumanoid-V2: Human-to-humanoid transfer of coordinated whole-body skills for loco-manipulation. arXiv preprint arXiv:2609.37181, 2026.
+
+[20] Joao Pedro Araujo, Yanjie Ze, Pei Xu, Jiajun Wu, and C. Karen Liu. Retargeting matters: General Motion Retargeting for humanoid motion tracking. In Proc. IEEE International Conf. on Robotics and Automation (ICRA), 2026.
+
+[21] Hanyang Cao, Yuetong Fang, Taesoo Kwon, Runyi Yu, Ji Ma, Jing Tan, Yangchen Zhou, Baoze Du, Yi Gu, Yukang Gao, Ruoli Dai, Lei Han, and Renjing Xu. Unified Motion Retargeting for humanoids with learned point cloud correspondence. arXiv preprint arXiv:2609.02134, 2026.
+
+[22] Matthew Loper, Naureen Mahmood, Javier Romero, Gerard Pons-Moll, and Michael J. Black. SMPL: A skinned multi-person linear model. ACM Trans. on Graphics, 34(6), 2015.
+
+[23] Yixuan Pan, Ruoyi Qiao, Li Chen, Kashyap Chitta, Liang Pan, Haoguang Mai, Qingwen Bu, Hao Zhao, Cunyuan Zheng, Ping Luo, and Hongyang Li. Agility Meets Stability: Versatile humanoid control with heterogeneous data. In Proc. IEEE International Conf. on Robotics and Automation (ICRA), 2026.
+
+[24] Carmelo Sferrazza, Dun-Ming Huang, Xingyu Lin, Youngwoon Lee, and Pieter Abbeel. Humanoid-Bench: Simulated humanoid benchmark for whole-body locomotion and manipulation. arXiv preprint arXiv:2403.10506, 2024.
+
+[25] Taowen Wang, Zikang Xie, Bin Yang, Yunheng Wang, Zizhao Yuan, Yuetong Fang, Yixiao Feng, Yichi Wang, Xingyu Chen, Haodong Chen, Qiwei Wu, Weisheng Xu, Lihan Chen, Lusong Li, Zecui Zeng, and Renjing Xu. HumanoidArena: Benchmarking egocentric hierarchical whole-body learning. arXiv preprint arXiv:2606.17833, 2026.
+
+[26] MotionChallenge Team. MotionChallenge: An open, reproducible benchmark for humanoid motion tracking. https://motionchallenge-project.github.io/motionchallenge/, 2026.
+
+[27] Dairu Liu, Zekun Qi, Jiayu Zeng, Ruixi Yu, Yu Guan, Yintianrun Zhang, Xuchuan Chen, Sikai Liang, Zekai Li, Chenghuai Lin, Xinqiang Yu, Wenyao Zhang, He Wang, and Li Yi. HumanTracker: Towards comprehensive and human-aligned motion tracking benchmark. arXiv preprint arXiv:2608.13555, 2026.
+
+[28] Chen Tessler, Yunrong Guo, Ofir Nabati, Gal Chechik, and Xue Bin Peng. MaskedMimic: Unified physics-based character control through masked motion inpainting. ACM Trans. on Graphics, 2024.
+
+[29] Tairan He, Wenli Xiao, Toru Lin, Zhengyi Luo, Zhenjia Xu, Zhenyu Jiang, Jan Kautz, Changliu Liu, Guanya Shi, Xiaolong Wang, Linxi Jim Fan, and Yuke Zhu. HOVER: Versatile neural whole-body controller for humanoid robots. In Proc. IEEE International Conf. on Robotics and Automation (ICRA), 2025.
+
+[30] Bones Studio. BONES-SEED: Skeletal everyday embodiment dataset. https://huggingface.co/datasets/ bones-studio/seed, 2026. Dataset. Accessed: 2026-10-25.
+
+[31] Joao Pedro Ara´ujo, Jiaman Li, Karthik Vetrivel, Rishi Agarwal, Jiajun Wu, Deepak Gopinath, Alexander William Clegg, and Karen Liu. CIRCLE: Capture in rich contextual environments. In Proc. IEEE Conf. on Computer Vision and Pattern Recognition (CVPR), pages 21211–21221, 2023.
+
+[32] Jiaman Li, Jiajun Wu, and C Karen Liu. Object motion guided human motion synthesis. ACM Trans. Graph., 42(6), 2023.
+
+[33] Naureen Mahmood, Nima Ghorbani, Nikolaus F Troje, Gerard Pons-Moll, and Michael J Black. AMASS: Archive of motion capture as surface shapes. In Proc. ofthe IEEE International Conf. on Computer Vision (ICCV), 2019.
+
+[34] Davis Rempe, Mathis Petrovich, Ye Yuan, Haotian Zhang, Xue Bin Peng, Yifeng Jiang, Tingwu Wang, Umar Iqbal, David Minor, Michael de Ruyter, Jiefeng Li, Chen Tessler, Edy Lim, Eugene Jeong, Sam Wu, Ehsan Hassani, Michael Huang, Jin-Bey Yu, Chaeyeon Chung, Lina Song, Olivier Dionne, Jan Kautz, Simon Yuen, and Sanja Fidler. Kimodo: Scaling controllable human motion generation. arXiv preprint arXiv:2603.15546, 2026.
+
+[35] RoboParty Lab Team. MimicLite: Eficient and efective general humanoid motion tracking. https: //github.com/EGalahad/mimic-lite, 2026. Technical report: https://github.com/Roboparty/MimicLite/ blob/main/mimic-lite.pdf.
+
+[36] NVIDIA, :, Johan Bjorck, Fernando Castaneda, Nikita Cherniadev, Xingye Da, Runyu Ding, Linxi ”Jim”˜ Fan, Yu Fang, Dieter Fox, Fengyuan Hu, Spencer Huang, Joel Jang, Zhenyu Jiang, Jan Kautz, Kaushil Kundalia, Lawrence Lao, Zhiqi Li, Zongyu Lin, Kevin Lin, Guilin Liu, Edith Llontop, Loic Magne, Ajay Mandlekar, Avnish Narayan, Soroush Nasiriany, Scott Reed, You Liang Tan, Guanzhi Wang, Zu Wang, Jing Wang, Qi Wang, Jiannan Xiang, Yuqi Xie, Yinzhen Xu, Zhenjia Xu, Seonghyeon Ye, Zhiding Yu, Ao Zhang, Hao Zhang, Yizhou Zhao, Ruijie Zheng, and Yuke Zhu. GR00T N1: An open foundation model for generalist humanoid robots. arXiv preprint arXiv:2503.14734, 2025.
+
+[37] Felix G. Harvey, Mike Yurick, et al. Robust motion in-betweening. ´ ACM Trans. on Graphics, 2020.
+
+[38] NVIDIA. SOMA Retargeter. URL https://github.com/NVIDIA/soma-retargeter. SOMA BVH to humanoid robot motion retargeting library.
+
+[39] John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov. Proximal policy optimization algorithms. arXiv preprint arXiv:1707.06347, 2017.
+
+[40] Laurens van der Maaten and Geofrey Hinton. Visualizing data using t-SNE. Journal of Machine Learning Research, 9(86):2579–2605, 2008.
+
+[41] Xiaohang Yang, Qing Wang, Jiahao Yang, Gregory Slabaugh, and Shanxin Yuan. STaR: Seamless spatial-temporal aware motion retargeting with penetration and consistency constraints. In Proc. ofthe IEEE International Conf. on Computer Vision (ICCV), pages 12947–12955, 2025.
+
+## S1 Benchmark coverage and composition
+
+We define eligible In-house track tasks using upper-body and lower-body action descriptions to specify manipulation-related coordination demands. Sit–stand tasks are excluded because the benchmark lacks a unified quantitative evaluation protocol for seated configurations and transitions between support contacts. Their tags are retained in the reference set to make this scope limitation explicit in the coverage analysis.
+
+For each eligible task, we select up to five motion-capture sequences that pass the same automated screening and human review procedures used for the in-house training data (Sec. 4.2.2). We retain all qualifying sequences when fewer than five are available and record tasks with none as unrepresented. We assess the resulting track using the released action tags and compatible pairs of first-level and second-level tags.
+
+## S1.1 Tag and combination coverage
+
+Tag coverage is the fraction of reference tags represented in an evaluation set. Pair coverage is the fraction of compatible pairs of first-level and second-level tags represented within the upper-body or lower-body description. Let T denote the reference tag set and $\mathcal { P } _ { b }$ the valid pair set for body description $b \in \{ U , L \}$ where � and � denote upper and lower body. For an evaluation set D, let $\mathcal { T } ( \mathcal { D } )$ and $\mathcal { P } _ { b } ( \mathcal { D } )$ denote the distinct tags and jointly represented pairs of first-level and second-level tags identified in its annotations. Coverage is defined as
+
+$$
+\begin{array}{l} C _ {\mathrm{tag}} (\mathcal {D}) = \frac {| \mathcal {T} (\mathcal {D}) \cap \mathcal {T} |}{| \mathcal {T} |}, \\ C _ {\mathrm{pair}} ^ {b} (\mathcal {D}) = \frac {| \mathcal {P} _ {b} (\mathcal {D}) \cap \mathcal {P} _ {b} |}{| \mathcal {P} _ {b} |}, \qquad b \in \{U, L \}, \\ C _ {\mathrm{pair}} (\mathcal {D}) = \frac {\sum_ {b \in \{U , L \}} | \mathcal {P} _ {b} (\mathcal {D}) \cap \mathcal {P} _ {b} |}{\sum_ {b \in \{U , L \}} | \mathcal {P} _ {b} |}. \end{array}\tag{6}
+$$
+
+Here, $| \mathcal { T } | = 4 3 , | \mathcal { P } _ { U } | = 3 3$ , and $| \mathcal { P } _ { L } | = 2 0$ . Overall pair coverage pools the covered counts across the 53 valid pairs, weighting each pair equally. Coverage values are reported as percentages. These measures characterize coverage relative to the predefined tag and pair sets.
+
+The In-house track covers 39 of the 43 reference tags (90.70%; Table S1). The four uncovered tags concern torso coordination during sit–stand transitions (U1-8), sit–stand transitions (L1-6), floor sit–stand transitions (L2-18), and chair sit–stand transitions (L2-19). It also covers 30 of 33 upper-body pairs (90.91%) and 18 of 20 lower-body pairs (90.00%), yielding an overall pair coverage of 48 of 53 (90.57%).
+
+For public sequences, GPT-6 Astra infers candidate action tags from sequence filenames using the reference tag definitions. Public coverage estimates are computed from these filename-based candidate annotations and may be afected by incomplete or ambiguous filename descriptions
+
+Table S1. Action-tag and combination coverage across tracks and public data sources. Entries report covered/reference counts and percentages. Tag and pair denominators are fixed across all evaluated sets. Upper-body and lower-body pairs link first-level and second-level tags within the respective body description; all pairs combine these two sets. Public (combined) reports the union of distinct tags and compatible pairs across the four public sources.
+
+<table><tr><td>Track/source</td><td>Tags</td><td>Upper-body pairs</td><td>Lower-body pairs</td><td>All pairs</td></tr><tr><td rowspan="2">In-house</td><td>39/43(90.70%)</td><td>30/33(90.91%)</td><td>18/20(90.00%)</td><td>48/53(90.57%)</td></tr><tr><td>28/43(65.12%)</td><td>9/33(27.27%)</td><td>11/20(55.00%)</td><td>20/53(37.74%)</td></tr><tr><td>BONES-SEED</td><td>22/43(51.16%)</td><td>5/33(15.15%)</td><td>10/20(50.00%)</td><td>15/53(28.30%)</td></tr><tr><td>CIRCLE</td><td>25/43(58.14%)</td><td>6/33(18.18%)</td><td>11/20(55.00%)</td><td>17/53(32.08%)</td></tr><tr><td>OMOMO</td><td>26/43(60.47%)</td><td>4/33(12.12%)</td><td>11/20(55.00%)</td><td>15/53(28.30%)</td></tr><tr><td>AMASS</td><td>29/43(67.44%)</td><td>11/33(33.33%)</td><td>11/20(55.00%)</td><td>22/53(41.51%)</td></tr><tr><td>Public (combined)</td><td></td><td></td><td></td><td></td></tr></table>
+
+We use t-distributed stochastic neighbor embedding (t-SNE) [40] to visualize semantic and pose features from the three tracks (Fig. 2B). The projections show overlapping and distinct regions in the two feature representations and provide a qualitative comparison.
+
+## S1.2 Action-tag distributions
+
+We compare sequence-level prevalence across the 10 upper-body and 19 lower-body second-level tags to characterize the composition of the In-house and Public tracks (Fig. S1). The finalized In-house track contains 15,342 motion sequences across 3,247 tasks. The In-house track emphasizes unilateral and bimanual reaching, with lower-body actions distributed more broadly across stance and movement categories than in the Public track. By comparison, the filename-based candidate annotations for sequences in the Public track show greater concentration in arms-at-side behavior, side-by-side stance, and turning.
+
+## S1.3 Spatial coverage of benchmark tracks
+
+Under the coordinate transformations specified below, the in-house references show broader wrist-position coverage, particularly in the stationary subset (Fig. 2C). The public references span a larger region of pelvis displacement after initial alignment. These observations describe empirical occupancy of reference motions.
+
+Positions are computed by forward kinematics of the G1 robot model, with X forward, Y left, and Z upward. For upper-body workspace, we compute both wrist-yaw link origins with pelvis position and orientation fixed, retaining waist and arm motion. For lower-body workspace, we compute both ankle-roll link origins with pelvis position and orientation fixed. For stationary manipulation, we remove instantaneous pelvis translation and yaw while retaining roll and pitch before computing wrist-link origins. For locomotion coverage, we align pelvis trajectories for moving motions by their initial horizontal position and heading, preserving subsequent displacement and absolute height. The upper-body, lower-body, and stationary-manipulation views include a constant vertical ofset of 0.78 m for visualization only.
+
+Within each spatial comparison, the combined coordinate bounds of both tracks define a shared 64×64×64 grid of rectangular voxels. For the sequence set $\mathcal { D }$ used in a spatial comparison, sequence � contains $T _ { i }$ frames at sampling rate $f _ { i }$ and contributes � positions per frame: both limb endpoints for upper-body workspace, lower-body workspace, and stationary manipulation (� = 2), or the pelvis for locomotion coverage (� = 1).
+
+A
+
+![](images/7631fc2091ff2f77ecd9c8b5ad6da92e0179258877a786920ca7e31203884655.jpg)
+
+B  
+![](images/09f9b85cb7b12569eb58a04cd6c3075495a74bed3fe7c2cb2fd3f476a2b261cc.jpg)  
+Figure S1. Prevalence of second-level action tags. (A) Arm and hand behavior. (B) Stances and movement patterns. Tag codes follow Table 6. Prevalence is the number of sequences assigned a tag divided by the total number of sequences in the respective track: 15,342 for the In-house track and 2,230 for the Public track. Each full sequence is counted once per tag and may carry multiple tags, so percentages need not sum to 100%. Estimates for the Public track use filename-based candidate annotations; NR denotes unresolved tags in this track, which are not plotted as zero. Lines connect discrete categories as visual guides.
+
+The time-weighted count and normalized probability mass of voxel � are
+
+$$
+\begin{array}{r l} & H _ {\mathcal {D}} (v) = \sum_ {i \in \mathcal {D}} \sum_ {t = 1} ^ {T _ {i}} \sum_ {e = 1} ^ {m} \frac {1}{f _ {i}} \mathbf {1} \big [ \mathbf {x} _ {i, t, e} \in v \big ], \\ & P _ {\mathcal {D}} (v) = \frac {H _ {\mathcal {D}} (v)}{\sum_ {u} H _ {\mathcal {D}} (u)} = \frac {H _ {\mathcal {D}} (v)}{m \sum_ {i \in \mathcal {D}} T _ {i} / f _ {i}}. \end{array}\tag{7}
+$$
+
+Here, ${ \bf x } _ { i , t , e }$ is the transformed position and 1[·] is the indicator function. All frames in the analyzed sequences contribute; left and right endpoints are combined with equal weight, and longer sequences contribute proportionally more time. Each track is normalized independently, giving $\begin{array} { r } { \sum _ { \nu } P _ { \mathcal { D } } ( \nu ) = 1 } \end{array}$ . These values are probability masses; voxel sizes difer across spatial comparisons.
+
+For each track, we display the smallest set of highest-probability voxels whose cumulative mass reaches at least 95%, without renormalization. Displayed points are voxel centers rendered as soft circular marks. Orange and yellow denote the In-house and Public tracks, respectively. Opacity increases with log-scaled voxel probability using a shared range within each spatial comparison, bounded by the minimum and maximum nonzero voxel probabilities from both tracks, including voxels omitted from display.
+
+Stationary and moving subsets are defined at the sequence level. For the In-house track, only sequences whose first-level lower-body tag set is exactly {L1-1} or {L1-2} enter the stationary or moving subset, respectively. Other and mixed tag sets contribute to the upper-body and lower-body workspaces but not to the stationary-manipulation or locomotion subsets. For public sequences, let $Q _ { q }$ denote the �th quantile over frames, $\mathbf { p } _ { t , x y }$ the horizontal pelvis position, and $\tilde { \psi } _ { t }$ the unwrapped pelvis yaw in radians. We compute
+
+$$
+\begin{array}{l} E _ {x y} = Q _ {0. 9 5} \big (\| \mathbf {p} _ {t, x y} - \mathbf {p} _ {1, x y} \| _ {2} \big), \\ S _ {\text {yaw}} = \frac {1 8 0}{\pi} \left[ Q _ {0. 9 5} (\tilde {\psi} _ {t}) - Q _ {0. 0 5} (\tilde {\psi} _ {t}) \right]. \end{array}\tag{8}
+$$
+
+A public sequence is classified as moving if $E _ { x y } \geq 0 . 2 0$ m or $S _ { \mathrm { y a w } } \geq 2 0$ degrees, and stationary otherwise.
+
+## S2 Reference fidelity evaluation
+
+We compare wrist trajectories extracted from $H ^ { \prime }$ and the input representation used by SONIC’s SMPL encoder [12], using the same human motion as a reference before motion encoding (Fig. 5). For the SMPL input, we first obtain the corresponding joint rotations from the human motion and then apply forward kinematics on a standard SMPL body to reconstruct the whole-body kinematics supplied to the encoder. Inspired by the comparison of pairwise motion vectors for temporal consistency in STaR [41], we define unit-normalized pairwise displacement-vector discrepancy (unit-PDV) to quantify directional diferences between the human reference and each encoder input.
+
+Let $\rho \in \{ H , H ^ { \prime } , S \}$ index the human reference $H , H ^ { \prime }$ , and the SMPL encoder input �, respectively, and let $T \in \{ H ^ { \prime } , S \}$ index the two representations being compared. We express wrist positions in common human chest axes and normalize by each representation’s own fixed arm length:
+
+$$
+\mathbf {q} ^ {\rho} (t) = \frac {\mathbf {C} _ {H} (t) ^ {\top} [ \mathbf {p} _ {\mathrm{wrist}} ^ {\rho} (t) - \mathbf {p} _ {\mathrm{shoulder}} ^ {\rho} (t) ]}{L _ {\rho}}.\tag{9}
+$$
+
+Here $\mathbf { C } _ { H }$ contains the human chest basis vectors, $\mathbf { p } _ { \mathrm { s h o u l d e r } } ^ { \rho }$ is the representation-specific shoulder origin, and $L _ { \rho }$ is the fixed arm length.
+
+Using matched start and end times, we compute and normalize the displacement vectors as follows:
+
+$$
+\mathbf {d} _ {i j} ^ {\rho} = \mathbf {q} ^ {\rho} (t _ {j}) - \mathbf {q} ^ {\rho} (t _ {i}), \quad u (\mathbf {d}) = \frac {\mathbf {d}}{\max (\| \mathbf {d} \| , \epsilon)}.\tag{10}
+$$
+
+Here $\epsilon > 0$ stabilizes direction normalization.
+
+The human displacement determines a weight shared by both encoder inputs, yielding the pairwise directional error $e _ { i j } ^ { T } .$ :
+
+$$
+w _ {i j} ^ {H} = \frac {\| \mathbf {d} _ {i j} ^ {H} \| ^ {2}}{\| \mathbf {d} _ {i j} ^ {H} \| ^ {2} + \tau^ {2}}, \qquad e _ {i j} ^ {T} = w _ {i j} ^ {H} \left\| u (\mathbf {d} _ {i j} ^ {T}) - u (\mathbf {d} _ {i j} ^ {H}) \right\| ^ {2}.\tag{11}
+$$
+
+Here $\tau > 0$ controls the downweighting of small human displacements.
+
+Consider a window of � samples starting at frame � and a nonempty set of temporal lags $K \subseteq \left\{ 1 , \ldots , N { - } 1 \right\}$ For each lag $k \in K$ , the within-window ofset � identifies a displacement pair spanning frames $s + i$ and $s + i + k$ . We define the unit-PDV score $E _ { s } ^ { T }$ by averaging errors over all valid time-matched pairs within each lag and then averaging the lag-specific means equally:
+
+$$
+E _ {s} ^ {T} = \frac {1}{| K |} \sum_ {k \in K} \left[ \frac {1}{N - k} \sum_ {i = 0} ^ {N - k - 1} e _ {s + i, s + i + k} ^ {T} \right].\tag{12}
+$$
+
+For visualization in Fig. 5A, each normalized trajectory is centered by subtracting its mean position over the plotted interval, and the front-view axes use equal scales. Panel B plots the unit-PDV scores $\overline { { E _ { s } ^ { H ^ { \prime } } } }$ and $E _ { s } ^ { S }$ at the window centers, with a dashed line indicating zero discrepancy. The mean scores for this motion are $1 . 4 0 3 7 7 3 \times 1 0 ^ { - 3 }$ and $7 . 1 0 3 1 1 2 \times 1 0 ^ { - 3 }$ , respectively. Both overlays in panel C use the same human reference, sample times, and coordinate scales. The example pairs $t _ { 1 } \to t _ { n }$ and $t _ { 2 }  t _ { 3 }$ illustrate displacement vectors matched using identical start and end times.
+
+## S3 Sim-to-sim comparison
+
+In Fig. S2, we present the Isaac Sim results, which show simulator-dependent diferences in tracking and reachability performance relative to MuJoCo. This sim-to-sim gap highlights the importance of evaluating performance in the real world or across simulation environments.
+
+![](images/3a1ef4ff60089d64e9dc5c646a51231d0a256baf706047b842d94c20f7d4cce2.jpg)  
+Figure S2. Tracking accuracy and reachability in Isaac Sim.

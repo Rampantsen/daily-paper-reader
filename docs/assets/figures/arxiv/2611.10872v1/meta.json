@@ -1,0 +1,94 @@
+{
+  "version": 2,
+  "extractor": "pymupdf-images",
+  "figures": [
+    {
+      "url": "assets/figures/arxiv/2611.10872v1/fig-001.webp",
+      "caption": "",
+      "page": 2,
+      "index": 1,
+      "width": 2400,
+      "height": 1148
+    },
+    {
+      "url": "assets/figures/arxiv/2611.10872v1/fig-002.webp",
+      "caption": "",
+      "page": 8,
+      "index": 2,
+      "width": 880,
+      "height": 880
+    },
+    {
+      "url": "assets/figures/arxiv/2611.10872v1/fig-003.webp",
+      "caption": "",
+      "page": 8,
+      "index": 3,
+      "width": 900,
+      "height": 900
+    },
+    {
+      "url": "assets/figures/arxiv/2611.10872v1/fig-004.webp",
+      "caption": "",
+      "page": 8,
+      "index": 4,
+      "width": 900,
+      "height": 900
+    },
+    {
+      "url": "assets/figures/arxiv/2611.10872v1/fig-005.webp",
+      "caption": "",
+      "page": 8,
+      "index": 5,
+      "width": 900,
+      "height": 900
+    },
+    {
+      "url": "assets/figures/arxiv/2611.10872v1/fig-006.webp",
+      "caption": "",
+      "page": 9,
+      "index": 6,
+      "width": 700,
+      "height": 800
+    },
+    {
+      "url": "assets/figures/arxiv/2611.10872v1/fig-007.webp",
+      "caption": "",
+      "page": 9,
+      "index": 7,
+      "width": 700,
+      "height": 800
+    },
+    {
+      "url": "assets/figures/arxiv/2611.10872v1/fig-008.webp",
+      "caption": "",
+      "page": 9,
+      "index": 8,
+      "width": 700,
+      "height": 800
+    },
+    {
+      "url": "assets/figures/arxiv/2611.10872v1/fig-009.webp",
+      "caption": "",
+      "page": 9,
+      "index": 9,
+      "width": 700,
+      "height": 800
+    },
+    {
+      "url": "assets/figures/arxiv/2611.10872v1/fig-010.webp",
+      "caption": "",
+      "page": 9,
+      "index": 10,
+      "width": 700,
+      "height": 800
+    },
+    {
+      "url": "assets/figures/arxiv/2611.10872v1/fig-011.webp",
+      "caption": "",
+      "page": 9,
+      "index": 11,
+      "width": 700,
+      "height": 800
+    }
+  ]
+}

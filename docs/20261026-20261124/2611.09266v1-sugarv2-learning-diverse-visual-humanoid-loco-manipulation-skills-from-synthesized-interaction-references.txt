@@ -1,0 +1,354 @@
+# SUGARv2: Learning Diverse Visual Humanoid Loco-Manipulation Skills from Synthesized Interaction References
+
+Tianshu Wu<sup>1</sup>, Tianxiang Gui<sup>2</sup>, Yue Chen<sup>1</sup>, Tingxu Liu<sup>1</sup>, Ziye Peng<sup>3</sup> Guangjie Yang<sup>2</sup>, Xiangqi Kong<sup>3</sup>, Ye Shi<sup>2</sup>, Jingya Wang<sup>2</sup>, Hao Dong<sup>1</sup>
+
+<sup>1</sup>CFCS, School of Computer Science, Peking University <sup>2</sup>ShanghaiTech University <sup>3</sup>Beihang University
+
+![](images/d9b203cdcece7e4fa19c3bcf4281d73da2933c84b553e4c35249761736257569.jpg)  
+Figure 1. SUGARv2 combines interaction reference synthesis with visual policy learning across tasks. (a) Synthesized reference motions across five tasks and spatial configurations. (b) Visual diversity with varied object assets and scene appearances. (c) Real-robot deployment.
+
+## Abstract
+
+Scaling up visual humanoid loco-manipulation skill acquisition requires reducing the human effort needed as tasks and spatial configurations expand, particularly in demonstration collection and task-specific training design. We present SUGARv2, a unified framework for learning diverse visual humanoid loco-manipulation skills through interaction reference synthesis and a shared training pipeline. To obtain diverse references at low cost, we adapt reusable task templates to different spatial configurations, synthesizing coordinated robot and object motions. To reduce task-specific reward design and training effort, we use reference-based imitation as a common learning objective across tasks. We first train privileged teachers to execute these references, then train visual policies through teacher distillation and reinforcement learning with the same referencebased mimic rewards, using diverse object instances and visual domain randomization to support visual generalization and sim-to-real transfer. Across five humanoid loco-manipulation tasks, SUGARv2 achieves a mean success rate of 91.0% in simulation. Deployment on a real humanoid robot further demonstrates successful sim-toreal transfer for whole-body manipulation. These results demonstrate the framework’s potential for learning diverse visual humanoid loco-manipulation skills. Project Page: tianshuwu.github.io/sugarv2-humanoid/.
+
+## 1. Introduction
+
+Scaling up visual humanoid loco-manipulation skill acquisition requires reducing the human effort needed for each new task and spatial configuration. Existing approaches rely on manually collected interaction data or task-specific train ing designs, making it costly to extend skill learning across tasks and spatial configurations. HumanoidMimicGen [23] expands teleoperated demonstrations through whole-body planning, but depends on initial demonstrations and uses decoupled upper- and lower-body control. GRAIL [44] avoids teleoperation and supports whole-body control, but requires video generation and motion reconstruction for every spatial configuration, incurring high costs and potentially producing physically implausible interactions. Task-specific policy learning methods [9, 33, 50] acquire visual locomanipulation skills through tailored training designs, requiring further engineering for new tasks. These dependencies make scaling skill acquisition costly in data preparation and training design (Table 1). Motivated by this, we present SUGARv2, a unified framework for learning diverse visual humanoid loco-manipulation skills through interaction reference synthesis and a shared training pipeline.
+
+For low-cost reference synthesis, we use GPT-6 Astra [29] to generate reusable task-level interaction templates. These templates specify ordered sequences of key whole-body poses, robot–object and hand–object spatial relations, and intended contact labels. We adapt them to different spatial configurations of the robot, object, and goal to synthesize robot and object trajectories for policy learning.
+
+To reduce task-specific reward design and training effort, we use reference-based imitation as a common learning objective across tasks. We first train privileged teachers to execute these references under physical dynamics, then train visual policies through teacher distillation and reinforcement learning with the same reference-based mimic rewards. Teacher supervision is retained during reinforcement learning to guide policy optimization at states visited by the visual policy. Diverse object instances and visual domain randomization further support visual generalization and sim-to-real transfer.
+
+Across five humanoid loco-manipulation tasks, SUG-ARv2 achieves a mean success rate of 91.0%, outperforming the strongest baseline by 51.4 percentage points. Deployed on a real humanoid robot, the visual policies successfully perform whole-body manipulation tasks, demonstrating the framework’s potential for learning diverse realworld manipulation skills. Our main contributions are:
+
+• We present an interaction reference synthesis pipeline for humanoid loco-manipulation. By adapting reusable task templates to different spatial configurations, the pipeline synthesizes diverse interaction references across tasks, reducing the cost of collecting demonstrations.
+
+Table 1. Comparison of humanoid loco-manipulation systems. No Teleop: no teleoperated demonstrations required. Whole-Body: joint upper- and lower-body control. Multi-task: pipeline reusable across tasks. Cost: cost of scaling up training data for each task. –: no data generation required.
+
+<table><tr><td>Method</td><td>No Teleop</td><td>Whole-Body</td><td>Multi-task</td><td>Cost</td></tr><tr><td>VIRAL [9]</td><td>✕</td><td>✕</td><td>✕</td><td>-</td></tr><tr><td>DoorMan [50]</td><td>√</td><td>✕</td><td>✕</td><td>-</td></tr><tr><td>HumanoidMimicGen [23]</td><td>✕</td><td>✕</td><td>√</td><td>Low</td></tr><tr><td>FetchMan [33]</td><td>√</td><td>✕</td><td>✕</td><td>Low</td></tr><tr><td>GRAIL [44]</td><td>√</td><td>√</td><td>√</td><td>High</td></tr><tr><td>SUGARv2 (ours)</td><td>√</td><td>√</td><td>√</td><td>Low</td></tr></table>
+
+• We introduce a policy learning pipeline that uses reference-based imitation as a common learning objective across loco-manipulation tasks. Shared mimic rewards connect privileged teacher training with visual policy learning, reducing task-specific reward design effort.
+
+• Extensive simulation and real-world experiments validate that our method outperforms strong baselines, generalizes to unseen backgrounds and object instances, and transfers zero-shot to real hardware.
+
+## 2. Related Work
+
+## 2.1. Synthetic Demonstrations for Policy Learning
+
+Demonstration-based methods synthesize interaction references by adapting existing motions [4, 6, 15, 51]. MimicGen [27] adapts object-centric demonstration segments to new configurations. HumanoidMimicGen [23] extends demonstration adaptation to humanoids using explicitly annotated skills and separate planning for locomotion and stationary manipulation, which constrains whole-body coordination. Generative approaches instead synthesize interaction motions from learned priors [3, 13, 16, 19, 20, 41, 47]. GRAIL [44] generates interaction videos conditioned on 3D assets, reconstructs human and object motion, and retargets the reconstructed motions to humanoid robots.
+
+Beyond generating diverse motions, interaction reference synthesis must account for task requirements and scene geometry. Prior work uses contact relations and scene-adapted keyframes to specify interaction constraints [1, 21, 54]. Conditional motion models generate continuous motion from trajectories, joint constraints, or sparse keyframes [2, 17, 31, 34, 45]. Building on conditional motion generation, SUGARv2 adapts reusable tasklevel interaction templates to different spatial configurations, uses the adapted key poses to guide whole-body motion generation, and constructs coordinated object trajectories to form interaction references for policy learning.
+
+![](images/1f58d158690980394e948aae7babf84b3509ee49c69e872a739a750bc7614099.jpg)  
+Figure 2. Overview of SUGARv2. Left: each task uses an interaction template that is instantiated for different spatial configurations, yielding keyframes and timing to guide continuous interaction reference synthesis. Floor-to-Table is shown as an example, with four configurations $c _ { 1 } { - } c _ { 4 }$ and their synthesized references $\tau _ { c _ { 1 } } - \tau _ { c _ { 4 } }$ . Right: a privileged teacher is trained with a reference-based mimic reward to execute the interaction references through a frozen pretrained whole-body controller (WBC). The visual policy uses the same WBC and learns through teacher distillation and reinforcement learning with the same reward.
+
+## 2.2. Motion Tracking and Interaction Imitation
+
+Motion tracking connects kinematic references to physical execution [7, 25, 30]. Physics-based character controllers can infer motion from sparse conditions [37], while humanoid tracking controllers track motion references and enable whole-body teleoperation [8, 10, 22, 55]. Scaling motion data and controller pretraining further broadens the range of motions that can be executed [26, 56].
+
+Object interaction additionally requires coordinating body motion with object dynamics [24]. The SkillMimic series [38, 53] learns diverse interaction skills through a unified imitation formulation and extends skill coverage from sparse and noisy demonstrations. InterMimic [48] uses physics-based teachers to refine imperfect interaction demonstrations and distills their behavior into a general policy. Subsequent work extends this direction through generative control and the augmentation of robot interaction motions [49, 57]. Reference-based interaction learning also enables humanoid robots to acquire manipulation skills by imitating coordinated human and object motions [39, 42, 43]. These works show how reference-based learning can support interaction skills without a separately designed task reward for each behavior. Building on this, SUGARv2 uses synthesized interaction references to define a common learning objective for visual loco-manipulation across tasks.
+
+## 2.3. Visual Humanoid Loco-Manipulation
+
+Imitation learning trains visual humanoid manipulation policies from demonstrations collected through whole-body teleoperation [5, 8]. Humanoid vision-language-action models draw on teleoperated demonstrations, human data, and heterogeneous robot data to learn diverse skills [12, 14, 28, 46]. Synthetic demonstrations also support visual policy learning by expanding training data without collecting additional robot demonstrations [4, 18, 40].
+
+Reinforcement learning provides another route to learning visual loco-manipulation skills through interaction with the environment. Some approaches train privileged policies with task-specific rewards and then transfer their behavior to visual policies [52]. VIRAL [9] trains visual policies to imitate privileged teachers through online DAgger and behavior cloning. Reinforcement learning can further refine visuomotor behavior [11, 33, 50]. Extending these approaches to new tasks requires additional reward design and tuning. SUGARv2 uses synthesized interaction references to define a common learning objective across tasks. A shared reference-based mimic reward guides both privileged teacher training and visual policy optimization, reducing task-specific reward design effort.
+
+## 3. Method
+
+## 3.1. Problem definition and framework overview
+
+We aim to learn visual humanoid loco-manipulation policies that coordinate whole-body motion and object manipulation. Using egocentric images and proprioception, a policy must complete the task across different spatial configurations. We learn a separate policy for each task.
+
+As shown in Figure 2, SUGARv2 shares a two-stage pipeline across tasks: interaction reference synthesis and policy learning. The first stage synthesizes robot motion, object trajectories, and intended contact labels for each spatial configuration (Section 3.2). In the second stage, we train a privileged teacher to execute the synthesized references, then distill its behavior into a visual policy and refine the policy through reinforcement learning with the same reference-based mimic rewards (Section 3.3).
+
+![](images/11e14797dd4433562993710450f39b32920be656d47d9849c944af7e71a84024.jpg)  
+Figure 3. Synthesized interaction references across five tasks. Overlaid poses show references for different spatial configurations. Opacity indicates relative time within each displayed reference interval, with later poses shown more opaquely.
+
+## 3.2. Interaction reference synthesis
+
+Each task has its own interaction template T. Given a sampled spatial configuration c specifying the robot’s initial state, the object’s initial pose, and the goal position, a shared synthesis pipeline G produces an interaction reference $\tau _ { c } = G ( \tau , c )$ . Each reference is a sequence:
+
+$$
+\tau_ {c} = \left\{\left(q _ {t} ^ {\text { robot }}, q _ {t} ^ {\text { obj }}, l _ {t}\right) \right\} _ {t = 1} ^ {T}.\tag{1}
+$$
+
+At each time step t, the reference contains a whole-body robot pose $q _ { t } ^ { \mathrm { r o b o t } }$ <sup>t</sup>, an object pose $q _ { t } ^ { \mathrm { o b j } }$ , and intended contact labels $l _ { t }$ for each hand. T denotes the reference length. These kinematic references are not tied to specific object instances and can be reused with same-category objects during training. Figure 2 illustrates how we construct task templates and instantiate them across spatial configurations, and Figure 3 shows the resulting references.
+
+## 3.2.1. Task template construction
+
+For a given task, motions across spatial configurations typically share the same interaction sequence and contact requirements. For example, carrying an object requires establishing a grasp, transporting the object, and reaching the goal, while the robot’s stance, turns, and path depend on the object and goal locations. A task template captures these shared interaction stages, allowing the same task design to be reused across configurations.
+
+For each task, we use GPT-6 Astra [29] to generate an interaction template T consisting of an ordered sequence of template keyframes. Each template keyframe specifies a whole-body pose, robot–object and hand–object spatial relations, and intended contact labels. The poses in the template provide starting points for adaptation, while the spatial relations guide robot positioning and hand placement in each configuration. The contact labels specify which hands interact with the object at each template keyframe.
+
+## 3.2.2. Task template instantiation
+
+We adapt the template keyframes to each sampled spatial configuration to obtain instantiated keyframes and their timing. Starting from the object’s initial pose and the goal position specified by the spatial configuration, we use the template’s hand–object relations and the object’s symmetries to generate candidate hand targets. We then adapt the robot’s position, heading, and whole-body pose to these targets under reachability and scene constraints. Among feasible candidates, we select the keyframe requiring the least movement and pose adjustment. Once the keyframe poses are instantiated, we determine their timing from the movement demands between consecutive poses.
+
+Given the instantiated keyframes and their timing, we use an off-the-shelf motion generation model [34], additionally conditioned on task text, to generate continuous wholebody motion. For each configuration, we generate multiple candidate trajectories, filter out those that violate kinematic or scene constraints, and rank the remaining candidates to favor smooth motion with less unnecessary movement.
+
+After generating robot motion, we construct the object trajectory from the motion of the interacting hands and the template’s hand–object relations. We correct object positions so that the trajectory passes through the positions specified at the keyframes. Using the template’s contact labels and keyframe times, we assign contact intervals to the interacting hands. Together, the robot motion, object trajectory, and contact labels form a complete interaction reference for policy learning in the sampled spatial configuration.
+
+## 3.3. Policy learning
+
+Building on the synthesized interaction references, our policy learning pipeline uses reference-based imitation as a common learning objective across tasks, reducing taskspecific reward design effort. We first train privileged teachers to execute these references, then train visual policies through teacher distillation and reinforcement learning with the same reference-based mimic reward.
+
+## 3.3.1. Privileged teacher training
+
+We train a privileged teacher to execute the interaction references through a frozen pretrained whole-body controller [26]. The teacher policy $\pi _ { T } ( a _ { t } \mid o _ { t } ^ { T } )$ receives privileged observations $o _ { t } ^ { T }$ comprising privileged states and reference trajectories, and outputs a latent command $z _ { t }$ for the whole-body controller and hand commands $h _ { t }$ specifying whether each hand is open or closed. The whole-body controller executes body motion, while hand commands regulate grasping and release based on reference contact labels.
+
+![](images/d7ca9a5e238a77da5677b532cf80df052842c40c4ff0517d02f634f3c8f45292.jpg)  
+Figure 4. Visual diversity across (a) Floor-to-Table and (b) Basket Transport. Each paired example shows the same robot state and scene from a third-person view in the top row and an egocentric RGB view in the bottom row.
+
+We train the teacher with a mimic reward comprising tracking, interaction, and regularization terms:
+
+$$
+r _ {t} = r _ {t} ^ {\mathrm{track}} + r _ {t} ^ {\mathrm{int}} + r _ {t} ^ {\mathrm{reg}}.\tag{2}
+$$
+
+The tracking reward encourages the robot and object to follow their reference motions. The interaction reward encourages their relative poses and hand–object contact states to match the references. The regularization reward penalizes abrupt control changes and undesirable physical behavior. To support visual policy learning, it also encourages the teacher to keep task-relevant objects and goals within the camera’s field of view. Together, these terms guide the teacher to reproduce the reference interaction under physical dynamics. This reference-based reward formulation supports a common training procedure across tasks.
+
+Training episodes start from reference states before the first intended contact, with random perturbations applied to the robot and object states. We apply early termination when the robot or object deviates substantially from the reference or enters an invalid physical state. Reward definitions and training details are provided in the appendix.
+
+## 3.3.2. Visual policy learning
+
+We train visual policies to perform manipulation from egocentric images, using privileged teachers for action supervision. The policy $\pi _ { S } ( a _ { t } \ | \ o _ { t } ^ { S } )$ receives egocentric RGB images and proprioceptive inputs $o _ { t } ^ { S }$ . A visual encoder [32] projects image features and concatenates them with proprioception, and an MLP predicts the commands $\left( \boldsymbol { z } _ { t } , \boldsymbol { h } _ { t } \right)$ .
+
+Learning directly from images requires jointly learning visual representations and control. We first train the visual policy through teacher distillation, querying teacher actions at states visited by the policy [35]. Matching individual teacher actions does not directly optimize the full interaction, so we continue with the reference-based mimic reward while retaining teacher distillation, optimizing robot and object motion throughout the interaction.
+
+The frozen teacher provides the complete body-control latent and hand commands as action supervision at studentvisited states. We minimize the mean squared error between the student’s predicted action and the teacher target:
+
+$$
+\mathcal {L} _ {\mathrm{distill}} = \mathrm{MSE} \big (a _ {t} ^ {S}, a _ {t} ^ {T} \big),\tag{3}
+$$
+
+where $a _ { t } ^ { S }$ is the student’s predicted action, $a _ { t } ^ { T }$ is the teacher target at the visited state. We jointly optimize the visual policy with PPO [36] and teacher distillation:
+
+$$
+\mathcal {L} _ {\mathrm{policy}} = \mathcal {L} _ {\mathrm{PPO}} ^ {\mathrm{actor}} + \lambda_ {\mathrm{distill}} \mathcal {L} _ {\mathrm{distill}},\tag{4}
+$$
+
+where $\mathcal { L } _ { \mathrm { P P O } } ^ { \mathrm { a c t o r } }$ is the PPO policy loss and $\lambda _ { \mathrm { d i s t i l l } }$ weights action distillation during policy optimization.
+
+The entire visual policy is trained end-to-end throughout training. A privileged critic is warmed up during distillation and updated alongside the policy during joint optimization.
+
+We render observations online with diverse object instances, backgrounds, materials, and lighting conditions. Each interaction reference can provide training data under varied visual appearances without regenerating the underlying motion. Figure 4 illustrates this visual diversity.
+
+During visual training, we randomize camera poses, augment rendered images, and add noise to images and proprioceptive observations. We also use dynamics randomization and external disturbances in both training stages to improve robustness to physical variations.
+
+Table 2. Visual policy success rates (%) across five tasks. (a) VIRAL and GR00T using SUGARv2 references and teachers. (b) Our learning pipeline using GRAIL references. (c) The full SUGARv2 framework combining our reference synthesis and visual policy learning pipeline.
+
+<table><tr><td>Data source</td><td>Learning method</td><td>Tabletop Pickup</td><td>Floor-to-Table</td><td>Box Carrying</td><td>Basket Transport</td><td>Same-Table</td><td>Mean</td></tr><tr><td colspan="8">(a) Comparing learning methods</td></tr><tr><td>SUGARv2</td><td>VIRAL</td><td>63.2±0.9</td><td>13.4±4.6</td><td>20.4±9.1</td><td>41.4±1.2</td><td>59.7±4.8</td><td>39.6</td></tr><tr><td>SUGARv2</td><td>GR00T N1.7</td><td>38.9±2.3</td><td>13.8±2.4</td><td>15.4±1.4</td><td>20.6±3.4</td><td>28.2±2.2</td><td>23.4</td></tr><tr><td colspan="8">(b) Comparing interaction reference sources</td></tr><tr><td>GRAIL</td><td>SUGARv2</td><td>43.3±0.7</td><td>0.6±0.2</td><td>83.1±1.3</td><td>11.7±2.1</td><td>2.1±0.1</td><td>28.2</td></tr><tr><td colspan="8">(c) Full SUGARv2 framework</td></tr><tr><td>SUGARv2</td><td>SUGARv2</td><td>92.8±1.5</td><td>91.7±3.0</td><td>87.6±1.9</td><td>84.3±2.3</td><td>98.5±0.4</td><td>91.0</td></tr></table>
+
+## 4. Experiments
+
+Through our experiments, we aim to answer the following questions: (1) How well does SUGARv2 learn visual manipulation skills under varied spatial configurations and unseen backgrounds? (2) How efficiently can we synthesize interaction references, and how well do they support visual policy learning? (3) How does the number of synthesized references affect visual policy performance? (4) How do key design choices in our learning framework affect policy performance? (5) Can the learned visual policies transfer to a real humanoid robot?
+
+## 4.1. Experimental Setup
+
+Tasks. We evaluate five humanoid loco-manipulation tasks covering pickup, pick-and-place, and object transport. Tabletop Pickup requires grasping an object from a tabletop and holding it. Floor-to-Table and Same-Table involve picking up an object from the floor or tabletop, respectively, and placing it into a target basket on a table. Box Carrying and Basket Transport require carrying the corresponding object while walking to a designated target region. These tasks demand tightly coordinated whole-body control, requiring continuous coordination between the upper and lower body throughout object interaction.
+
+Training and evaluation. We train visual policies across diverse spatial configurations of robot, object, and goal within prescribed ranges. We use 100 synthesized references per task and train separate privileged teachers and visual policies with the same pipeline. In simulation, we report full-task success as mean ± standard deviation over three seeds, using task-specific criteria.
+
+Baselines. For visual policy learning, we compare with VI-RAL [9] and GR00T N1.7 [28]. VIRAL combines DAgger with behavior cloning. GR00T is fine-tuned on image–action pairs from teacher rollouts. For interaction reference synthesis, we compare with GRAIL [44], which reconstructs motion from generated videos.
+
+Table 3. SUGARv2 success rates (%) under unseen backgrounds and object instances, without additional training.
+
+<table><tr><td>Task</td><td>Original</td><td>Unseen backgrounds</td><td>Unseen objects</td><td>Both unseen</td></tr><tr><td>Tabletop Pickup</td><td> $92.8 \pm 1.5$ </td><td> $90.6 \pm 0.3$ </td><td> $86.9 \pm 1.1$ </td><td> $83.7 \pm 1.0$ </td></tr><tr><td>Floor-to-Table</td><td> $91.7 \pm 3.0$ </td><td> $85.3 \pm 1.9$ </td><td> $89.9 \pm 0.7$ </td><td> $80.0 \pm 2.2$ </td></tr><tr><td>Box Carrying</td><td> $87.6 \pm 1.9$ </td><td> $83.5 \pm 1.4$ </td><td> $85.2 \pm 1.4$ </td><td> $81.6 \pm 1.7$ </td></tr><tr><td>Basket Transport</td><td> $84.3 \pm 2.3$ </td><td> $77.8 \pm 1.6$ </td><td> $88.2 \pm 0.7$ </td><td> $83.6 \pm 0.4$ </td></tr><tr><td>Same-Table</td><td> $98.5 \pm 0.4$ </td><td> $97.2 \pm 0.1$ </td><td> $88.0 \pm 0.4$ </td><td> $87.1 \pm 0.3$ </td></tr><tr><td>Mean</td><td>91.0</td><td>86.9</td><td>87.7</td><td>83.2</td></tr></table>
+
+## 4.2. Visual Policy Performance
+
+Comparison with baselines. We compare visual policy learning methods using the same interaction references and privileged teachers. Table 2(a) and (c) report full-task success rates across five tasks. SUGARv2 outperforms the baseline methods on all five tasks, achieving a mean success rate of 91.0%. Under the same references and teachers, the consistent improvements across tasks demonstrate the effectiveness of our learning pipeline in translating synthesized references into diverse visual manipulation skills.
+
+Generalization to unseen backgrounds and objects. We evaluate SUGARv2 on unseen backgrounds and samecategory object instances without further training, changing backgrounds and objects separately and jointly while keeping spatial configurations and success criteria consistent. Table 3 compares success rates with the original setting. Success rates decrease under these conditions but remain high overall, indicating generalization to unseen backgrounds and same-category object instances.
+
+## 4.3. Reference Synthesis Evaluation
+
+We measure synthesis cost and assess reference quality through physical execution and downstream visual policy performance. SUGARv2 and GRAIL generate the same number of references per task for the same desired spatial configurations. For each source, we train separate privileged teachers and visual policies with the same learning pipeline and training budget.
+
+Table 4. Task success rates (%) for ablations of the learning strategy.
+
+<table><tr><td>Setting</td><td>Tabletop Pickup</td><td>Floor-to-Table</td><td>Box Carrying</td><td>Basket Transport</td><td>Same-Table</td><td>Mean</td></tr><tr><td>Full SUGARv2</td><td>92.8±1.5</td><td>91.7±3.0</td><td>87.6±1.9</td><td>84.3±2.3</td><td>98.5±0.4</td><td>91.0</td></tr><tr><td>w/o teacher distillation</td><td>0.1±0.1</td><td>0.0±0.0</td><td>0.0±0.0</td><td>0.0±0.0</td><td>0.0±0.0</td><td>0.0</td></tr><tr><td>w/o reference-based RL</td><td>80.5±1.8</td><td>77.1±6.5</td><td>3.6±2.1</td><td>3.9±2.6</td><td>42.0±25.3</td><td>41.4</td></tr><tr><td>w/o continued teacher distillation</td><td>79.0±2.5</td><td>61.6±3.3</td><td>60.9±7.9</td><td>75.2±5.2</td><td>76.6±4.1</td><td>70.6</td></tr></table>
+
+Table 5. Reference synthesis cost and teacher performance, averaged across five tasks. Synthesis time includes failed attempts and postprocessing per retained reference. Tracking errors measure deviations of executed motions from references.
+
+<table><tr><td>Metric</td><td>GRAIL</td><td>SUGARv2</td></tr><tr><td>Synthesis time (min/ref.) ↓</td><td>36.1</td><td>0.4</td></tr><tr><td>Teacher success (%) ↑</td><td>62.4</td><td>98.0</td></tr><tr><td>Object tracking error (cm) ↓</td><td>9.8</td><td>6.6</td></tr><tr><td>Robot tracking error (cm) ↓</td><td>13.8</td><td>10.0</td></tr></table>
+
+As shown in Table 5, SUGARv2 takes an average of 0.4 minutes per retained reference, compared with 36.1 minutes for GRAIL. The resulting references yield higher teacher success and lower tracking errors, indicating that they better support task execution under physical dynamics. GRAIL can introduce physically implausible object motion during video generation and depth or pose errors during reconstruction. SUGARv2 explicitly constrains robot–object spatial relations and derives object trajectories from hand motion, helping preserve interaction consistency.
+
+Downstream visual policy performance further supports this assessment of reference quality. With the learning pipeline and budget held fixed, policies trained on SUG-ARv2 references outperform those trained on GRAIL references across all five tasks (Table 2(b) and (c)). This consistent advantage supports the higher quality of our synthesized references for visual policy learning.
+
+## 4.4. Influence of Reference Data Size
+
+We examine how reference data scale affects visual policy learning. We use 20, 50, 100, 200, and 500 references per task while keeping the training pipeline and budget fixed. Data scale counts kinematic robot–object trajectories with contact labels across spatial configurations. During training, we vary object instances within each category and render visual observations from the simulation, using the same visual randomization settings across experiments.
+
+Figure 5 shows that increasing the reference set from 20 to 100 trajectories per task generally improves policy success rates, while further increases offer limited gains and sometimes reduce performance. We therefore use 100 references per task in the main evaluation, balancing policy performance with the cost of reference synthesis.
+
+![](images/fe7cf0a82ff9b7fe4b5cd7f03c95abc48755e83ac6c4c7507b5a34ddcecc9f5d.jpg)  
+Figure 5. Visual policy success rates at different reference data scales. The dashed line denotes the mean across five tasks. Horizontal positions follow $x ^ { 0 . 6 } ;$ ; tick labels show trajectory counts.
+
+## 4.5. Ablation study
+
+We evaluate the key design choices in our visual policy learning pipeline through ablations under the same training budget (Table 4). Without teacher distillation, training the policy from scratch using reference-based reinforcement learning yields near-zero success on all five tasks under this training budget. Without reference-based reinforcement learning, training through teacher distillation alone results in lower success than the full framework on every task. Finally, after the same initialization through teacher distillation, continuing with reference-based reinforcement learning alone reduces success across all tasks compared with retaining teacher distillation.
+
+These results support the design of our visual policy learning pipeline: teacher distillation provides an effective initialization, while reference-based reinforcement learning refines task performance with continued teacher supervision. Together, these components enable effective learning of visual loco-manipulation skills.
+
+(a) Tabletop Pickup  
+![](images/0a52cfd463bd37731aa3a76b12725180ee91f60aada2f22a870d51de03d2c058.jpg)  
+(c) Box Carrying
+
+(b) Floor-to-Table  
+![](images/f84e3da3af47f9afbc8b86e49da9b825b20e2a561e369f09330d3089c3702246.jpg)
+
+![](images/9aecea3c388ed7efcd4248a139e99f103321f5c792b77c333998bfeb34d4c6b4.jpg)
+
+(d) Basket Transport  
+![](images/a7251c775162c9146c4dc6db2564fb6ab71e65b4ab3d3021dd903ff999b99aba.jpg)
+
+(e) Same-Table  
+![](images/28c916acf51db4d7aef4ba4c7abfc66849e21b3811a34258683b02816027c448.jpg)  
+Figure 6. Real-world execution: (a) Tabletop Pickup, (b) Floor-to-Table, (c) Box Carrying, (d) Basket Transport, (e) Same-Table.
+
+Table 6. Real-world task success (successes / attempts).
+
+<table><tr><td>Tabletop Pickup</td><td>Floor-to-Table</td><td>Box Carrying</td><td>Basket Transport</td><td>Same-Table</td></tr><tr><td>9/10</td><td>6/10</td><td>8/10</td><td>8/10</td><td>7/10</td></tr></table>
+
+## 4.6. Real-world evaluation
+
+Real-world transfer. We directly deploy the simulationtrained visual policies on a Unitree G1 without fine-tuning on any real-world data. Across trials, we vary the initial positions. Table 6 reports successful trials out of total attempts for each task, and Figure 6 presents representative executions. The policies successfully perform all five tasks on the real robot, demonstrating sim-to-real transfer for coordinated whole-body motion and object manipulation.
+
+Failure analysis. Execution errors can cause missed grasps, after which the policy may continue subsequent motions without securing the object. Recovery from these failures remains limited, as the policy does not consistently retry the grasp before proceeding.
+
+## 5. Conclusion
+
+In this work, we presented SUGARv2, a unified framework for interaction reference synthesis and visual policy learning across tasks. We adapt reusable task templates to different spatial configurations to obtain diverse interaction references at low cost. These references support a unified training pipeline combining teacher distillation and reinforcement learning with shared reference-based mimic rewards, reducing task-specific reward design effort. Experiments across five tasks and real-humanoid deployment demonstrate the framework’s effectiveness, highlighting its potential for learning diverse real-world manipulation skills.
+
+Limitations and Future Works. Our reference synthesis currently focuses on short-horizon interactions in simplified scenes. Extending it to long-horizon tasks and cluttered environments will require more scalable and automated interaction reference synthesis. Our visual policies are taskspecific; we aim to use synthesized references to support multitask vision-language-action policies that follow language instructions across diverse interaction tasks.
+
+## LLM Usage Statement
+
+We used GPT-6 Astra [29] to generate reusable task-level interaction templates. We used OpenAI GPT models and Codex to assist with language editing and code development, and reviewed the edited text.
+
+## References
+
+[1] Sitong Chen, Fatemeh Zargarbashi, Jin Cheng, Tianxu An, and Stelian Coros. KINO: A keyframe interface for VLM planning and whole-body control in humanoid locomanipulation. arXiv preprint arXiv:2609.18869, 2026. 2
+
+[2] Setareh Cohan, Guy Tevet, Daniele Reda, Xue Bin Peng, and Michiel van de Panne. Flexible motion in-betweening with diffusion models. In ACM SIGGRAPH 2024 Conference Papers, pages 1–9, 2024. 2
+
+[3] Christian Diller and Angela Dai. CG-HOI: Contact-Guided 3D Human-Object Interaction Generation. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pages 19888–19901, 2024. 2
+
+[4] Yuhui Fu, Feiyang Xie, Chaoyi Xu, Jing Xiong, Haoqi Yuan, and Zongqing Lu. DemoHLM: From one demonstration to generalizable humanoid loco-manipulation. arXiv preprint arXiv:2510.11258, 2025. 2, 3
+
+[5] Zipeng Fu, Qingqing Zhao, Qi Wu, Gordon Wetzstein, and Chelsea Finn. HumanPlus: Humanoid shadowing and imitation from humans. In Proceedings of the 8th Conference on Robot Learning, pages 2828–2844. PMLR, 2025. 3
+
+[6] Caelan Reed Garrett, Ajay Mandlekar, Bowen Wen, and Dieter Fox. SkillMimicGen: Automated demonstration generation for efficient skill learning and deployment. In Proceedings of the 8th Conference on Robot Learning, pages 2750–2790. PMLR, 2025. 2
+
+[7] Tairan He, Jiawei Gao, Wenli Xiao, Yuanhang Zhang, Zi Wang, Jiashun Wang, Zhengyi Luo, Guanqi He, Nikhil Sobanbabu, Chaoyi Pan, Zeji Yi, Guannan Qu, Kris Kitani, Jessica K. Hodgins, Linxi Fan, Yuke Zhu, Changliu Liu, and Guanya Shi. ASAP: Aligning Simulation and Real-World Physics for Learning Agile Humanoid Whole-Body Skills. In Proceedings ofRobotics: Science and Systems, 2025. 3
+
+[8] Tairan He, Zhengyi Luo, Xialin He, Wenli Xiao, Chong Zhang, Weinan Zhang, Kris M. Kitani, Changliu Liu, and Guanya Shi. OmniH2O: Universal and dexterous human-tohumanoid whole-body teleoperation and learning. In Proceedings of the 8th Conference on Robot Learning, pages 1516–1540. PMLR, 2025. 3
+
+[9] Tairan He, Zi Wang, Haoru Xue, Qingwei Ben, Zhengyi Luo, Wenli Xiao, Ye Yuan, Xingye Da, Fernando Castaneda,˜ Shankar Sastry, Changliu Liu, Guanya Shi, Linxi Fan, and Yuke Zhu. VIRAL: Visual sim-to-real at scale for humanoid loco-manipulation. arXiv preprint arXiv:2511.15200, 2025. 2, 3, 6
+
+[10] Tairan He, Wenli Xiao, Toru Lin, Zhengyi Luo, Zhenjia Xu, Zhenyu Jiang, Jan Kautz, Changliu Liu, Guanya Shi, Xiaolong Wang, Linxi Fan, and Yuke Zhu. HOVER: Versatile neural whole-body controller for humanoid robots. In 2025
+
+IEEE International Conference on Robotics and Automation (ICRA), pages 9989–9996, 2025. 3
+
+[11] Xialin He, Sirui Xu, Xinyao Li, Runpei Dong, Liuyu Bian, Yu-Xiong Wang, and Liang-Yan Gui. ULTRA: Unified multimodal control for autonomous humanoid whole-body locomanipulation. arXiv preprint arXiv:2603.03279v1, 2026. 3
+
+[12] Yingdong Hu, Haodong Zhu, Boyuan Zheng, Yihang Hu, Tong Zhang, Zunhao Chen, Junming Zhao, Ruiqian Nai, and Yang Gao. OpenHLM: An empirical recipe for whole-body humanoid loco-manipulation. arXiv preprint arXiv:2606.22174, 2026. 3
+
+[13] Joel Jang, Seonghyeon Ye, Zongyu Lin, Jiannan Xiang, Johan Bjorck, Yu Fang, Fengyuan Hu, Spencer Huang, Kaushil Kundalia, Yen-Chen Lin, Loic Magne, Ajay Mandlekar, Avnish Narayan, You Liang Tan, Guanzhi Wang, Jing Wang, Qi Wang, Yinzhen Xu, Xiaohui Zeng, Kaiyuan Zheng, Ruijie Zheng, Ming-Yu Liu, Luke Zettlemoyer, Dieter Fox, Jan Kautz, Scott Reed, Yuke Zhu, and Linxi Fan. DreamGen: Unlocking Generalization in Robot Learning through Video World Models. arXiv preprint arXiv:2505.12705, 2025. 2
+
+[14] Haoran Jiang, Jin Chen, Qingwen Bu, Li Chen, Modi Shi, Yanjie Zhang, Delong Li, Chuanzhe Suo, Chuang Wang, Zhihui Peng, and Hongyang Li. WholeBodyVLA: Towards unified latent VLA for whole-body loco-manipulation control. arXiv preprint arXiv:2512.11047, 2025. 3
+
+[15] Zhenyu Jiang, Yuqi Xie, Kevin Lin, Zhenjia Xu, Weikang Wan, Ajay Mandlekar, Linxi Fan, and Yuke Zhu. DexMimicGen: Automated data generation for bimanual dexterous manipulation via imitation learning. In 2025 IEEE International Conference on Robotics and Automation (ICRA), pages 16923–16930, 2025. 2
+
+[16] Hwanhee Jung, Seunggwan Lee, Jeongyoon Yoon, SeungHyeon Kim, Giljoo Nam, Qixing Huang, and Sangpil Kim. Decoupled Generative Modeling for Human-Object Interaction Synthesis. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pages 2253–2263, 2026. 2
+
+[17] Korrawe Karunratanakul, Konpat Preechakul, Supasorn Suwajanakorn, and Siyu Tang. Guided motion diffusion for controllable human motion synthesis. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV), pages 2151–2162, 2023. 2
+
+[18] Hojune Kim, Timothy Chen, Jiankai Sun, Lars W. Osterberg, Qianzhong Chen, Ke Wang, and Mac Schwager. LEGS: Fine-tuning teleop-free VLAs for humanoid locomanipulation in an embodied gaussian splatting world. arXiv preprint arXiv:2606.01458, 2026. 3
+
+[19] Jiaman Li, Jiajun Wu, and C. Karen Liu. Object Motion Guided Human Motion Synthesis. ACM Transactions on Graphics, 42(6):1–11, 2023. 2
+
+[20] Jiaman Li, Alexander Clegg, Roozbeh Mottaghi, Jiajun Wu, Xavier Puig, and C. Karen Liu. Controllable Human-Object Interaction Synthesis. In European Conference on Computer Vision, pages 54–72, 2024. 2
+
+[21] Lei Li and Angela Dai. HOI-PAGE: Zero-Shot Human-Object Interaction Generation with Part Affordance Guidance. In Proceedings of the 43rd International Conference on Machine Learning, pages 66561–66582. PMLR, 2026. 2
+
+[22] Qiayuan Liao, Takara E. Truong, Xiaoyu Huang, Yuman Gao, Guy Tevet, Koushil Sreenath, and C. Karen Liu. BeyondMimic: From motion tracking to versatile humanoid control via guided diffusion. arXiv preprint arXiv:2508.08241, 2025. 3
+
+[23] Kevin Lin, Ajay Mandlekar, Caelan Reed Garrett, Nikita Chernyadev, Yu Fang, Runyu Ding, Yuqi Xie, Justin Tran, Linxi Fan, and Yuke Zhu. HumanoidMimicGen: Data generation for loco-manipulation via whole-body planning. arXiv preprint arXiv:2605.27724, 2026. 2
+
+[24] Yutang Lin, Jieming Cui, Yixuan Li, Baoxiong Jia, Yixin Zhu, and Siyuan Huang. LessMimic: Long-horizon humanoid interaction with unified distance field representations. arXiv preprint arXiv:2602.21723v1, 2026. 3
+
+[25] Zhengyi Luo, Jinkun Cao, Alexander Winkler, Kris Kitani, and Weipeng Xu. Perpetual Humanoid Control for Realtime Simulated Avatars. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV), pages 10895–10904, 2023. 3
+
+[26] Zhengyi Luo, Ye Yuan, Tingwu Wang, Chenran Li, Fernando Castaneda, Sirui Chen, Zi-Ang Cao, Jiefeng Li, David Mi-˜ nor, Qingwei Ben, Jinhyung Park, David Sami, Zi Wang, Xingye Da, Runyu Ding, Cyrus Hogg, Lina Song, Edy Lim, Eugene Jeong, Tairan He, Haoru Xue, Wenli Xiao, Simon Yuen, Jan Kautz, Yan Chang, Umar Iqbal, Linxi Fan, and Yuke Zhu. SONIC: Supersizing motion tracking for natural humanoid whole-body control. Science Robotics, 11(117): eaed4592, 2026. 3, 4
+
+[27] Ajay Mandlekar, Soroush Nasiriany, Bowen Wen, Iretiayo Akinola, Yashraj Narang, Linxi Fan, Yuke Zhu, and Dieter Fox. MimicGen: A data generation system for scalable robot learning using human demonstrations. In Proceedings of the 7th Conference on Robot Learning, pages 1820–1864. PMLR, 2023. 2
+
+[28] NVIDIA, Johan Bjorck, Fernando Castaneda, Nikita Cher-˜ niadev, Xingye Da, Runyu Ding, Linxi Fan, Yu Fang, Dieter Fox, Fengyuan Hu, Spencer Huang, Joel Jang, Zhenyu Jiang, Jan Kautz, Kaushil Kundalia, Lawrence Lao, Zhiqi Li, Zongyu Lin, Kevin Lin, Guilin Liu, Edith Llontop, Loic Magne, Ajay Mandlekar, Avnish Narayan, Soroush Nasiriany, Scott Reed, You Liang Tan, Guanzhi Wang, Zu Wang, Jing Wang, Qi Wang, Jiannan Xiang, Yuqi Xie, Yinzhen Xu, Zhenjia Xu, Seonghyeon Ye, Zhiding Yu, Ao Zhang, Hao Zhang, Yizhou Zhao, Ruijie Zheng, and Yuke Zhu. GR00T N1: An open foundation model for generalist humanoid robots. arXiv preprint arXiv:2503.14734, 2025. 3, 6
+
+[29] OpenAI. GPT-6 Astra: A new generation of intelligence. Model release. https://openai.com/index/gpt-6-astra/, 2026. Accessed November 3, 2026. 2, 4, 9
+
+[30] Xue Bin Peng, Pieter Abbeel, Sergey Levine, and Michiel van de Panne. DeepMimic: Example-Guided Deep Reinforcement Learning of Physics-Based Character Skills. ACM Transactions on Graphics, 37(4):143:1–143:14, 2018. 3
+
+[31] Ekkasit Pinyoanuntapong, Muhammad Saleem, Korrawe Karunratanakul, Pu Wang, Hongfei Xue, Chen Chen, Chuan Guo, Junli Cao, Jian Ren, and Sergey Tulyakov. MaskControl: Spatio-Temporal Control for Masked Motion Synthesis.
+
+In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV), pages 9955–9965, 2025. 2
+
+[32] Danfeng Qin, Chas Leichner, Manolis Delakis, Marco Fornoni, Shixin Luo, Fan Yang, Weijun Wang, Colby Banbury, Chengxi Ye, Berkin Akin, Vaibhav Aggarwal, Tenghui Zhu, Daniele Moro, and Andrew Howard. MobileNetV4: Universal models for the mobile ecosystem. arXiv preprint arXiv:2404.10518, 2024. 5
+
+[33] Omar Rayyan, Zhi Li, Max Argus, Yuxin Jiang, Chang Yu, Chenfanfu Jiang, and Yuchen Cui. FetchMan: Learning visual humanoid loco-manipulation policies from simulated experiences. arXiv preprint arXiv:2608.17027, 2026. 2, 3
+
+[34] Davis Rempe, Mathis Petrovich, Ye Yuan, Haotian Zhang, Xue Bin Peng, Yifeng Jiang, Tingwu Wang, Umar Iqbal, David Minor, Michael de Ruyter, Jiefeng Li, Chen Tessler, Edy Lim, Eugene Jeong, Sam Wu, Ehsan Hassani, Michael Huang, Jin-Bey Yu, Chaeyeon Chung, Lina Song, Olivier Dionne, Jan Kautz, Simon Yuen, and Sanja Fidler. Kimodo: Scaling controllable human motion generation. arXiv preprint arXiv:2603.15546, 2026. 2, 4
+
+[35] Stephane Ross, Geoffrey Gordon, and Drew Bagnell. A reduction of imitation learning and structured prediction to noregret online learning. In Proceedings of the Fourteenth International Conference on Artificial Intelligence and Statistics, pages 627–635. PMLR, 2011. 5
+
+[36] John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov. Proximal policy optimization algorithms. arXiv preprint arXiv:1707.06347, 2017. 5
+
+[37] Chen Tessler, Yunrong Guo, Ofir Nabati, Gal Chechik, and Xue Bin Peng. MaskedMimic: Unified physics-based character control through masked motion inpainting. ACM Transactions on Graphics, 43(6):1–21, 2024. 3
+
+[38] Yinhuai Wang, Qihan Zhao, Runyi Yu, Hok Wai Tsui, Ailing Zeng, Jing Lin, Zhengyi Luo, Jiwen Yu, Xiu Li, Qifeng Chen, Jian Zhang, Lei Zhang, and Ping Tan. SkillMimic: Learning Basketball Interaction Skills from Demonstrations. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pages 17540– 17549, 2025. 3
+
+[39] Yinhuai Wang, Qihan Zhao, Yuen Fui Lau, Runyi Yu, Hok Wai Tsui, Qifeng Chen, Jingbo Wang, Jiangmiao Pang, and Ping Tan. HumanX: Toward agile and generalizable humanoid interaction skills from human videos. arXiv preprint arXiv:2602.02473, 2026. 3
+
+[40] Yen-Jen Wang, Jiaman Li, Sirui Chen, Takara E. Truong, Pei Xu, Pieter Abbeel, Rocky Duan, Koushil Sreenath, Angjoo Kanazawa, Carmelo Sferrazza, Guanya Shi, and Karen Liu. VLK: Learning humanoid loco-manipulation from synthetic interactions in reconstructed scenes. arXiv preprint arXiv:2606.30645, 2026. 3
+
+[41] Zihan Wang, Zhen Wu, Pieter Abbeel, Rocky Duan, Jitendra Malik, Carmelo Sferrazza, C. Karen Liu, Guanya Shi, and Angjoo Kanazawa. Counterfactual video generation enables scalable humanoid loco-manipulation. arXiv preprint arXiv:2609.38172v1, 2026. 2
+
+[42] Haoyang Weng, Yitang Li, Nikhil Sobanbabu, Zihan Wang, Zhengyi Luo, Tairan He, Deva Ramanan, and Guanya Shi.
+
+HDMI: Learning interactive humanoid whole-body control from human videos. arXiv preprint arXiv:2509.16757, 2025. 3
+
+[43] Tianshu Wu, Xiangqi Kong, Yue Chen, Qize Yu, Hang Ye, Jia Li, Yizhou Wang, and Hao Dong. SUGAR: A Scalable Human-Video-Driven Generalizable Humanoid Loco-Manipulation Learning Framework. arXiv preprint arXiv:2605.20373, 2026. 3
+
+[44] Tianyi Xie, Haotian Zhang, Jinhyung Park, Zi Wang, Bowen Wen, Jiefeng Li, Xueting Li, Qingwei Ben, Haoyang Weng, Yufei Ye, David Minor, Tingwu Wang, Chenfanfu Jiang, Sanja Fidler, Jan Kautz, Linxi Fan, Yuke Zhu, Zhengyi Luo, Umar Iqbal, and Ye Yuan. GRAIL: Generating humanoid loco-manipulation from 3D assets and video priors. arXiv preprint arXiv:2606.05160v1, 2026. 2, 6
+
+[45] Yiming Xie, Varun Jampani, Lei Zhong, Deqing Sun, and Huaizu Jiang. OmniControl: Control any joint at any time for human motion generation. In International Conference on Learning Representations, 2024. 2
+
+[46] Chongyang Xu, Zhao Wu, Jin Chen, Yiming Jiang, Jinhui Ye, Yuming Jiang, Shifeng Zhang, Ziliang Feng, Mu Xu, Yilun Chen, Li Lu, and Steven C. H. Hoi. Towards a general humanoid loco-manipulation model via egocentric whole-body human data pretraining. arXiv preprint arXiv:2610.00438, 2026. 3
+
+[47] Sirui Xu, Dongting Li, Yucheng Zhang, Xiyan Xu, Qi Long, Ziyin Wang, Yunzhi Lu, Shuchang Dong, Hezi Jiang, Akshat Gupta, Yu-Xiong Wang, and Liang-Yan Gui. InterAct: Advancing Large-Scale Versatile 3D Human-Object Interaction Generation. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pages 7048–7060, 2025. 2
+
+[48] Sirui Xu, Hung Yu Ling, Yu-Xiong Wang, and Liang-Yan Gui. InterMimic: Towards Universal Whole-Body Control for Physics-Based Human-Object Interactions. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pages 12266–12277, 2025. 3
+
+[49] Sirui Xu, Samuel Schulter, Morteza Ziyadi, Xialin He, Xiaohan Fei, Yu-Xiong Wang, and Liangyan Gui. InterPrior: Scaling Generative Control for Physics-Based Human-Object Interactions. arXiv preprint arXiv:2602.06035, 2026. 3
+
+[50] Haoru Xue, Tairan He, Zi Wang, Qingwei Ben, Wenli Xiao, Zhengyi Luo, Xingye Da, Fernando Castaneda, Guanya Shi,˜ Shankar Sastry, Linxi Fan, and Yuke Zhu. Opening the sim-to-real door for humanoid pixel-to-action policy transfer. arXiv preprint arXiv:2512.01061, 2025. 2, 3
+
+[51] Zhengrong Xue, Shuying Deng, Zhenyang Chen, Yixuan Wang, Zhecheng Yuan, and Huazhe Xu. DemoGen: Synthetic demonstration generation for data-efficient visuomotor policy learning. In Robotics: Science and Systems XXI, 2025. 2
+
+[52] Shaofeng Yin, Yanjie Ze, Hong-Xing Yu, C. Karen Liu, and Jiajun Wu. VisualMimic: Visual humanoid locomanipulation via motion tracking and generation. arXiv preprint arXiv:2509.20322, 2025. 3
+
+[53] Runyi Yu, Yinhuai Wang, Qihan Zhao, Hok Wai Tsui, Jingbo Wang, Ping Tan, and Qifeng Chen. SkillMimic-V2: Learn-
+
+ing Robust and Generalizable Interaction Skills from Sparse and Noisy Demonstrations. In ACM SIGGRAPH 2025 Conference Papers, pages 1–12, 2025. 3
+
+[54] Runyi Yu, Xiaoyi Lin, Ji Ma, Yinhuai Wang, Koukou Luo, Jiahao Ji, Huayi Wang, Wenjia Wang, Runhan Zhang, Ping Tan, Ting Wu, Ruoli Dai, Qifeng Chen, and Lei Han. OmniContact: Chaining meta-skills via contact flow for generalizable humanoid loco-manipulation. arXiv preprint arXiv:2606.26201, 2026. 2
+
+[55] Yanjie Ze, Zixuan Chen, Joao Pedro Araujo, Zi-ang Cao, Xue Bin Peng, Jiajun Wu, and Karen Liu. TWIST: Teleoper ated whole-body imitation system. In Proceedings ofthe 9th Conference on Robot Learning, pages 2143–2154. PMLR, 2025. 3
+
+[56] Weishuai Zeng, Kangning Yin, Xiaojie Niu, Shunlin Lu, Weixiang Zhong, Jiahe Chen, Feiyu Jia, Xiao Chen, Zirui Wang, Furui Xu, Ming Zhou, Kailin Li, Weinan Zhang, He Wang, Li Yi, Dahua Lin, Jiangmiao Pang, and Jingbo Wang. Scaling behavior foundation model for humanoid robots. arXiv preprint arXiv:2607.15163, 2026. 3
+
+[57] Yucheng Zhang, Sirui Xu, Jinhong Li, Liuyu Bian, Anatulya Nandi, Derek Zhang, Xiangchen Liu, Xueting Li, Umar Iqbal, Yu-Xiong Wang, and Liang-Yan Gui. InterMimicGen: Scaling Humanoid Loco-Manipulation through Self-Evolving Motion Imitation. arXiv preprint arXiv:2610.06850, 2026. 3

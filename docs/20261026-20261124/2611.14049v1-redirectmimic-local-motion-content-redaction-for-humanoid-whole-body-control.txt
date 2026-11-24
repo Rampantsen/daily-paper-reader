@@ -1,0 +1,1205 @@
+RedirectMimic: Local Motion Content Redaction
+for Humanoid Whole-Body Control
+Zepeng Wang and Xiaochuan Shi†
+Wuhan University
+†Corresponding author.
+Before edit
+5.06 s
+Core entry
+5.56 s
+Core peak
+6.50 s
+Core exit
+7.30 s
+After edit
+7.80 s
+Original
+reference m
+RedirectMimic
+execution
+Actor input: original m
+Reward target: edited ̃m
+Same deployment interface
+Fig. 1.
+Local redaction in a selected G1 simulation rollout. Top: original reference m. Bottom: recorded RedirectMimic execution at matching times. The
+pre-edit column shows ordinary hand-to-mouth motion. At core entry, execution lags the edited target.
+Abstract— Humanoid motion interfaces should accommodate
+application-specific movement constraints while retaining useful
+reference behavior. Local content redaction requires a controller
+to replace selected movements even when it continues to receive
+the original reference. Removing the tracking incentive for those
+movements leaves their replacement unspecified. We introduce
+RedirectMimic, which separates the reference observed by the
+actor from the target used to train its execution. A rule-
+generated edited reference guides tracking rewards during
+proximal policy optimization, while the deployed observation
+and action interfaces remain unchanged. We evaluate pose-
+and speed-defined arm editing in Unitree G1 simulation using
+a tracker pretrained on 7,509 motion clips. On the overhead-
+arm task, RedirectMimic reduces core-window content occur-
+rence to 2.7%, compared with 58.9% for reward zeroing and
+32.8% for anti-tracking. It achieves 94.2% core-window joint
+success, combining content suppression, fall-free execution,
+and local retention. On the speed-defined task, fast outward
+arm movements occurred at similarly low rates under all
+three local editing methods. Across both tasks, RedirectMimic
+achieved the lowest replacement error among these methods
+and tracked unedited motions with accuracy comparable to
+that of the pretrained controller. Project page: https://
+xiaopeng-whu.github.io/RedirectMimic/.
+I. INTRODUCTION
+Motion tracking provides a practical interface between hu-
+man demonstrations and humanoid control, including whole-
+body teleoperation and data collection [1], [2]. Physics-based
+imitation methods learn diverse motor skills from reference
+trajectories [3], [4], [5], and large motion collections broaden
+the behaviors available to a controller [6]. Faithful reproduc-
+tion, however, is not always the desired deployment behavior.
+A reference may contain an arm movement that a particular
+application excludes, embedded within otherwise acceptable
+locomotion or gestures. This calls for selective editing that
+replaces the specified movement while retaining the rest of
+the motion.
+Figure 1 illustrates this local objective. The controller must
+execute a suitable replacement while maintaining balance
+and the surrounding movement. Arm motion and balance are
+dynamically coupled: a local joint edit can affect torso and
+leg execution even when their reference coordinates remain
+unchanged. Useful redaction therefore combines content sup-
+pression, replacement fidelity, and physical retention.
+Recent work studies selective behavior modification in
+humanoid policies [7] and motion generators [8], [9], as well
+as learned policy redirection [10]. Local humanoid editing
+couples this objective to the preservation of surrounding
+physical behavior. The resulting control question is how
+a tracker can learn a chosen replacement while its input
+continues to request the original movement.
+We address this question with RedirectMimic. An offline
+rule constructs a paired reference (m, em), preserving the
+1
+arXiv:2611.14049v1  [cs.RO]  10 Nov 2026
+
+
+root trajectory and all unedited joint coordinates. During
+fine-tuning, the actor continues to observe m and the robot
+state, while tracking rewards use em. Ordinary proximal
+policy optimization (PPO) [11] updates the existing actor and
+critic. An edit-window start distribution increases exposure
+to the sparse replacement objective. At deployment, the actor
+retains the original observation and action interfaces.
+The central distinction is between suppressing a movement
+and specifying its replacement. Reward zeroing removes the
+incentive to track the selected arm, whereas anti-tracking
+rewards deviation from it. Neither objective specifies where
+the arm should go. In G1 simulations of pose- and speed-
+defined edits, the arm followed the prescribed replacement
+more closely when that trajectory guided training.
+Our contributions are threefold:
+• Local redaction under original-reference inputs. We
+formulate selective motion replacement as policy edit-
+ing, requiring the controller to retain surrounding mo-
+tion while its input continues to specify the original
+behavior.
+• Paired-reference policy fine-tuning. We introduce
+RedirectMimic, combining rule-generated tracking tar-
+gets and edit-window sampling to train local replace-
+ments under the original-reference observation interface.
+• Evidence for explicit replacement targets. Matched
+comparisons
+in
+G1
+simulation
+show
+the
+highest
+overhead-arm joint success and lowest replacement error
+across both tasks among local methods. Trajectory anal-
+ysis distinguishes faithful replacement from threshold
+suppression.
+II. RELATED WORK
+A. Humanoid Tracking and Physical Feasibility
+DeepMimic establishes reinforcement-learning imitation
+of reference skills [3], while AMP learns motion-style
+rewards from demonstrations [12]. Perpetual Humanoid
+Control extends imitation and recovery across large mo-
+tion libraries [13]. Recent robot systems pursue expres-
+sive upper-body imitation with locomotion in ExBody [14],
+and more general whole-body tracking in ExBody2 [15].
+GMT combines adaptive sampling with motion-specialized
+experts [16]. SONIC studies scaling motion data, model
+capacity, and compute [17]. HOVER distills multiple con-
+trol modes into one policy [18], while TWIST combines
+reinforcement learning and behavior cloning for coordinated
+imitation [19]. A recent empirical study examines design
+choices for general motion tracking [20]. BeyondMimic
+provides the tracking formulation underlying our mjlab im-
+plementation [4], [21]. Our study modifies selected local
+responses of an existing tracker.
+Reference fidelity can conflict with physical feasibility.
+ASAP adapts policies to simulation–reality discrepancies
+using a learned residual action model [22]. AMO com-
+bines trajectory optimization and reinforcement learning for
+adaptive control [23], while OmniTrack generates physically
+consistent references before training a general tracker [24].
+PGMT relaxes tracking to accommodate terrain [25]. These
+approaches motivate validating a replacement dynamically.
+Here the reason to deviate is a fixed content rule, and the
+actor must continue observing the unedited reference.
+B. Motion Completion and Local Editing
+MoMask supports text-conditioned temporal inpainting
+through masked motion modeling [26]. CondMDI supports
+sparse and partial keyframe constraints [27], while Dart-
+Control generates motion autoregressively with text and
+spatial control [28]. MaskedMimic formulates physically
+simulated character control as motion inpainting from partial
+descriptions [29]. CLoSD closes the loop between a diffusion
+planner and a tracking controller [30]. Our input–target
+split brings local replacement into policy fine-tuning: the
+actor learns to execute the edited behavior from the original
+reference.
+C. Behavior Suppression and Policy Redirection
+ForgetMimic suppresses designated humanoid motions
+while retaining other motions [7]. Local redaction addi-
+tionally requires preservation within the targeted motion.
+Behavior Uncloning encodes redirection in policy weights
+without inference-time steering [10]. For local humanoid
+editing, the desired response must specify both the affected
+body parts and their replacement trajectory.
+Human Motion Unlearning suppresses unwanted gener-
+ated motions through latent code replacement, including edits
+within composite behaviors [8]. SafeMo combines language-
+guided data refinement with continuous-space motion un-
+learning [9]. Our paired references specify a local replace-
+ment for closed-loop humanoid execution, where balance and
+surrounding motion must be preserved throughout the edit.
+III. LOCAL REDACTION WITH PAIRED REFERENCES
+Figure 2 summarizes the three stages: offline pair construc-
+tion, dual-reference fine-tuning, and deployment through the
+original policy interface.
+A. Problem and Information Constraint
+Let m denote a reference motion, mt its frame at time
+t, and π0 a pretrained motion tracker. An offline editor
+E constructs a paired reference em = E(m) by replacing
+a specified movement over a selected set of joints and
+frames. For clips that contain no such movement, E(m) = m.
+The control objective is to execute the replacement while
+preserving the surrounding motion and the ability to track
+unedited clips.
+At time t, the actor observes the robot state st and the
+original reference frame mt,
+ot = Obs(st,mt),
+at ∼πθ(· | ot).
+(1)
+The deployed actor is a feedforward network with current-
+frame reference inputs and the previous action. It receives
+no future reference frames, clip identifier, edit mask, or
+edited-reference error. All reference-derived observations and
+control paths use m, and the content rule is fixed throughout
+training and deployment.
+2
+
+
+(a) Pair construction
+(b) Fine-tuning
+(c) Deployment
+Original m
+Edited ̃m
+E
+E: neutral-arm blend
+Recompute velocities + FK
+Original m
++ proprioception
+Actor πθ̃
+m
+Rtrack(s,̃ m)
++ Rreg
+a
+s
+G1
+PPO
+update
+Edit-window sampling: ρ
+Actor excludes ̃m and mask
+Original m
++ proprioception
+πθ
+Original interface
+Fig. 2.
+RedirectMimic overview. (a) Construct the local replacement. (b) Fine-tune with original-reference observations and edited-target rewards. (c)
+Retain the deployment interface. G1 images show reference poses and recorded simulation execution.
+B. Constructing Consistent Local Targets
+The editor uses a content rule to locate a movement in the
+original clip and a replacement target to specify what the
+selected joints should do there. The application determines
+which joints and motion features enter the rule. For each
+detected event, the editor defines a core interval C for the
+replacement and an extended interval I that includes the
+transitions into and out of the surrounding motion.
+The motion feature follows from the constraint. A position
+threshold can identify entry into a restricted region. When
+the same path is acceptable at low speed, the rule can instead
+use velocity along the relevant direction to identify a rapid
+movement. Once the rule selects an interval, the application
+supplies the desired replacement for the affected joints.
+Let qt,j be the original angle of joint j and q⋆
+t,j its
+prescribed target. The editor blends the two on the original
+timeline,
+eqt,j = (1−wt,j)qt,j +wt,jq⋆
+t,j.
+(2)
+For a selected joint, the weight rises smoothly to one, stays
+at one throughout C, and returns to zero by the end of I. It is
+zero for all other joints and outside I. This preserves the root
+trajectory and every unedited joint coordinate while giving
+the tracker a continuous reference at the edit boundaries.
+Changing a joint angle also moves its descendant bodies.
+We therefore recompute body poses by forward kinematics
+and derive joint and body velocities from the edited motion.
+The edit support B includes the transitions and neighboring
+frames used to compute velocities. We check the resulting
+reference against the content rule and verify that the edit
+stays within its support. The resulting position, orientation,
+and velocity targets describe the same movement.
+C. Training Against the Edited Reference
+The fine-tuning reward is
+rt = ∆t
+
+Rtrack(st, emt)+Rreg(st,at)
+
+.
+(3)
+Following the motion-tracking reward formulation of Be-
+yondMimic [4], we evaluate anchor pose, relative body
+poses, and body linear and angular velocities against emt.
+We retain the pretrained tracker’s regularization terms and
+weights in Rreg.
+The edited reference supplies one full-body tracking target.
+During the edit, the selected bodies follow the replacement
+and the unaffected bodies follow their original targets. Out-
+side the edit support and throughout unedited clips, the
+reward trains the policy to track the original motion.
+The policy optimizes the full-body action jointly. A local
+change in the reference can require coordinated adjustments
+elsewhere in the body to maintain balance. Reference locality
+specifies the desired motion, and closed-loop optimization
+learns how to execute it with physical regularization. PPO
+updates both actor and critic under this objective.
+Both references advance on a shared timeline and use the
+same anchor alignment. The reward therefore evaluates the
+replacement at the phase represented by the actor’s original
+input. Episodes initialize from m, so training includes reach-
+ing the replacement from the original motion state.
+D. Sampling Sparse Edit Intervals
+Adaptive motion sampling is established in general track-
+ing [16]. Here, failure-driven sampling need not emphasize
+intervals where following m remains physically feasible but
+produces the wrong content. We therefore mix the base start
+distribution Qbase with uniform sampling over an edit-start
+pool P. The pool contains frames where the selected joints
+differ between the two references and a preceding lead-in
+within the same clip. If its fraction of the motion timeline is
+ppool, the start distribution is
+Q = (1−ρ)Qbase +ρU (P),
+ρ = min(ρmax,κ ppool).
+(4)
+The factor κ increases exposure to sparse replacements,
+while the cap ρmax reserves training coverage for the rest
+3
+
+
+of the motion library. The lead-in exposes the policy to
+the transition from the original movement into the edited
+interval. With an empty edit pool, sampling reduces to Qbase.
+The base sampler combines failure-rate weighting with
+uniform coverage. Its feedback uses base-sampled episodes
+exclusively, keeping its estimate of tracking difficulty in-
+dependent of the extra edit-window starts. This separation
+controls exposure to the editing objective while preserving
+adaptation to difficult motions across the library.
+Algorithm 1 gives the pseudocode for RedirectMimic.
+Algorithm 1 RedirectMimic
+Require: Motions M , editor E, pretrained actor and critic (θ0,φ0),
+sampler Qbase, update/rollout lengths K,H
+Ensure: Edited policy πθ
+1: Initialize (θ,φ) ←(θ0,φ0)
+2: Pair targets
+f
+M ←{m 7→E(m) : m ∈M }
+3: Build edit-start pool P and set ρ (Eq. (4))
+4: for PPO update k = 1,...,K do
+5:
+Clear rollout buffer D ←∅
+6:
+for rollout step h = 1,...,H do
+7:
+if first step or previous episode ended then
+8:
+Mix starts Q ←ρU (P)+(1−ρ)Qbase
+9:
+Sample (m,t) ∼Q, retrieve em ←f
+M [m]
+10:
+st ←Init(mt)
+▷Start from the original motion
+11:
+end if
+12:
+Observe original ot ←Obs(st,mt)
+13:
+Act at ∼πθ(· | ot)
+14:
+Step simulator with at to obtain st+1 and done flag dt
+15:
+Compute rt by Eq. (3)
+▷Track emt
+16:
+Collect (ot,at,rt,st+1,dt) in D
+17:
+Advance reference frame t ←t +1
+18:
+end for
+19:
+Estimate advantages and returns (bA, bV) with GAE on D
+using critic Vφ
+20:
+Update (θ,φ) ←PPO(θ,φ,D, bA, bV)
+21: end for
+22: return πθ(· | Obs(s,m))
+IV. EXPERIMENTS
+In the experimental section, we aim to answer the follow-
+ing key research questions.
+Q1 (Editing effectiveness). Can the controller suppress a
+specified movement while staying upright and preserving the
+surrounding motion?
+Q2 (Motion retention). How closely does the fine-tuned
+controller track motions that require no edit?
+Q3 (Replacement fidelity). How closely does the edited
+limb follow the prescribed trajectory when different con-
+trollers suppress the same movement?
+Q4 (Training choices). How do edit-window sampling and
+initialization from a pretrained tracker affect learning the
+replacement?
+A. Experiment Setup
+We consider two arm-editing scenarios for the 29-joint
+Unitree G1 in mjlab. S1 replaces rapid outward extensions
+when wrist speed along the shoulder-to-wrist axis exceeds
+1.5m/s. S2 replaces overhead reaches when the wrist rises
+more than 0.2m above the shoulder. In both scenarios, the
+edited reference brings the selected arm to a neutral pose
+with the upper arm near the torso and the elbow bent. Both
+training sets draw from the same 7,509 clips in Retargeted
+AMASS for Robotics [31], [6]. S1 uses the full pool. S2
+retains 6,650 clips after excluding borderline wrist heights
+and edited references that still contain an overhead reach.
+We evaluate all 173 eligible S1 windows and 149 S2
+windows sampled across motion sources and screened for
+reference feasibility. Each window includes 16 randomized
+rollouts per controller with matched starting states before the
+edit.
+We
+measure
+content
+occurrence,
+replacement
+error,
+preserved-body error, and joint success. For each rollout,
+DC denotes the event that the selected arm exceeds the task
+threshold for a cumulative duration of at least 0.06s within
+core interval C. The content occurrence rate (Content) is the
+fraction of all rollouts in which DC occurs, including rollouts
+with falls in the evaluation pool. A fall FH occurs when
+pelvis height drops below 0.35m anywhere in horizon H.
+With preserved-body error ekeep
+C
+measured relative to m in
+the torso yaw frame, joint success is
+JC = 1[¬DC]·1[¬FH]·1[ekeep
+C
+≤0.10m].
+(5)
+Arm error to em measures replacement fidelity. Preserved-
+body errors within and outside the edit assess local retention.
+B. Baselines
+Table I compares the editing mechanisms and deployment
+inputs of all evaluated methods.
+TABLE I
+EDITING MECHANISMS AND DEPLOYMENT INPUTS.
+Method
+Local
+edit
+Explicit
+target
+Policy
+edit
+Original
+input
+Pretrained
+✗
+✗
+✗
+✓
+Vanilla-FT
+✗
+✗
+✗
+✓
+ForgetMimic‡
+✗
+✗
+✓
+✓
+AntiTrack
+✓
+✗
+✓
+✓
+ZeroTrack
+✓
+✗
+✓
+✓
+RedirectMimic
+✓
+✓
+✓
+✓
+RefEdit†
+✓
+✓
+✗
+✗
+Local edit: a body- and time-specific intervention. Explicit target: a specified
+replacement trajectory. Policy edit: the editing objective is learned in policy
+weights. Original input: deployment uses m.
+Pretrained and Vanilla-FT. Pretrained evaluates the orig-
+inal tracker π0. Vanilla-FT continues training on the original
+tracking objective to control for additional optimization. We
+evaluate the same S1-trained Vanilla-FT policy on both tasks.
+ForgetMimic‡. We adapt ForgetMimic’s clip-level anti-
+reward objective [7] to the shared tracker and training proto-
+col. Every frame of a clip containing edited content receives
+an added −λ ¯rt, where ¯rt is the weight-normalized tracking
+reward toward m. Setting λ to the total tracking weight
+cancels tracking reward on these clips. Other clips keep the
+original objective, and em is not used. This reimplementation
+4
+
+
+uses the shared sampler, regularizers, and termination set-
+tings below. The original method uses uniform motion/frame
+sampling and an additional survival bonus.
+ZeroTrack and AntiTrack. These local reward controls
+isolate reward suppression from explicit replacement. Both
+operate on four body-level tracking terms. For a term with
+squared error et,b, scale σ, and N = 14 tracked bodies,
+the original reward is exp[−∑b et,b/(Nσ2)]. Let At contain
+tracked descendants of the edited arm joints. Inside the edit
+support, ZeroTrack uses
+rzero
+t
+= exp
+
+−∑b/∈At et,b
+Nσ2
+
+.
+(6)
+The original denominator N is retained, so “zeroing” removes
+selected error contributions from the coupled exponential
+reward. AntiTrack adds
+ranti
+t
+= rzero
+t
+−exp
+
+−∑b∈At et,b
+|At|σ2
+
+.
+(7)
+Both use m for these errors and equal the original tracking
+terms outside the edit support. Anchor rewards and physical
+regularizers remain unchanged. AntiTrack uses unit anti-
+reward weight.
+RefEdit† (oracle). This reference supplies em directly to π0
+after initialization from the common original-reference state.
+It assesses target feasibility with deployment-time access to
+the edited reference, under a different input condition from
+Eq. (1).
+ForgetMimic‡, AntiTrack, ZeroTrack, and RedirectMimic
+share the pretrained checkpoint, task-specific data, architec-
+ture, start distribution, and 15,000-iteration update budget.
+Observation normalizers update across all fine-tuned meth-
+ods.
+C. Local Editing Performance
+To answer Q1, we compare content occurrence and joint
+success across controllers. As shown in Table II, Redirect-
+Mimic achieved the lowest overhead-content occurrence and
+the highest joint success among the matched local methods.
+ZeroTrack removes the selected arm’s tracking objective,
+leaving other reward terms to favor motion close to the
+original reference. AntiTrack rewards departure from that
+reference. Tracking em additionally directs the arm toward
+the chosen replacement.
+The stretching example in Fig. 3(a) makes this distinction
+visible. The local reward controls retain upward or lateral
+arm responses, while RedirectMimic lowers the edited arm
+toward the replacement during the core. In the cup-drinking
+example in Fig. 3(b), ZeroTrack satisfies the content thresh-
+old with the hand near its original pose. RedirectMimic
+brings the hand closer to the lowered target. The entry and
+post-edit frames show the surrounding transitions.
+The lower aggregate replacement error confirms closer
+agreement with the intended alternative. The S2 joint-success
+advantage persists despite a higher fall rate than AntiTrack
+and remains under unfiltered evaluation.
+Under
+the
+shared-protocol
+adaptation,
+ForgetMimic‡
+yielded near-zero joint success, with falls dominating both
+TABLE II
+LOCAL REPLACEMENT PERFORMANCE. ROLLOUT-MEAN RATES AND
+TARGET ERRORS (M).
+Method
+JC ↑Content ↓Error ↓Fall ↓
+S2: overhead-arm replacement
+Pretrained
+0.245
+0.737
+0.238
+0.014
+Vanilla-FT
+0.218
+0.774
+0.237
+0.011
+ForgetMimic‡
+< 0.001
+0.258
+0.412
+1.000
+AntiTrack
+0.650
+0.328
+0.171
+0.009
+ZeroTrack
+0.408
+0.589
+0.224
+0.011
+RedirectMimic
+0.942
+0.027
+0.079
+0.022
+RefEdit†
+0.972
+0.003
+0.046
+0.013
+S1: speed-defined replacement
+Pretrained
+0.725
+0.105
+0.177
+0.089
+Vanilla-FT
+0.745
+0.120
+0.177
+0.079
+ForgetMimic‡
+0.000
+0.031
+0.416
+1.000
+AntiTrack
+0.857
+0.023
+0.174
+0.061
+ZeroTrack
+0.897
+0.020
+0.158
+0.049
+RedirectMimic
+0.874
+0.023
+0.143
+0.064
+RefEdit†
+0.803
+0.000
+0.079
+0.103
+†Oracle receives em. ‡ForgetMimic objective adapted to the shared proto-
+col [7].
+tasks. Although its S2 content occurrence was lower than
+that of either local reward control, it rarely stayed upright
+through the edit. Joint success counts suppression only when
+the robot also stays upright and tracks the unedited body
+parts within tolerance.
+S1 separates replacement fidelity from threshold suppres-
+sion. The local methods suppressed fast outward movement
+similarly, with ZeroTrack attaining the highest joint-success
+point estimate. ZeroTrack’s arm trajectory remained close
+to the original reference, while RedirectMimic more closely
+followed em. Slowing a movement can satisfy the speed rule
+along the original spatial path. Explicit targets therefore
+improve the requested replacement even when binary sup-
+pression is similar.
+The RefEdit† reference closely tracked em and nearly
+eliminated content in both tasks, supporting the feasibility
+of the replacement targets. RedirectMimic approached its
+overhead-arm joint performance while observing the original
+reference. In S1, accurate oracle arm tracking coexisted
+with more falls, showing why target fidelity and physical
+execution must be assessed together.
+D. Normal-Motion Retention
+To answer Q2, we evaluate each controller on 200
+unedited clips per task. Table III shows that RedirectMimic
+tracked these motions with errors and fall rates close to those
+of the pretrained tracker. These clips retain their original
+tracking targets during fine-tuning.
+Vanilla-FT improved aspects of normal tracking while
+continuing to reproduce the selected content. The matched
+local comparisons isolate the benefit of the replacement
+objective under a common optimization budget. The adapted
+whole-motion baseline increased normal-motion falls, par-
+ticularly in S2, while the local objectives retained tracking
+close to pretrained behavior.
+5
+
+
+Pretrained
+Core entry
+Mid core
+After edit
+Core entry
+Mid core
+After edit
+ForgetMimic
+(adapted)
+AntiTrack
+ZeroTrack
+RedirectMimic
+RefEdit
+(oracle)
+(a) Stretching
+(b) Cup drinking
+Fig. 3.
+Stretching (a) and cup drinking (b) at core entry, mid-core, and after the edit. The blue arm shows the original reference m and the orange arm
+shows the edited target em.
+TABLE III
+NORMAL-MOTION RETENTION. ERROR IS RETAINED-BODY DISTANCE
+TO m (M).
+S1
+S2
+Method
+Fall ↓
+Error ↓
+Fall ↓
+Error ↓
+Pretrained
+0.098
+0.070
+0.095
+0.070
+Vanilla-FT
+0.090
+0.067
+0.098
+0.070
+ForgetMimic‡
+0.131
+0.078
+0.366
+0.151
+AntiTrack
+0.090
+0.067
+0.103
+0.073
+ZeroTrack
+0.093
+0.068
+0.093
+0.067
+RedirectMimic
+0.093
+0.067
+0.098
+0.070
+E. Trajectory Redirection
+To answer Q3, we compare the distance to the target with
+the fraction of the intended displacement achieved along the
+edit direction. For executed elbow and wrist positions x, this
+fraction is
+α = ∑t,b⟨xt,b −mt,b, emt,b −mt,b⟩
+∑t,b ∥emt,b −mt,b∥2
+.
+(8)
+Positions use the torso yaw frame, and sums pool each
+phase across nonfallen rollouts. The value α = 1 denotes the
+intended displacement along the edit direction. All values
+in Table IV are below one, so larger values indicate closer
+agreement along this direction. Target distance also captures
+error perpendicular to the edit direction.
+Figure 4 pairs content suppression with replacement fi-
+6
+
+
+−1 s
+Start
+Mid
+End
++1 s
+Time around the edit core
+0.0
+0.2
+0.4
+0.6
+Content probability
+(a) S2: content suppression
+Entry
+Core
+Exit
+Edit phase
+0.0
+0.1
+0.2
+0.3
+0.4
+Target distance (m) ↓
+(b) S2: replacement fidelity
+−1 s
+Start
+Mid
+End
++1 s
+Time around the edit core
+0.00
+0.05
+0.10
+0.15
+0.20
+0.25
+Content probability
+(c) S1: content suppression
+Entry
+Core
+Exit
+Edit phase
+0.0
+0.1
+0.2
+0.3
+0.4
+Target distance (m) ↓
+(d) S1: replacement fidelity
+Pretrained
+AntiTrack
+ZeroTrack
+RedirectMimic
+RefEdit (oracle)
+Fig. 4.
+Content suppression and replacement fidelity. The top and bottom rows show S2 and S1, respectively. The left panels show per-frame content
+probability with phase-normalized core time and clip-bootstrap intervals. The right panels show mean elbow–wrist distance to em during entry, core, and
+exit. All panels use nonfallen rollouts. ForgetMimic‡ is omitted because none remain in S1 and one remains in S2. S2 uses 149 windows in both columns.
+S1 uses 164 feasibility-filtered windows for the curves and all 173 primary windows for target distance.
+delity. In S2, RedirectMimic keeps content probability low
+through the core and has the lowest target distance among
+the matched local methods in each edit phase. The largest
+separation occurs in the core, where the intended replacement
+differs most from the original movement. Table IV confirms
+that the executed displacement follows the edit direction.
+ZeroTrack shows little directed redirection, while AntiTrack
+departs from the original motion with a larger target error.
+TABLE IV
+CORE REDIRECTION ON NONFALLEN ROLLOUTS. ERROR IS
+ELBOW–WRIST DISTANCE TO em (M). FOR FORGETMIMIC‡, – INDICATES
+NO NONFALLEN ROLLOUTS IN S1 AND ONE IN S2.
+S1
+S2
+Method
+α ↑
+Error ↓
+α ↑
+Error ↓
+Pretrained
+0.12
+0.283
+0.05
+0.389
+ForgetMimic‡
+–
+–
+–
+–
+AntiTrack
+0.64
+0.280
+0.71
+0.273
+ZeroTrack
+0.20
+0.255
+0.12
+0.370
+RedirectMimic
+0.35
+0.218
+0.84
+0.110
+RefEdit†
+0.92
+0.080
+0.97
+0.056
+S1 makes the complementary point. The local methods
+have similarly low content probability, while RedirectMimic
+stays closer to the edited trajectory through the core and
+exit transition. Table IV shows that AntiTrack moves farther
+along the edit direction in S1 yet has a larger mean target
+distance over the core than RedirectMimic. Jointly assessing
+suppression and target distance identifies whether a controller
+executes the requested alternative.
+F. Ablation Studies
+To answer Q4, we first isolate the effect of edit-window
+sampling on one LAFAN1 arm-mirroring motion. Without
+targeted sampling, both scratch training and fine-tuning re-
+tained the original content. Adding edit-pool starts enabled
+both to learn the replacement. Repeated exposure to the
+edited interval was therefore necessary in this single-pair
+experiment.
+The S1 initialization comparison tests reuse of an existing
+tracker. Both scratch training and fine-tuning learned local
+replacements, with fine-tuning yielding closer target agree-
+ment and similar joint success relative to clip-level uncer-
+tainty. This supports fine-tuning as a route for modifying
+an available repertoire. The comparison treats the pretrained
+tracker as an existing resource, so total training costs differ.
+V. DISCUSSION
+An explicit replacement target guides the arm even
+when several trajectories satisfy the same content rule.
+On the speed-defined task, slowing the wrist along its original
+path can satisfy the rule. The local methods achieved similar
+7
+
+
+suppression rates, but RedirectMimic tracked the prescribed
+trajectory more closely. On the overhead-arm task, this gain
+in accuracy coincided with higher joint success.
+Local editing also requires the robot to maintain bal-
+ance and preserve the surrounding movement. Under the
+shared training protocol, the adapted ForgetMimic objective
+reduced content occurrence on edited clips, yet the robot
+often fell before the edit began. In RedirectMimic, the paired
+references preserve tracking targets for unaffected body parts.
+On unedited clips, tracking accuracy remained close to that
+of the pretrained controller.
+The original reference interface allows the policy to
+execute a learned replacement, but its timing matters
+for streaming control. The offline editor uses the full
+clip to place transitions, while the actor must initiate them
+from current-frame inputs. The results on known clips in
+simulation motivate measuring transition timing over a full
+streaming rollout, including whether the selected movement
+occurs before or after the intended edit interval.
+VI. CONCLUSION
+We present RedirectMimic, an approach to local humanoid
+motion redaction that combines paired-reference fine-tuning
+with edit-window sampling. Training against an edited refer-
+ence while observing the original motion lets the policy learn
+selected replacements through its existing control interface.
+G1 simulations demonstrate pose- and speed-defined arm
+editing. On unedited clips, tracking errors and fall rates
+remained close to those of the pretrained tracker. Among
+the matched local editing methods, RedirectMimic achieved
+the highest joint success on the overhead-arm task and the
+lowest replacement error on both tasks. Trajectory analy-
+sis distinguishes suppression of the specified content from
+faithful execution of the replacement, supporting the use
+of explicit targets. Future work will extend evaluation to
+streaming references and physical humanoids, with emphasis
+on transition timing and whole-body stability.
+REFERENCES
+[1] T. He, Z. Luo, X. He, W. Xiao, C. Zhang, W. Zhang, K. M. Kitani,
+C. Liu, and G. Shi, “OmniH2O: Universal and dexterous human-to-
+humanoid whole-body teleoperation and learning,” in Proceedings of
+the 8th Conference on Robot Learning, ser. Proceedings of Machine
+Learning Research, vol. 270. PMLR, 2025, pp. 1516–1540. [Online].
+Available: https://proceedings.mlr.press/v270/he25b.html
+[2] Y. Ze, S. Zhao, W. Wang, A. Kanazawa, R. Duan, P. Abbeel,
+G. Shi, J. Wu, and C. K. Liu, “TWIST2: Scalable, portable, and
+holistic humanoid data collection system,” in 2026 IEEE International
+Conference on Robotics and Automation (ICRA), 2026, pp. 15 900–
+15 907. [Online]. Available: https://doi.org/10.1109/ICRA57385.2026.
+11696896
+[3] X.
+B.
+Peng,
+P.
+Abbeel,
+S.
+Levine,
+and
+M.
+van
+de
+Panne,
+“DeepMimic:
+Example-guided
+deep
+reinforcement
+learning
+of
+physics-based character skills,” ACM Transactions on Graphics,
+vol.
+37,
+no.
+4,
+pp.
+143:1–143:14,
+2018.
+[Online].
+Available:
+https://doi.org/10.1145/3197517.3201311
+[4] Q. Liao, T. E. Truong, X. Huang, Y. Gao, G. Tevet, K. Sreenath,
+and C. K. Liu, “BeyondMimic: From motion tracking to versatile
+humanoid control via guided diffusion,” Science Robotics, vol. 11,
+no.
+117,
+2026,
+art.
+no.
+eadx8924.
+[Online].
+Available:
+https:
+//doi.org/10.1126/scirobotics.adx8924
+[5] Z. Wang, J. Wang, S. Yao, Y. Zhang, Z. Ding, M. Yang, Y. Wang,
+H. Jiang, C. Ma, X. Shi, and Z. Lu, “General humanoid whole-body
+control via pretraining and fast adaptation,” in Conference on Robot
+Learning (CoRL), 2026, accepted for publication. [Online]. Available:
+https://openreview.net/forum?id=HWaigsXLaH
+[6] N. Mahmood, N. Ghorbani, N. F. Troje, G. Pons-Moll, and
+M. J. Black, “AMASS: Archive of motion capture as surface
+shapes,” in Proceedings of the IEEE/CVF International Conference
+on Computer Vision, 2019, pp. 5441–5450. [Online]. Available:
+https://doi.org/10.1109/ICCV.2019.00554
+[7] X. Luan, Z. Lei, C. Gong, S. Li, Y. Bi, and J. Liu, “ForgetMimic:
+Motion unlearning for reinforcement learning humanoid control,”
+arXiv:2609.28378, 2026. [Online]. Available: https://arxiv.org/abs/
+2609.28378
+[8] E. De Matteis, M. Migliarini, A. Sampieri, I. Spinelli, and F. Galasso,
+“Human motion unlearning,” in Proceedings of the AAAI Conference
+on Artificial Intelligence, vol. 40, no. 5, 2026, pp. 3533–3541.
+[Online]. Available: https://ojs.aaai.org/index.php/AAAI/article/view/
+37351
+[9] Y. Wang, Z. Zhang, Y. Wang, and H. Tang, “SafeMo: Linguistically
+grounded unlearning for trustworthy text-to-motion
+generation,”
+in Findings of the Association for Computational Linguistics:
+EMNLP 2026.
+Association for Computational Linguistics, 2026,
+pp. 2562–2585. [Online]. Available: https://aclanthology.org/2026.
+findings-emnlp.126/
+[10] H. Wang, J. Lei, D. Li, B. Liu, M. Zheng, M. Li, R. Zhang, and
+Z. Fan, “Behavior uncloning: Distilling mode redirection into policy
+weights without inference-time steering,” in Conference on Robot
+Learning (CoRL), 2026, accepted for publication. [Online]. Available:
+https://openreview.net/forum?id=Tjg1ZvCdXU
+[11] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov,
+“Proximal policy optimization algorithms,” arXiv:1707.06347, 2017.
+[Online]. Available: https://arxiv.org/abs/1707.06347
+[12] X. B. Peng, Z. Ma, P. Abbeel, S. Levine, and A. Kanazawa,
+“AMP: Adversarial motion priors for stylized physics-based character
+control,” ACM Transactions on Graphics, vol. 40, no. 4, pp. 144:1–
+144:20, 2021. [Online]. Available: https://doi.org/10.1145/3450626.
+3459670
+[13] Z. Luo, J. Cao, A. Winkler, K. Kitani, and W. Xu, “Perpetual
+humanoid control for real-time simulated avatars,” in Proceedings
+of the IEEE/CVF International Conference on Computer Vision,
+2023, pp. 10 861–10 870. [Online]. Available: https://doi.org/10.1109/
+ICCV51070.2023.01000
+[14] X. Cheng, Y. Ji, J. Chen, R. Yang, G. Yang, and X. Wang,
+“Expressive whole-body control for humanoid robots,” in Proceedings
+of
+Robotics:
+Science
+and
+Systems,
+2024.
+[Online].
+Available:
+https://www.roboticsproceedings.org/rss20/p107.html
+[15] M.
+Ji,
+X.
+Peng,
+F.
+Liu,
+J.
+Li,
+G.
+Yang,
+X.
+Cheng,
+and
+X. Wang, “ExBody2: Advanced expressive humanoid whole-body
+control,”
+in
+2026
+IEEE
+International
+Conference
+on
+Robotics
+and Automation (ICRA), 2026, pp. 613–620. [Online]. Available:
+https://doi.org/10.1109/ICRA57385.2026.11696204
+[16] Z. Chen, M. Ji, X. Cheng, X. Peng, X. B. Peng, and X. Wang,
+“GMT: General motion tracking for humanoid whole-body control,”
+in IEEE/RSJ International Conference on Intelligent Robots and
+Systems (IROS), 2026, accepted for publication. [Online]. Available:
+https://arxiv.org/abs/2506.14770
+[17] Z. Luo, Y. Yuan, T. Wang, C. Li, F. Castañeda, S. Chen, Z.-A. Cao,
+J. Li, D. Minor, Q. Ben, J. Park, D. Sami, Z. Wang, X. Da, R. Ding,
+C. Hogg, L. Song, E. Lim, E. Jeong, T. He, H. Xue, W. Xiao, S. Yuen,
+J. Kautz, Y. Chang, U. Iqbal, L. J. Fan, and Y. Zhu, “SONIC:
+Supersizing
+motion
+tracking
+for
+natural
+humanoid
+whole-body
+control,” Science Robotics, vol. 11, no. 117, 2026, art. no. eaed4592.
+[Online]. Available: https://doi.org/10.1126/scirobotics.aed4592
+[18] T. He, W. Xiao, T. Lin, Z. Luo, Z. Xu, Z. Jiang, J. Kautz,
+C. Liu, G. Shi, X. Wang, L. J. Fan, and Y. Zhu, “HOVER:
+Versatile neural whole-body controller for humanoid robots,” in 2025
+IEEE International Conference on Robotics and Automation (ICRA),
+2025, pp. 9989–9996. [Online]. Available: https://doi.org/10.1109/
+ICRA55743.2025.11128549
+[19] Y. Ze, Z. Chen, J. P. Araújo, Z.-a. Cao, X. B. Peng, J. Wu, and
+C. K. Liu, “TWIST: Teleoperated whole-body imitation system,”
+in Proceedings of the 9th Conference on Robot Learning, ser.
+Proceedings of Machine Learning Research, vol. 305.
+PMLR,
+8
+
+
+2025, pp. 2143–2154. [Online]. Available: https://proceedings.mlr.
+press/v305/ze25a.html
+[20] F. Amadio and E. Mingo Hoffman, “What matters in humanoid
+general motion tracking? An empirical study,” arXiv:2607.19903,
+2026. [Online]. Available: https://arxiv.org/abs/2607.19903
+[21] K.
+Zakka,
+Q.
+Liao,
+B.
+Yi,
+L.
+Le
+Lay,
+K.
+Sreenath,
+and
+P. Abbeel, “mjlab: A lightweight framework for GPU-accelerated
+robot learning,” arXiv:2601.22074, 2026. [Online]. Available: https:
+//arxiv.org/abs/2601.22074
+[22] T. He, J. Gao, W. Xiao, Y. Zhang, Z. Wang, J. Wang, Z. Luo, G. He,
+N. Sobanbabu, C. Pan, Z. Yi, G. Qu, K. Kitani, J. K. Hodgins,
+L. Fan, Y. Zhu, C. Liu, and G. Shi, “ASAP: Aligning simulation and
+real-world physics for learning agile humanoid whole-body skills,”
+in Proceedings of Robotics: Science and Systems, 2025. [Online].
+Available: https://roboticsproceedings.org/rss21/p066.html
+[23] J. Li, X. Cheng, T. Huang, S. Yang, R.-Z. Qiu, and X. Wang,
+“AMO: Adaptive motion optimization for hyper-dexterous humanoid
+whole-body control,” in Proceedings of Robotics: Science and
+Systems, 2025. [Online]. Available: https://www.roboticsproceedings.
+org/rss21/p061.html
+[24] Y. Li, P. Zhi, Y. Wang, T. Liu, S. Yan, W. Liu, X. Wang, B. Jia,
+and S. Huang, “OmniTrack: General motion tracking via physics-
+consistent reference,” arXiv:2602.23832, 2026. [Online]. Available:
+https://arxiv.org/abs/2602.23832
+[25] H. Li, P. Li, Y. Tao, Z. Wang, F. Xu, J. Chen, Y. Yuan, D. Jia,
+Y. Jin, M. Fan, G. Sartoretti, and H. Wang, “PGMT: Perceptive
+general motion tracking for humanoid robots,” arXiv:2609.08511,
+2026. [Online]. Available: https://arxiv.org/abs/2609.08511
+[26] C.
+Guo,
+Y.
+Mu,
+M.
+G.
+Javed,
+S.
+Wang,
+and
+L.
+Cheng,
+“MoMask: Generative masked modeling of 3D human motions,”
+in Proceedings of the IEEE/CVF Conference on Computer Vision
+and Pattern Recognition, 2024, pp. 1900–1910. [Online]. Available:
+https://doi.org/10.1109/CVPR52733.2024.00186
+[27] S. Cohan, G. Tevet, D. Reda, X. B. Peng, and M. van de Panne,
+“Flexible motion in-betweening with diffusion models,” in ACM
+SIGGRAPH 2024 Conference Papers, 2024, pp. 1–9. [Online].
+Available: https://doi.org/10.1145/3641519.3657414
+[28] K. Zhao, G. Li, and S. Tang, “DartControl: A diffusion-based
+autoregressive motion model for real-time text-driven motion control,”
+in International Conference on Learning Representations, 2025.
+[Online]. Available: https://proceedings.iclr.cc/paper_files/paper/2025/
+hash/3b057de5a2e38bd8fa10201866c20dbf-Abstract-Conference.html
+[29] C. Tessler, Y. Guo, O. Nabati, G. Chechik, and X. B. Peng,
+“MaskedMimic: Unified physics-based character control through
+masked
+motion
+inpainting,”
+ACM
+Transactions
+on
+Graphics,
+vol.
+43,
+no.
+6,
+pp.
+209:1–209:21,
+2024.
+[Online].
+Available:
+https://doi.org/10.1145/3687951
+[30] G. Tevet, S. Raab, S. Cohan, D. Reda, Z. Luo, X. B. Peng,
+A. H. Bermano, and M. van de Panne, “CLoSD: Closing the loop
+between simulation and diffusion for multi-task character control,”
+in International Conference on Learning Representations, 2025.
+[Online]. Available: https://proceedings.iclr.cc/paper_files/paper/2025/
+hash/7319b7561ffe5e2f6419acd4a2f52d6b-Abstract-Conference.html
+[31] K.
+Zhao,
+“Retargeted
+AMASS
+for
+robotics,”
+Hugging
+Face
+dataset,
+accessed:
+Oct.
+26,
+2026.
+[Online].
+Available:
+https:
+//huggingface.co/datasets/fleaven/Retargeted_AMASS_for_robotics
+9

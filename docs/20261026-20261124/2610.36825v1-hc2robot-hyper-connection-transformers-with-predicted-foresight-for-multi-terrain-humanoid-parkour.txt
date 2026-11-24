@@ -1,0 +1,371 @@
+# HC2Robot: Hyper-Connection Transformers with Predicted Foresight for Multi-Terrain Humanoid Parkour
+
+Wenhao Xu<sup>∗</sup>, Yanheng Mai<sup>∗</sup>, Yifei Fu<sup>∗</sup>, Nan Zheng, Yanbo Zhou, Zirui Huang, Mingsheng Ling, Xinjue Wang, and Renjing Xu<sup>†</sup>
+
+Abstract—Humanoid parkour requires robots to reason about future footholds and whole-body motions over highly discontinuous terrain. We revisit the information asymmetry in asymmetric actor-critic learning for perceptive humanoid locomotion: the critic exploits privileged simulator signals during training, whereas the deployable actor operates solely from onboard perception. We argue that the key is not exposing privileged information to the actor, but learning a deployable approximation of it to narrow the information gap between training and deployment. We present HC2Robot, a deployable perceptive humanoid parkour framework consisting of a Predicted Foresight Module (PFM) and a Hyper-Connection (HC) Transformer. PFM predicts from deployable observations the policy-conditioned timing, location, and support quality of each foot’s next touchdown event, converting privileged supervision into a deployable latent representation that provides the actor with predicted touchdown information without privileged runtime sensing. The HC Transformer further enhances temporal reasoning through learnable multi-stream routing, while a future motion prediction head provides short-horizon motion priors for regularization. Across stairs, gaps, high platforms, and slopes, HC2Robot achieves a mean simulated traversal success rate of 97.60% and consistently higher safe foothold rates than strong perceptive locomotion baselines, supporting improved traversal performance and geometric foothold support under deployable sensing.
+
+Index Terms—Perceptive locomotion, predicted foresight, hyper-connection, humanoid parkour.
+
+## I. INTRODUCTION
+
+H <sup>UMANOID</sup> <sup>parkour</sup> <sup>demands</sup> <sup>traversal</sup> <sup>of</sup> <sup>stairs,</sup> <sup>gaps,</sup> platforms, and slopes while maintaining dynamically feasible whole-body motion [1], [2]. Success requires the controller to coordinate perception, contact timing, and body motion well before each foothold is realized. While massively parallel reinforcement learning has enabled robust locomotion [3], [4], proprioception-only policies lack foresight of upcoming terrain discontinuities [5], [6]. Depth-conditioned perception extends this horizon with geometric priors [7], [8], enabling scalable perceptive parkour over challenging terrain [2], [9].
+
+Two challenges remain for deployable perceptive parkour. First, temporal representations must effectively integrate proprioceptive and depth-conditioned information. Conventional residual Transformers use a single residual stream [10], [11]; multi-stream routing offers additional paths for cross-layer feature mixing, complementing recent advances in cross-modal fusion, mixture-of-experts, and reference-gait priors [12]–[14]. Second, simulator-derived contact and support signals enhance learning but are unavailable at deployment [5], [15], [16]. We train an auxiliary estimator with simulator-derived labels to make task-relevant predictions available to the actor.
+
+HC2Robot addresses these challenges through two complementary mechanisms. A Hyper-Connection (HC) Transformer [17] replaces the conventional single residual pathway with learnable multi-stream aggregation and mixing, enabling richer cross-layer information exchange while evaluating each attention and feed-forward sublayer only once. A Predicted Foresight Module (PFM), trained with asymmetric actor–critic learning [15], [18], forecasts each foot’s next touchdown event—its time-to-contact, touchdown location, and support quality—from deployable actor features and fuses the forecast into the policy. Additionally, an auxiliary motion predictor adopted from ParkourFormer [19] provides two-step future AMP states for motion regularization [20]. All prediction pathways remain deployment-compatible, using simulator information solely as training supervision.
+
+We evaluate HC2Robot on stairs, gaps, high platforms, and slopes; the results demonstrate that combining HC feature reuse with PFM foothold foresight consistently improves traversal success and safe foothold rate over strong baselines. Fig. 1 summarizes the framework.
+
+Our contributions are as follows:
+
+• A Hyper-Connection Transformer that replaces standard residual connections with learnable multi-stream aggregation and mixing, enabling richer temporal feature reuse while evaluating each attention and feed-forward sublayer only once.
+
+• A Predicted Foresight Module (PFM) that forecasts the timing, location, and support quality of each foot’s next touchdown event through a continuous time-to-event formulation, providing supervised foothold foresight without a fixed prediction offset or privileged signals in the deployment interface.
+
+• Simulation results across four challenging terrain classes demonstrating that HC2Robot consistently improves traversal success and safe foothold rate over strong perceptive parkour baselines.
+
+![](images/fe975cd7fc4b1be7062c61037bba1b758499cf585e817780900e0e49ec27bce5.jpg)  
+Fig. 1. HC2Robot overview. Simulator foothold descriptors supervise PFM during training; deployment uses predictions from proprioception and depth, fused at the policy head. Lower panels show simulated traversal comparisons and physical deployment.
+
+## II. RELATED WORK
+
+## A. Perceptive Locomotion and Humanoid Parkour
+
+Massively parallel reinforcement learning supports robust blind locomotion [3], [4], while depth- and vision-conditioned policies extend it to terrain that proprioception alone cannot resolve [5]–[7]. Perceptive parkour has since been demonstrated on quadrupeds [8], [21], [22] and humanoids [1], with deployable sequence control and multimodal terrain fusion becoming common design choices [2], [9], [12]–[14], [23]– [25]. HC2Robot adopts this deployable-perception setting but focuses on using a predicted, task-relevant foothold event to narrow the training–deployment information gap; its HC backbone and PFM complement these locomotion and parkour systems.
+
+## B. Privileged-State Methods and Learning Paradigms
+
+Asymmetric actor–critic learning separates privileged critic inputs from the deployable policy [15], [18]. Lee et al. [5] and RMA [16] use deployable observations to support terrain adaptation or latent dynamics estimation, while concurrent estimator–controller training learns hidden robot quantities jointly [26]; teacher–student and latent-scaffold methods transfer privileged actions or representations [27]–[30]. These approaches estimate current state/dynamics or imitate a privileged policy, whereas privileged-state rewards only shape optimization and do not expose a deployable representation. PFM instead uses simulator descriptors solely as training labels: from proprioception and depth, it predicts the next policyconditioned touchdown time, position, support attributes, and uncertainty, then fuses that event forecast without privileged actor inputs or teacher actions.
+
+## C. Foothold Reasoning, Predictive Supervision, and Motion Priors
+
+Terrain-aware perception, terrain imagination, and internal predictive models improve representations of terrain or hidden dynamics [6], [31], [32]; their targets are not the next contact event. TAGA [33] predicts a task-relevant terrain region with active gaze, while PFM predicts the next touchdown time, location, support attributes, and uncertainty. ParkourFormer [19] combines predictive supervision with humanoid sequence modeling, whereas PFM uses foothold-specific labels and a censoring-aware event objective. AMP supplies a motiondistribution prior [20]; HC2Robot keeps touchdown-event supervision distinct from motion regularization. Fig. 2 shows the architecture.
+
+## III. METHOD
+
+HC2Robot combines a Hyper-Connection (HC) Transformer with a Predicted Foresight Module (PFM) under asymmetric actor–critic training [15]: the HC backbone improves temporal feature reuse, while PFM forecasts each foot’s next touchdown event from deployable observations.
+
+## A. Asymmetric Observation and Foothold Supervision
+
+We model humanoid parkour as a partially observable control problem. At step t, the actor receives an onboard depth image $\mathcal { T } _ { t }$ and a proprioceptive observation
+
+$$
+o _ {t} = [ \omega_ {t}, g _ {t}, c _ {t}, q _ {t}, \dot {q} _ {t}, a _ {t - 1} ],\tag{1}
+$$
+
+where $\boldsymbol { \omega } _ { t } \in \mathbb { R } ^ { 3 }$ is the angular velocity in the base coordinate system, $g _ { t } \in \mathbb { R } ^ { 3 }$ is the projected gravity direction in the base coordinate system, $c _ { t } \in \mathbb { R } ^ { 3 }$ is the velocity command, $( q _ { t } , \dot { q } _ { t } ) \in$ $\mathbb { R } ^ { n _ { j } \times 2 }$ are the joint positions and velocities of the humanoid robot with $n _ { j }$ degrees of freedom, and $a _ { t - 1 } ~ \in ~ \mathbb { R } ^ { n _ { j } }$ is the previous action.
+
+Since contact transitions occur over multiple time steps, the policy retains a history of length L, $H _ { t } = \left( o _ { t - L + 1 } , \ldots , o _ { t } \right)$ The depth encoder $E _ { d }$ compresses the recent depth-image history into a context token $\boldsymbol { z } _ { t } ^ { d } = E _ { d } ( \mathcal { T } _ { t - L + 1 } , \ldots , \mathcal { T } _ { t } ) \in \mathbb { R } ^ { D _ { z } }$ where $D _ { z }$ is the dimension of the token. The actor encoder $E _ { a }$ then combines $H _ { t }$ with $z _ { t } ^ { d }$ to produce the deployable feature
+
+$$
+x _ {t} = E _ {a} (H _ {t}, z _ {t} ^ {d}).\tag{2}
+$$
+
+![](images/593777bb3f53893a37c7efff7b9f5b9bfdb612686b7db8164e8076d06a313cc1.jpg)  
+Fig. 2. HC2Robot architecture. (a) Observation encoding from depth and proprioceptive histories. (b) Predicted Foresight Module (PFM), forecasting eac foot’s next touchdown timing, location, and support quality. (c) Hyper-Connection (HC) Transformer actor with multi-stream temporal routing and late fusion of predicted foresight for action generation.
+
+The depth encoder architecture follows prior work [19]; its parameters are trained end-to-end with the policy.
+
+During training, the critic receives privileged simulator variables that are unavailable at deployment: base linear velocity $v _ { t } \in \mathbb { R } ^ { 3 }$ , center-of-mass position $m _ { t } \in \mathbb { R } ^ { 3 }$ , and a two-foot support descriptor $p _ { t } \in \mathbb { R } ^ { 1 4 }$ . For each foot $f \in \{ L , R \}$ , the descriptor is defined as
+
+$$
+p _ {t, f} = \left[ b _ {t, f}, \Delta x _ {t, f} ^ {b}, \Delta y _ {t, f} ^ {b}, r _ {t, f}, \eta_ {t, f}, \rho_ {t, f}, \phi_ {t, f} \right] \in \mathbb {R} ^ {7},\tag{3}
+$$
+
+where $b _ { t , f } \in \{ 0 , 1 \}$ indicates whether the resultant contact force exceeds a threshold; $( \Delta x _ { t , f } ^ { b } , \Delta y _ { t , f } ^ { b } )$ are the mean coordinates of nearby ray-hit points expressed in the base frame; $r _ { t , f }$ is the support ratio—the fraction of rays terminating on terrain within the foot sole grid; $\eta _ { t , f }$ is the terrain risk score measuring local height variance; $\rho _ { t , f }$ is the load-weighted support; and $\phi _ { t , f }$ is the normalized normal-force proxy. Concatenating both feet gives $p _ { t } = [ p _ { t , L } ; p _ { t , R } ]$ , which serves two roles in training: it provides conditioning for the value function, and its temporal trajectory supplies the raw signal from which touchdown-event supervision is constructed for the Predicted Foresight Module (PFM)—contact transitions define the event times, and the descriptor values recorded at those instants define the event attributes (Sec. III-C). The actor never directly observes $( v _ { t } , m _ { t } , p _ { t } )$ ; its only exteroceptive input is the depth token $z _ { t } ^ { d } .$ . Table I compares the interfaces.
+
+## B. HC-Transformer Backbone
+
+The temporal backbone builds on a cross-attention architecture over the deployable history, replacing standard residual connections with Hyper-Connection (HC) routing [17]. The encoded proprioceptive history is reshaped into an L-step token sequence, which together with the depth token $z _ { t } ^ { d }$ forms the key–value memory $M _ { t }$ for cross-attention. Two learned query tokens, conditioned on $z _ { t } ^ { d } ,$ , focus on futurerelevant temporal dependencies and are replicated across S parallel streams of dimension D, forming the multi-stream state $Z \in \mathbb { R } ^ { S \times 2 \times D }$
+
+Each attention and feed-forward sublayer follows the same three-step routing with independent parameters $( \alpha _ { r } , \beta _ { r } , R _ { r } )$ where $r \in \{ \mathrm { a t t n } , \mathrm { f f n } \}$ indexes the sublayer. The streams are first aggregated with learnable coefficients $\alpha _ { r } \in \mathbb { R } ^ { S }$
+
+$$
+\bar {Z} _ {r} = \sum_ {s = 1} ^ {S} \alpha_ {r, s} Z _ {s}.\tag{4}
+$$
+
+The sublayer is evaluated once on this aggregated representation: for the attention path,
+
+$$
+U _ {\text { attn }} = \mathcal {A} \big (\bar {Z} _ {\text { attn }}, M _ {t} \big),\tag{5}
+$$
+
+where A denotes cross-attention with $M _ { t }$ as key and value, and for the feed-forward path
+
+$$
+U _ {\mathrm{ffn}} = \mathcal {F} \big (\bar {Z} _ {\mathrm{ffn}}, z _ {t} ^ {d} \big),\tag{6}
+$$
+
+where $\mathcal { F }$ is a depth-conditioned SwiGLU transformation [34]. The output is then distributed back to the streams and mixed with their residual pathways:
+
+$$
+Z _ {r, s} ^ {\prime} = \mathrm{LN} \left(\beta_ {r, s} U _ {r} + \sum_ {j = 1} ^ {S} R _ {r, s j} Z _ {j}\right),\tag{7}
+$$
+
+where $\beta _ { r } \in \mathbb { R } ^ { S }$ scales how each stream receives the update and $R _ { r } ~ \in ~ \mathbb { R } ^ { S \times S }$ mixes the residual paths for sublayer r. Thus, $\left( \alpha _ { r } , \beta _ { r } , R _ { r } \right)$ generalize the standard $x + f ( x )$ residual by maintaining stream-specific representations while evaluating each sublayer once on $\bar { Z } _ { r }$
+
+After N layers, the streams are summed and normalized to produce a single temporal feature for each query token, which serves as the policy input. The critic follows an analogous HC structure over its privileged history, with a separate depth encoder and without the foothold predictor.
+
+## C. Predicted Foresight and Late Fusion
+
+Rather than regressing the privileged state at a fixed future step, PFM forecasts the next touchdown of each foot as an event whose timing is itself a prediction target. All forecasts are produced from the deployable feature $x _ { t } ;$ let $\tilde { x } _ { t }$ denote its detached copy.
+
+TABLE I  
+ACTOR–CRITIC INTERFACES PER FRAME. ACTOR: DEPLOYABLE OBSERVATIONS AND PFM FORECASTS; CRITIC: PRIVILEGED STATES. THE 22-D FORECAST CONTAINS TWO 10-D EVENT SUMMARIES AND TWO CONFIDENCE VALUES; H×W DENOTES DEPTH RESOLUTION.
+
+<table><tr><td rowspan="2">Signal</td><td colspan="4">Vanilla</td><td colspan="4">Ours</td></tr><tr><td colspan="2">Actor</td><td colspan="2">Critic</td><td colspan="2">Actor</td><td colspan="2">Critic</td></tr><tr><td>Base angular velocity  $\omega_t$ </td><td>3</td><td>IMU</td><td>3</td><td>IMU</td><td>3</td><td>IMU</td><td>3</td><td>IMU</td></tr><tr><td>Projected gravity  $g_t$ </td><td>3</td><td>IMU</td><td>3</td><td>IMU</td><td>3</td><td>IMU</td><td>3</td><td>IMU</td></tr><tr><td>Command  $c_t$ </td><td>3</td><td>command input</td><td>3</td><td>command input</td><td>3</td><td>command input</td><td>3</td><td>command input</td></tr><tr><td>Joint position  $q_t$ </td><td>29</td><td>joint encoders</td><td>29</td><td>joint encoders</td><td>29</td><td>joint encoders</td><td>29</td><td>joint encoders</td></tr><tr><td>Joint velocity  $\dot{q}_t$ </td><td>29</td><td>joint encoders</td><td>29</td><td>joint encoders</td><td>29</td><td>joint encoders</td><td>29</td><td>joint encoders</td></tr><tr><td>Previous action  $a_{t-1}$ </td><td>29</td><td>history</td><td>29</td><td>history</td><td>29</td><td>history</td><td>29</td><td>history</td></tr><tr><td>Depth history  $\mathcal{I}_t$ </td><td> $H \times W$ </td><td>RealSense/RayCaster</td><td> $H \times W$ </td><td>RayCaster</td><td> $H \times W$ </td><td>RealSense/RayCaster</td><td> $H \times W$ </td><td>RayCaster</td></tr><tr><td colspan="9">Privileged training-time signals (critic: simulator values; actor: PFM forecasts)</td></tr><tr><td>Base velocity  $v_t$ </td><td>-</td><td>-</td><td>3</td><td>simulator</td><td>3</td><td>PFM one-step prediction</td><td>3</td><td>simulator</td></tr><tr><td>Center-of-mass position  $m_t$ </td><td>-</td><td>-</td><td>3</td><td>simulator</td><td>3</td><td>PFM one-step prediction</td><td>3</td><td>simulator</td></tr><tr><td>Foothold descriptor  $p_t$ </td><td>-</td><td>-</td><td>14</td><td>simulator</td><td>22</td><td>PFM event forecast</td><td>14</td><td>simulator</td></tr></table>
+
+For foot $f \in \{ L , R \}$ , the next touchdown is that foot’s first strictly future $0  1$ contact transition; if the foot is in stance, a lift-off must occur before the next touchdown is valid. From the simulator trajectory of the foothold descriptor (3), each rollout frame is annotated with the touchdown event
+
+$$
+y _ {f} ^ {*} = (\tau_ {f} ^ {*}, \boldsymbol {p} _ {f} ^ {*}, r _ {f} ^ {*}, \eta_ {f} ^ {*}, \rho_ {f} ^ {*}, \phi_ {f} ^ {*}),\tag{8}
+$$
+
+where $\tau _ { f } ^ { * } > 0$ is the time-to-touchdown measured in control periods, ${ \boldsymbol p } _ { f } ^ { * } \in \mathbb { R } ^ { 2 }$ is the touchdown position expressed in the base frame at the prediction time, and $r _ { f } ^ { \ast } , \ \eta _ { f } ^ { \ast } , \ \rho _ { f } ^ { \ast } ,$ , and $\phi _ { f } ^ { * }$ are the support ratio, terrain risk, load support, and normalforce proxy recorded at the touchdown instant. If the episode terminates before that touchdown, the frame is right-censored at the episode boundary, with no observed event time or touchdown attributes.
+
+PFM outputs a distributional estimate of this event for each foot,
+
+$$
+F _ {\xi} (\tilde {x} _ {t}) _ {f} = \big (\mu_ {\tau , f}, \sigma_ {\tau , f}, \boldsymbol {\mu} _ {p, f}, \log \sigma_ {p, f} ^ {2}, \hat {\boldsymbol {a}} _ {f}, \log \sigma_ {a, f} ^ {2} \big),\tag{9}
+$$
+
+where $\left( \mu _ { \tau , f } , \sigma _ { \tau , f } \right)$ parameterize a log-normal distribution over the time-to-touchdown, whose support on $\mathbb { R } ^ { + }$ matches the non-negative nature of event timing; $( \mu _ { p , f } , \log \sigma _ { p , f } ^ { 2 } )$ define a diagonal Gaussian over the touchdown position; and $\hat { \mathbf { } } { } \hat { \mathbf { } } { } \mathbf { } f ^ { } = \mathbf { }$ $( \hat { r } _ { f } , \hat { \eta } _ { f } , \hat { \rho } _ { f } , \hat { \phi } _ { f } )$ , together with its log-variance vector log $\sigma _ { a , f } ^ { 2 } ,$ covers the four touchdown attributes. Two separate heads provide one-step Gaussian estimates of base velocity and centerof-mass position; they are trained as auxiliary supervision that regularizes the PFM encoder, and their estimates are fused as short-horizon kinematic context alongside the event forecast. All log-variances are clipped to [−5, 2].
+
+For control, the per-foot forecast is summarized as
+
+$$
+\hat {y} _ {t, f} = [ \tilde {\tau} _ {f}; \sigma_ {\tau , f}; \pmb {\mu} _ {p, f}; \log \pmb {\sigma} _ {p, f} ^ {2}; \hat {\pmb {a}} _ {f} ] \in \mathbb {R} ^ {1 0},\tag{10}
+$$
+
+where $\tilde { \tau } _ { f } ~ = ~ \exp ( \mu _ { \tau , f } )$ is the median time-to-touchdown. A confidence $\kappa _ { t , f } ~ \in ~ ( 0 , 1 ]$ is an exponential transform of the foot’s mean predicted variance, so that larger uncertainty yields lower confidence [35]. Concatenating both feet with the one-step auxiliary estimates gives the foresight feature
+
+$$
+e _ {t} = [ \hat {v} _ {t + 1}; \hat {m} _ {t + 1}; \hat {y} _ {t, L}; \hat {y} _ {t, R}; \kappa_ {t, L}; \kappa_ {t, R} ] \in \mathbb {R} ^ {2 8}.\tag{11}
+$$
+
+Let $\tilde { e } _ { t }$ denote a detached copy of the foresight feature. The adapter first maps it to a 32-dimensional latent:
+
+$$
+u _ {t} = A _ {\varphi} (\tilde {e} _ {t}) \in \mathbb {R} ^ {3 2}.\tag{12}
+$$
+
+The foresight latent is then fused with the motion representation $b _ { t }$ only at the policy head:
+
+$$
+h _ {t} ^ {\pi} = W _ {f} [ b _ {t}; u _ {t} ] + b _ {f} \in \mathbb {R} ^ {1 2 8}.\tag{13}
+$$
+
+The action head maps $h _ { t } ^ { \pi }$ to a 29-dimensional mean $\mu _ { t } ~ =$ $f _ { \theta } ( h _ { t } ^ { \pi } )$ . During PPO training, the action is sampled from the learned diagonal Gaussian policy
+
+$$
+a _ {t} \sim \mathcal {N} \big (\mu_ {t}, \mathrm{diag} (\sigma_ {\theta} ^ {2}) \big).\tag{14}
+$$
+
+At deployment, the policy uses the deterministic mean $a _ { t } =$ $\mu _ { t }$
+
+## D. Training and Deployment
+
+The actor–critic parameters θ (including HC, the motion head, adapter, and fusion layers), PFM parameters ξ, and AMP discriminator parameters ψ are updated sequentially with separate objectives. ${ \mathcal { L } } _ { \mathrm { P P O } } ( \theta )$ combines the clipped PPO objective [36] with masked MSE on the two future motion states adopted from ParkourFormer [19].
+
+PFM uses non-terminal rollout transitions labeled by (8). Let $m _ { i } ~ \in ~ \{ 0 , 1 \}$ indicate transition validity, $\delta _ { i , f } ~ \in ~ \{ 0 , 1 \}$ indicate touchdown before episode termination, and $T _ { i , f }$ be the remaining control periods for a censored frame. With $\begin{array} { r } { M = \sum _ { i } m _ { i } } \end{array}$ and $\begin{array} { r } { D = \sum _ { i , f } m _ { i } \delta _ { i , f } } \end{array}$ , its loss is
+
+$$
+\begin{array}{l} \mathcal {L} _ {\mathrm{PFM}} (\xi) = - \frac {1}{2 M} \sum_ {i, f} m _ {i} \log \left[ f _ {\tau} \left(\tau_ {i, f} ^ {*}\right) ^ {\delta_ {i, f}} S _ {\tau} \left(T _ {i, f}\right) ^ {1 - \delta_ {i, f}} \right] \\ + \frac {1}{6 D} \sum_ {i, f, j} m _ {i} \delta_ {i, f} \ell_ {i, f, j} + \frac {\lambda_ {\text {aux}}}{6 M} \sum_ {i, j} m _ {i} \ell_ {i, j} ^ {\text {aux}}, \end{array}\tag{15}
+$$
+
+![](images/1cb9e9aae62f81f44ec1b267e04561018d5ab226209e1e5ab94bc19d31ec1803.jpg)  
+Fig. 3. Evaluation terrains: (a) stairs, (b) gaps, (c) high platforms, (d) slopes, and (e) a mixed course combining stairs, a gap, and a slope.
+
+where $f _ { \tau }$ and $S _ { \tau }$ are the log-normal density and survival function, respectively, so censored frames contribute only survival likelihood to event-time supervision. The six-dimensional target $d _ { i , f }$ contains touchdown position and support attributes, and $d _ { i } ^ { \mathrm { a u x } }$ contains one-step base velocity and center-of-mass position; event regression applies only to observed touchdowns. Each regression term ℓ uses $\dot { \nu } + ( d - \hat { d } ) ^ { 2 } e ^ { - \nu }$ with predicted log-variance ν [35], twice the Gaussian negative loglikelihood up to an additive constant; $\lambda _ { \mathrm { a u x } }$ is defined under this scaling.
+
+The AMP discriminator distinguishes detached policy trajectories $\bar { \tau } ^ { \pi }$ from reference trajectories $\tau ^ { r }$ using the leastsquares loss [20],
+
+$$
+\begin{array}{r l} & {\mathcal {L} _ {\mathrm{AMP}} (\psi) = \frac {1}{2} \mathbb {E} _ {\bar {\tau} ^ {\pi}} [ (D _ {\psi} (\bar {\tau} ^ {\pi}) + 1) ^ {2} ]} \\ & {\qquad + \frac {1}{2} \mathbb {E} _ {\tau^ {r}} [ (D _ {\psi} (\tau^ {r}) - 1) ^ {2} ] + \lambda_ {R} \mathcal {R} (\psi),} \end{array}\tag{16}
+$$
+
+where R contains gradient-penalty and weight-regularization terms. The detached AMP style reward enters PPO returns.
+
+Detaching $\tilde { x } _ { t }$ blocks PFM-loss gradients to the actor encoder; detaching $\tilde { e } _ { t }$ blocks PPO gradients to PFM; and detached motion predictions block AMP-loss gradients to the motion head and HC backbone. Deployment retains the actor, including PFM, and removes the critic, simulator targets, and AMP discriminator.
+
+## IV. EXPERIMENTS
+
+This section evaluates HC2Robot through the simulation protocol, deployable PFM prediction accuracy, comparative traversal and foothold-support results, and component ablations. We further assess zero-shot transfer on individual and mixed terrains in the real-world deployment.
+
+## A. Experimental Protocol
+
+All reported strategies were trained for 30,000 iterations with 4096 IsaacLab humanoid environments on an NVIDIA RTX 4090. Stairs, gaps, high platforms, and slopes randomize geometry and traversal direction at each iteration. All methods share the command distribution, terrain curriculum, and evaluation settings, including terrain configurations, termination criteria, and the SFR threshold; testing uses only the deployable actor and onboard observations. Simulation SR/SFR results summarize five seeds, each evaluated over 1000 trials per terrain class; means and standard deviations are computed across seeds. Fig. 3 shows the four training terrain classes and the mixed course, while Table II lists their training ranges and held-out mixed-terrain validation settings.
+
+TABLE II  
+TRAINING AND MIXED-COURSE TERRAIN PARAMETERS.
+
+<table><tr><td colspan="3">Training Terrains</td></tr><tr><td>Terrain</td><td>Attribute</td><td>Range</td></tr><tr><td>Stairs</td><td>Step height (m)</td><td>0.05–0.23</td></tr><tr><td>Gaps</td><td>Gap width (m)</td><td>0.10–0.70</td></tr><tr><td>High platforms</td><td>Height (m)</td><td>0.05–0.45</td></tr><tr><td>Slopes</td><td>Slope (rise/run)</td><td>0.00–0.70</td></tr></table>
+
+Deployment Validation: Mix Terrain
+
+<table><tr><td>Difficulty</td><td>Stairs (m)</td><td>Gap (m)</td><td>Slope (°)</td></tr><tr><td>Level 1 (Easy)</td><td>0.090</td><td>0.175</td><td>10.0</td></tr><tr><td>Level 2 (Moderate)</td><td>0.160</td><td>0.325</td><td>14.7</td></tr><tr><td>Level 3 (Higher)</td><td>0.230</td><td>0.475</td><td>23.6</td></tr></table>
+
+TABLE III
+
+PFM PREDICTION ERRORS ON HELD-OUT EPISODES. MEAN ± STANDARD DEVIATION OF PER-SEED MEAN ERRORS.
+
+<table><tr><td>Terrain</td><td>Time error (steps)</td><td>Position error (m)</td><td>Support-ratio error (pp)</td></tr><tr><td>Stairs</td><td>0.73 ± 0.14</td><td>0.018 ± 0.003</td><td>2.76 ± 0.37</td></tr><tr><td>Gaps</td><td>0.91 ± 0.19</td><td>0.021 ± 0.004</td><td>1.19 ± 0.48</td></tr><tr><td>High platforms</td><td>0.66 ± 0.11</td><td>0.016 ± 0.002</td><td>4.33 ± 0.24</td></tr><tr><td>Slopes</td><td>0.84 ± 0.17</td><td>0.020 ± 0.003</td><td>0.65 ± 0.41</td></tr><tr><td>Overall</td><td>0.79 ± 0.08</td><td>0.019 ± 0.002</td><td>2.23 ± 0.17</td></tr></table>
+
+## B. Metrics
+
+The primary task metric is success rate (SR), the fraction of episodes that complete the terrain segment without unsafe termination. Failures include falls, illegal non-foot contacts, leaving the valid terrain region, insufficient base height, and failure to make progress before the time limit.
+
+Safe foothold rate (SFR) uses a geometric support proxy. Contact is detected when the maximum resultant foot force over the sensor history exceeds 1 N. Each new contact is measured once after two consecutive contact steps. A yawaligned horizontal patch of $\mathrm { 0 . 2 2 5 \times 0 . 1 0 m }$ , centered 0.04 m forward of the ankle, is sampled at 0.025 m spacing, yielding 50 vertical terrain rays. For event i, let $h _ { i j }$ denote sample $j ^ { \circ } \mathbf { s }$ terrain height and $h _ { i } ^ { \operatorname* { m a x } }$ the highest finite hit. The evaluation support ratio and SFR are
+
+$$
+r _ {i} ^ {\text { eval }} = \frac {1}{5 0} \sum_ {j = 1} ^ {5 0} \mathbf {1} [ h _ {i j} \text {   finite }, h _ {i} ^ {\max} - h _ {i j} <   0. 0 2 5 \mathrm{m} ],
+$$
+
+$$
+\mathrm{SFR} = \frac {100\%}{N _ {c}} \sum_ {i = 1} ^ {N _ {c}} \mathbf {1} [ r _ {i} ^ {\mathrm{eval}} \geq 0. 7 5 ],\tag{17}
+$$
+
+where ray misses count as unsupported and an all-miss patch has zero support. $N _ { c }$ pools measured events per seed and terrain class, including those recorded in failed trials up to failure detection; frozen environments contribute no further events. This ratio differs from the PFM supervision target in (3). The horizontal patch ignores foot pitch and roll and can penalize continuous slopes; SFR therefore complements SR as a geometric proxy rather than a direct measure of physical contact or dynamic stability.
+
+TABLE IV  
+SIMULATION SR AND SFR (%). VALUES ARE MEAN ± STANDARD DEVIATION OVER FIVE RANDOM SEEDS.
+
+<table><tr><td rowspan="2">Method</td><td colspan="3">Stairs</td><td colspan="3">Gaps</td><td colspan="3">High Platforms</td><td colspan="3">Slopes</td></tr><tr><td colspan="2">SR</td><td>SFR</td><td colspan="2">SR</td><td>SFR</td><td colspan="2">SR</td><td>SFR</td><td colspan="2">SR</td><td>SFR</td></tr><tr><td>Hiking-in-the-Wild</td><td colspan="2">68.10 ± 0.28%</td><td>84.86 ± 0.61%</td><td colspan="2">58.96 ± 0.21%</td><td>87.04 ± 0.71%</td><td colspan="2">76.14 ± 0.33%</td><td>85.66 ± 0.73%</td><td colspan="2">70.54 ± 0.35%</td><td>81.92 ± 0.56%</td></tr><tr><td>ParkourFormer</td><td colspan="2">94.98 ± 0.21%</td><td>96.26 ± 0.54%</td><td colspan="2">95.20 ± 0.32%</td><td>96.33 ± 0.50%</td><td colspan="2">91.18 ± 0.24%</td><td>96.63 ± 0.52%</td><td colspan="2">95.32 ± 0.34%</td><td>89.77 ± 0.67%</td></tr><tr><td>HC2Robot (Ours)</td><td colspan="2">96.22 ± 0.40%</td><td>98.88 ± 0.35%</td><td colspan="2">95.60 ± 0.27%</td><td>99.13 ± 0.57%</td><td colspan="2">98.84 ± 0.44%</td><td>98.68 ± 0.83%</td><td colspan="2">99.72 ± 0.21%</td><td>95.08 ± 0.54%</td></tr></table>
+
+![](images/364ec65e6be51cc7e33851960332884c5cfac83bf3569b86c089e0d4c682055f.jpg)  
+Fig. 4. Foot placement of the baseline and HC2Robot during gap crossing (top) and stair descent (bottom).
+
+## C. PFM Prediction Accuracy
+
+To directly assess the foresight supplied to the actor, we evaluate PFM on held-out simulation episodes using only the deployable observation history. The point predictions in (10) are compared with simulator-derived targets in (8) for offline scoring. Timing and position errors are $| \tilde { \tau } _ { f } - \tau _ { f } ^ { * } |$ and $\| \pmb { \mu } _ { p , f } - \pmb { p } _ { f } ^ { \ast } \| _ { 2 }$ , respectively; support-ratio error is $| \hat { r } _ { f } - r _ { f } ^ { \ast } |$ , multiplied by 100 to express it in percentage points. For each seed and terrain class, errors are averaged over frame–foot samples with an observed future touchdown; right-censored samples are excluded. The Overall row averages the four terrain-class means within each seed. Table III reports overall mean errors of 0.79 control steps, 0.019 m, and 2.23 percentage points for timing, position, and support ratio, respectively.
+
+## D. Compared Methods
+
+We compare against Hiking-in-the-Wild [9] and Parkour-Former [19]. Table V reports model size and runtime.
+
+## E. Main Results
+
+Table IV reports simulation performance across all terrain classes. HC2Robot attains the highest SR and SFR on every terrain. Its unweighted mean SR and SFR across the four terrain classes are 97.60% and 97.94%, respectively, compared with 94.17% and 94.75% for ParkourFormer. The largest terrain-specific gains over ParkourFormer are 7.66 SR points on high platforms and 5.31 SFR points on slopes; SFR on gaps also improves by 2.80 points. Figs. 4 and 5 illustrate foot placement and geometric support, complementing the aggregate SR/SFR results.
+
+![](images/bd30e362fb9e63f5e752382c1651f0e1966d9d774cd3f816252c89ac4c4412bd.jpg)  
+Fig. 5. Support vs. Hiking-in-the-Wild: (b) SFR (Table IV mean) and mean support ratio; (c) schematic sole (green/red: supported/unsupported).
+
+TABLE V  
+MODEL COMPLEXITY, TRAINING DURATION, AND INFERENCE LATENCY.
+
+<table><tr><td>Model</td><td>Params. (M)</td><td>FLOPs (M)</td><td>Train (h)</td><td>Infer. (ms)</td></tr><tr><td>Hiking-in-the-Wild</td><td>3.58</td><td>3.89</td><td>50</td><td>0.28</td></tr><tr><td>ParkourFormer</td><td>3.74</td><td>7.94</td><td>89</td><td>0.53</td></tr><tr><td>HC2Robot (Ours)</td><td>3.67</td><td>9.77</td><td>77</td><td>0.40</td></tr></table>
+
+## F. Auxiliary Diagnostics and Ablations
+
+We evaluate the contributions of the main components through ablations. w/o Hyper-Connection replaces HC with a standard residual Transformer; w/o PFM removes the estimator and its adapter; Auxiliary-only disables touchdown-event supervision and removes the corresponding event features from policy fusion while retaining the one-step base-velocity and center-of-mass predictions; and w/o AMP removes the adversarial motion prior. All variants use the same base deployable observations, critic-side privileged inputs, training budget, and evaluation protocol.
+
+The Fixed-horizon control predicts the same six per-foot position and support attributes at $t + h _ { 0 }$ , with $h _ { 0 } ~ = ~ 6 0$ control periods, instead of at the next touchdown, and omits the event-time loss and event-time input. The offset $h _ { 0 }$ is fixed across terrains and random seeds. The control retains HC, the one-step auxiliary heads, adapter, late fusion, training budget, and evaluation settings. This is a composite fixed-offset comparison that changes both target alignment and event-time information; it does not isolate either factor separately.
+
+TABLE VI  
+COMPONENT ABLATIONS FOR SR AND SFR (%). PLAT. DENOTES HIGH PLATFORMS; MEAN AVERAGES THE FOUR TERRAINS.
+
+<table><tr><td>Method</td><td colspan="2">Stairs</td><td colspan="2">Gaps</td><td colspan="2">Plat.</td><td colspan="2">Slopes</td><td colspan="2">Mean</td></tr><tr><td colspan="11">SR (%) ↑</td></tr><tr><td>w/o PFM</td><td colspan="2">88.12 ± 0.32%</td><td colspan="2">90.34 ± 0.42%</td><td colspan="2">97.88 ± 0.40%</td><td colspan="2">93.66 ± 0.49%</td><td colspan="2">92.50 ± 0.21%</td></tr><tr><td>Auxiliary-only</td><td colspan="2">90.20 ± 0.30%</td><td colspan="2">92.76 ± 0.42%</td><td colspan="2">91.20 ± 0.33%</td><td colspan="2">91.84 ± 0.29%</td><td colspan="2">91.50 ± 0.10%</td></tr><tr><td>w/o Hyper-Connection</td><td colspan="2">93.86 ± 0.25%</td><td colspan="2">95.26 ± 0.37%</td><td colspan="2">98.12 ± 0.42%</td><td colspan="2">75.16 ± 0.38%</td><td colspan="2">90.60 ± 0.08%</td></tr><tr><td>w/o AMP</td><td colspan="2">92.24 ± 0.33%</td><td colspan="2">88.54 ± 0.28%</td><td colspan="2">88.12 ± 0.33%</td><td colspan="2">86.34 ± 0.45%</td><td colspan="2">88.81 ± 0.17%</td></tr><tr><td>Fixed-horizon</td><td colspan="2">91.04 ± 0.21%</td><td colspan="2">92.86 ± 0.13%</td><td colspan="2">89.76 ± 0.36%</td><td colspan="2">93.96 ± 0.30%</td><td colspan="2">91.91 ± 0.10%</td></tr><tr><td>Ours</td><td colspan="2">96.22 ± 0.40%</td><td colspan="2">95.60 ± 0.27%</td><td colspan="2">98.84 ± 0.44%</td><td colspan="2">99.72 ± 0.21%</td><td colspan="2">97.60 ± 0.19%</td></tr><tr><td colspan="11">SFR (%) ↑</td></tr><tr><td>w/o PFM</td><td colspan="2">93.53 ± 0.45%</td><td colspan="2">94.08 ± 0.73%</td><td colspan="2">95.37 ± 0.61%</td><td colspan="2">90.85 ± 0.77%</td><td colspan="2">93.46 ± 0.24%</td></tr><tr><td>Auxiliary-only</td><td colspan="2">92.56 ± 0.50%</td><td colspan="2">90.18 ± 0.71%</td><td colspan="2">92.72 ± 0.66%</td><td colspan="2">84.62 ± 0.45%</td><td colspan="2">90.02 ± 0.22%</td></tr><tr><td>w/o Hyper-Connection</td><td colspan="2">94.47 ± 0.40%</td><td colspan="2">93.55 ± 0.84%</td><td colspan="2">95.25 ± 0.68%</td><td colspan="2">76.72 ± 0.78%</td><td colspan="2">90.00 ± 0.22%</td></tr><tr><td>w/o AMP</td><td colspan="2">91.17 ± 0.37%</td><td colspan="2">94.98 ± 0.48%</td><td colspan="2">92.20 ± 0.61%</td><td colspan="2">69.81 ± 0.88%</td><td colspan="2">87.04 ± 0.24%</td></tr><tr><td>Fixed-horizon</td><td colspan="2">96.25 ± 0.53%</td><td colspan="2">93.06 ± 0.61%</td><td colspan="2">95.52 ± 0.73%</td><td colspan="2">91.08 ± 0.68%</td><td colspan="2">93.98 ± 0.15%</td></tr><tr><td>Ours</td><td colspan="2">98.88 ± 0.35%</td><td colspan="2">99.13 ± 0.57%</td><td colspan="2">98.68 ± 0.83%</td><td colspan="2">95.08 ± 0.54%</td><td colspan="2">97.94 ± 0.31%</td></tr></table>
+
+a) Component Ablation Results.: Table VI reports SR and SFR for the completed variants. Removing PFM reduces mean SR/SFR from 97.60%/97.94% to 92.50%/93.46%, supporting the benefit of the complete PFM pathway for traversal and geometric foothold support. The Auxiliary-only variant obtains 91.50%/90.02%. Its lower performance than the full model indicates that the supervised touchdown-event representation contributes beyond the shared auxiliary predictions; this comparison does not attribute the difference to a single event target. The w/o Hyper-Connection variant is especially weak on slopes (75.16% SR, 76.72% SFR). Removing AMP yields the lowest aggregate means (88.81% SR, 87.04% SFR) and the lowest slope SFR (69.81%).
+
+HC2Robot also exceeds Fixed-horizon in SR and SFR on every terrain, with the largest gains of 9.08 SR points on high platforms and 6.07 SFR points on gaps. This result shows that the complete event-based design outperforms the evaluated fixed-offset, no-event-time alternative.
+
+![](images/81c8ebbe65827665755a1bcd4dd0054248d3daf4b08015cef7cdd9ec1cf2cdd2.jpg)
+
+![](images/b4dd258ec78f4ef651649790d20d4bf79174eee90d235026fde2d1191428f933.jpg)  
+Ours w/o Foothold priv. w/o AMP w/o PFM w/o HC  
+Fig. 6. Training traces: (a) PFM confidence; (b) foot-slip speed. Binned, smoothed single-run curves; shading: within-bin temporal SD.
+
+b) Training Dynamics.: Fig. 6 shows similar left/right confidence and the lowest terminal foot-slip speed for the full model among the displayed single-run traces. The w/o Foothold priv. trace is an earlier supervision-removal diagnostic, distinct from the Auxiliary-only control in Table VI.
+
+## G. Real-World Deployment
+
+We deploy HC2Robot zero-shot on the Unitree G1, with onboard inference at 50 Hz using only proprioception and an egocentric depth camera.
+
+TABLE VII  
+REAL-WORLD SUCCESS RATES. EACH STAIRS TRIAL INCLUDES ONE ASCENT AND DESCENT.
+
+<table><tr><td>Terrain</td><td>Settings</td><td>Success Rate</td></tr><tr><td colspan="3">Mixed-Terrain Settings</td></tr><tr><td>Mix-Level1</td><td>Stairs / Gaps / Slopes</td><td>100%(20/20)</td></tr><tr><td>Mix-Level2</td><td>Stairs / Gaps / Slopes</td><td>95%(19/20)</td></tr><tr><td>Mix-Level3</td><td>Stairs / Gaps / Slopes</td><td>85%(17/20)</td></tr><tr><td colspan="3">Training-Terrain Settings</td></tr><tr><td>Stairs</td><td>0.16 m</td><td>100%(20/20)</td></tr><tr><td>Gaps</td><td>0.40 m</td><td>100%(20/20)</td></tr><tr><td>Platforms</td><td>0.40 m</td><td>95%(19/20)</td></tr><tr><td>Slopes</td><td>0.50 rise/run</td><td>100%(20/20)</td></tr></table>
+
+![](images/b58d3d974a432dbb42503783b490a6b62f4221a4ca38ad00151064068d2c7551.jpg)  
+Fig. 7. Unitree G1 deployment snapshots: (a) baseline and (b) HC2Robot.
+
+We evaluate physical realizations of the training terrain classes and mixed courses combining stairs, gaps, and slopes at three difficulty levels. Single-terrain trials test sim-to-real transfer; mixed courses test compositional generalization to terrain arrangements and transitions not encountered during training, rather than new terrain primitives. Each setting uses 20 trials under the simulation failure criteria; Table VII reports complete-trial success rates, and Fig. 7 shows traversal examples.
+
+## V. CONCLUSION
+
+We presented HC2Robot, combining HC multi-stream routing and PFM touchdown-event foresight under asymmetric actor–critic training. PFM learns from simulator supervision to predict each foot’s next touchdown timing, location, and support quality, while deployment uses only proprioception and depth. Held-out evaluation quantifies touchdown timing, position, and support-ratio errors. Across four simulated terrain classes, HC2Robot achieves mean SR/SFR of 97.60%/97.94%, outperforming the evaluated baselines. Ablations assess PFM, HC, and the motion prior; Auxiliary-only supports the benefit of supervised touchdown-event features beyond shared onestep kinematic predictions. The fixed-horizon comparison evaluates the complete event-based design against a fixed-offset, no-event-time alternative. Zero-shot Unitree G1 trials demonstrate transfer to individual obstacles and mixed courses.
+
+## REFERENCES
+
+[1] Z. Zhuang, S. Yao, and H. Zhao, “Humanoid parkour learning,” in Proc. 8th Conf. Robot Learn. (CoRL), 2024.
+
+[2] Z. Wu, X. Huang, L. Yang, Y. Zhang, X. Chen, P. Abbeel, R. Duan, A. Kanazawa, C. Sferrazza, G. Shi, and C. K. Liu, “Perceptive humanoid parkour: Chaining dynamic human skills via motion matching,” arXiv preprint arXiv:2602.15827, 2026.
+
+[3] J. Hwangbo, J. Lee, A. Dosovitskiy, D. Bellicoso, V. Tsounis, V. Koltun, and M. Hutter, “Learning agile and dynamic motor skills for legged robots,” Sci. Robot., vol. 4, no. 26, p. eaau5872, 2019, arXiv:1901.08652.
+
+[4] N. Rudin, D. Hoeller, P. Reist, and M. Hutter, “Learning to walk in minutes using massively parallel deep reinforcement learning,” Conf. Robot Learn. (CoRL), 2022.
+
+[5] J. Lee, J. Hwangbo, L. Wellhausen, V. Koltun, and M. Hutter, “Learning robust perceptive locomotion for quadrupedal robots in the wild,” Sci. Robot., vol. 7, p. eabk2822, 2022.
+
+[6] I. M. A. Nahrendra, B. Yu, and H. Myung, “DreamWaQ: Learning robust quadrupedal locomotion with implicit terrain imagination via deep reinforcement learning,” arXiv preprint arXiv:2301.10602, 2023.
+
+[7] A. Agarwal, A. Kumar, J. Malik, and D. Pathak, “Legged locomotion in challenging terrains using egocentric vision,” arXiv preprint arXiv:2211.07638, 2022.
+
+[8] X. Cheng, K. Shi, A. Agarwal, and D. Pathak, “Extreme parkour with legged robots,” arXiv preprint arXiv:2309.14341, 2023.
+
+[9] S. Zhu, Z. Zhuang, M. Zhao, K.-Y. Lee, and H. Zhao, “Hiking in the wild: A scalable perceptive parkour framework for humanoids,” CoRR, vol. abs/2601.07718, 2026.
+
+[10] K. He, X. Zhang, S. Ren, and J. Sun, “Deep residual learning for image recognition,” in Proc. IEEE Conf. Comput. Vis. Pattern Recognit. (CVPR), 2016, arXiv:1512.03385.
+
+[11] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, Ł. Kaiser, and I. Polosukhin, “Attention is all you need,” in Adv. Neural Inf. Process. Syst., 2017, arXiv:1706.03762.
+
+[12] Y. Hao, R. Yu, S. Luo, G. Zhang, J. Wu, and Q. Zhu, “CReF: Crossmodal and recurrent fusion for depth-conditioned humanoid locomotion,” CoRR, vol. abs/2603.29452, 2026.
+
+[13] K. Huang, Z. Xie, Y. Xie, P. Liao, F. Zhang, Y. Mai, W. Xu, Y. Wang, R. Xu, H. Huang, and C. Yang, “CoRe-MoE: Contrastive reweighted mixture of experts for multi-terrain humanoid locomotion with gait adaptation,” CoRR, vol. abs/2606.04718, 2026.
+
+[14] C. Han, S. He, Y. Cheng, L. Ye, and H. Liu, “PRIOR: Perceptive learning for humanoid locomotion with reference gait priors,” CoRR, vol. abs/2603.18979, 2026.
+
+[15] L. Pinto, M. Andrychowicz, P. Welinder, W. Zaremba, and P. Abbeel, “Asymmetric actor critic for image-based robot learning,” in Proc. Robot.: Sci. Syst. (RSS), 2018.
+
+[16] A. Kumar, Z. Fu, D. Pathak, and J. Malik, “RMA: Rapid motor adaptation for legged robots,” arXiv preprint arXiv:2107.04034, 2021.
+
+[17] D. Zhu, H. Huang, Z. Huang, Y. Zeng, Y. Mao, B. Wu, Q. Min, and X. Zhou, “Hyper-connections,” ArXiv, vol. abs/2409.19606, 2024. [Online]. Available: https://api.semanticscholar.org/CorpusID: 272987528
+
+[18] G. Lambrechts, D. Ernst, and A. Mahajan, “A theoretical justification for asymmetric actor-critic algorithms,” 2025. [Online]. Available: https://arxiv.org/abs/2501.19116
+
+[19] Y. Mai, W. Xu, Z. Huang, Y. Fu, S. Dong, X. Wang, K. Huang, Y. Xie, and R. Xu, “ParkourFormer: Integrating predictive supervision and sequence modeling into parkour locomotion,” CoRR, vol. abs/2605.25782, 2026.
+
+[20] X. B. Peng, Z. Ma, P. Abbeel, S. Levine, and A. Kanazawa, “AMP: Adversarial motion priors for stylized physics-based character control,” ACM Trans. Graph., 2021.
+
+[21] Z. Zhuang, Z. Fu, J. Wang, C. Atkeson, S. Schwertfeger, C. Finn, and H. Zhao, “Robot parkour learning,” in Proc. 7th Conf. Robot Learn. (CoRL), 2023.
+
+[22] D. Hoeller, N. Rudin, D. Sako, and M. Hutter, “ANYmal parkour: Learning agile navigation for quadrupedal robots,” arXiv preprint arXiv:2306.14874, 2023.
+
+[23] I. Radosavovic, T. Xiao, B. Zhang, T. Darrell, J. Malik, and K. Sreenath, “Real-world humanoid locomotion with reinforcement learning,” Sci. Robot., vol. 9, no. 89, p. eadi9579, 2024.
+
+[24] Z. Li, X. Zeng, C. Li, Y. Zhang, D. Pathak, and K. Sreenath, “Learning humanoid locomotion over challenging terrain,” arXiv preprint arXiv:2410.03654, 2024.
+
+[25] C. Crismariu and R. K. Cosner, “MARCH: Model-assisted reinforcement learning for the perceptive control of humanoids over sparse footholds,” CoRR, vol. abs/2606.10288, 2026.
+
+[26] G. Ji, J. Mun, H. Kim, and J. Hwangbo, “Concurrent training of a control policy and a state estimator for dynamic and robust legged locomotion,” arXiv preprint arXiv:2202.05481, 2022.
+
+[27] Q. Zhang, G. Han, J. Sun, W. Zhao, C. Sun, J. Cao, J. Wang, Y. Guo, and R. Xu, “Distillation-PPO: A novel two-stage reinforcement learning framework for humanoid robot perceptive locomotion,” CoRR, vol. abs/2503.08299, 2025.
+
+[28] F. Jin, Y. Wang, P. Ma, G. Yang, P. Zhao, E. Li, and Z. Zhang, “Teacher motion priors: Enhancing robot locomotion over challenging terrain,” CoRR, vol. abs/2504.10390, 2025.
+
+[29] F. Wu, X. Nal, J. Jang, W. Zhu, Z. Gu, A. Wu, and Y. Zhao, “Learn to teach: Sample-efficient privileged learning for humanoid locomotion over real-world uneven terrain,” CoRR, vol. abs/2402.06783, 2025.
+
+[30] Y. Ma, H. Yu, K. Guo, B. Xing, X. Ren, and D. Zheng, “VPIES: Variational privileged information encoder as scaffold for legged locomotion learning,” IEEE Robot. Autom. Lett., vol. 11, no. 4, pp. 5119–5126, 2026.
+
+[31] S. Fahmi, V. Barasuol, D. Esteban, O. Villarreal, and C. Semini, “ViTAL: Vision-based terrain-aware locomotion for legged robots,” arXiv preprint arXiv:2212.01246, 2022.
+
+[32] J. Long, J. Ren, M. Shi, Z. Wang, T. Huang, P. Luo, and J. Pang, “Learning humanoid locomotion with perceptive internal model,” arXiv preprint arXiv:2411.14386, 2024.
+
+[33] P. Li, H. Li, M. Fan, F. Xu, S. Liao, Y. Ma, Z. Zeng, Z. Wang, Y. Jin, Y. Cao, H. Wang, and G. Sartoretti, “TAGA: Terrain-aware active gaze learning for generalizable agile humanoid locomotion,” arXiv preprint arXiv:2606.05880, 2026. [Online]. Available: https: //arxiv.org/abs/2606.05880
+
+[34] N. Shazeer, “GLU variants improve transformer,” arXiv preprint arXiv:2002.05202, 2020.
+
+[35] A. Kendall and Y. Gal, “What uncertainties do we need in Bayesian deep learning for computer vision?” in Adv. Neural Inf. Process. Syst., 2017, arXiv:1703.04977.
+
+[36] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov, “Proximal policy optimization algorithms,” arXiv preprint arXiv:1707.06347, 2017.

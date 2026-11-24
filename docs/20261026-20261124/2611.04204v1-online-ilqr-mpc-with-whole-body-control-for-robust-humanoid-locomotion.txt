@@ -1,0 +1,390 @@
+# Online iLQR-MPC with Whole-Body Control for Robust Humanoid Locomotion
+
+Xiang Li, Linlin Ou, Ruihan Wu, and Xinyi Yu<sup>∗</sup>
+
+Abstract—Humanoid locomotion requires deciding where to step and how to distribute contact forces. However, a disturbance can invalidate the nominal plan, requiring coordinated revision under constraints that switch with every footfall. To solve this online, the proposed approach employs the single-rigid-body model, which retains attitude dynamics and the full contact wrench. An iterative linear-quadratic-regulator MPC (iLQR-MPC) then jointly optimizes contact forces and footstep locations in a single receding-horizon problem, without a separate step planner. Specifically, contact and motion constraints are incorporated into the backward pass through augmented-Lagrangian and relaxedbarrier penalties. A whole-body controller subsequently maps the plan to joint torques at 500 Hz while preserving contact feasibility. The model-based formulation makes disturbance responses interpretable through explicit costs and constraints, and requires no platform-specific policy training. In MuJoCo simulations, the iLQR-MPC replans at 100 Hz (mean solve time 8.9 ms); the Unitree G1 sustains steady-state walking and recovers from impulsive 245 N forward and 175 N lateral pushes.
+
+Index Terms—Model Predictive Control (MPC), iLQR, Whole-Body Control (WBC), Humanoid Locomotion, Push Recovery.
+
+## I. INTRODUCTION
+
+UMANOID robots must maintain dynamic balance, track footholds, and respect hard constraints (joint limits, torque bounds, and friction cones) on a floating base with dozens of degrees of freedom (DoF) and hybrid dynamics that switch at every contact event. The dominant paradigm pairs a simplified-model MPC with a whole-body controller (WBC), from the Atlas humanoid [1] to recent quadrupeds [2]; a recent survey identifies it as the standard framework [3]. Reinforcement learning offers an alternative through sim-toreal transfer [4], but requires per-platform retraining and gives no formal guarantee on constraint satisfaction.
+
+Within model-based control, competing tasks must be resolved. A weighted-sum objective cannot guarantee safetycritical constraints when they conflict with secondary goals; for a walking humanoid, a violation means a fall. Task-priority control instead enforces tasks in priority order through nullspace projection [5], [6], extended to inequality constraints via hierarchical quadratic programming (HQP) [7] and validated on torque-controlled humanoids [8]. Because WBC acts on the instantaneous state alone, it is reactive; MPC adds lookahead by planning contact forces over a receding horizon, but fullorder nonlinear MPC is intractable at real-time rates. The standard approach therefore pairs a reduced-model MPC at 50–100 Hz, which plans ground reaction forces and CoM trajectories, with a WBC at 500–1000 Hz mapping the plan to joint torques. Linear MPC based on the zero-moment point (ZMP) [9] and nonlinear contact-implicit MPC [10] have been deployed this way.
+
+External pushes test these constraint margins. Push recovery uses three strategies [11]: ankle (ZMP modulation), hip (angular-momentum regulation), and stepping (footstep adjustment). Stepping is the last recourse because it redefines the support base [12]. Online gait adaptation has followed two directions. The first modifies step timing [13], [14], relying on reduced-order dynamics, chiefly the linear inverted pendulum, for tractability. The second promotes footstep location to a state variable within the MPC, coupled with a foot-velocity control, so footholds and contact forces are co-optimized: Romualdi et al. [15] introduced this on the position-controlled iCub, and Ding et al. [16] applied the same idea within an orientation-aware MPC.
+
+Despite these advances, the standard MPC+WBC pipeline faces two challenges. The first concerns constraint handling in DDP-style nonlinear MPC: most deployed formulations linearize the dynamics and simplify the contact constraints to preserve convexity, so under large disturbances the executed motion can violate friction-cone, unilateral, or ZMP conditions that the plan satisfies. Nonlinear solvers such as differential dynamic programming (DDP) and its Gauss–Newton variant, the iterative linear-quadratic regulator (iLQR) [17], avoid this, and have been demonstrated across multi-contact DDP [18], hybrid contact-implicit iLQR-MPC [19], [20], and reducedorder-guided contact-implicit MPC for humanoids [21]. DDP exploits the temporal structure of the problem, but its weakness is inequality constraints: an SQP step carries them as QP inequalities, whereas augmented Lagrangian and relaxedbarrier penalties fold them into the stage cost. Within DDP, augmented Lagrangian (AL) penalties drive feasibility through adaptive multiplier updates [22], while relaxed barriers (ReB) replace the logarithmic barrier with a quadratic extension that keeps the backward-pass Hessian bounded [23]. Li and Wensing [24] combined the two, assigning AL to switching equality constraints and ReB to inequalities; AL-DDP has since been applied to biped gait generation with centroidal dynamics, but in an offline planning formulation [25]. HS-DDP itself runs offline on a 2D planar quadruped; to our knowledge, no bipedal humanoid controller has run the AL+ReB pairing inside an online receding-horizon MPC, where the narrower stability margin makes the constraint handling harder. The second challenge is structural: a reduced-model plan is a reference, not a feasible whole-body motion. The single-rigidbody (SRB) model omits limb momentum [28] and joint-level limits, and returns a resultant wrench per foot rather than joint torques; completing the plan in joint space is left to the execution layer. Prior work resolves this in one of three ways: tracking the MPC force references at high priority [8] can produce infeasible joint commands; tracking motion references [2] forgoes force-level planning; and optimizing the full whole-body dynamics directly [26] remains costly. A wholebody QP that co-optimizes contact-force increments and taskspace acceleration corrections reconciles the plan with the fullbody dynamics under all constraints [7], [27]. The WBC is bounded by the plan it receives: it reshapes the contact wrench and the base acceleration, but it cannot move a footstep, so any adaptation the MPC does not plan is left to the ankle and hip strategies within the support polygon the plan already fixed.
+
+![](images/047039945c9e9339d9f99c0296930aa93d9c25b8eb41f0097d5e7ea01dc9e23c.jpg)  
+Fig. 1. Overall control architecture. A reference-planning module supplies the CoM reference, nominal footholds, and contact schedule. The reduced-model iLQR-MPC computes the contact wrench and footstep placements online from centroidal state feedback, with contact and motion constraints entering the cost J as augmented-Lagrangian and relaxed-barrier penalties. The whole-body controller maps this plan to joint torques via task-priority projection, a dynamics QP, and inverse dynamics, using joint state feedback, with the QP enforcing the floating-base block of the full whole-body dynamics and contact feasibility.
+
+The proposed controller addresses both challenges (Fig. 1) with an iLQR-MPC and a whole-body controller; a referenceplanning module upstream converts a velocity command into a CoM reference, nominal footholds, and a contact schedule. The contributions of this paper are as follows.
+
+1) Jointfootstep and contact-force planning. The controller jointly optimizes contact forces and footstep locations in a single receding-horizon iLQR-MPC on the singlerigid-body model. Both are re-optimized at every replan, so a push is answered by moving the next footstep and redistributing the stance wrench in the same solve, without a separate step planner.
+
+2) Online constraint handling. Augmented-Lagrangian and relaxed-barrier penalties place the contact and motion constraints in the backward pass, which keeps the joint optimization practical at replan rate.
+
+3) Interpretable, model-based control. Every stage is defined by explicit models, costs, and constraints, from the centroidal dynamics in the MPC to the null-space kinematics and floating-base QP in the whole-body layer. A disturbance response can therefore be traced to specific model terms, and no platform-specific policy training is required.
+
+Section IV details the whole-body controller, and Section V reports walking and push-recovery results on the Unitree G1 in MuJoCo.
+
+## II. PROBLEM FORMULATION AND THEORETICAL BACKGROUND
+
+## A. System Dynamics Modeling
+
+The MPC controller employs an SRB model in which contact forces and footholds are optimized jointly, and predicts the robot’s motion with the continuous-time nonlinear statespace model
+
+$$
+\dot {\boldsymbol {x}} (t) = \boldsymbol {f} (\boldsymbol {x} (t), \boldsymbol {u} (t); \boldsymbol {\gamma} (t), \boldsymbol {w} _ {\text { ext }} (t)),\tag{1}
+$$
+
+where $\gamma = ( \gamma _ { L } , \gamma _ { R } )$ are the gait gates from the scheduler, with $\gamma _ { i } ~ \in ~ \{ 0 , 1 \}$ denoting stance and swing, and $\begin{array} { r l } { { \pmb w } _ { \mathrm { e x t } } } & { { } = } \end{array}$ $[ f _ { \mathrm { e x t } } ^ { \top } , \tau _ { \mathrm { e x t } } ^ { \top } ] ^ { \top }$ is the exogenous disturbance wrench.
+
+Its realization consists of a state-and-disturbance term and a control-and-gait term:
+
+$$
+\dot {\boldsymbol {x}} = \left[ \begin{array}{c} \dot {\boldsymbol {\Phi}} \\ \dot {\boldsymbol {p}} \\ \dot {\boldsymbol {\omega}} \\ \dot {\boldsymbol {v}} \\ \dot {\boldsymbol {p}} _ {L} ^ {f} \\ \dot {\boldsymbol {p}} _ {R} ^ {f} \end{array} \right] = \underbrace {\left[ \begin{array}{c} \boldsymbol {R} _ {z} (\psi) ^ {\top} \boldsymbol {\omega} \\ \boldsymbol {v} \\ \boldsymbol {I} (\boldsymbol {\Phi}) ^ {- 1} (- \boldsymbol {\omega} \times (\boldsymbol {I} (\boldsymbol {\Phi}) \boldsymbol {\omega}) + \boldsymbol {\tau} _ {\text {ext}}) \\ \frac {1}{m} \boldsymbol {f} _ {\text {ext}} + \boldsymbol {g} \\ \mathbf {0} _ {3} \\ \mathbf {0} _ {3} \end{array} \right]} _ {f (\boldsymbol {w}, \boldsymbol {w} _ {\text {ext}})} + \underbrace {\left[ \begin{array}{c} \mathbf {0} _ {3} \\ \mathbf {0} _ {3} \\ \boldsymbol {I} (\boldsymbol {\Phi}) ^ {- 1} \sum_ {i \in \{L , R \}} (\boldsymbol {\tau} _ {i} + \boldsymbol {r} _ {i} \times \boldsymbol {F} _ {i}) \\ \frac {1}{m} \sum_ {i \in \{L , R \}} \boldsymbol {F} _ {i} \\ (1 - \gamma_ {L})   \boldsymbol {v} _ {L} ^ {f} \\ (1 - \gamma_ {R})   \boldsymbol {v} _ {R} ^ {f} \end{array} \right]} _ {f (\boldsymbol {u}, \boldsymbol {\gamma})}\tag{2}
+$$
+
+where:
+
+• With $\Phi = ( \phi , \theta , \psi ) ^ { \top }$ collecting the roll, pitch, and yaw angles, $R _ { z } ( \psi )$ is the yaw rotation matrix; with small roll and pitch, Φ<sup>˙</sup> is well approximated by the world-frame angular velocity rotated through yaw alone.
+
+$\begin{array} { r } { \pmb { I } ( \pmb { \Phi } ) = \pmb { R } ( \pmb { \Phi } ) \bar { \pmb { I } } \pmb { R } ( \pmb { \Phi } ) ^ { \top } } \end{array}$ is the world-frame centroidal inertia, with <sup>¯</sup>I the constant body-frame inertia.
+
+${ \pmb r } _ { i } = { \pmb p } _ { i } ^ { f } - { \pmb p }$ is the CoM-to-foot lever arm, and $( F _ { i } , \tau _ { i } )$ is the force and moment applied by foot i to the body.
+
+$\pmb { \mathscr { g } } = [ 0 , 0 , - 9 . 8 1 ] ^ { \top }$ is gravity, grouped with the drift.
+
+$f _ { \mathrm { e x t } } , \tau _ { \mathrm { e x t } }$ are exogenous disturbance force and torque, used in the push-recovery analysis of Section V.
+
+The state and control vectors, partitioned in (2), are
+
+$$
+\pmb {x} = \left[ \pmb {\Phi} ^ {\top}, \pmb {p} ^ {\top}, \pmb {\omega} ^ {\top}, \pmb {v} ^ {\top}, (\pmb {p} _ {L} ^ {f}) ^ {\top}, (\pmb {p} _ {R} ^ {f}) ^ {\top} \right] ^ {\top} \in \mathbb {R} ^ {1 8},\tag{3}
+$$
+
+$$
+\boldsymbol {u} = \left[ \boldsymbol {F} _ {L} ^ {\top}, \boldsymbol {\tau} _ {L} ^ {\top}, \boldsymbol {F} _ {R} ^ {\top}, \boldsymbol {\tau} _ {R} ^ {\top}, (\boldsymbol {v} _ {L} ^ {f}) ^ {\top}, (\boldsymbol {v} _ {R} ^ {f}) ^ {\top} \right] ^ {\top} \in \mathbb {R} ^ {1 8},\tag{4}
+$$
+
+The sampling period is $\Delta t = 5$ ms over a horizon of $N = 1 0$ stages, with $\gamma _ { k } = \left( \gamma _ { L , k } , \gamma _ { R , k } \right)$ the stage-k gait gates.
+
+Remark. The SRB model is a special case of centroidal $\mathrm { { d y } \mathrm { { - } } }$ namics [29]: it fixes the angular momentum about the CoM to the rigid-body-rotation component $h _ { G } ^ { \omega } = I \omega$ , neglecting limbvelocity contributions. This is standard at walking speeds [30]; Section IV restores the full floating-base dynamics in the WBC.
+
+## B. iLQR Solution Framework
+
+The MPC controller solves a receding-horizon optimal control problem that minimizes a terminal plus stage cost subject to the forward-Euler discretization of the SRB dynamics and the contact constraints of Section III-A. Touch-down and lift-off are discrete mode transitions of a hybrid dynamical system [15]. The complete problem is (17), solved via iLQR.
+
+Standard iLQR [17] solves this problem by expanding the action-value function $Q _ { k } ( { \pmb x } _ { k } , { \pmb u } _ { k } ) ~ = ~ \ell ( { \pmb x } _ { k } , { \pmb u } _ { k } ) ~ +$ $V _ { k + 1 } \big ( f ( \boldsymbol { x } _ { k } , \boldsymbol { u } _ { k } , \gamma _ { k } ) \big )$ to second order around a nominal trajectory; minimizing the quadratic model yields the feedback policy
+
+$$
+\delta \boldsymbol {u} _ {k} = \boldsymbol {k} _ {k} + \boldsymbol {K} _ {k} \delta \boldsymbol {x} _ {k},\tag{5}
+$$
+
+with feedforward $\textbf { \textit { k } } = \mathbf { \beta } - \mathcal { Q } _ { \textbf u u , k } ^ { - 1 } \mathcal { Q } _ { \textbf u , k }$ and gain $\begin{array} { r l } { K _ { k } } & { { } = } \end{array}$ $- \mathcal { Q } _ { u u , k } ^ { - 1 } \mathcal { Q } _ { u x , k }$ from the local quadratic model Q of the action value. The cost-to-go gradient and Hessian are propagated backward from the terminal cost, and dropping the tensor contractions of $\nabla ^ { 2 } f$ gives the Gauss–Newton (iLQR) approximation. The forward pass applies ${ \pmb u } _ { k }  \hat { { \pmb u } } _ { k } + \alpha { \pmb k } _ { k } + { \pmb K } _ { k } ( { \pmb x } _ { k } - \hat { { \pmb x } } _ { k } )$ with a line-search parameter α.
+
+## III. CONSTRAINED MPC FORMULATION
+
+## A. Contact Stability Constraints
+
+A stable foot–ground contact requires a unilateral normal force $( F _ { z } \ge 0 )$ , tangential forces inside a friction pyramid so the foot does not slip, a ZMP within the support polygon, and bounded yaw torque. These define the contact stability constraints, expressed as linear inequalities in the contact wrench and foot position and enforced by differentiable penalties (Section III-B).
+
+a) Support-foot wrench constraints.: Let $\boldsymbol { F } _ { i } = ( F _ { i , x } , F _ { i , y } , F _ { i , z } ) ^ { \top }$ and $\pmb { \tau } _ { i } = ( \tau _ { i , x } , \tau _ { i , y } , \tau _ { i , z } ) ^ { \top }$ denote the world-frame contact wrench of foot $i \in \{ L , R \}$ , given by the corresponding blocks of $\mathbf { \Delta } \mathbf { u } _ { k }$ . The support region is a rectangle with longitudinal half-length $L _ { x }$ and lateral half-width $L _ { y } .$ Within $\mathbf { i t } ,$ the wrench must satisfy unilateral contact, an inscribed friction pyramid, a no-tipping (ZMP) condition, and yaw torque bounds, summarized by
+
+$$
+\begin{array}{c} {F _ {i, z} \geq 0,} \\ {| F _ {i, x} |, | F _ {i, y} | \leq \rho_ {\mu} F _ {i, z},} \\ {| \tau_ {i, x} | \leq L _ {y} F _ {i, z},} \\ {| \tau_ {i, y} | \leq L _ {x} F _ {i, z},} \\ {\tau_ {i} ^ {\min} \leq \tau_ {i, z} \leq \tau_ {i} ^ {\max}.} \end{array}\tag{6}
+$$
+
+Here $\rho _ { \mu } = \mu / \sqrt { 2 }$ is the lateral friction bound of a four-facet pyramid inscribed in the cone of coefficient $\mu ,$ and $\tau _ { i } ^ { \mathrm { m i n } } , \tau _ { i } ^ { \mathrm { m a x } }$ bound the yaw torque.
+
+b) ZMP coordinates.: For $F _ { i , z } > 0$ , the horizontal ZMP coordinates follow from the moments about the footprint center in the foot frame, whose z axis aligns with the contact normal:
+
+$$
+x _ {i} ^ {\mathrm{zmp}} = - \frac {\tau_ {i , y}}{F _ {i , z}}, \qquad y _ {i} ^ {\mathrm{zmp}} = \frac {\tau_ {i , x}}{F _ {i , z}}.\tag{7}
+$$
+
+Hence the torque bounds in (6) are equivalent to $| x _ { i } ^ { \mathrm { z m p } } | \leq$ $L _ { x }$ and $| y _ { i } ^ { \mathrm { z m p } } | \leq L _ { y } ,$ , enforced through the wrench $( F _ { i } , \tau _ { i } )$ without introducing the ZMP coordinates as decision variables.
+
+c) Contact location box constraints.: In swing, the swing-foot position $ { p _ { \mathrm { s w } } } ^ { f }$ is held inside a box of half-extents $\boldsymbol { \ell } = ( \ell _ { x } , \ell _ { y } , \ell _ { z } ) ^ { \top } > 0$ centered on the nominal foothold $\pmb { p } _ { \mathrm { s w } } ^ { \mathrm { n o m } }$ whose horizontal components come from the gait scheduler and whose vertical component is fixed at $z _ { \mathrm { r e f } } \colon$
+
+$$
+- \boldsymbol {\ell} \leq \boldsymbol {p} _ {\mathrm{sw}} ^ {f} - \boldsymbol {p} _ {\mathrm{sw}} ^ {\mathrm{nom}} \leq \boldsymbol {\ell},\tag{8}
+$$
+
+interpreted componentwise with $\ell _ { z } = 0$ . When step adjustment is active, $\pmb { p } _ { \mathrm { s w } } ^ { \mathrm { n o m } }$ is updated online from the previous MPC solution; otherwise it stays at the open-loop gait-scheduler value. Each component yields a nonnegative slack for the ReB penalty (Section III-B).
+
+## B. Penalty-Based Constraint Enforcement
+
+The iLQR solver assumes a smooth, twice-differentiable objective, so the hard constraints of Section III-A, which define the stage-wise admissible state and control sets $\mathcal { X } _ { k }$ and $\mathcal { U } _ { k } .$ , are converted into additive penalty terms: augmented Lagrangian (AL) penalties for the swing-foot zero-wrench equality, and relaxed logarithmic barriers (ReB) for the friction, ZMP, unilateral, yaw-torque, and foothold-box inequalities. Both enter the iLQR backward pass through analytic gradients and Hessians, so iLQR handles the constraints without explicit projection. The total cost in (17) collects the stage-tracking, control-rate, and terminal terms together with $J _ { \mathrm { A L } }$ and $J _ { \mathrm { R e B } }$ (Section III-D).
+
+a) Augmented Lagrangianfor the swing-foot zero-wrench equality.: In single support the swing foot must apply zero wrench,
+
+$$
+\boldsymbol {u} _ {k} ^ {\mathrm{sw}} = \left[ \begin{array}{c} \boldsymbol {F} _ {\mathrm{sw}} \\ \boldsymbol {\tau} _ {\mathrm{sw}} \end{array} \right] \in \mathbb {R} ^ {6},\tag{9}
+$$
+
+so the equality constraint is
+
+$$
+\boldsymbol {h} _ {k} (\boldsymbol {u} _ {k}) = \boldsymbol {u} _ {k} ^ {\mathrm{sw}} = \boldsymbol {0}.\tag{10}
+$$
+
+Let $i _ { \mathrm { s w } } \in \{ L , R \}$ be the swing foot; $h _ { k }$ selects $( F _ { i _ { \mathrm { s w } } } , \tau _ { i _ { \mathrm { s w } } } )$ from ${ \pmb u } _ { k } .$ . In double support, which occurs only when standing still, there is no swing foot and the constraint is dropped $( h _ { k } \equiv$ 0). The augmented-Lagrangian term in the total cost is
+
+$$
+J _ {\mathrm{AL}} = \sum_ {k = 0} ^ {N - 1} \mathbf {1} _ {\mathrm{SS}, k} \left(\boldsymbol {\lambda} _ {k} ^ {\top} \boldsymbol {h} _ {k} (\boldsymbol {u} _ {k}) + \frac {\sigma}{2} \| \boldsymbol {h} _ {k} (\boldsymbol {u} _ {k}) \| ^ {2}\right),\tag{11}
+$$
+
+where the single-support indicator $\mathbf { 1 } _ { \mathrm { S S } , k } \in \{ 0 , 1 \}$ } restricts the penalty to single-support phases, $\boldsymbol { \lambda _ { k } } \in \mathbb { R } ^ { 6 }$ are dual variables, and $\sigma > 0$ is the penalty parameter. Because $h _ { k }$ is affine in the control, $\begin{array} { r } { \pmb { h } _ { k } = S _ { k } \pmb { u } _ { k } } \end{array}$ with a constant row-selector $S _ { k }$ , its gradient, Hessian, and dual update are explicit:
+
+$$
+\nabla_ {\pmb {u}} J _ {\mathrm{AL}} = \pmb {S} _ {k} ^ {\top} (\pmb {\lambda} _ {k} + \sigma \pmb {h} _ {k}), \quad \nabla_ {\pmb {u u}} ^ {2} J _ {\mathrm{AL}} = \sigma \pmb {S} _ {k} ^ {\top} \pmb {S} _ {k}, \quad \pmb {\lambda} _ {k} \leftarrow \pmb {\lambda} _ {k} + \sigma \pmb {h} _ {k}\tag{12}
+$$
+
+contributing only to the control channel $( \nabla _ { \pmb { x } } J _ { \mathrm { A L } } = \mathbf { 0 } )$
+
+b) Relaxed barrier for inequality constraints.: Each scalar inequality is expressed as a nonnegative slack $c _ { j , k } ( \pmb { x } _ { k } , \pmb { u } _ { k } ) > 0$ and penalized by the relaxed logarithmic barrier [23], with argument $\boldsymbol { z } ~ = ~ c _ { j , k }$ , smoothing parameter $\delta > 0$ , polynomial degree parameter $p = 2$ , and barrier weight $\varepsilon _ { B } > 0$
+
+$$
+B _ {\delta} (z) = \left\{ \begin{array}{l l} - \ln z, & z > \delta , \\ \frac {p - 1}{p} \left[ \left(\frac {z - p \delta}{(p - 1) \delta}\right) ^ {p} - 1 \right] - \ln \delta , & z \leq \delta . \end{array} \right.\tag{13}
+$$
+
+For $z > \delta$ this is the logarithmic barrier; the polynomial branch replaces it on $z \leq \delta$ , keeping $B _ { \delta }$ and its first two derivatives finite and conditioning the backward pass. Its derivatives are
+
+$$
+B _ {\delta} ^ {\prime} (z) = \left\{ \begin{array}{l l} - 1 / z, & z > \delta , \\ \frac {1}{\delta} \big (\frac {z - p \delta}{(p - 1) \delta} \big) ^ {p - 1}, & z \leq \delta , \end{array} \right. \quad B _ {\delta} ^ {\prime \prime} (z) = \left\{ \begin{array}{l l} 1 / z ^ {2}, & z > \delta , \\ \frac {1}{\delta^ {2}} \big (\frac {z - p \delta}{(p - 1) \delta} \big) ^ {p - 2}, & z \leq \delta , \end{array} \right. \tag {4.4}\tag{14}
+$$
+
+which enter the backward pass as $\nabla _ { \pmb { u } } J _ { \mathrm { R e B } } \qquad + =$ ε<sub>B</sub> $B _ { \delta } ^ { \prime } ( c _ { j , k } ) \nabla _ { \boldsymbol { u } } c _ { j , k }$ and a Gauss–Newton Hessian ε<sub>B</sub> $B _ { \delta } ^ { \prime \prime } ( c _ { j , k } ) ( \nabla _ { \boldsymbol { u } } c _ { j , k } ) ( \nabla _ { \boldsymbol { u } } c _ { j , k } ) ^ { \intercal }$ per slack, with the barrier parameter tightened as $\delta \ \gets \ \operatorname* { m a x } \{ \eta _ { \delta } \delta , \delta _ { \operatorname* { m i n } } \} \ ( \eta _ { \delta } \ \in \ ( 0 , 1 )$ $\delta _ { \operatorname* { m i n } } > 0 )$ . The total ReB objective is
+
+$$
+J _ {\mathrm{ReB}} = \varepsilon_ {B} \sum_ {k = 0} ^ {N - 1} \sum_ {j} B _ {\delta} \big (c _ {j, k} (\pmb {x} _ {k}, \pmb {u} _ {k}) \big),\tag{15}
+$$
+
+the inner sum runs over all friction-pyramid, unilateral-contact, ZMP, yaw-torque, and foothold-box slacks of Section III-A.
+
+## C. Disturbance Rejection via Receding-Horizon Replanning
+
+a) Footstep-in-state formulation.: Re-solving the finitehorizon problem each cycle adapts contact forces and CoM motion to disturbances without a hand-designed compensator [1], [9]. Footstep locations are promoted to state variables, and the foot positions $\pmb { p } _ { i } ^ { f } ( i \in \{ L , R \} )$ evolve with the commanded foot velocities $\pmb { v } _ { i } ^ { J }$ under the gait gates $\gamma _ { i , k }$ [15]:
+
+$$
+\boldsymbol {p} _ {i, k + 1} ^ {f} = \boldsymbol {p} _ {i, k} ^ {f} + \Delta t (1 - \gamma_ {i, k}) \boldsymbol {v} _ {i, k} ^ {f}, \quad i \in \{L, R \}.\tag{16}
+$$
+
+The contact-location box on these foot positions enters the backward pass of the nonlinear iLQR-MPC as a relaxedbarrier term (Section III-B), so the foothold is optimized in the same solve as the contact wrench. A stance foot $( \gamma _ { i } = 1 )$ stays fixed; a swing foot $( \gamma _ { i } = 0 )$ advances toward a target set by a heuristic rule on desired velocity and swing phase during nominal walking, or by the MPC-optimized horizontal foothold under a disturbance.
+
+## D. Complete MPC Problem
+
+The complete finite-horizon problem solved at each MPC cycle is:
+
+$$
+\begin{array}{l} \min _ {\{\boldsymbol {u} _ {k} \} _ {k = 0} ^ {N - 1}} \sum_ {k = 0} ^ {N - 1} \ell (\boldsymbol {x} _ {k}, \boldsymbol {u} _ {k}) + \rho_ {\Delta} \sum_ {k = 1} ^ {N - 1} \| \boldsymbol {u} _ {k} - \boldsymbol {u} _ {k - 1} \| ^ {2} \\ \qquad + \eta_ {N} \ell_ {N} (\boldsymbol {x} _ {N}) + J _ {\mathrm{AL}} (\{\boldsymbol {u} _ {k} \}) + J _ {\mathrm{ReB}} (\{\boldsymbol {x} _ {k}, \boldsymbol {u} _ {k} \}), \\ \text {s.t.} \quad \boldsymbol {x} _ {k + 1} = f _ {\Delta t} (\boldsymbol {x} _ {k}, \boldsymbol {u} _ {k}; \gamma_ {k}, \boldsymbol {w} _ {\text {ext}}), k = 0, \dots , N - 1, \\ \boldsymbol {p} _ {i, k + 1} ^ {f} = \boldsymbol {p} _ {i, k} ^ {f} + \Delta t (1 - \gamma_ {i, k}) \boldsymbol {v} _ {i, k} ^ {f}, i \in \{L, R \}, k = 0, \dots , N - 1. \end{array}\tag{17}
+$$
+
+The stage cost ℓ collects quadratic penalties on attitude, CoM position, velocities, contact wrench, angular momentum, foot placement, and footstep velocity; a control-rate term $\rho _ { \Delta }$ penalizes consecutive command differences, and a terminal cost $\eta _ { N }$ regularizes the final state. The penalties (11) and (15) are defined in Section III-B.
+
+The constraints are the numerically integrated SRB dynamics (2) and the gated footstep recursion (16). Each cycle, the remeasured state ${ \pmb x } ^ { \mathrm { c u r } }$ initializes the problem and the disturbance wrench $\pmb { w } _ { \mathrm { e x t } }$ is refreshed. In the simulations, $\pmb { w } _ { \mathrm { e x t } }$ is treated as known.
+
+## IV. WHOLE-BODY MOTION CONTROLLER
+
+The MPC controller (Sections II-A–III-D) produces a centroidal trajectory, the contact wrench, and the optimal footstep locations $\bar { { \pmb p } _ { i } ^ { f \star } ( i \in \{ L , R \} ) }$ . The whole-body controller (WBC) maps this plan to joint torques while respecting the full floating-base dynamics and contact constraints. The WBC implements a hierarchical task-priority architecture [5] with three stages: a kinematic null-space recursion (Section IV-B) emitting nominal motion commands, a compact quadratic program (Section IV-C) correcting the floating-base acceleration and contact wrench under the equations of motion and contact constraints, and an inverse-dynamics step (Section IV-D) resolving the corrected quantities to joint torques. Only the last two stages produce forces and feedforward torques.
+
+## A. Floating-Base Dynamics Model
+
+The floating-base dynamics are governed by the equations of motion
+
+$$
+\boldsymbol {M} (\boldsymbol {q}) \ddot {\boldsymbol {q}} + \boldsymbol {\eta} (\boldsymbol {q}, \dot {\boldsymbol {q}}) = \boldsymbol {S} _ {j} ^ {\top} \boldsymbol {\tau} ^ {\mathrm{ff}} + \boldsymbol {J} _ {f e} ^ {\top} (\boldsymbol {q}) \boldsymbol {F} _ {r},\tag{18}
+$$
+
+where $\pmb { q } = [ \pmb { q } _ { f } ^ { \top } , \pmb { q } _ { j } ^ { \top } ] ^ { \top } \in \mathbb { R } ^ { n _ { q } }$ are the generalized coordinates, with floating base $q _ { f } \in \mathbb { R } ^ { 6 }$ and actuated joints $\mathbf { \Delta } \mathbf { q } _ { j } \in \mathbb { R } ^ { n _ { j } }$ , so $n _ { q } = 6 + n _ { j } = 3 5 ; \ : \dot { M } \in \mathbb { R } ^ { n _ { q } \times n _ { q } }$ is the positive-definite mass matrix, η collects Coriolis and gravity terms, $S _ { j } \in \mathbb { R } ^ { n _ { j } \times n _ { q } }$ selects the actuated joint rows, $J _ { f e } \in \mathbb { R } ^ { 1 2 \times n _ { q } }$ is the contact Jacobian, $\pmb { F } _ { r } \in \mathbb { R } ^ { 1 2 }$ is the contact wrench, and $\tau ^ { \mathrm { { f f } } } \in \mathbb { R } ^ { n _ { j } }$ are the feedforward joint torques.
+
+## B. Null-space task prioritization
+
+Each task is solved in the null space of all higher-priority tasks [31], so lower-priority corrections cannot disturb higherpriority constraints.
+
+a) Null-space propagation.: Let $N _ { i - 1 }$ be the cumulative null space of all tasks preceding the i-th and let $N _ { t }$ the number of tasks. The projected Jacobian is $J _ { i | \mathrm { p r e } } =$ $J _ { i } ( \pmb q ) N _ { i - 1 }$ , and the elementary projector built from it uses the Moore–Penrose inverse $\{ \cdot \} ^ { \dagger }$ in the position and velocity passes and the dynamically consistent inverse $\begin{array} { r l } { \overline { { ( \cdot ) } } } & { { } = } \end{array}$ $\bar { M } ^ { - 1 } ( \cdot ) ^ { \top } \bigl ( ( \cdot ) M ^ { - 1 } ( \cdot ) ^ { \top } \bigr ) ^ { - 1 }$ in the acceleration pass.
+
+b) Task-space recursion.: At priority level i the task command is projected into this null space and accumulated onto the preceding level. With the PD task law $\ddot { \pmb { x } } _ { i } ^ { \mathrm { c m d } } =$ $\ddot { { \pmb x } } _ { i } ^ { \mathrm { d e s } } + \dot { \pmb K } _ { p , i } ( { \pmb x } _ { i } ^ { \mathrm { d e s } } - { \pmb x } _ { i } ) + { \pmb K } _ { d , i } ( \dot { \pmb x } _ { i } ^ { \mathrm { d e s } } - \dot { \pmb x } _ { i } )$ and task error $\boldsymbol { e } _ { i } = \boldsymbol { x } _ { i } ^ { \mathrm { d e s } } - \boldsymbol { x } _ { i }$ , the position, velocity, and acceleration levels share one recursion
+
+$$
+\boldsymbol {\Delta} _ {i} = \boldsymbol {\Delta} _ {i - 1} + \boldsymbol {J} _ {i | \text { pre }} ^ {\#} \left(\boldsymbol {\delta} _ {i} - \boldsymbol {J} _ {i} \boldsymbol {\Delta} _ {i - 1}\right), \quad i = 1, \dots , N _ {t},\tag{19}
+$$
+
+with $( \Delta _ { i } , \delta _ { i } , J _ { i | \mathrm { p r e } } ^ { \# } )$ equal to $( \Delta \mathbfit { q } _ { i } , \mathbfit { e } _ { i } , \mathbfit { J } _ { i | \mathrm { p r e } } ^ { \dagger } )$ at the position level, $( \dot { \mathbf { q } } _ { i } ^ { \mathrm { c m d } } , \dot { \mathbf { x } } _ { i } ^ { \mathrm { d e s } } , J _ { i | \mathrm { p r e } } ^ { \dagger } )$ at the velocity level, and $( \ddot { \pmb q } _ { i } ^ { \mathrm { c m d } } , \ddot { \pmb x } _ { i } ^ { \mathrm { c m d } } - \dot { \pmb J } _ { i } \dot { \pmb q } , \overline { { \pmb J } } _ { i | \mathrm { p r e } } )$ at the acceleration level. The final acceleration $\ddot { \pmb q } ^ { \mathrm { k i n } } = \ddot { \pmb q } _ { N _ { t } } ^ { \mathrm { c m d } }$ resolves all task conflicts kinematically and serves as the linearization point for the QP below; the joint increment $\Delta q _ { N _ { t } }$ and velocity $\dot { \pmb q } _ { N _ { t } } ^ { \mathrm { c m d } }$ form the joint kinematic commands.
+
+The task-space references are the desired base pose $( p _ { b } ^ { \mathrm { d e s } } , \Phi ^ { \mathrm { d e s } } )$ , the desired foot trajectory ${ \pmb p } ^ { s w } ( t )$ , and the desired arm configuration $\pmb { q } _ { \mathrm { a r m } } ^ { \mathrm { d e s } } ( t )$ , with the last two supplied by the gait and arm planners. The initial generalized velocity $\dot { \pmb q } ^ { \mathrm { i n i } }$ holds the commanded planar and yaw velocities, while the initial acceleration $\ddot { \pmb q } ^ { \mathrm { i n i } }$ takes its horizontal component from the MPC contact forces through the SRB dynamics and its yaw component from a yaw-rate correction; the tasks fill the remaining entries.
+
+## C. QP Formulation
+
+The decision variable $\zeta = [ \delta \ddot { \pmb q } _ { f } ^ { \top } , \delta \pmb { F } _ { r } ^ { \top } ] ^ { \top } \in \mathbb { R } ^ { 1 8 }$ stacks a correction to the floating-base acceleration $( \delta \ddot { \pmb q } _ { f } \in \mathbb { R } ^ { 6 } )$ and to the contact wrench $( \bar { \delta } \pmb { F } _ { r } \in \mathbb { R } ^ { 1 2 } )$ . Let $F _ { r } ^ { \mathrm { f f } } \in \mathbb { R } ^ { 1 2 }$ denote the MPC feedforward contact wrench and $\dot { \pmb q } ^ { \mathrm { k i n } }$ the nominal whole-body acceleration from the prioritized task recursion of Section IV-B. The $\mathrm { Q P }$ minimizes a weighted least-squares objective subject to the linearized floating-base dynamics and contact constraints:
+
+$$
+\begin{array}{l l} \min _ {\boldsymbol {\zeta}} & \frac {1}{2} \boldsymbol {\zeta} ^ {\top} \boldsymbol {H} \boldsymbol {\zeta}, \\ \text {s.t.} & \boldsymbol {A} \boldsymbol {\zeta} = \boldsymbol {b}, \qquad \underline {{\boldsymbol {d}}} \leq \boldsymbol {C} \boldsymbol {\zeta} \leq \overline {{\boldsymbol {d}}}. \end{array}\tag{20}
+$$
+
+The equality constraint enforces the floating-base block of the full dynamics; the inequalities enforce contact feasibility on the stance feet and a zero wrench on the swing foot, with $C$ and the bounds collecting the linearized limits. Since joint accelerations remain at their task-recursion values, only the base acceleration and contact wrench are corrected. Linearizing about $( \ddot { \pmb q } ^ { \mathrm { k i n } } , \pmb { F } _ { r } ^ { \mathrm { f f } } )$ gives $A \zeta = b ,$ with $\pmb { A } = [ \pmb { S } _ { f } \pmb { M } \pmb { S } _ { f } ^ { \top } , - \pmb { \bar { S _ { f } } } \pmb { J } _ { f e } ^ { \top } ]$ and $\pmb { b } = \pmb { S } _ { f } ( \pmb { J } _ { f e } ^ { \top } \pmb { F } _ { r } ^ { \mathrm { f f } } - \pmb { M } \ddot { \pmb { q } } ^ { \mathrm { k i n } } - \pmb { \eta } )$ and ${ \bf \nabla } S _ { f } = [ I _ { 6 } ^ { ' } { \bf 0 } ]$ extracts the floating-base rows. The weight $H \succ 0$ keeps the base acceleration near its task-recursion value, so the contact forces absorb the residual. With the optimal correction $\zeta ^ { \star }$ , the resolved acceleration and contact forces are
+
+$$
+\ddot {\boldsymbol {q}} ^ {\mathrm{opt}} = \ddot {\boldsymbol {q}} ^ {\mathrm{kin}} + \boldsymbol {S} _ {f} ^ {\top} \delta \ddot {\boldsymbol {q}} _ {f} ^ {\star}, \quad \boldsymbol {F} _ {r} ^ {\mathrm{opt}} = \boldsymbol {F} _ {r} ^ {\mathrm{ff}} + \delta \boldsymbol {F} _ {r} ^ {\star},\tag{21}
+$$
+
+## D. Joint torque computation
+
+Given the QP-adjusted acceleration $\ddot { \pmb q } ^ { \mathrm { o p t } }$ and contact wrench $F _ { r } ^ { \mathrm { o p t } }$ assembled in (21), the feedforward joint torques follow from the floating-base inverse dynamics:
+
+$$
+\pmb {\tau} ^ {\mathrm{ff}} = \pmb {S} _ {j} \big (\pmb {M} \ddot {\pmb {q}} ^ {\mathrm{opt}} + \pmb {\eta} - \pmb {J} _ {f e} ^ {\top} \pmb {F} _ {r} ^ {\mathrm{opt}} \big),\tag{22}
+$$
+
+where $M , ~ \eta , ~ S _ { j }$ , and $J _ { f e }$ are as defined in (18), and $\tau ^ { \mathrm { { f } } }$ is the feedforward joint torque, distinct from the foot contact moments $\tau _ { L } , \tau _ { R }$ in the SRB model. These torques are combined with joint PD feedback to form the motor command,
+
+$$
+\pmb {\tau} = \pmb {\tau} ^ {\mathrm{ff}} + \pmb {K} _ {p} (\pmb {q} ^ {\mathrm{cmd}} - \pmb {q} _ {j}) + \pmb {K} _ {d} (\dot {\pmb {q}} ^ {\mathrm{cmd}} - \dot {\pmb {q}} _ {j}),\tag{23}
+$$
+
+where $q ^ { \mathrm { c m d } }$ and $\dot { \pmb q } ^ { \mathrm { c m d } }$ are the joint-space position and velocity commands, formed from the joint blocks of $\Delta { { q } _ { N _ { t } } }$ and $\dot { \pmb q } _ { N _ { t } } ^ { \mathrm { c m d } }$ $\pmb q _ { j }$ and $\dot { \pmb q } _ { j }$ are the measured joint positions and velocities, and $K _ { p } , K _ { d }$ are the joint PD gains.
+
+## V. SIMULATION EXPERIMENTS
+
+## A. Experimental Setup
+
+All experiments use the MuJoCo simulator [32] and a Unitree G1 model. Simulation and the WBC (Section IV) run synchronously at 500 Hz; ground contact uses a penalty-based soft-constraint model.
+
+The iLQR-MPC uses $N = 1 0$ and $\Delta t = 5$ ms over a 50 ms horizon, is replanned every 10 ms with zero-order hold, and takes $\sim 9$ ms per solve. It is implemented in CasADi [34] with its hot path accelerated in native $\mathrm { C } { + } { + } ;$ the WBC QP is solved with qpOASES [33]. Experiments run on an Intel Core i5-12400F CPU with 16 GB RAM.
+
+## B. Steady-State Locomotion Performance
+
+We first characterize baseline tracking during unperturbed forward walking on flat ground at 0.1 m/s for approximately $4 0 \mathrm { s } ,$ comparing the closed-loop CoM state ${ \pmb x } ^ { \mathrm { c u r } }$ against the MPC reference $\pmb { x } ^ { \mathrm { r e f } }$ , both recorded at 500 Hz.
+
+![](images/6a283012b2d9edcdc56bf1abdf017989a9b9307b08e55e88095b87d9d5be80e3.jpg)  
+Fig. 2. MPC horizon prediction of the CoM state. (a)–(c) CoM position; $\mathrm { ( d ) { - } ( f ) }$ planar velocity and yaw rate. The reference ${ \pmb x } ^ { \mathrm { r e f } }$ (light red, dashed) and prediction $\pmb { x } ^ { \mathrm { p r e d } }$ (blue) are shown; RMSE is annotated per panel.
+
+Fig. 2 shows the MPC prediction against the reference. Prediction tracked the reference closely; the accumulated residual was largest in the forward position, and footstepinduced oscillations are visible in the lateral velocity and yaw rate (panels (e) and (f)).
+
+TABLE I  
+PER-STATE TRACKING RMSE DURING 40 S FORWARD WALKING AT 0.1 m/s
+
+<table><tr><td>State</td><td>RMSE</td><td>State</td><td>RMSE</td></tr><tr><td>Roll (rad)</td><td>0.038</td><td> $\omega_x$  (rad/s)</td><td>0.214</td></tr><tr><td>Pitch (rad)</td><td>0.016</td><td> $\omega_y$  (rad/s)</td><td>0.114</td></tr><tr><td>Yaw (rad)</td><td>0.029</td><td> $\omega_z$  (rad/s)</td><td>0.175</td></tr><tr><td>X (m)</td><td>0.231</td><td> $v_x$  (m/s)</td><td>0.078</td></tr><tr><td>Y (m)</td><td>0.064</td><td> $v_y$  (m/s)</td><td>0.267</td></tr><tr><td>Z (m)</td><td>0.004</td><td> $v_z$  (m/s)</td><td>0.064</td></tr></table>
+
+Table I reports the closed-loop tracking performance over the same segment. The largest error is the forward CoM position (0.231 m), dominated by the startup transient; attitude and the remaining states stay bounded.
+
+## C. Disturbance Rejection
+
+To assess robustness, impulsive external forces are applied to the torso during forward walking at 0.1 m/s: a 0.12 s force pulse at $t ~ = ~ 1 5 . 0 \mathrm { s } .$ , independently along +x, −x, +y, and −y, with the magnitude increased from 80 N to the failure threshold, defined as any non-foot link contacting the ground. The controller also recovers from oblique pushes that superimpose sagittal and lateral components.
+
+1) Sagittal push recovery: Table II reports forward (+x) pushes sustained up to 245 N; beyond this force, we attribute the failure to the MPC’s limited capacity to decelerate the body within the available stepping horizon. At 245 N, the torso pitch θ rises to about 0.20 rad while the roll $\phi$ stays within about ±0.10 rad as the MPC adjusts the footstep plan to arrest the displacement. Angular velocity peaks near 1.1 rad/s and is suppressed within 1.0 s; the swing-leg vertical force spikes to about 2000 N at push onset, consistent with the stepping response.
+
+![](images/6c84d43ce3f623696a728c35afc704dd12aa1d5a6cd6400e063a300b96135170.jpg)
+
+![](images/480aa40554157f7e998eb05422c8fef75bb7ff09869d5446502f14d1ffe9795a.jpg)
+
+![](images/11c9fc4b6db3f5b601c30b1b35ebc821daf75b2b493f45e1fbc7e743f8d67bc4.jpg)
+
+TABLE II  
+MAXIMUM RECOVERABLE PUSH FORCE DURING FORWARD WALKING AT 0.1 m/s
+
+<table><tr><td>Direction</td><td>Type</td><td>Max Force (N)</td></tr><tr><td>+x (forward)</td><td>sagittal</td><td>245</td></tr><tr><td>-x (backward)</td><td>sagittal</td><td>205</td></tr><tr><td>+y (right-to-left)</td><td>lateral</td><td>80</td></tr><tr><td>-y (left-to-right)</td><td>lateral</td><td>175</td></tr></table>
+
+2) Lateral push recovery: Table II reports the lateral outcomes, which are strongly asymmetric: left-to-right (−y) pushes are tolerated up to 175 N, whereas right-to-left (+y) pushes fail above 80 N, more than a twofold difference. This asymmetry arises from the stance-leg phase at push onset. With the left leg in stance, a left-to-right (−y) push is directed toward the stance leg, where the contact wrench redistributes directly to counteract it. Conversely, a right-to-left (+y) push drives the CoM away from the stance foot, shrinking the support polygon and leaving footstep adjustment as the sole recovery mechanism; the narrow mediolateral stance further limits the feasible footstep displacement.
+
+Fig. 4 summarises the response to the favorable (−y) lateral push, and the unfavorable (+y) direction is reported in Table II. In contrast to the sagittal case, lateral pushes primarily excite $v _ { y }$ and the roll mode, while $v _ { x }$ remains largely unperturbed.
+
+Under a right-to-left (+y) push of 80 N, the unfavorable direction, the disturbance acts away from the stance leg: the CoM is displaced by about 0.13 m before the MPC adjusts footstep placement, and the torso roll reaches about 0.06 rad, regulated back within ∼1.0 s. A left-to-right (−y) push of 175 N instead acts toward the stance leg: the CoM displacement grows to about 0.34 m with recovery within 1.0–1.5 s, the roll reaches about 0.14 rad, and the swing-leg vertical force spikes to about 1900 N at touchdown.
+
+## D. Computational Performance
+
+Table III breaks down the computation over ∼9000 iLQR-MPC solves. Each solve comprises three AL/ReB outer iterations, so the ∼9000 solves correspond to 27,000 outer iterations. One inner iLQR iteration costs 2.24 ms, dominated by cost quadratization (54%); summed over all iterations, the iLQR solve averages 8.26 ms, and reference preparation and result conversion add 0.67 ms, for 8.93 ms end to end. Across push directions the iLQR solve mean varied between 8.19 and 8.32 ms, and individual solves reached 13.56 ms during push transients.
+
+![](images/5ec86f70b68c64256e88704876bc5d82999693f8a54e6813334fa8da2cc54caa.jpg)  
+Fig. 3. Forward (+x) push recovery at 245 N at 15.0 s during 0.1 m/s walking. Left: walking sequence; (c) iLQR solve-time distribution. Right: (a) base orientation; (b) swing-leg vertical contact force; (d) angular velocity.
+
+TABLE III  
+COMPUTATION TIME PER ITERATION AND PER ILQR-MPC SOLVE
+
+<table><tr><td>Module</td><td>Time (ms)</td><td>Share (%)</td></tr><tr><td colspan="3">iLQR inner loop (per iteration, N = 10)</td></tr><tr><td>Dynamics linearization</td><td>0.083</td><td>3.7</td></tr><tr><td>Cost quadratization</td><td>1.204</td><td>53.8</td></tr><tr><td>Backward pass &amp; gain computation</td><td>0.274</td><td>12.2</td></tr><tr><td>Forward rollout</td><td>0.680</td><td>30.3</td></tr><tr><td>iLQR iteration total</td><td>2.24</td><td>100</td></tr><tr><td colspan="3">AL-constrained MPC (per solve)</td></tr><tr><td>iLQR solve (all AL/ReB rounds)</td><td>8.26</td><td>92.4</td></tr><tr><td>Reference, initialization, conversion</td><td>0.67</td><td>7.6</td></tr><tr><td>MPC total</td><td>8.93</td><td>100</td></tr><tr><td colspan="3">Whole-body controller (500 Hz)</td></tr><tr><td>Kinematic null-space recursion</td><td>0.136</td><td>—</td></tr><tr><td>WBC-QP</td><td>0.046</td><td>—</td></tr><tr><td>Inverse dynamics</td><td>0.001</td><td>—</td></tr><tr><td>WBC total</td><td>0.183</td><td>—</td></tr></table>
+
+## VI. CONCLUSION
+
+We presented a controller for robust humanoid locomotion, coupling iLQR-MPC with whole-body control. Its central advance is deciding contact forces and footstep locations in the same receding-horizon MPC, with the AL/ReB pairing running inside that loop on a torque-controlled humanoid, and every stage defined by explicit models and constraints. In MuJoCo, the Unitree G1 sustained steady-state walking and recovered from a 245 N forward push and a 175 N lateral push, with contact forces and footstep locations adapted online and a mean solve of 8.9 ms; the lateral asymmetry arose from the stance-leg side at push onset. Three limitations remain: the walking speed is low, MPC solve times occasionally exceed the control period during push transients, and the disturbance wrench is assumed known rather than measured. Future work will focus on increasing walking speed, integrating a learned policy for disturbance perception, adding perception-driven footstep planning, and validating on hardware.
+
+![](images/6732016de2909cf1b94c7ba28702388ab58eda1d30704e8d8e9067940a69887a.jpg)
+
+![](images/33991c24c486541e041242c3fed44a35d801d8a9a1431b918309bdb0e9507d62.jpg)
+
+![](images/2616a3edd8524766773c429c6a01cc648e7d36e9f608b0f03a99fe61ed084fe5.jpg)
+
+## REFERENCES
+
+[1] S. Kuindersma, R. Deits, M. Fallon, A. Valenzuela, H. Dai, F. Permenter, T. Koolen, P. Marion, and R. Tedrake, “Optimization-based locomotion planning, estimation, and control design for the Atlas humanoid robot,” Auton. Robots, vol. 40, no. 3, pp. 429–455, 2016.
+
+[2] C. D. Bellicoso, F. Jenelten, C. Gehring, and M. Hutter, “Dynamic locomotion through online nonlinear motion optimization for quadrupedal robots,” IEEE Robot. Autom. Lett., vol. 3, no. 3, pp. 2261–2268, 2018.
+
+[3] Z. Gu, J. Li, W. Shen, W. Yu, Z. Xie, S. McCrory, et al., “Humanoid locomotion and manipulation: Current progress and challenges in control, planning, and learning,” 2025, arXiv:2501.02116.
+
+[4] I. Radosavovic, T. Xiao, B. Zhang, T. Darrell, J. Malik, and K. Sreenath, “Real-world humanoid locomotion with reinforcement learning,” Sci. Robot., vol. 9, no. 89, eadi9579, 2024.
+
+[5] L. Sentis and O. Khatib, “Control of free-floating humanoid robots through task prioritization,” in Proc. IEEE Int. Conf. Robot. Autom. (ICRA), 2005, pp. 1718–1723.
+
+[6] L. Sentis, J. Park, and O. Khatib, “Compliant control of multicontact and center-of-mass behaviors in humanoid robots,” IEEE Trans. Robot., vol. 26, no. 3, pp. 483–501, 2010.
+
+[7] A. Escande, N. Mansard, and P.-B. Wieber, “Hierarchical quadratic programming: Fast online humanoid-robot motion generation,” Int. J. Robot. Res., vol. 33, no. 7, pp. 1006–1028, 2014.
+
+[8] A. Herzog, N. Rotella, S. Mason, F. Grimminger, S. Schaal, and L. Righetti, “Momentum control with hierarchical inverse dynamics on a torque-controlled humanoid,” Auton. Robots, vol. 40, no. 3, pp. 473– 491, 2016.
+
+[9] P.-B. Wieber, “Trajectory free linear model predictive control for stable walking in the presence of strong perturbations,” in Proc. IEEE-RAS Int. Conf. Humanoid Robots (Humanoids), 2006, pp. 137–142.
+
+[10] M. Neunert, M. Stauble, M. Giftthaler, C. D. Bellicoso, J. Carius,¨ C. Gehring, M. Hutter, and J. Buchli, “Whole-body nonlinear model predictive control through contacts for quadrupeds,” IEEE Robot. Autom. Lett., vol. 3, no. 3, pp. 1458–1465, 2018.
+
+![](images/a38b1e4bd23166e9ad42872dcd0b6ff656d9bae38b58600a60c3aed4c9ca40a7.jpg)  
+Fig. 4. Left-to-right (−y) push recovery at 175 N at 15.0 s during 0.1 m/s walking. Left: walking sequence; (d) iLQR solve-time distribution. Right: (a) CoM lateral position; (b) base orientation; (c) swing-leg vertical contact force; (e) angular velocity.
+
+[11] T. Koolen, T. de Boer, J. Rebula, A. Goswami, and J. Pratt, “Capturability-based analysis and control of legged locomotion, Part 1: Theory and application to three simple gait models,” Int. J. Robot. Res., vol. 31, no. 9, pp. 1094–1113, 2012.
+
+[12] J. Pratt, J. Carff, S. Drakunov, and A. Goswami, “Capture point: A step toward humanoid push recovery,” in Proc. IEEE-RAS Int. Conf. Humanoid Robots (Humanoids), 2006, pp. 200–207.
+
+[13] M. Khadiv, A. Herzog, S. A. A. Moosavian, and L. Righetti, “Walking control based on step timing adaptation,” IEEE Trans. Robot., vol. 36, no. 3, pp. 629–643, 2020.
+
+[14] J. Li, Z. Le, J. Ma, and Q. Nguyen, “Adapting gait frequency for posture-regulating humanoid push-recovery via hierarchical model predictive control,” in Proc. IEEE Int. Conf. Robot. Autom. (ICRA), 2025, pp. 12330–12336.
+
+[15] G. Romualdi, S. Dafarra, G. L’Erario, I. Sorrentino, S. Traversaro, and D. Pucci, “Online non-linear centroidal MPC for humanoid robot locomotion with step adjustment,” in Proc. IEEE Int. Conf. Robot. Autom. (ICRA), 2022, pp. 10412–10419.
+
+[16] Y. Ding, C. Khazoom, M. Chignoli, and S. Kim, “Orientation-aware model predictive control with footstep adaptation for dynamic humanoid walking,” in Proc. IEEE-RAS Int. Conf. Humanoid Robots (Humanoids), 2022, pp. 299–305.
+
+[17] Y. Tassa, T. Erez, and E. Todorov, “Synthesis and stabilization of complex behaviors through online trajectory optimization,” in Proc. IEEE/RSJ Int. Conf. Intell. Robots Syst. (IROS), 2012, pp. 4906–4913.
+
+[18] C. Mastalli, R. Budhiraja, W. Merkt, G. Saurel, B. Hammoud, M. Naveau, J. Carpentier, L. Righetti, S. Vijayakumar, and N. Mansard, “Crocoddyl: An efficient and versatile framework for multi-contact optimal control,” in Proc. IEEE Int. Conf. Robot. Autom. (ICRA), 2020, pp. 2536–2542.
+
+[19] N. J. Kong, C. Li, G. Council, and A. M. Johnson, “Hybrid iLQR model predictive control for contact implicit stabilization on legged robots,” IEEE Trans. Robot., vol. 39, no. 6, pp. 4712–4727, 2023.
+
+[20] G. Kim, D. Kang, J.-H. Kim, S. Hong, and H.-W. Park, “Contact-implicit model predictive control: Controlling diverse quadruped motions without pre-planned contact modes or trajectories,” Int. J. Robot. Res., vol. 44, no. 3, pp. 486–510, 2025.
+
+[21] S. A. Esteban, V. Kurtz, A. B. Ghansah, and A. D. Ames, “Reducedorder model guided contact-implicit model predictive control for humanoid locomotion,” in Proc. IEEE Int. Conf. Robot. Autom. (ICRA), 2025, pp. 14735–14741.
+
+[22] W. Jallet, A. Bambade, N. Mansard, and J. Carpentier, “Constrained differential dynamic programming: A primal-dual augmented Lagrangian approach,” in Proc. IEEE/RSJ Int. Conf. Intell. Robots Syst. (IROS), 2022, pp. 13371–13378.
+
+[23] R. Grandia, F. Farshidian, R. Ranftl, and M. Hutter, “Feedback MPC for torque-controlled legged robots,” in Proc. IEEE/RSJ Int. Conf. Intell. Robots Syst. (IROS), 2019, pp. 4730–4737.
+
+[24] H. Li and P. M. Wensing, “Hybrid systems differential dynamic programming for whole-body motion planning of legged robots,” IEEE Robot. Autom. Lett., vol. 5, no. 4, pp. 5448–5455, 2020.
+
+[25] Q. Zhou, J. Li, P. Yang, Z. Yuan, J. Zhang, and J. Shen, “A fast nonlinear biped gait generator with state constraints,” Mech. Mach. Theory, vol. 227, art. no. 106500, 2026.
+
+[26] E. Dantec, M. Naveau, P. Fernbach, N. Villa, G. Saurel, O. Stasse, M. Ta¨ıx, and N. Mansard, “Whole-body model predictive control for biped locomotion on a torque-controlled humanoid robot,” in Proc. IEEE-RAS Int. Conf. Humanoid Robots (Humanoids), 2022, pp. 638– 644.
+
+[27] D. Kim, J. Lee, J. Ahn, O. Campbell, H. Hwang, and L. Sentis, “Computationally-robust and efficient prioritized whole-body controller with contact constraints,” in Proc. IEEE/RSJ Int. Conf. Intell. Robots Syst. (IROS), 2018, pp. 1–8.
+
+[28] E. Dantec, W. Jallet, and J. Carpentier, “From centroidal to whole-body models for legged locomotion: A comparative analysis,” in Proc. IEEE-RAS Int. Conf. Humanoid Robots (Humanoids), 2024, pp. 335–342.
+
+[29] D. E. Orin, A. Goswami, and S.-H. Lee, “Centroidal dynamics of a humanoid robot,” Auton. Robots, vol. 35, no. 2–3, pp. 161–176, 2013.
+
+[30] J. Di Carlo, P. M. Wensing, B. Katz, G. Bledt, and S. Kim, “Dynamic locomotion in the MIT Cheetah 3 through convex model-predictive control,” in Proc. IEEE/RSJ Int. Conf. Intell. Robots Syst. (IROS), 2018, pp. 1–9.
+
+[31] D. Kim, J. Di Carlo, B. Katz, G. Bledt, and S. Kim, “Highly dynamic quadruped locomotion via whole-body impulse control and model predictive control,” 2019, arXiv:1909.06586.
+
+[32] E. Todorov, T. Erez, and Y. Tassa, “MuJoCo: A physics engine for model-based control,” in Proc. IEEE/RSJ Int. Conf. Intell. Robots Syst. (IROS), 2012, pp. 5026–5033.
+
+[33] H. J. Ferreau, C. Kirches, A. Potschka, H. G. Bock, and M. Diehl, “qpOASES: A parametric active-set algorithm for quadratic programming,” Math. Program. Comput., vol. 6, no. 4, pp. 327–363, 2014.
+
+[34] J. A. E. Andersson, J. Gillis, G. Horn, J. B. Rawlings, and M. Diehl, “CasADi—A software framework for nonlinear optimization and optimal control,” Math. Program. Comput., vol. 11, no. 1, pp. 1–36, 2019.
