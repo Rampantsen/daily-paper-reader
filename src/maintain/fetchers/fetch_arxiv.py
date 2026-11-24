@@ -400,6 +400,7 @@ def fetch_all_domains_metadata_robust(
     chunk_days: int = 7,
     disable_supabase_read: bool = False,
     include_embedding_fields: bool = False,
+    full_window: bool = False,
 ) -> None:
     config = load_config()
 
@@ -481,7 +482,11 @@ def fetch_all_domains_metadata_robust(
         source_desc = f"days_window={days} (ignore_seen)"
     else:
         seen_ids, latest_published_at = load_seen_state()
-        if latest_published_at:
+        if full_window:
+            # Match the inclusive UTC calendar dates shown in the report.
+            start_date = end_date.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=days - 1)
+            source_desc = f"manual full window: {days} UTC dates, seen IDs excluded"
+        elif latest_published_at:
             start_date = latest_published_at
             source_desc = "latest_published_at"
         else:
@@ -497,7 +502,7 @@ def fetch_all_domains_metadata_robust(
     start_date = max(start_date, end_date - timedelta(days=days))
 
     # 安全兜底
-    if start_date >= end_date:
+    if start_date >= end_date and not full_window:
         start_date = end_date - timedelta(minutes=1)
 
     # 按周拆分窗口，避免单次查询过大（尤其 cs* 这种大类）
@@ -556,10 +561,10 @@ def fetch_all_domains_metadata_robust(
     log(f"💾 File saved to: {output_file}")
     if total_count <= 0:
         log("⚠️ No papers found. Check your date range or network.")
-    if max_published_new:
-        save_seen_state(seen_ids, max_published_new)
-    else:
-        save_seen_state(seen_ids, latest_published_at)
+    # A backfill can discover only older papers. Keep the incremental cursor monotonic.
+    if max_published_new and (latest_published_at is None or max_published_new > latest_published_at):
+        latest_published_at = max_published_new
+    save_seen_state(seen_ids, latest_published_at)
     save_last_crawl_at(end_date)
     group_end()
 
@@ -600,11 +605,16 @@ if __name__ == "__main__":
         action="store_true",
         help="从 Supabase 拉取论文时额外包含 embedding 字段（默认不带）。",
     )
+    parser.add_argument(
+        "--full-window", action="store_true",
+        help="按指定的 UTC 日历日期范围回溯，保留已见论文 ID 去重。",
+    )
     args = parser.parse_args()
 
     # 建议先用 --days 1 测试一下，没问题再跑更长时间窗口
     fetch_all_domains_metadata_robust(
         days=args.days,
+        full_window=args.full_window,
         output_file=args.output,
         ignore_seen=bool(args.ignore_seen),
         chunk_days=int(args.chunk_days or 7),

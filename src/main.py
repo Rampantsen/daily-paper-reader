@@ -657,7 +657,7 @@ def main() -> None:
             [
                 python,
                 os.path.join(SRC_DIR, "maintain", "fetchers", "fetch_arxiv.py"),
-                *(["--days", str(args.fetch_days)] if args.fetch_days is not None else []),
+                *(["--days", str(args.fetch_days), "--full-window"] if args.fetch_days is not None else []),
                 *(["--ignore-seen"] if args.fetch_ignore_seen else []),
             ],
         )
