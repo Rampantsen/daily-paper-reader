@@ -166,6 +166,13 @@ def compute_embeddings(
     "batch_size": batch_size,
   }
 
+  checkpoint_path = os.getenv("DPR_PAPER_VECTOR_CACHE")
+  if checkpoint_path and getattr(model, "endpoint", None) and not model.allow_local_fallback:
+    ids = [getattr(item, "id", None) for item in items]
+    if all(isinstance(pid, str) and pid for pid in ids):
+      from paper_vector_cache import encode_with_checkpoints
+      return encode_with_checkpoints(checkpoint_path, model, ids, texts, encode_kwargs, max_length, log)
+
   embeddings_list: List[np.ndarray] = []
   start_time = time.time()
   processed = 0
